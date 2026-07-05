@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@layer base {
+  :root {
+    --background: 240 11% 96%;
+    --foreground: 240 3% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 3% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 3% 12%;
+    --primary: 240 3% 12%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 6% 96%;
+    --secondary-foreground: 240 3% 12%;
+    --muted: 240 6% 96%;
+    --muted-foreground: 240 4% 44%;
+    --accent: 211 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 3 100% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 91%;
+    --input: 240 6% 91%;
+    --ring: 211 100% 50%;
+    --radius: 1.25rem;
+    --status-green: 142 71% 45%;
+    --status-orange: 35 100% 50%;
+    --status-red: 3 100% 59%;
+    --status-blue: 211 100% 50%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f5f5f7;
+    color: hsl(var(--foreground));
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Display",
+      "SF Pro Text",
+      Inter,
+      "Segoe UI",
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .apple-shadow {
+    box-shadow: 0 16px 40px rgba(17, 24, 39, 0.06);
+  }
+
+  .apple-shadow-soft {
+    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .money-number {
+    letter-spacing: -0.07em;
+    font-weight: 600;
+  }
+
+  .page-title {
+    letter-spacing: -0.045em;
+  }
+
+  .section-title {
+    letter-spacing: -0.035em;
+  }
+
+  .dashboard-shell {
+    max-width: 1536px;
+  }
+
+  .surface-muted {
+    background: #f2f2f7;
+  }
+}
