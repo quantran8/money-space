@@ -22,6 +22,7 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>['variant']
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const localeCode = props.locale?.code ?? 'default'
 
   return (
     <DayPicker
@@ -35,7 +36,7 @@ function Calendar({
       captionLayout={captionLayout}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString('default', { month: 'short' }),
+          date.toLocaleString(localeCode, { month: 'short' }),
         ...formatters,
       }}
       classNames={{

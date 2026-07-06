@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus, ReceiptText, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
 import { EventsDataTable } from '@/components/events/events-data-table'
@@ -20,18 +21,21 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { moneyEvents as seedEvents, type MoneyEventItem } from '@/lib/mock-data'
-import { isoDate, moneyAmount, optionalText, requiredText } from '@/lib/validation'
+import {
+  localizedIsoDate,
+  localizedMoneyAmount,
+  localizedOptionalText,
+  localizedRequiredText,
+} from '@/lib/validation'
 
-const eventSchema = z.object({
-  title: requiredText('tên event'),
-  amount: moneyAmount,
-  type: z.enum(['expense', 'income', 'transfer', 'goal_contribution']),
-  category: z.string().min(1),
-  date: isoDate,
-  note: optionalText(200),
-})
-
-type EventForm = z.infer<typeof eventSchema>
+type EventForm = {
+  title: string
+  amount: string
+  type: MoneyEventItem['type']
+  category: string
+  date: string
+  note: string
+}
 
 const defaultValues: EventForm = {
   title: '',
@@ -68,7 +72,16 @@ function formatAmount(rawAmount: string, type: EventForm['type']) {
 }
 
 export function EventsPage() {
+  const { t } = useTranslation()
   const [events, setEvents] = useState<EventRow[]>(() => seedEvents.map(createEventRow))
+  const eventSchema = z.object({
+    title: localizedRequiredText(t, t('events.form.name')),
+    amount: localizedMoneyAmount(t),
+    type: z.enum(['expense', 'income', 'transfer', 'goal_contribution']),
+    category: z.string().min(1),
+    date: localizedIsoDate(t),
+    note: localizedOptionalText(t, 200),
+  })
 
   const {
     control,
@@ -86,7 +99,7 @@ export function EventsPage() {
     const nextEvent: EventRow = createEventRow({
       title: values.title.trim(),
       amount: formatAmount(values.amount, values.type),
-      note: values.note.trim() || 'Chưa có ghi chú thêm.',
+      note: values.note.trim() || t('common.noAdditionalNote'),
       date: values.date.slice(8, 10) + ' Jul',
       type: values.type,
       category: values.category,
@@ -104,7 +117,7 @@ export function EventsPage() {
 
       const duplicated = createEventRow({
         ...target,
-        title: `${target.title} (copy)`,
+        title: `${target.title}${t('events.form.duplicateSuffix')}`,
       })
 
       return [duplicated, ...current]
@@ -118,18 +131,18 @@ export function EventsPage() {
   return (
     <div className="space-y-7">
       <PageHeader
-        eyebrow="Timeline giải thích vì sao snapshot thay đổi"
-        title="Sự kiện tài chính"
-        description="Chỉ ghi những khoản đủ lớn hoặc đủ quan trọng để cả hai cùng hiểu chuyện gì vừa xảy ra."
+        eyebrow={t('events.header.eyebrow')}
+        title={t('events.header.title')}
+        description={t('events.header.description')}
       />
 
       <div className="grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Money events</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('events.table.title')}</p>
               <h2 className="section-title mt-1 text-2xl font-semibold">
-                Những sự kiện làm bức tranh tài chính thay đổi
+                {t('events.table.subtitle')}
               </h2>
             </div>
             <ReceiptText className="size-5 text-[hsl(var(--accent))]" />
@@ -147,9 +160,9 @@ export function EventsPage() {
         <Card className="lg:col-span-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Nhập event</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('events.form.eyebrow')}</p>
               <h2 className="section-title mt-1 text-2xl font-semibold">
-                Ghi một khoản lớn hoặc đáng chú ý
+                {t('events.form.title')}
               </h2>
             </div>
             <Sparkles className="size-5 text-[hsl(var(--accent))]" />
@@ -157,16 +170,16 @@ export function EventsPage() {
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Tên event" error={errors.title?.message}>
+              <FormField label={t('events.form.name')} error={errors.title?.message}>
                 <Input
-                  placeholder="Ví dụ: Đóng học phí tháng 7"
+                  placeholder={t('events.form.namePlaceholder')}
                   aria-invalid={!!errors.title}
                   {...register('title')}
                 />
               </FormField>
-              <FormField label="Số tiền" error={errors.amount?.message}>
+              <FormField label={t('events.form.amount')} error={errors.amount?.message}>
                 <Input
-                  placeholder="Ví dụ: 12M"
+                  placeholder={t('events.form.amountPlaceholder')}
                   aria-invalid={!!errors.amount}
                   {...register('amount')}
                 />
@@ -174,41 +187,41 @@ export function EventsPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Loại event" error={errors.type?.message}>
+              <FormField label={t('events.form.type')} error={errors.type?.message}>
                 <Controller
                   control={control}
                   name="type"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger aria-invalid={!!errors.type}>
-                        <SelectValue placeholder="Chọn loại event" />
+                        <SelectValue placeholder={t('events.form.typePlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="expense">Chi ra</SelectItem>
-                        <SelectItem value="income">Tiền vào</SelectItem>
-                        <SelectItem value="transfer">Chuyển khoản nội bộ</SelectItem>
-                        <SelectItem value="goal_contribution">Góp vào mục tiêu</SelectItem>
+                        <SelectItem value="expense">{t('options.eventType.expense')}</SelectItem>
+                        <SelectItem value="income">{t('options.eventType.income')}</SelectItem>
+                        <SelectItem value="transfer">{t('options.eventType.transfer')}</SelectItem>
+                        <SelectItem value="goal_contribution">{t('options.eventType.goal_contribution')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                 />
               </FormField>
-              <FormField label="Nhóm" error={errors.category?.message}>
+              <FormField label={t('events.form.category')} error={errors.category?.message}>
                 <Controller
                   control={control}
                   name="category"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger aria-invalid={!!errors.category}>
-                        <SelectValue placeholder="Chọn nhóm" />
+                        <SelectValue placeholder={t('events.form.categoryPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="education">Giáo dục</SelectItem>
-                        <SelectItem value="repair">Sửa chữa</SelectItem>
-                        <SelectItem value="saving">Tiết kiệm</SelectItem>
-                        <SelectItem value="income">Thu nhập</SelectItem>
-                        <SelectItem value="household">Sinh hoạt</SelectItem>
-                        <SelectItem value="other">Khác</SelectItem>
+                        <SelectItem value="education">{t('options.eventCategory.education')}</SelectItem>
+                        <SelectItem value="repair">{t('options.eventCategory.repair')}</SelectItem>
+                        <SelectItem value="saving">{t('options.eventCategory.saving')}</SelectItem>
+                        <SelectItem value="income">{t('options.eventCategory.income')}</SelectItem>
+                        <SelectItem value="household">{t('options.eventCategory.household')}</SelectItem>
+                        <SelectItem value="other">{t('options.eventCategory.other')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -216,7 +229,7 @@ export function EventsPage() {
               </FormField>
             </div>
 
-            <FormField label="Ngày xảy ra" error={errors.date?.message}>
+            <FormField label={t('events.form.date')} error={errors.date?.message}>
               <Controller
                 control={control}
                 name="date"
@@ -230,22 +243,21 @@ export function EventsPage() {
               />
             </FormField>
 
-            <FormField label="Ghi chú" error={errors.note?.message}>
+            <FormField label={t('events.form.note')} error={errors.note?.message}>
               <Textarea
-                placeholder="Thêm một câu ngắn để người kia hiểu vì sao snapshot thay đổi."
+                placeholder={t('events.form.notePlaceholder')}
                 aria-invalid={!!errors.note}
                 {...register('note')}
               />
             </FormField>
 
             <div className="surface-muted rounded-[22px] p-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-              Mục tiêu của money_events không phải ghi hết mọi giao dịch nhỏ. Chỉ cần ghi những
-              khoản đủ lớn hoặc đủ quan trọng để cả hai cùng hiểu vì sao tiền tăng giảm.
+              {t('events.form.helper')}
             </div>
 
             <Button type="submit" className="w-full" disabled={!isValid}>
               <Plus className="mr-2 size-4" />
-              Thêm money event
+              {t('events.form.submit')}
             </Button>
           </form>
         </Card>

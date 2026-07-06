@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Clock3, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
 import { PageHeader } from '@/components/layout/page-header'
@@ -19,21 +20,22 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  paymentStatusLabels,
   upcomingPaymentList as seedPayments,
   type PaymentStatus,
   type UpcomingPaymentItem,
 } from '@/lib/mock-data'
-import { isoDate, moneyAmount, requiredText } from '@/lib/validation'
+import {
+  localizedIsoDate,
+  localizedMoneyAmount,
+  localizedRequiredText,
+} from '@/lib/validation'
 
-const paymentSchema = z.object({
-  name: requiredText('tên khoản'),
-  amount: moneyAmount,
-  due: isoDate,
-  status: z.enum(['important', 'normal', 'pending']),
-})
-
-type PaymentForm = z.infer<typeof paymentSchema>
+type PaymentForm = {
+  name: string
+  amount: string
+  due: string
+  status: PaymentStatus
+}
 
 const defaultValues: PaymentForm = {
   name: '',
@@ -71,7 +73,19 @@ function formatDue(iso: string) {
 }
 
 export function PaymentsPage() {
+  const { t } = useTranslation()
   const [payments, setPayments] = useState<UpcomingPaymentItem[]>(seedPayments)
+  const paymentSchema = z.object({
+    name: localizedRequiredText(t, t('payments.form.name')),
+    amount: localizedMoneyAmount(t),
+    due: localizedIsoDate(t),
+    status: z.enum(['important', 'normal', 'pending']),
+  })
+  const paymentStatusLabels: Record<PaymentStatus, string> = {
+    important: t('options.paymentStatus.important'),
+    normal: t('options.paymentStatus.normal'),
+    pending: t('options.paymentStatus.pending'),
+  }
 
   const {
     control,
@@ -101,17 +115,17 @@ export function PaymentsPage() {
   return (
     <div className="space-y-7">
       <PageHeader
-        eyebrow="Khoản sắp tới"
-        title="Tránh bị động với các khoản sắp phải trả"
-        description="Nhìn trước 7 đến 30 ngày để biết khoản nào cần chuẩn bị, khoản nào cần cùng trao đổi."
+        eyebrow={t('payments.header.eyebrow')}
+        title={t('payments.header.title')}
+        description={t('payments.header.description')}
       />
 
       <div className="grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Danh sách khoản</p>
-              <h2 className="section-title mt-1 text-2xl font-semibold">Lịch thanh toán sắp tới</h2>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('payments.list.eyebrow')}</p>
+              <h2 className="section-title mt-1 text-2xl font-semibold">{t('payments.list.title')}</h2>
             </div>
             <Clock3 className="size-5 text-[hsl(var(--status-orange))]" />
           </div>
@@ -123,7 +137,7 @@ export function PaymentsPage() {
                   <div>
                     <p className="font-medium">{payment.name}</p>
                     <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-                      Đến hạn {payment.due}
+                      {t('common.dueOn', { date: payment.due })}
                     </p>
                   </div>
                   <div className="text-right">
@@ -141,30 +155,30 @@ export function PaymentsPage() {
         <Card className="lg:col-span-5">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Thêm khoản</p>
-              <h2 className="section-title mt-1 text-2xl font-semibold">Ghi một khoản sắp tới</h2>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('payments.form.eyebrow')}</p>
+              <h2 className="section-title mt-1 text-2xl font-semibold">{t('payments.form.title')}</h2>
             </div>
             <Plus className="size-5 text-[hsl(var(--status-orange))]" />
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <FormField label="Tên khoản" error={errors.name?.message}>
+            <FormField label={t('payments.form.name')} error={errors.name?.message}>
               <Input
-                placeholder="Ví dụ: Học phí tháng 8"
+                placeholder={t('payments.form.namePlaceholder')}
                 aria-invalid={!!errors.name}
                 {...register('name')}
               />
             </FormField>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Số tiền" error={errors.amount?.message}>
+              <FormField label={t('payments.form.amount')} error={errors.amount?.message}>
                 <Input
-                  placeholder="Ví dụ: 12M"
+                  placeholder={t('payments.form.amountPlaceholder')}
                   aria-invalid={!!errors.amount}
                   {...register('amount')}
                 />
               </FormField>
-              <FormField label="Đến hạn" error={errors.due?.message}>
+              <FormField label={t('payments.form.due')} error={errors.due?.message}>
                 <Controller
                   control={control}
                   name="due"
@@ -179,19 +193,19 @@ export function PaymentsPage() {
               </FormField>
             </div>
 
-            <FormField label="Trạng thái" error={errors.status?.message}>
+            <FormField label={t('payments.form.status')} error={errors.status?.message}>
               <Controller
                 control={control}
                 name="status"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger aria-invalid={!!errors.status}>
-                      <SelectValue placeholder="Chọn trạng thái" />
+                      <SelectValue placeholder={t('payments.form.statusPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="important">Quan trọng</SelectItem>
-                      <SelectItem value="normal">Bình thường</SelectItem>
-                      <SelectItem value="pending">Chờ xác nhận</SelectItem>
+                      <SelectItem value="important">{t('options.paymentStatus.important')}</SelectItem>
+                      <SelectItem value="normal">{t('options.paymentStatus.normal')}</SelectItem>
+                      <SelectItem value="pending">{t('options.paymentStatus.pending')}</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -200,7 +214,7 @@ export function PaymentsPage() {
 
             <Button type="submit" className="w-full" disabled={!isValid}>
               <Plus className="mr-2 size-4" />
-              Thêm khoản
+              {t('payments.form.submit')}
             </Button>
           </form>
         </Card>

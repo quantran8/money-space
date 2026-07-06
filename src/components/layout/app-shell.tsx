@@ -8,6 +8,7 @@ import {
   Users,
   Wallet,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import type { ComponentType } from 'react'
@@ -18,22 +19,24 @@ import { cn } from '@/lib/utils'
 
 type NavItem = {
   to: string
-  label: string
+  labelKey: string
   icon: ComponentType<{ className?: string; strokeWidth?: number }>
   disabled?: boolean
 }
 
 const navItems: NavItem[] = [
-  { to: '/', label: 'Tổng quan', icon: Home },
-  { to: '/assets', label: 'Tài sản', icon: Wallet },
-  { to: '/payments', label: 'Khoản sắp tới', icon: CalendarDays },
-  { to: '/goals', label: 'Mục tiêu', icon: Target },
-  { to: '/events', label: 'Sự kiện tài chính', icon: ReceiptText },
-  { to: '/members', label: 'Thành viên', icon: Users },
-  { to: '/settings', label: 'Cài đặt', icon: Settings },
+  { to: '/', labelKey: 'nav.dashboard', icon: Home },
+  { to: '/assets', labelKey: 'nav.assets', icon: Wallet },
+  { to: '/payments', labelKey: 'nav.payments', icon: CalendarDays },
+  { to: '/goals', labelKey: 'nav.goals', icon: Target },
+  { to: '/events', labelKey: 'nav.events', icon: ReceiptText },
+  { to: '/members', labelKey: 'nav.members', icon: Users },
+  { to: '/settings', labelKey: 'nav.settings', icon: Settings },
 ]
 
 export function AppShell() {
+  const { t } = useTranslation()
+
   return (
     <div className="dashboard-shell mx-auto flex min-h-screen">
       <aside className="hidden w-[264px] border-r border-border px-4 py-5 lg:block">
@@ -44,12 +47,12 @@ export function AppShell() {
 
           <div>
             <p className="text-base font-semibold tracking-tight">Money Space</p>
-            <p className="text-xs text-muted-foreground">Family finance</p>
+            <p className="text-xs text-muted-foreground">{t('shell.subtitle')}</p>
           </div>
         </div>
 
         <nav className="space-y-1">
-          {navItems.map(({ to, label, icon: Icon, disabled }) => (
+          {navItems.map(({ to, labelKey, icon: Icon, disabled }) => (
             <NavLink
               key={to}
               to={disabled ? '#' : to}
@@ -64,7 +67,7 @@ export function AppShell() {
               }
             >
               <Icon className="size-4" strokeWidth={1.8} />
-              <span>{label}</span>
+              <span>{t(labelKey)}</span>
             </NavLink>
           ))}
         </nav>
@@ -76,13 +79,13 @@ export function AppShell() {
             </div>
 
             <div>
-              <p className="text-sm font-medium">Nhà Minh</p>
-              <p className="text-xs text-muted-foreground">2 thành viên</p>
+              <p className="text-sm font-medium">{t('shell.householdName')}</p>
+              <p className="text-xs text-muted-foreground">{t('shell.householdMembers')}</p>
             </div>
           </div>
 
           <Button variant="secondary" className="w-full">
-            Quản lý nhà
+            {t('shell.manageHousehold')}
           </Button>
         </Card>
       </aside>

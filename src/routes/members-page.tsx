@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, ShieldCheck, UserPlus, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
 import { PageHeader } from '@/components/layout/page-header'
@@ -20,13 +21,11 @@ import {
 } from '@/components/ui/select'
 import {
   householdMembers,
-  permissionLabels,
-  roleLabels,
   type HouseholdRole,
   type MemberItem,
   type PermissionLevel,
 } from '@/lib/mock-data'
-import { emailField } from '@/lib/validation'
+import { localizedEmailField } from '@/lib/validation'
 
 const roleTone: Record<HouseholdRole, string> = {
   owner: 'bg-[hsla(var(--accent),0.12)] text-[hsl(var(--accent))]',
@@ -53,7 +52,20 @@ type InviteForm = {
 }
 
 export function MembersPage() {
+  const { t } = useTranslation()
   const [members, setMembers] = useState<MemberItem[]>(householdMembers)
+  const roleLabels: Record<HouseholdRole, string> = {
+    owner: t('options.role.owner'),
+    partner: t('options.role.partner'),
+    viewer: t('options.role.viewer'),
+  }
+  const permissionLabels: Record<PermissionLevel, string> = {
+    view_summary: t('options.permission.view_summary'),
+    view_grouped: t('options.permission.view_grouped'),
+    view_detail: t('options.permission.view_detail'),
+    edit_content: t('options.permission.edit_content'),
+    admin: t('options.permission.admin'),
+  }
 
   const activeCount = members.filter((member) => member.status === 'active').length
   const invitedCount = members.filter((member) => member.status === 'invited').length
@@ -61,13 +73,13 @@ export function MembersPage() {
   const inviteSchema = useMemo(
     () =>
       z.object({
-        email: emailField.refine(
+        email: localizedEmailField(t).refine(
           (value) => !members.some((member) => member.email === value.trim()),
-          { message: 'Email này đã ở trong nhà' },
+          { message: t('validation.duplicateEmail') },
         ),
         role: z.enum(['partner', 'viewer']),
       }),
-    [members],
+    [members, t],
   )
 
   const {
@@ -92,8 +104,8 @@ export function MembersPage() {
       initials: makeInitials(email),
       role: values.role,
       permission: defaultPermissionForRole[values.role],
-      joinedAt: 'Vừa mời',
-      lastActive: 'Chưa hoạt động',
+      joinedAt: t('members.invite.justInvited'),
+      lastActive: t('members.invite.notActiveYet'),
       status: 'invited',
     }
 
@@ -124,18 +136,18 @@ export function MembersPage() {
   return (
     <div className="space-y-7">
       <PageHeader
-        eyebrow="Thành viên trong nhà"
-        title="Ai đang cùng quản lý tiền nhà mình"
-        description="Mời bạn đời hoặc người thân, và quyết định mỗi người thấy được bao nhiêu và làm được những gì."
+        eyebrow={t('members.header.eyebrow')}
+        title={t('members.header.title')}
+        description={t('members.header.description')}
       />
 
       <div className="grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Danh sách thành viên</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('members.list.eyebrow')}</p>
               <h2 className="section-title mt-1 text-2xl font-semibold">
-                {activeCount} đang tham gia · {invitedCount} đã mời
+                {t('members.list.title', { active: activeCount, invited: invitedCount })}
               </h2>
             </div>
             <Users className="size-5 text-[hsl(var(--accent))]" />
@@ -155,7 +167,7 @@ export function MembersPage() {
                         <Badge className={roleTone[member.role]}>{roleLabels[member.role]}</Badge>
                         {member.status === 'invited' ? (
                           <Badge className="bg-[hsla(var(--status-orange),0.12)] text-[hsl(var(--status-orange))]">
-                            Chờ xác nhận
+                            {t('members.list.pending')}
                           </Badge>
                         ) : null}
                       </div>
@@ -163,7 +175,7 @@ export function MembersPage() {
                         {member.email}
                       </p>
                       <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                        Tham gia {member.joinedAt} · Hoạt động {member.lastActive}
+                        {t('common.joined', { date: member.joinedAt })} · {t('common.activeAt', { value: member.lastActive })}
                       </p>
                     </div>
                   </div>
@@ -176,7 +188,7 @@ export function MembersPage() {
                       onClick={() => removeMember(member.id)}
                       className="shrink-0 text-[hsl(var(--status-red))] hover:bg-[hsla(var(--status-red),0.08)] hover:text-[hsl(var(--status-red))]"
                     >
-                      Gỡ
+                      {t('common.remove')}
                     </Button>
                   ) : null}
                 </div>
@@ -184,7 +196,7 @@ export function MembersPage() {
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">
-                      Vai trò
+                      {t('members.list.role')}
                     </Label>
                     <Select
                       value={member.role}
@@ -205,7 +217,7 @@ export function MembersPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">
-                      Quyền xem
+                      {t('members.list.permission')}
                     </Label>
                     <Select
                       value={member.permission}
@@ -236,34 +248,34 @@ export function MembersPage() {
           <Card>
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">Mời người mới</p>
-                <h2 className="section-title mt-1 text-2xl font-semibold">Gửi lời mời</h2>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('members.invite.eyebrow')}</p>
+                <h2 className="section-title mt-1 text-2xl font-semibold">{t('members.invite.title')}</h2>
               </div>
               <UserPlus className="size-5 text-[hsl(var(--accent))]" />
             </div>
 
             <form className="space-y-4" onSubmit={handleSubmit(handleInvite)} noValidate>
-              <FormField label="Email" error={errors.email?.message}>
+              <FormField label={t('members.invite.email')} error={errors.email?.message}>
                 <Input
                   type="email"
-                  placeholder="vidu@email.com"
+                  placeholder={t('members.invite.emailPlaceholder')}
                   aria-invalid={!!errors.email}
                   {...register('email')}
                 />
               </FormField>
 
-              <FormField label="Vai trò" error={errors.role?.message}>
+              <FormField label={t('members.invite.role')} error={errors.role?.message}>
                 <Controller
                   control={control}
                   name="role"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger aria-invalid={!!errors.role}>
-                        <SelectValue placeholder="Chọn vai trò" />
+                        <SelectValue placeholder={t('members.invite.rolePlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="partner">Bạn đời</SelectItem>
-                        <SelectItem value="viewer">Người xem</SelectItem>
+                        <SelectItem value="partner">{t('options.role.partner')}</SelectItem>
+                        <SelectItem value="viewer">{t('options.role.viewer')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -271,13 +283,12 @@ export function MembersPage() {
               </FormField>
 
               <div className="surface-muted rounded-[22px] p-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-                Người được mời sẽ nhận email xác nhận. Bạn có thể điều chỉnh quyền xem của họ bất
-                cứ lúc nào sau khi họ tham gia.
+                {t('members.invite.helper')}
               </div>
 
               <Button type="submit" className="w-full" disabled={!isValid}>
                 <Mail className="mr-2 size-4" />
-                Gửi lời mời
+                {t('members.invite.submit')}
               </Button>
             </form>
           </Card>
@@ -285,20 +296,20 @@ export function MembersPage() {
           <Card>
             <div className="mb-4 flex items-center gap-2">
               <ShieldCheck className="size-5 text-[hsl(var(--accent))]" />
-              <h3 className="text-lg font-semibold">Về quyền truy cập</h3>
+              <h3 className="text-lg font-semibold">{t('members.access.title')}</h3>
             </div>
             <div className="space-y-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
               <p>
-                <span className="font-medium text-[hsl(var(--foreground))]">Chủ hộ</span> có toàn
-                quyền quản lý thành viên và dữ liệu.
+                <span className="font-medium text-[hsl(var(--foreground))]">{t('options.role.owner')}</span>{' '}
+                {t('members.access.owner')}
               </p>
               <p>
-                <span className="font-medium text-[hsl(var(--foreground))]">Bạn đời</span> có thể
-                thêm và sửa số liệu nhưng không đổi quyền của người khác.
+                <span className="font-medium text-[hsl(var(--foreground))]">{t('options.role.partner')}</span>{' '}
+                {t('members.access.partner')}
               </p>
               <p>
-                <span className="font-medium text-[hsl(var(--foreground))]">Người xem</span> chỉ
-                nhìn được phần được chia sẻ, theo mức quyền bạn chọn.
+                <span className="font-medium text-[hsl(var(--foreground))]">{t('options.role.viewer')}</span>{' '}
+                {t('members.access.viewer')}
               </p>
             </div>
           </Card>

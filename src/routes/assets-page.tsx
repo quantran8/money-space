@@ -2,12 +2,17 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Landmark, Plus, Wallet } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
+import { AssetCompositionChart } from '@/components/assets/asset-composition-chart'
+import { AssetList } from '@/components/assets/asset-list'
+import { AssetTrendChart } from '@/components/assets/asset-trend-chart'
 import { PageHeader } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { DatePicker } from '@/components/ui/date-picker'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import {
@@ -18,43 +23,217 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  assets as seedAssets,
-  liquidityLabels,
-  parseAmount,
-  type AssetItem,
+  assetClassForType,
+  assetTypeOrder,
+  calculationTypeForType,
+  computeCurrentValue,
+  defaultLiquidityForType,
+  formatVndShort,
+  liquidityOrder,
+  seedAssets,
+  seedSnapshots,
+  valuationModeForType,
+  type Asset,
   type AssetLiquidity,
-} from '@/lib/mock-data'
-import { moneyAmount, optionalText, requiredText } from '@/lib/validation'
+  type AssetType,
+  type ValuationMode,
+} from '@/lib/assets'
+import { localizedOptionalText, localizedRequiredText } from '@/lib/validation'
 
-const assetSchema = z.object({
-  name: requiredText('tên tài sản'),
-  value: moneyAmount,
-  liquidity: z.enum(['usable_now', 'not_immediate', 'long_term']),
-  note: optionalText(120),
-})
+const AS_OF = '2026-07-06'
 
-type AssetForm = z.infer<typeof assetSchema>
+type AssetForm = {
+  name: string
+  type: AssetType
+  liquidity: AssetLiquidity
+  note: string
+  // manual
+  value: string
+  // market-priced
+  symbol: string
+  quantity: string
+  unit: string
+  // formula-calculated
+  principal: string
+  interestRate: string
+  startDate: string
+  maturityDate: string
+}
 
 const defaultValues: AssetForm = {
   name: '',
-  value: '',
+  type: 'cash',
   liquidity: 'usable_now',
   note: '',
+  value: '',
+  symbol: '',
+  quantity: '',
+  unit: '',
+  principal: '',
+  interestRate: '',
+  startDate: AS_OF,
+  maturityDate: '',
 }
 
-function formatTotal(total: number) {
-  const rounded = Math.round(total * 10) / 10
-  return `${String(rounded).replace('.', ',')}M`
+/** Parse a "20M" / "1,8M" / "500K" / plain number string into VND. */
+function parseMoneyToVnd(raw: string): number {
+  const normalized = raw.trim().replace(/,/g, '.')
+  const match = normalized.match(/^(-?\d+(?:\.\d+)?)\s*([kKmMbB]?)$/)
+  if (!match) return NaN
+  const base = Number(match[1])
+  const suffix = match[2].toLowerCase()
+  const factor =
+    suffix === 'k' ? 1_000 : suffix === 'm' ? 1_000_000 : suffix === 'b' ? 1_000_000_000 : 1
+  return base * factor
+}
+
+/** Build an Asset from raw form values, or null if inputs are incomplete. */
+function toAsset(id: string, values: AssetForm): Asset | null {
+  const mode = valuationModeForType(values.type)
+  const base = {
+    id,
+    name: values.name.trim(),
+    type: values.type,
+    liquidity: values.liquidity,
+    currency: 'VND',
+    note: values.note.trim(),
+  }
+
+  if (mode === 'manual') {
+    const value = parseMoneyToVnd(values.value)
+    return { ...base, valuationMode: 'manual', manualValue: Number.isFinite(value) ? value : 0 }
+  }
+
+  if (mode === 'market_priced') {
+    const assetClass = assetClassForType(values.type)
+    const quantity = Number(values.quantity.replace(/,/g, '.'))
+    if (!assetClass || !values.symbol.trim() || !Number.isFinite(quantity)) return null
+    return {
+      ...base,
+      valuationMode: 'market_priced',
+      marketPosition: {
+        assetClass,
+        symbol: values.symbol.trim(),
+        quantity,
+        unit: values.unit.trim() || 'unit',
+        quoteCurrency: 'VND',
+      },
+    }
+  }
+
+  // formula_calculated
+  const calculationType = calculationTypeForType(values.type)
+  const principal = parseMoneyToVnd(values.principal)
+  const rate = Number(values.interestRate.replace(/,/g, '.'))
+  if (!calculationType || !Number.isFinite(principal) || !Number.isFinite(rate) || !values.startDate)
+    return null
+  return {
+    ...base,
+    valuationMode: 'formula_calculated',
+    calculationTerm: {
+      calculationType,
+      principalAmount: principal,
+      interestRate: rate,
+      startDate: values.startDate,
+      maturityDate: values.maturityDate || null,
+    },
+  }
+}
+
+const moneyLike = /^[+-]?\d+([.,]\d+)?\s*[kKmMbB]?$/
+
+function buildAssetSchema(t: (key: string, params?: Record<string, unknown>) => string) {
+  return z
+    .object({
+      name: localizedRequiredText(t, t('assets.form.name')),
+      type: z.enum(assetTypeOrder as [AssetType, ...AssetType[]]),
+      liquidity: z.enum(['usable_now', 'not_immediately_usable', 'long_term']),
+      note: localizedOptionalText(t, 120),
+      value: z.string().trim(),
+      symbol: z.string().trim(),
+      quantity: z.string().trim(),
+      unit: z.string().trim(),
+      principal: z.string().trim(),
+      interestRate: z.string().trim(),
+      startDate: z.string().trim(),
+      maturityDate: z.string().trim(),
+    })
+    .superRefine((values, ctx) => {
+      const mode = valuationModeForType(values.type)
+      const invalidMoney = t('validation.invalidMoney')
+      const required = (label: string) => t('validation.required', { label })
+
+      if (mode === 'manual') {
+        if (!values.value) {
+          ctx.addIssue({ path: ['value'], code: 'custom', message: required(t('assets.form.value')) })
+        } else if (!moneyLike.test(values.value)) {
+          ctx.addIssue({ path: ['value'], code: 'custom', message: invalidMoney })
+        }
+      }
+
+      if (mode === 'market_priced') {
+        if (!values.symbol) {
+          ctx.addIssue({
+            path: ['symbol'],
+            code: 'custom',
+            message: required(t('assets.form.symbol')),
+          })
+        }
+        const quantity = Number(values.quantity.replace(/,/g, '.'))
+        if (!values.quantity) {
+          ctx.addIssue({
+            path: ['quantity'],
+            code: 'custom',
+            message: required(t('assets.form.quantity')),
+          })
+        } else if (!Number.isFinite(quantity) || quantity < 0) {
+          ctx.addIssue({ path: ['quantity'], code: 'custom', message: invalidMoney })
+        }
+      }
+
+      if (mode === 'formula_calculated') {
+        if (!values.principal) {
+          ctx.addIssue({
+            path: ['principal'],
+            code: 'custom',
+            message: required(t('assets.form.principal')),
+          })
+        } else if (!moneyLike.test(values.principal)) {
+          ctx.addIssue({ path: ['principal'], code: 'custom', message: invalidMoney })
+        }
+        const rate = Number(values.interestRate.replace(/,/g, '.'))
+        if (!values.interestRate || !Number.isFinite(rate) || rate < 0) {
+          ctx.addIssue({
+            path: ['interestRate'],
+            code: 'custom',
+            message: required(t('assets.form.interestRate')),
+          })
+        }
+        if (!values.startDate) {
+          ctx.addIssue({ path: ['startDate'], code: 'custom', message: t('validation.requiredDate') })
+        }
+      }
+    })
+}
+
+function modeSuffix(mode: ValuationMode): 'Manual' | 'Market' | 'Formula' {
+  if (mode === 'market_priced') return 'Market'
+  if (mode === 'formula_calculated') return 'Formula'
+  return 'Manual'
 }
 
 export function AssetsPage() {
-  const [assets, setAssets] = useState<AssetItem[]>(seedAssets)
+  const { t } = useTranslation()
+  const [assets, setAssets] = useState<Asset[]>(seedAssets)
+  const assetSchema = useMemo(() => buildAssetSchema(t), [t])
 
   const {
     control,
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm<AssetForm>({
     resolver: zodResolver(assetSchema),
@@ -62,109 +241,128 @@ export function AssetsPage() {
     mode: 'onChange',
   })
 
+  const selectedType = watch('type')
+  const mode = valuationModeForType(selectedType)
+  const watchedValues = watch()
+
+  // Live preview of the computed value for market/formula assets.
+  const previewValue = useMemo(() => {
+    if (mode === 'manual') return null
+    const draft = toAsset('preview', watchedValues)
+    return draft ? computeCurrentValue(draft, AS_OF) : null
+  }, [mode, watchedValues])
+
   const totals = useMemo(() => {
     const acc: Record<AssetLiquidity, number> = {
       usable_now: 0,
-      not_immediate: 0,
+      not_immediately_usable: 0,
       long_term: 0,
     }
     for (const asset of assets) {
-      acc[asset.liquidity] += parseAmount(asset.value)
+      acc[asset.liquidity] += computeCurrentValue(asset, AS_OF) ?? 0
     }
     return acc
   }, [assets])
 
-  function onSubmit(values: AssetForm) {
-    const nextAsset: AssetItem = {
-      id: `a${assets.length + 1}-${values.name}`,
-      name: values.name.trim(),
-      value: values.value.trim(),
-      liquidity: values.liquidity,
-      note: values.note.trim() || 'Chưa có ghi chú',
-    }
+  const total = totals.usable_now + totals.not_immediately_usable + totals.long_term
 
+  function onSubmit(values: AssetForm) {
+    const nextAsset = toAsset(crypto.randomUUID(), values)
+    if (!nextAsset) return
     setAssets((current) => [nextAsset, ...current])
-    reset(defaultValues)
+    reset({ ...defaultValues })
   }
 
   return (
     <div className="space-y-7">
       <PageHeader
-        eyebrow="Tài sản & nguồn tiền"
-        title="Tiền nhà mình đang nằm ở đâu"
-        description="Chia tài sản theo nhóm dễ hiểu để cả hai cùng nhìn được tiền dùng ngay, dự phòng và phần dài hạn."
+        eyebrow={t('assets.header.eyebrow')}
+        title={t('assets.header.title')}
+        description={t('assets.header.description')}
       />
+
+      <div className="grid gap-4 lg:grid-cols-12">
+        <Card className="lg:col-span-5">
+          <div className="mb-6">
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">
+              {t('assets.charts.compositionEyebrow')}
+            </p>
+            <h2 className="section-title mt-1 text-2xl font-semibold">
+              {t('assets.charts.compositionTitle')}
+            </h2>
+          </div>
+          <AssetCompositionChart totals={totals} />
+        </Card>
+
+        <Card className="lg:col-span-7">
+          <div className="mb-6">
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">
+              {t('assets.charts.trendEyebrow')}
+            </p>
+            <h2 className="section-title mt-1 text-2xl font-semibold">
+              {t('assets.charts.trendTitle')}
+            </h2>
+            <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+              {t('assets.charts.trendSubtitle')}
+            </p>
+          </div>
+          <AssetTrendChart snapshots={seedSnapshots} />
+        </Card>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Danh sách tài sản</p>
-              <h2 className="section-title mt-1 text-2xl font-semibold">Các khoản đang có</h2>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {t('assets.list.eyebrow')}
+              </p>
+              <h2 className="section-title mt-1 text-2xl font-semibold">
+                {t('assets.list.title')}
+              </h2>
             </div>
             <Wallet className="size-5 text-[hsl(var(--accent))]" />
           </div>
 
-          <div className="space-y-3">
-            {assets.map((asset) => (
-              <div
-                key={asset.id}
-                className="surface-muted flex items-center justify-between rounded-[22px] px-4 py-4"
-              >
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium">{asset.name}</p>
-                    <Badge>{liquidityLabels[asset.liquidity]}</Badge>
-                  </div>
-                  <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{asset.note}</p>
-                </div>
-                <p className="money-number text-2xl">{asset.value}</p>
-              </div>
-            ))}
-          </div>
+          <AssetList assets={assets} asOf={AS_OF} />
         </Card>
 
         <div className="space-y-4 lg:col-span-5">
           <Card>
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">Phân nhóm</p>
-                <h2 className="mt-1 text-lg font-semibold">Tổng quan tài sản</h2>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                  {t('assets.summary.eyebrow')}
+                </p>
+                <h2 className="mt-1 text-lg font-semibold">{t('assets.summary.title')}</h2>
               </div>
               <Landmark className="size-5 text-[hsl(var(--accent))]" />
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-[22px] border bg-white p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-[hsl(var(--muted-foreground))]">Có thể dùng ngay</p>
-                  <Badge>Dễ dùng</Badge>
-                </div>
-                <p className="section-title mt-3 text-3xl font-semibold">
-                  {formatTotal(totals.usable_now)}
-                </p>
-              </div>
-
-              <div className="rounded-[22px] border bg-white p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-[hsl(var(--muted-foreground))]">Tiết kiệm & dự phòng</p>
+              <SummaryRow
+                label={t('assets.summary.usableNow')}
+                badge={<Badge>{t('assets.summary.easyUse')}</Badge>}
+                value={formatVndShort(totals.usable_now)}
+              />
+              <SummaryRow
+                label={t('assets.summary.reserve')}
+                badge={
                   <Badge className="bg-[hsla(var(--status-green),0.1)] text-[hsl(var(--status-green))]">
-                    Ổn
+                    {t('assets.summary.healthy')}
                   </Badge>
-                </div>
-                <p className="section-title mt-3 text-3xl font-semibold">
-                  {formatTotal(totals.not_immediate)}
-                </p>
-              </div>
+                }
+                value={formatVndShort(totals.not_immediately_usable)}
+              />
+              <SummaryRow
+                label={t('assets.summary.longTerm')}
+                badge={<Badge>{t('assets.summary.longHold')}</Badge>}
+                value={formatVndShort(totals.long_term)}
+              />
 
-              <div className="rounded-[22px] border bg-white p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-[hsl(var(--muted-foreground))]">Tài sản dài hạn</p>
-                  <Badge>Giữ lâu dài</Badge>
-                </div>
-                <p className="section-title mt-3 text-3xl font-semibold">
-                  {formatTotal(totals.long_term)}
-                </p>
+              <div className="flex items-center justify-between rounded-[22px] bg-[hsl(var(--accent))] px-4 py-4 text-white">
+                <p className="text-sm font-medium opacity-90">{t('assets.summary.total')}</p>
+                <p className="money-number text-3xl">{formatVndShort(total)}</p>
               </div>
             </div>
           </Card>
@@ -172,42 +370,72 @@ export function AssetsPage() {
           <Card>
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">Thêm tài sản</p>
-                <h2 className="section-title mt-1 text-2xl font-semibold">Ghi một khoản mới</h2>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                  {t('assets.form.eyebrow')}
+                </p>
+                <h2 className="section-title mt-1 text-2xl font-semibold">
+                  {t('assets.form.title')}
+                </h2>
               </div>
               <Plus className="size-5 text-[hsl(var(--accent))]" />
             </div>
 
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-              <FormField label="Tên tài sản" error={errors.name?.message}>
+              <FormField label={t('assets.form.name')} error={errors.name?.message}>
                 <Input
-                  placeholder="Ví dụ: Sổ tiết kiệm ACB"
+                  placeholder={t('assets.form.namePlaceholder')}
                   aria-invalid={!!errors.name}
                   {...register('name')}
                 />
               </FormField>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label="Giá trị" error={errors.value?.message}>
-                  <Input
-                    placeholder="Ví dụ: 20M"
-                    aria-invalid={!!errors.value}
-                    {...register('value')}
+                <FormField label={t('assets.form.type')} error={errors.type?.message}>
+                  <Controller
+                    control={control}
+                    name="type"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={(next) => {
+                          const nextType = next as AssetType
+                          field.onChange(nextType)
+                          // App auto-picks liquidity for the chosen type (spec §34).
+                          setValue('liquidity', defaultLiquidityForType(nextType), {
+                            shouldValidate: true,
+                          })
+                        }}
+                      >
+                        <SelectTrigger aria-invalid={!!errors.type}>
+                          <SelectValue placeholder={t('assets.form.typePlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {assetTypeOrder.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {t(`options.assetType.${type}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   />
                 </FormField>
-                <FormField label="Nhóm" error={errors.liquidity?.message}>
+
+                <FormField label={t('assets.form.group')} error={errors.liquidity?.message}>
                   <Controller
                     control={control}
                     name="liquidity"
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger aria-invalid={!!errors.liquidity}>
-                          <SelectValue placeholder="Chọn nhóm" />
+                          <SelectValue placeholder={t('assets.form.groupPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="usable_now">Dùng ngay</SelectItem>
-                          <SelectItem value="not_immediate">Dự phòng</SelectItem>
-                          <SelectItem value="long_term">Dài hạn</SelectItem>
+                          {liquidityOrder.map((liquidity) => (
+                            <SelectItem key={liquidity} value={liquidity}>
+                              {t(`options.liquidity.${liquidity}`)}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
@@ -215,9 +443,105 @@ export function AssetsPage() {
                 </FormField>
               </div>
 
-              <FormField label="Ghi chú" error={errors.note?.message}>
+              <div className="flex items-center gap-2 rounded-[18px] bg-[hsla(var(--accent),0.08)] px-3 py-2 text-xs">
+                <Badge className="bg-[hsla(var(--accent),0.15)] text-[hsl(var(--accent))]">
+                  {t(`options.valuationMode.${mode}`)}
+                </Badge>
+                <span className="text-[hsl(var(--muted-foreground))]">
+                  {t(`assets.form.mode${modeSuffix(mode)}`)}
+                </span>
+              </div>
+
+              {mode === 'manual' ? (
+                <FormField label={t('assets.form.value')} error={errors.value?.message}>
+                  <Input
+                    placeholder={t('assets.form.valuePlaceholder')}
+                    aria-invalid={!!errors.value}
+                    {...register('value')}
+                  />
+                </FormField>
+              ) : null}
+
+              {mode === 'market_priced' ? (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <FormField label={t('assets.form.symbol')} error={errors.symbol?.message}>
+                      <Input
+                        placeholder={t('assets.form.symbolPlaceholder')}
+                        aria-invalid={!!errors.symbol}
+                        {...register('symbol')}
+                      />
+                    </FormField>
+                    <FormField label={t('assets.form.quantity')} error={errors.quantity?.message}>
+                      <Input
+                        placeholder={t('assets.form.quantityPlaceholder')}
+                        aria-invalid={!!errors.quantity}
+                        {...register('quantity')}
+                      />
+                    </FormField>
+                    <FormField label={t('assets.form.unit')} error={errors.unit?.message}>
+                      <Input
+                        placeholder={t('assets.form.unitPlaceholder')}
+                        aria-invalid={!!errors.unit}
+                        {...register('unit')}
+                      />
+                    </FormField>
+                  </div>
+                  <ComputedPreview value={previewValue} />
+                </>
+              ) : null}
+
+              {mode === 'formula_calculated' ? (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField label={t('assets.form.principal')} error={errors.principal?.message}>
+                      <Input
+                        placeholder={t('assets.form.principalPlaceholder')}
+                        aria-invalid={!!errors.principal}
+                        {...register('principal')}
+                      />
+                    </FormField>
+                    <FormField
+                      label={t('assets.form.interestRate')}
+                      error={errors.interestRate?.message}
+                    >
+                      <Input
+                        placeholder={t('assets.form.interestRatePlaceholder')}
+                        aria-invalid={!!errors.interestRate}
+                        {...register('interestRate')}
+                      />
+                    </FormField>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField label={t('assets.form.startDate')} error={errors.startDate?.message}>
+                      <Controller
+                        control={control}
+                        name="startDate"
+                        render={({ field }) => (
+                          <DatePicker value={field.value} onChange={field.onChange} />
+                        )}
+                      />
+                    </FormField>
+                    <FormField
+                      label={t('assets.form.maturityDate')}
+                      error={errors.maturityDate?.message}
+                    >
+                      <Controller
+                        control={control}
+                        name="maturityDate"
+                        render={({ field }) => (
+                          <DatePicker value={field.value} onChange={field.onChange} />
+                        )}
+                      />
+                    </FormField>
+                  </div>
+                  <ComputedPreview value={previewValue} />
+                </>
+              ) : null}
+
+              <FormField label={t('assets.form.note')} error={errors.note?.message}>
                 <Input
-                  placeholder="Ví dụ: Tài khoản chung"
+                  placeholder={t('assets.form.notePlaceholder')}
                   aria-invalid={!!errors.note}
                   {...register('note')}
                 />
@@ -225,12 +549,46 @@ export function AssetsPage() {
 
               <Button type="submit" className="w-full" disabled={!isValid}>
                 <Plus className="mr-2 size-4" />
-                Thêm tài sản
+                {t('assets.form.submit')}
               </Button>
             </form>
           </Card>
         </div>
       </div>
+    </div>
+  )
+}
+
+function SummaryRow({
+  label,
+  badge,
+  value,
+}: {
+  label: string
+  badge: React.ReactNode
+  value: string
+}) {
+  return (
+    <div className="rounded-[22px] border bg-white p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">{label}</p>
+        {badge}
+      </div>
+      <p className="section-title mt-3 text-3xl font-semibold">{value}</p>
+    </div>
+  )
+}
+
+function ComputedPreview({ value }: { value: number | null }) {
+  const { t } = useTranslation()
+  return (
+    <div className="flex items-center justify-between rounded-[18px] border border-dashed border-[hsl(var(--accent))] px-4 py-3">
+      <span className="text-sm text-[hsl(var(--muted-foreground))]">
+        {t('assets.form.computedValue')}
+      </span>
+      <span className="money-number text-lg text-[hsl(var(--accent))]">
+        {value === null ? t('assets.form.computedUnavailable') : formatVndShort(value)}
+      </span>
     </div>
   )
 }

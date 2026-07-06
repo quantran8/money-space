@@ -1,7 +1,9 @@
 'use client'
 
 import { format, isValid, parseISO } from 'date-fns'
+import { enUS, vi } from 'date-fns/locale'
 import { CalendarIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -34,11 +36,14 @@ function formatDateValue(date: Date) {
 export function DatePicker({
   value,
   onChange,
-  placeholder = "Chọn ngày",
+  placeholder,
   className,
   'aria-invalid': ariaInvalid,
 }: DatePickerProps) {
+  const { i18n, t } = useTranslation()
   const selected = parseDate(value)
+  const locale = i18n.resolvedLanguage === 'vi' ? vi : enUS
+  const resolvedPlaceholder = placeholder ?? t('common.selectDate')
 
   return (
     <Popover>
@@ -56,7 +61,7 @@ export function DatePicker({
           aria-invalid={ariaInvalid}
         >
           <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
-          {selected ? format(selected, 'dd/MM/yyyy') : placeholder}
+          {selected ? format(selected, 'P', { locale }) : resolvedPlaceholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto rounded-[24px] p-0">
@@ -65,6 +70,7 @@ export function DatePicker({
           selected={selected}
           defaultMonth={selected}
           className="min-w-[22rem]"
+          locale={locale}
           onSelect={(date) => {
             if (date) onChange(formatDateValue(date))
           }}

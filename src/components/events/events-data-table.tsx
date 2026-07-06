@@ -1,5 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { Copy, MoreHorizontal, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,8 +14,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { MoneyEventItem } from '@/lib/mock-data'
-import { eventCategoryLabels, eventTypeLabels } from '@/lib/mock-data'
-
 type EventRow = MoneyEventItem & {
   id: string
 }
@@ -36,10 +35,12 @@ export function EventsDataTable({
   onDuplicate,
   onDelete,
 }: EventsDataTableProps) {
+  const { t } = useTranslation()
+
   const columns: ColumnDef<EventRow>[] = [
     {
       accessorKey: 'title',
-      header: () => <span className="pl-1">Event</span>,
+      header: () => <span className="pl-1">{t('events.table.event')}</span>,
       cell: ({ row }) => (
         <div className="space-y-1.5 pl-1">
           <p className="font-medium text-foreground">{row.original.title}</p>
@@ -49,19 +50,19 @@ export function EventsDataTable({
     },
     {
       accessorKey: 'type',
-      header: 'Phân loại',
+      header: t('events.table.category'),
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-2">
-          <Badge>{eventTypeLabels[row.original.type]}</Badge>
+          <Badge>{t(`options.eventType.${row.original.type}`)}</Badge>
           <Badge variant="outline">
-            {eventCategoryLabels[row.original.category] ?? row.original.category}
+            {t(`options.eventCategory.${row.original.category}`, { defaultValue: row.original.category })}
           </Badge>
         </div>
       ),
     },
     {
       accessorKey: 'amount',
-      header: () => <div className="text-right">Số tiền</div>,
+      header: () => <div className="text-right">{t('events.table.amount')}</div>,
       cell: ({ row }) => (
         <p className={`money-number text-right text-xl ${getAmountTone(row.original.direction)}`}>
           {row.original.amount}
@@ -70,14 +71,14 @@ export function EventsDataTable({
     },
     {
       accessorKey: 'date',
-      header: () => <div className="text-right">Ngày</div>,
+      header: () => <div className="text-right">{t('events.table.date')}</div>,
       cell: ({ row }) => (
         <div className="text-right text-sm text-muted-foreground">{row.original.date}</div>
       ),
     },
     {
       id: 'actions',
-      header: () => <span className="sr-only">Actions</span>,
+      header: () => <span className="sr-only">{t('events.table.actions')}</span>,
       cell: ({ row }) => (
         <div className="flex justify-end pr-1">
           <DropdownMenu>
@@ -86,24 +87,24 @@ export function EventsDataTable({
                 variant="ghost"
                 size="icon"
                 className="size-9 rounded-full text-muted-foreground hover:text-foreground"
-                aria-label={`Mở action cho ${row.original.title}`}
+                aria-label={t('events.table.openActions', { title: row.original.title })}
               >
                 <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuLabel>Row actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('events.table.rowActions')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onDuplicate(row.original.id)}>
                 <Copy />
-                Nhân bản event
+                {t('events.table.duplicate')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete(row.original.id)}
                 className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
               >
                 <Trash2 />
-                Xóa khỏi timeline
+                {t('events.table.delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -117,11 +118,10 @@ export function EventsDataTable({
       <DataTable
         columns={columns}
         data={events}
-        emptyMessage="Chưa có money event nào. Thêm một khoản lớn để bắt đầu timeline."
+        emptyMessage={t('events.table.empty')}
       />
       <p className="px-5 pb-5 text-sm leading-6 text-muted-foreground">
-        Chỉ cần ghi những khoản đủ lớn hoặc đủ quan trọng để cả hai cùng hiểu vì sao snapshot
-        thay đổi.
+        {t('events.table.note')}
       </p>
     </div>
   )

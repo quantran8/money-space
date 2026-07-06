@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PiggyBank, Plus, Target } from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
 import { PageHeader } from '@/components/layout/page-header'
@@ -22,29 +23,23 @@ import {
   computeProgress,
   financialGoals as seedGoals,
   parseAmount,
-  priorityLabels,
   type GoalItem,
   type GoalPriority,
 } from '@/lib/mock-data'
-import { moneyAmount, optionalMoneyAmount, optionalText, requiredText } from '@/lib/validation'
+import {
+  localizedMoneyAmount,
+  localizedOptionalMoneyAmount,
+  localizedOptionalText,
+  localizedRequiredText,
+} from '@/lib/validation'
 
-const goalSchema = z
-  .object({
-    name: requiredText('tên mục tiêu'),
-    current: optionalMoneyAmount,
-    target: moneyAmount,
-    priority: z.enum(['high', 'medium', 'low']),
-    note: optionalText(120),
-  })
-  .refine(
-    (data) => parseAmount(data.current || '0') <= parseAmount(data.target),
-    {
-      path: ['current'],
-      message: 'Số đã có không được lớn hơn mục tiêu',
-    },
-  )
-
-type GoalForm = z.infer<typeof goalSchema>
+type GoalForm = {
+  name: string
+  current: string
+  target: string
+  priority: GoalPriority
+  note: string
+}
 
 const defaultValues: GoalForm = {
   name: '',
@@ -61,7 +56,25 @@ const priorityTone: Record<GoalPriority, string> = {
 }
 
 export function GoalsPage() {
+  const { t } = useTranslation()
   const [goals, setGoals] = useState<GoalItem[]>(seedGoals)
+  const goalSchema = z
+    .object({
+      name: localizedRequiredText(t, t('goals.form.name')),
+      current: localizedOptionalMoneyAmount(t),
+      target: localizedMoneyAmount(t),
+      priority: z.enum(['high', 'medium', 'low']),
+      note: localizedOptionalText(t, 120),
+    })
+    .refine((data) => parseAmount(data.current || '0') <= parseAmount(data.target), {
+      path: ['current'],
+      message: t('validation.currentExceedsTarget'),
+    })
+  const priorityLabels: Record<GoalPriority, string> = {
+    high: t('options.priority.high'),
+    medium: t('options.priority.medium'),
+    low: t('options.priority.low'),
+  }
 
   const {
     control,
@@ -95,17 +108,17 @@ export function GoalsPage() {
   return (
     <div className="space-y-7">
       <PageHeader
-        eyebrow="Mục tiêu tài chính"
-        title="Giữ tiền có lý do rõ ràng"
-        description="Mỗi mục tiêu nên đủ rõ để cả hai biết đang tiết kiệm cho điều gì và tiến độ đã đi tới đâu."
+        eyebrow={t('goals.header.eyebrow')}
+        title={t('goals.header.title')}
+        description={t('goals.header.description')}
       />
 
       <div className="grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Danh sách mục tiêu</p>
-              <h2 className="section-title mt-1 text-2xl font-semibold">Tiến độ mục tiêu chung</h2>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('goals.list.eyebrow')}</p>
+              <h2 className="section-title mt-1 text-2xl font-semibold">{t('goals.list.title')}</h2>
             </div>
             <PiggyBank className="size-5 text-[hsl(var(--accent))]" />
           </div>
@@ -139,60 +152,60 @@ export function GoalsPage() {
         <Card className="lg:col-span-5">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Thêm mục tiêu</p>
-              <h2 className="section-title mt-1 text-2xl font-semibold">Đặt một mục tiêu mới</h2>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('goals.form.eyebrow')}</p>
+              <h2 className="section-title mt-1 text-2xl font-semibold">{t('goals.form.title')}</h2>
             </div>
             <Target className="size-5 text-[hsl(var(--accent))]" />
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <FormField label="Tên mục tiêu" error={errors.name?.message}>
+            <FormField label={t('goals.form.name')} error={errors.name?.message}>
               <Input
-                placeholder="Ví dụ: Mua xe"
+                placeholder={t('goals.form.namePlaceholder')}
                 aria-invalid={!!errors.name}
                 {...register('name')}
               />
             </FormField>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Đã có" error={errors.current?.message}>
+              <FormField label={t('goals.form.current')} error={errors.current?.message}>
                 <Input
-                  placeholder="Ví dụ: 10M"
+                  placeholder={t('goals.form.currentPlaceholder')}
                   aria-invalid={!!errors.current}
                   {...register('current')}
                 />
               </FormField>
-              <FormField label="Mục tiêu" error={errors.target?.message}>
+              <FormField label={t('goals.form.target')} error={errors.target?.message}>
                 <Input
-                  placeholder="Ví dụ: 100M"
+                  placeholder={t('goals.form.targetPlaceholder')}
                   aria-invalid={!!errors.target}
                   {...register('target')}
                 />
               </FormField>
             </div>
 
-            <FormField label="Mức ưu tiên" error={errors.priority?.message}>
+            <FormField label={t('goals.form.priority')} error={errors.priority?.message}>
               <Controller
                 control={control}
                 name="priority"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger aria-invalid={!!errors.priority}>
-                      <SelectValue placeholder="Chọn mức ưu tiên" />
+                      <SelectValue placeholder={t('goals.form.priorityPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="high">Ưu tiên cao</SelectItem>
-                      <SelectItem value="medium">Bình thường</SelectItem>
-                      <SelectItem value="low">Ưu tiên thấp</SelectItem>
+                      <SelectItem value="high">{t('options.priority.high')}</SelectItem>
+                      <SelectItem value="medium">{t('options.priority.medium')}</SelectItem>
+                      <SelectItem value="low">{t('options.priority.low')}</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
               />
             </FormField>
 
-            <FormField label="Ghi chú" error={errors.note?.message}>
+            <FormField label={t('goals.form.note')} error={errors.note?.message}>
               <Input
-                placeholder="Ví dụ: Để dành cho năm sau"
+                placeholder={t('goals.form.notePlaceholder')}
                 aria-invalid={!!errors.note}
                 {...register('note')}
               />
@@ -200,7 +213,7 @@ export function GoalsPage() {
 
             <Button type="submit" className="w-full" disabled={!isValid}>
               <Plus className="mr-2 size-4" />
-              Thêm mục tiêu
+              {t('goals.form.submit')}
             </Button>
           </form>
         </Card>
