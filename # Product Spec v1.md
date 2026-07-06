@@ -4,15 +4,22 @@
 
 ## 1. Tóm tắt sản phẩm
 
-Sản phẩm là một app giúp vợ chồng/gia đình cùng nắm được tình hình tài chính hiện tại: nhà đang có bao nhiêu tiền, tiền đang nằm ở đâu, có khoản gì sắp phải trả, mục tiêu tài chính đang tiến triển ra sao, và có điểm nào cần trao đổi.
+Sản phẩm là một app giúp vợ chồng/gia đình cùng nắm được tình hình tài chính hiện tại: nhà đang có bao nhiêu tiền, tiền đang nằm ở đâu, ai đang giữ hoặc phụ trách khoản nào, có khoản gì sắp phải trả, mục tiêu tài chính đang tiến triển ra sao, và có điểm nào cần trao đổi.
 
-Sản phẩm không tập trung vào việc ghi từng khoản thu chi nhỏ hằng ngày. Thay vào đó, app tập trung vào “bức tranh tài chính gia đình” ở cấp độ tổng quan, dễ hiểu, dễ cập nhật và giúp giảm việc phải hỏi nhau liên tục.
+Sản phẩm phục vụ hai tình huống phổ biến trong gia đình:
+
+1. Một người đang giữ hoặc quản lý phần lớn tài chính gia đình.
+2. Mỗi người đang giữ hoặc phụ trách một phần tài chính khác nhau.
+
+Trong cả hai trường hợp, vấn đề chung là gia đình thiếu một bức tranh tài chính tổng thể, rõ ràng và được cập nhật.
+
+Sản phẩm không tập trung vào việc ghi từng khoản thu chi nhỏ hằng ngày. Thay vào đó, app tập trung vào “bức tranh tài chính gia đình” ở cấp độ tổng quan, dễ hiểu, dễ cập nhật, có quyền riêng tư linh hoạt và giúp giảm việc phải hỏi nhau liên tục.
 
 ## 2. Định vị sản phẩm
 
 ### Một câu định vị
 
-App giúp vợ chồng biết tình hình tài chính gia đình: còn bao nhiêu, đang ở đâu, có gì cần chú ý — mà không phải hỏi đi hỏi lại.
+App giúp vợ chồng biết tình hình tài chính gia đình: nhà còn bao nhiêu, tiền đang ở đâu, ai đang phụ trách khoản nào, có gì cần chú ý — mà không phải hỏi đi hỏi lại.
 
 ### Không phải
 
@@ -20,6 +27,8 @@ App giúp vợ chồng biết tình hình tài chính gia đình: còn bao nhiê
 - Không phải app kế toán gia đình phức tạp.
 - Không phải app kiểm soát người giữ tiền.
 - Không phải app bắt nhập từng giao dịch nhỏ.
+- Không phải app ép hai người phải gộp toàn bộ tiền.
+- Không phải app soi từng khoản riêng tư của nhau.
 
 ### Là gì
 
@@ -27,32 +36,45 @@ App giúp vợ chồng biết tình hình tài chính gia đình: còn bao nhiê
 - Là nơi hai người cùng nhìn một bức tranh chung.
 - Là công cụ minh bạch tài chính nhẹ nhàng.
 - Là app giúp gia đình biết “nhà mình đang ổn không?”.
+- Là nơi tổng hợp tài chính dù tiền đang do một người giữ chính hoặc được chia ra cho nhiều người phụ trách.
 
 ## 3. Vấn đề cần giải quyết
 
-Trong nhiều gia đình, một người thường giữ phần lớn hoặc toàn bộ tiền, tài sản, sổ tiết kiệm, vàng, tài khoản ngân hàng hoặc các khoản chi tiêu chính. Người còn lại vẫn có nhu cầu biết tình hình tài chính chung, nhưng việc hỏi liên tục như “còn bao nhiêu?”, “tiền đâu hết rồi?”, “sắp tới có đủ không?” dễ tạo cảm giác bị kiểm soát, thiếu tin tưởng hoặc dẫn đến căng thẳng.
+Trong nhiều gia đình, tài chính không phải lúc nào cũng được nhìn thấy rõ bởi cả hai người.
+
+Có gia đình theo mô hình một người giữ phần lớn hoặc toàn bộ tiền, tài sản, sổ tiết kiệm, vàng, tài khoản ngân hàng hoặc các khoản chi tiêu chính. Người còn lại vẫn có nhu cầu biết tình hình tài chính chung, nhưng việc hỏi liên tục như “còn bao nhiêu?”, “tiền đang ở đâu?”, “sắp tới có đủ không?” dễ tạo cảm giác bị kiểm soát, thiếu tin tưởng hoặc dẫn đến căng thẳng.
+
+Cũng có gia đình mà mỗi người giữ hoặc phụ trách một phần tài chính khác nhau. Một người giữ tiền sinh hoạt, người kia giữ tiết kiệm; một người trả tiền nhà, người kia trả bảo hiểm; một người quản lý vàng hoặc tiền mặt, người kia phụ trách khoản vay, học phí hoặc chi phí gia đình hai bên. Trong trường hợp này, không ai nắm toàn bộ bức tranh, vì tiền và trách nhiệm tài chính bị phân tán ở nhiều nơi.
+
+Hai tình huống này khác nhau, nhưng có cùng một vấn đề cốt lõi: gia đình thiếu một nơi chung để cùng xem tình hình tài chính tổng thể.
 
 Vấn đề cốt lõi không chỉ là ghi nhận dòng tiền, mà là:
 
 - Thiếu một nơi chung để cả hai cùng xem tình hình.
-- Người không giữ tiền bị mù mờ về tài chính gia đình.
-- Người giữ tiền có thể cảm thấy bị chất vấn.
-- Các khoản lớn, khoản sắp đến hạn, khoản bất thường không được nhìn thấy rõ.
+- Một người có thể bị mù mờ về tài chính gia đình nếu người kia giữ phần lớn tiền.
+- Cả hai có thể cùng thiếu tổng quan nếu mỗi người giữ một phần.
+- Người giữ tiền hoặc phụ trách khoản tiền có thể cảm thấy bị chất vấn khi bị hỏi liên tục.
+- Các khoản lớn, khoản sắp đến hạn, khoản bất thường hoặc khoản chưa cập nhật không được nhìn thấy rõ.
 - Hai người không có cùng một “bức tranh tài chính” để ra quyết định.
+
+Sản phẩm cần giúp gia đình có một financial snapshot chung: đủ rõ để cùng ra quyết định, đủ nhẹ để cập nhật định kỳ, và đủ tôn trọng để không tạo cảm giác kiểm soát lẫn nhau.
 
 ## 4. Mục tiêu sản phẩm
 
 ### Mục tiêu chính
 
-Giúp gia đình có một cái nhìn chung, rõ ràng và cập nhật về tình hình tài chính mà không cần biến việc tiền bạc thành cuộc hỏi đáp căng thẳng.
+Giúp gia đình có một cái nhìn chung, rõ ràng và cập nhật về tình hình tài chính, dù tiền đang do một người giữ chính hay đang được chia ra cho nhiều người phụ trách.
 
 ### Mục tiêu phụ
 
 - Giúp người không trực tiếp giữ tiền có cảm giác an tâm.
 - Giúp người giữ tiền không phải giải thích lặp lại nhiều lần.
+- Giúp các cặp đôi có tài chính phân tán gom lại thành một bức tranh chung.
+- Giúp hai người biết ai đang giữ hoặc phụ trách khoản nào.
 - Giúp hai người trao đổi về khoản lớn hoặc khoản bất thường một cách nhẹ nhàng.
 - Giúp gia đình theo dõi mục tiêu tài chính dài hạn.
 - Giúp phát hiện sớm tình trạng “căng tiền” trong tháng.
+- Giúp giảm việc hỏi nhau về tiền theo kiểu gây áp lực.
 
 ## 5. Người dùng mục tiêu
 
@@ -66,12 +88,14 @@ Nhu cầu:
 - Muốn người kia hiểu tình hình mà không phải hỏi liên tục.
 - Không muốn bị soi từng khoản nhỏ.
 - Muốn có quyền kiểm soát mức thông tin được chia sẻ.
+- Muốn giảm cảm giác đang gánh trách nhiệm tài chính một mình.
 
 Nỗi đau:
 
 - Bị hỏi nhiều dễ mệt.
-- Cảm thấy đang gánh trách nhiệm tài chính một mình.
+- Cảm thấy đang bị chất vấn.
 - Có nhiều khoản phải nhớ: học phí, tiền nhà, bảo hiểm, tiền gia đình hai bên, quỹ dự phòng.
+- Muốn minh bạch nhưng không muốn mất quyền riêng tư hoàn toàn.
 
 ### Persona 2: Người không giữ tiền chính
 
@@ -83,21 +107,59 @@ Nhu cầu:
 - Muốn biết có khoản lớn nào sắp tới.
 - Muốn biết tài sản gia đình đang ở đâu.
 - Muốn có cảm giác được tôn trọng và được biết.
+- Muốn có căn cứ để cùng bàn kế hoạch tài chính.
 
 Nỗi đau:
 
 - Không biết tình hình thật.
 - Hỏi nhiều thì sợ bị hiểu là nghi ngờ.
-- Không có căn cứ để cùng bàn kế hoạch tài chính.
+- Không có căn cứ để cùng ra quyết định.
 - Cảm thấy bị đứng ngoài các quyết định tài chính.
 
-### Persona 3: Cặp đôi mới cưới hoặc sắp cưới
+### Persona 3: Người phụ trách một phần tài chính
+
+Là người không giữ toàn bộ tiền, nhưng đang phụ trách một số khoản cụ thể trong gia đình.
+
+Ví dụ:
+
+- Trả tiền nhà.
+- Trả bảo hiểm.
+- Giữ quỹ tiết kiệm.
+- Quản lý vàng.
+- Trả học phí.
+- Phụ trách khoản vay.
+- Gửi tiền cho gia đình hai bên.
+- Giữ tài khoản dự phòng.
+
+Nhu cầu:
+
+- Muốn cập nhật phần mình phụ trách một cách đơn giản.
+- Muốn phần mình đóng góp được nhìn thấy trong bức tranh chung.
+- Muốn biết người kia đang phụ trách phần nào.
+- Muốn hai người cùng nắm tổng thể, không chỉ biết phần riêng của mỗi người.
+
+Nỗi đau:
+
+- Mỗi người biết một phần, nhưng không ai nắm tổng thể.
+- Khi cần ra quyết định lớn phải hỏi lại từng khoản.
+- Dễ thiếu sót khoản sắp đến hạn.
+- Tài chính gia đình bị rải rác trong tài khoản, ghi chú, tin nhắn hoặc trí nhớ.
+
+### Persona 4: Cặp đôi mới cưới hoặc sắp cưới
 
 Nhu cầu:
 
 - Tập thói quen minh bạch tài chính sớm.
 - Chia mục tiêu chung: mua nhà, sinh con, du lịch, quỹ dự phòng.
+- Biết nên giữ riêng khoản nào, chia sẻ khoản nào.
 - Tránh xung đột về tiền bạc sau này.
+
+Nỗi đau:
+
+- Chưa có hệ thống tài chính chung.
+- Chưa muốn gộp toàn bộ tiền.
+- Không rõ ai nên phụ trách khoản nào.
+- Dễ phát sinh hiểu lầm nếu không có nguyên tắc cập nhật rõ ràng.
 
 ## 6. Insight chính
 
@@ -185,15 +247,15 @@ Giúp người dùng hiểu app này không phải app ghi thu chi, mà là nơi
 1. Người dùng tạo tài khoản.
 2. Tạo “Gia đình” hoặc “Nhà”.
 3. Chọn vai trò:
-    - Tôi đang giữ phần lớn tiền.
-    - Người kia đang giữ phần lớn tiền.
-    - Cả hai cùng quản lý.
+   - Tôi đang giữ phần lớn tiền.
+   - Người kia đang giữ phần lớn tiền.
+   - Cả hai cùng quản lý.
 4. Chọn mục tiêu sử dụng:
-    - Cùng biết tình hình tài chính.
-    - Theo dõi tài sản.
-    - Theo dõi khoản sắp phải trả.
-    - Theo dõi mục tiêu chung.
-    - Giảm việc hỏi nhau về tiền.
+   - Cùng biết tình hình tài chính.
+   - Theo dõi tài sản.
+   - Theo dõi khoản sắp phải trả.
+   - Theo dõi mục tiêu chung.
+   - Giảm việc hỏi nhau về tiền.
 5. Mời người kia tham gia bằng link hoặc email/số điện thoại.
 6. Tạo snapshot đầu tiên.
 
@@ -451,44 +513,62 @@ App gợi ý:
 
 ## 10. User Flow chính
 
-## Flow 1: Tạo snapshot tài chính đầu tiên
+## Flow 1: Một người giữ tiền chính tạo dashboard
 
 1. User mở app.
 2. App hỏi: “Hiện tại nhà mình có những khoản nào?”
 3. User nhập:
-    - Tiền có thể dùng ngay
-    - Tiền tiết kiệm/dự phòng
-    - Tài sản dài hạn
-    - Nợ/khoản phải trả
-4. App tạo dashboard đầu tiên.
-5. App gợi ý mời người kia vào xem.
+   - Tiền có thể dùng ngay
+   - Tiền tiết kiệm/dự phòng
+   - Tài sản dài hạn
+   - Nợ/khoản phải trả
+4. User chọn mức chia sẻ:
+   - Hiện đầy đủ
+   - Chỉ hiện số tổng
+   - Riêng tư
+5. App tạo dashboard đầu tiên.
+6. App gợi ý mời người kia vào xem.
 
 ## Flow 2: Người kia vào xem dashboard
 
 1. Nhận lời mời.
 2. Tạo tài khoản.
-3. Xem dashboard tổng quan.
+3. Xem dashboard tổng quan theo mức quyền được chia sẻ.
 4. Có thể bấm vào:
-    - Tài sản
-    - Khoản sắp tới
-    - Mục tiêu
-    - Cần trao đổi
+   - Tài sản
+   - Khoản sắp tới
+   - Mục tiêu
+   - Cần trao đổi
 5. Nếu có câu hỏi, dùng nút “Cần trao đổi”.
 
-## Flow 3: Cập nhật hằng tuần
+## Flow 3: Hai người cùng cập nhật phần mình phụ trách
+
+1. User tạo household.
+2. App hỏi: “Mỗi người đang giữ hoặc phụ trách khoản nào?”
+3. User thêm phần mình:
+   - Tiền/tài sản đang giữ
+   - Khoản sắp phải trả
+   - Mục tiêu đang đóng góp
+4. User mời người kia.
+5. Người kia thêm phần họ đang giữ hoặc phụ trách.
+6. App tổng hợp thành dashboard chung.
+7. Cả hai cùng thấy tình hình tổng thể theo quyền xem đã chọn.
+
+## Flow 4: Cập nhật hằng tuần
 
 1. App nhắc: “Cập nhật nhanh tình hình tuần này?”
 2. User nhập:
-    - Tiền dùng được hiện tại
-    - Có khoản lớn nào vừa chi không
-    - Có khoản nào sắp phải trả không
-    - Có gì cần trao đổi không
+   - Tiền dùng được hiện tại
+   - Có khoản lớn nào vừa chi không
+   - Có khoản nào sắp phải trả không
+   - Có khoản nào mình đang phụ trách cần cập nhật không
+   - Có gì cần trao đổi không
 3. App cập nhật dashboard.
 4. Người kia nhận thông báo: “Tình hình tài chính gia đình đã được cập nhật.”
 
-## Flow 4: Tạo khoản cần trao đổi
+## Flow 5: Tạo khoản cần trao đổi
 
-1. User thấy một khoản cần hỏi.
+1. User thấy một khoản cần hỏi hoặc cần thống nhất.
 2. Bấm “Cần trao đổi”.
 3. Chọn template câu hỏi.
 4. Người kia nhận thông báo.
@@ -767,6 +847,8 @@ Nên:
 - Tỷ lệ user nhập snapshot đầu tiên
 - Tỷ lệ user mời partner
 - Tỷ lệ partner accept invite
+- Tỷ lệ household có ít nhất một tài sản/khoản được tạo
+- Tỷ lệ household có dữ liệu từ cả hai người
 
 ## Engagement
 
@@ -775,20 +857,16 @@ Nên:
 - Số khoản sắp tới được tạo
 - Số mục tiêu tài chính được tạo
 - Số discussion được tạo và đóng
-
-## Retention
-
-- D1 retention
-- D7 retention
-- D30 retention
-- Tỷ lệ household có ít nhất 2 người còn active sau 30 ngày
+- Số khoản được cập nhật bởi từng thành viên
+- Số lần user xem “tiền đang nằm ở đâu”
 
 ## Value metrics
 
-- Số lần cập nhật định kỳ hoàn tất
-- Số discussion được kết luận
 - Tỷ lệ user trả lời “Tôi thấy yên tâm hơn về tài chính gia đình”
 - Tỷ lệ user trả lời “Tôi ít phải hỏi người kia hơn”
+- Tỷ lệ user trả lời “Tôi hiểu rõ hơn tiền đang nằm ở đâu”
+- Tỷ lệ user trả lời “Tôi hiểu ai đang phụ trách khoản nào”
+- Tỷ lệ user trả lời “App không tạo cảm giác bị kiểm soát”
 
 ## 16. MVP Success Criteria
 

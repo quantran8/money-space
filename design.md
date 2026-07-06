@@ -15,6 +15,8 @@ Apple-like
 White-first premium
 Calm finance
 Clean dashboard
+Glanceable Gen Z overview
+Fewer, richer sections
 Private, not controlling
 Web-first but mobile responsive
 ```
@@ -35,7 +37,8 @@ Premium của sản phẩm đến từ:
 nền sạch
 typography rõ
 spacing rộng
-card gọn
+card gọn nhưng đủ overview
+section lớn có sub-section rõ
 ít màu
 ít icon trang trí
 hierarchy mạnh
@@ -215,13 +218,8 @@ Copy vào `src/index.css` hoặc `app/globals.css`.
   body {
     @apply bg-background text-foreground antialiased;
     font-family:
-      -apple-system,
-      BlinkMacSystemFont,
-      "SF Pro Display",
-      "SF Pro Text",
-      Inter,
-      system-ui,
-      sans-serif;
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter,
+      system-ui, sans-serif;
   }
 
   button,
@@ -269,7 +267,7 @@ Copy vào `src/index.css` hoặc `app/globals.css`.
 Copy vào `tailwind.config.ts` nếu project đang dùng Tailwind config.
 
 ```ts
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const config: Config = {
   darkMode: ["class"],
@@ -277,7 +275,7 @@ const config: Config = {
     "./index.html",
     "./src/**/*.{ts,tsx,js,jsx}",
     "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}"
+    "./components/**/*.{ts,tsx}",
   ],
   theme: {
     extend: {
@@ -289,8 +287,8 @@ const config: Config = {
           "SF Pro Text",
           "Inter",
           "system-ui",
-          "sans-serif"
-        ]
+          "sans-serif",
+        ],
       },
       colors: {
         background: "hsl(var(--background))",
@@ -298,37 +296,37 @@ const config: Config = {
 
         card: {
           DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))"
+          foreground: "hsl(var(--card-foreground))",
         },
 
         popover: {
           DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))"
+          foreground: "hsl(var(--popover-foreground))",
         },
 
         primary: {
           DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))"
+          foreground: "hsl(var(--primary-foreground))",
         },
 
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))"
+          foreground: "hsl(var(--secondary-foreground))",
         },
 
         muted: {
           DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))"
+          foreground: "hsl(var(--muted-foreground))",
         },
 
         accent: {
           DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))"
+          foreground: "hsl(var(--accent-foreground))",
         },
 
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))"
+          foreground: "hsl(var(--destructive-foreground))",
         },
 
         border: "hsl(var(--border))",
@@ -339,26 +337,26 @@ const config: Config = {
           green: "hsl(var(--status-green))",
           orange: "hsl(var(--status-orange))",
           red: "hsl(var(--status-red))",
-          blue: "hsl(var(--status-blue))"
-        }
+          blue: "hsl(var(--status-blue))",
+        },
       },
       borderRadius: {
         xl: "calc(var(--radius) - 2px)",
         "2xl": "var(--radius)",
         "3xl": "1.75rem",
         card: "1.75rem",
-        pill: "999px"
+        pill: "999px",
       },
       boxShadow: {
         apple: "0 16px 40px rgba(0, 0, 0, 0.06)",
-        soft: "0 8px 24px rgba(0, 0, 0, 0.04)"
-      }
-    }
+        soft: "0 8px 24px rgba(0, 0, 0, 0.04)",
+      },
+    },
   },
-  plugins: []
-}
+  plugins: [],
+};
 
-export default config
+export default config;
 ```
 
 ---
@@ -390,18 +388,50 @@ Bottom CTA hoặc bottom nav
 
 ## 7.2. Desktop Grid
 
-Home dashboard desktop:
+Home dashboard desktop không nên chia thành quá nhiều card nhỏ.
+Cũng không nên gom tất cả vào một card lớn phẳng.
+
+Recommended structure:
 
 ```txt
-┌───────────────────────────────────────────────┐
-│ Header: Tình hình nhà mình        Update CTA  │
-├───────────────┬───────────────┬───────────────┤
-│ Status Card   │ Available     │ Reserve/Debt  │
-├───────────────┴───────────────┬───────────────┤
-│ Upcoming Payments             │ Assets        │
-├───────────────────────────────┴───────────────┤
-│ Attention Items / Snapshot History            │
-└───────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│ Hero Snapshot: Tình hình nhà mình             Update CTA     │
+│ Status · Dùng ngay · Sắp trả · Cần bàn                       │
+├──────────────────────────────────────────────────────────────┤
+│ Tiền nhà mình                                                │
+│ ┌──────────────────────────┬───────────────────────────────┐ │
+│ │ Thanh khoản              │ Tổng tài sản                   │ │
+│ │ Dùng ngay · Dự phòng     │ Tài sản · Nợ                   │ │
+│ └──────────────────────────┴───────────────────────────────┘ │
+├──────────────────────────────────────────────────────────────┤
+│ Cần chú ý                                                    │
+│ ┌──────────────────────────┬───────────────────────────────┐ │
+│ │ Sắp trả                  │ Cần bàn                       │ │
+│ │ 3 khoản · gần nhất       │ 1 việc                        │ │
+│ └──────────────────────────┴───────────────────────────────┘ │
+├──────────────────────────────────────────────────────────────┤
+│ Kế hoạch dài hạn                                             │
+│ ┌──────────────────────────┬───────────────────────────────┐ │
+│ │ Mục tiêu chính           │ Bổ sung                       │ │
+│ │ Quỹ dự phòng · 72%       │ Còn thiếu · Tài sản chính     │ │
+│ └──────────────────────────┴───────────────────────────────┘ │
+├──────────────────────────────────────────────────────────────┤
+│ Gần đây                                                       │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Rule:
+
+```txt
+Section lớn = container theo chủ đề.
+Sub-section = nhóm ý nghĩa bên trong.
+Metric = số liệu cụ thể.
+
+Không dùng dạng:
+Section → nhiều text/value rải ngang.
+
+Nên dùng dạng:
+Section → Sub-section → Metric cells.
 ```
 
 ## 7.3. Container
@@ -418,13 +448,57 @@ Tailwind:
 
 ```tsx
 <div className="min-h-screen bg-background">
-  <div className="mx-auto max-w-screen-2xl px-6 py-6">
-    ...
-  </div>
+  <div className="mx-auto max-w-screen-2xl px-6 py-6">...</div>
 </div>
 ```
 
 ---
+
+## 7.4. Home Information Architecture
+
+Home phải theo nguyên tắc:
+
+```txt
+Ít section hơn
+Mỗi section đủ overview
+Có cấu trúc nội bộ rõ
+Detail là optional, không bắt buộc để hiểu tình hình cơ bản
+```
+
+Recommended order:
+
+```txt
+1. Hero Snapshot
+2. Tiền nhà mình
+3. Cần chú ý
+4. Kế hoạch dài hạn
+5. Gần đây
+```
+
+Không nên:
+
+```txt
+Dùng ngay / Dự phòng / Tài sản / Nợ / Sắp trả / Cần bàn
+mỗi thứ là một card riêng nếu làm dashboard bị vụn.
+```
+
+Cũng không nên:
+
+```txt
+Gom tất cả metric vào một card lớn nhưng không có sub-section.
+```
+
+Nên:
+
+```txt
+Card lớn có nested blocks:
+- Thanh khoản
+- Tổng tài sản
+- Sắp trả
+- Cần bàn
+- Mục tiêu chính
+- Bổ sung
+```
 
 ## 8. Typography System
 
@@ -505,6 +579,11 @@ Không dùng shadow nặng.
 Không dùng gradient nhiều.
 Card title ngắn.
 Card content scan được trong 3 giây.
+Không chia quá nhiều card nhỏ nếu mỗi card chỉ có 1 số.
+Không gom nhiều thông tin vào một card lớn phẳng.
+Card lớn phải có sub-section, divider, nested block hoặc background nhẹ để tách nhóm.
+Metric cùng cấp phải có visual treatment nhất quán.
+Không highlight ngẫu nhiên một metric nếu các metric khác cùng cấp không được highlight.
 ```
 
 ---
@@ -640,9 +719,7 @@ Table style:
 
 ```tsx
 <div className="rounded-card border border-border bg-card shadow-soft">
-  <Table>
-    ...
-  </Table>
+  <Table>...</Table>
 </div>
 ```
 
@@ -683,9 +760,7 @@ Dialog style:
 Sheet style:
 
 ```tsx
-<SheetContent className="border-border bg-background">
-  ...
-</SheetContent>
+<SheetContent className="border-border bg-background">...</SheetContent>
 ```
 
 ---
@@ -707,6 +782,79 @@ Không biến dashboard thành analytics app.
 ```
 
 ---
+
+## 9.9. Grouped Summary Section
+
+Use this pattern for Home dashboard sections.
+
+Purpose:
+
+```txt
+Giữ dashboard ít card nhưng vẫn đủ overview.
+Tạo cấu trúc rõ: section lớn → sub-section → metric.
+```
+
+Recommended structure:
+
+```tsx
+<Card className="rounded-card border-border bg-card p-6 shadow-soft">
+  <div className="mb-6 flex items-center justify-between">
+    <div>
+      <h2 className="text-xl font-semibold tracking-[-0.035em]">
+        Tiền nhà mình
+      </h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Dùng ngay đủ tháng này
+      </p>
+    </div>
+
+    <Button variant="ghost" className="rounded-full text-accent">
+      Xem
+    </Button>
+  </div>
+
+  <div className="grid gap-4 md:grid-cols-2">
+    <div className="rounded-3xl border border-border bg-muted/50 p-4">
+      <p className="text-sm font-medium text-muted-foreground">Thanh khoản</p>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <MetricCell label="Dùng ngay" value="24,5M" />
+        <MetricCell label="Dự phòng" value="86M" />
+      </div>
+    </div>
+
+    <div className="rounded-3xl border border-border bg-muted/50 p-4">
+      <p className="text-sm font-medium text-muted-foreground">Tổng tài sản</p>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <MetricCell label="Tài sản" value="374M" />
+        <MetricCell label="Nợ" value="18M" />
+      </div>
+    </div>
+  </div>
+</Card>
+```
+
+Metric cell:
+
+```tsx
+function MetricCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-card p-4">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tracking-[-0.04em]">{value}</p>
+    </div>
+  );
+}
+```
+
+Rules:
+
+```txt
+MetricCell chỉ chứa label + value + optional tiny hint.
+Sub-section mới là nơi giải thích nhóm thông tin.
+Không đưa đoạn mô tả dài vào MetricCell.
+```
 
 ## 10. Core Web Components
 
@@ -766,231 +914,355 @@ Example:
     </h1>
   </div>
 
-  <Button className="rounded-full">
-    Cập nhật tình hình
-  </Button>
+  <Button className="rounded-full">Cập nhật tình hình</Button>
 </div>
 ```
 
 ---
 
-## 10.3. StatusCard
+## 10.3. HeroSnapshot
 
 Purpose:
 
 ```txt
-Trả lời “Nhà mình đang ổn không?”
+Trả lời “Nhà mình đang ổn không?” trong 5 giây.
 ```
 
 Content:
 
 ```txt
-Label
-Status
-Status chip
-Short explanation
-Last updated
+Title: Tình hình nhà mình
+Status badge: Ổn / Cần chú ý / Căng / Chưa đủ dữ liệu
+Last updated: Cập nhật 05/07
+Three quick signals:
+- Dùng ngay
+- Sắp trả
+- Cần bàn
+Primary CTA: Cập nhật
 ```
 
 Example copy:
 
 ```txt
-Nhà mình đang thế nào?
-Ổn
-Theo dữ liệu hiện có
-
-Không có khoản quá hạn. Có 2 khoản sắp tới trong 30 ngày cần theo dõi.
+Cần chú ý · Cập nhật 05/07
+Tình hình nhà mình
+Dùng ngay 24,5M · Sắp trả 3 khoản · Cần bàn 1 việc
 ```
 
 Style:
 
 ```tsx
-<Card className="rounded-card border-border bg-card shadow-apple">
-  ...
-</Card>
+<Card className="rounded-card border-border bg-card shadow-apple">...</Card>
+```
+
+Rules:
+
+```txt
+Hero không cần giải thích dài.
+Hero phải cho user biết status + 3 tín hiệu chính.
+CTA cập nhật phải dễ thấy nhưng không gây áp lực.
 ```
 
 ---
 
-## 10.4. MoneyCard
-
-Purpose:
-
-```txt
-Hiển thị tiền có thể dùng ngay.
-```
-
-Content:
-
-```txt
-Tiền có thể dùng ngay
-Tiền mặt + tài khoản
-24.5M đ
-Breakdown tiền mặt / tài khoản
-```
-
-Style rules:
-
-```txt
-Money number là điểm nhấn lớn nhất.
-Không đặt chart phức tạp trong card này.
-Không dùng màu đỏ/orange cho tiền khả dụng nếu không có vấn đề.
-```
-
----
-
-## 10.5. UpcomingPaymentCard
-
-Purpose:
-
-```txt
-Hiển thị khoản sắp tới trong 7–30 ngày.
-```
-
-Item structure:
-
-```txt
-Icon
-Tên khoản
-Hạn trả
-Số tiền
-Status badge nếu cần
-```
-
-Status:
-
-```txt
-Sắp tới → gray/blue
-Gần hạn → orange
-Quá hạn → red
-Đã trả → green
-```
-
----
-
-## 10.6. AssetOverviewCard
-
-Purpose:
-
-```txt
-Tóm tắt tài sản dài hạn.
-```
-
-Content:
-
-```txt
-Total assets
-Breakdown:
-- Tiết kiệm
-- Vàng
-- Bất động sản
-- Đầu tư
-- Bảo hiểm
-```
-
-UI:
-
-```txt
-Progress bars
-Simple list
-No pie chart in MVP
-```
-
----
-
-## 10.7. AttentionCard
-
-This replaces “Trao đổi tài chính” in MVP.
+## 10.4. MoneyOverviewSection
 
 Name:
 
 ```txt
-Khoản cần chú ý
+Tiền nhà mình
 ```
 
 Purpose:
 
 ```txt
-Hiển thị các khoản nên cùng xem lại.
+Cho user biết bức tranh tiền chính mà không cần bấm detail.
+```
+
+Sub-sections:
+
+```txt
+Thanh khoản
+- Dùng ngay
+- Dự phòng
+
+Tổng tài sản
+- Tài sản
+- Nợ
+```
+
+Example copy:
+
+```txt
+Tiền nhà mình
+Dùng ngay đủ tháng này
+
+Thanh khoản
+Dùng ngay 24,5M
+Dự phòng 86M
+
+Tổng tài sản
+Tài sản 374M
+Nợ 18M
+```
+
+Rules:
+
+```txt
+Không tách 4 metric này thành 4 card rời nếu làm dashboard bị vụn.
+Không đặt cả 4 metric ngang hàng trong một card phẳng.
+Dùng nested blocks hoặc mini-cells để user thấy 2 nhóm: thanh khoản và tổng tài sản.
+```
+
+---
+
+## 10.5. AttentionSummarySection
+
+Name:
+
+```txt
+Cần chú ý
+```
+
+Purpose:
+
+```txt
+Gom các việc cần xem trong tuần/tháng này.
+Không phải cảnh báo nặng.
 Không phải chat.
-Không phải discussion module.
-Không phải cảnh báo.
+```
+
+Sub-sections:
+
+```txt
+Sắp trả
+- Số khoản
+- Khoản gần nhất
+- Ngày hạn
+- Số tiền nếu có
+
+Cần bàn
+- Số việc
+- Chủ đề gần nhất
+```
+
+Important IA rule:
+
+```txt
+“Gần nhất” thuộc nhóm “Sắp trả”.
+Không đặt “Sắp trả”, “Gần nhất”, “Cần bàn” thành 3 cột cùng cấp.
+```
+
+Example copy:
+
+```txt
+Cần chú ý
+Có vài việc nên xem trong tuần này
+
+Sắp trả
+3 khoản
+Gần nhất: Học phí tháng 7 · 10/07 · 12M
+
+Cần bàn
+1 việc
+Sửa xe phát sinh
+```
+
+Tone:
+
+```txt
+Dùng “Cần chú ý”, “Cần bàn”, “Xem”.
+Không dùng “Cảnh báo”, “Đáng ngờ”, “Vượt chi”.
+```
+
+---
+
+## 10.6. LongTermPlanSection
+
+Name:
+
+```txt
+Kế hoạch dài hạn
+```
+
+Purpose:
+
+```txt
+Cho user thấy mục tiêu và tài sản dài hạn đang đi về đâu.
+```
+
+Sub-sections:
+
+```txt
+Mục tiêu chính
+- Tên mục tiêu
+- Tiến độ
+- Progress bar
+
+Bổ sung
+- Còn thiếu
+- Tài sản chính
+```
+
+Example copy:
+
+```txt
+Kế hoạch dài hạn
+Mục tiêu chính đang tiến triển tốt
+
+Mục tiêu chính
+Quỹ dự phòng
+72%
+
+Bổ sung
+Còn thiếu 34M
+Tài sản chính: Vàng, Đầu tư
+```
+
+Rules:
+
+```txt
+Progress bar là visual chính.
+Không dùng chart phức tạp trong MVP.
+Không tách “Còn thiếu” và “Tài sản chính” thành card lớn riêng nếu chỉ có 1 dòng thông tin.
+```
+
+---
+
+## 10.7. RecentUpdateCard
+
+Name:
+
+```txt
+Gần đây
+```
+
+Purpose:
+
+```txt
+Cho biết dữ liệu có còn mới không và ai vừa cập nhật gì.
 ```
 
 Content:
 
 ```txt
-Tên khoản
-Lý do ngắn
-Amount
-CTA: Xem chi tiết
-Optional: Đánh dấu đã xem
+Lần cập nhật gần nhất
+Người cập nhật
+Thay đổi chính nếu có
+CTA: Xem
 ```
 
 Example:
 
 ```txt
-Sửa xe phát sinh
-Cao hơn dự kiến trong tháng 7.
-4M
+Gần đây
+Minh cập nhật khoản học phí · 2 giờ trước
 ```
 
----
+Rules:
+
+```txt
+Đây là card phụ, đặt cuối Home.
+Không để history chiếm nhiều diện tích hơn overview.
+```
 
 ## 11. Web Page Structure
 
 ## 11.1. Home / Dashboard
 
+Home dashboard phải ưu tiên overview đủ hiểu, không bắt user bấm detail để hiểu tình hình cơ bản.
+
+Information hierarchy:
+
+```txt
+1. Hero Snapshot
+2. Tiền nhà mình
+3. Cần chú ý
+4. Kế hoạch dài hạn
+5. Gần đây
+```
+
 Desktop layout:
 
 ```txt
-Header full width
+Hero Snapshot full width / wide card
+Quick Update card optional on right
 
-Grid:
-- StatusCard          span 2
-- MoneyCard           span 1
-- Reserve/Debt cards  span 1
-- UpcomingPayment     span 2
-- AssetOverview       span 1
-- AttentionCard       span 1
-- SnapshotHistory     span 2 optional
+Tiền nhà mình
+- Thanh khoản: Dùng ngay · Dự phòng
+- Tổng tài sản: Tài sản · Nợ
+
+Cần chú ý
+- Sắp trả: số khoản · gần nhất · hạn · số tiền
+- Cần bàn: số việc · chủ đề gần nhất
+
+Kế hoạch dài hạn
+- Mục tiêu chính: tên · tiến độ · progress
+- Bổ sung: còn thiếu · tài sản chính
+
+Gần đây
+- cập nhật gần nhất
 ```
 
 Tailwind structure:
 
 ```tsx
-<div className="grid gap-4 lg:grid-cols-12">
-  <section className="lg:col-span-7">
-    <StatusCard />
+<div className="space-y-5">
+  <section className="grid gap-4 xl:grid-cols-[1fr_280px]">
+    <HeroSnapshot />
+    <QuickUpdateCard />
   </section>
 
-  <section className="lg:col-span-5">
-    <MoneyCard />
-  </section>
-
-  <section className="lg:col-span-4">
-    <ReserveCard />
-  </section>
-
-  <section className="lg:col-span-4">
-    <DebtCard />
-  </section>
-
-  <section className="lg:col-span-4">
-    <AttentionCard />
-  </section>
-
-  <section className="lg:col-span-7">
-    <UpcomingPaymentCard />
-  </section>
-
-  <section className="lg:col-span-5">
-    <AssetOverviewCard />
-  </section>
+  <MoneyOverviewSection />
+  <AttentionSummarySection />
+  <LongTermPlanSection />
+  <RecentUpdateCard />
 </div>
 ```
 
----
+Grouped section structure:
+
+```tsx
+<Card className="rounded-card border-border bg-card p-6 shadow-soft">
+  <SectionHeader title="Tiền nhà mình" hint="Dùng ngay đủ tháng này" />
+
+  <div className="grid gap-4 md:grid-cols-2">
+    <SubSection title="Thanh khoản">
+      <MetricCell label="Dùng ngay" value="24,5M" />
+      <MetricCell label="Dự phòng" value="86M" />
+    </SubSection>
+
+    <SubSection title="Tổng tài sản">
+      <MetricCell label="Tài sản" value="374M" />
+      <MetricCell label="Nợ" value="18M" />
+    </SubSection>
+  </div>
+</Card>
+```
+
+Mobile layout:
+
+```txt
+1. Hero Snapshot
+2. Quick Update CTA
+3. Tiền nhà mình
+   - Thanh khoản
+   - Tổng tài sản
+4. Cần chú ý
+   - Sắp trả
+   - Cần bàn
+5. Kế hoạch dài hạn
+6. Gần đây
+```
+
+Rules:
+
+```txt
+Không quay lại layout quá nhiều card nhỏ.
+Không dùng card lớn phẳng chỉ rải text/value ngang hàng.
+Mỗi section lớn phải có sub-section rõ ràng.
+Detail chỉ để xem breakdown, lịch sử, note hoặc chỉnh sửa.
+```
 
 ## 11.2. Assets Page
 
@@ -1285,6 +1557,8 @@ Do:
 ```txt
 Home trả lời “nhà mình đang ổn không?”
 Hiển thị số tiền lớn, dễ scan.
+Dùng ít section hơn nhưng mỗi section đủ overview.
+Section lớn phải có sub-section rõ ràng.
 Có lần cập nhật gần nhất.
 Có khoản sắp tới.
 Có tài sản/tổng nợ rõ ràng.
@@ -1295,6 +1569,8 @@ Do not:
 
 ```txt
 Không đưa giao dịch nhỏ lên Home.
+Không chia quá nhiều card nhỏ chỉ để hiển thị từng chỉ số.
+Không gom nhiều thông tin vào một card lớn phẳng không có sub-section.
 Không build module chat/discussion trong MVP.
 Không dùng đỏ nếu chỉ là khoản cần chú ý.
 Không biến web thành bảng kế toán.
@@ -1307,37 +1583,71 @@ Không hỏi “ai tiêu khoản này?”.
 
 ```txt
 Tình hình nhà mình
-Cập nhật gần nhất · 05/07/2026
+Cần chú ý · Cập nhật 05/07
 
-Nhà mình đang thế nào?
-Ổn
-Theo dữ liệu hiện có
+Dùng ngay
+24,5M
 
-Không có khoản quá hạn. Có 2 khoản sắp tới trong 30 ngày cần theo dõi.
+Sắp trả
+3 khoản
 
-Tiền có thể dùng ngay
-24.5M đ
+Cần bàn
+1 việc
 
-Dự phòng
-86M
-
-Tổng nợ
-18M
-
-Khoản sắp tới
-Học phí · Hạn 10/07 · 12M
-Tiền nhà · Hạn 15/07 · 8M
-
-Tài sản
-320M
-
-Khoản cần chú ý
-Sửa xe phát sinh · 4M
-
-Cập nhật tình hình
+[Cập nhật]
 ```
 
----
+```txt
+Tiền nhà mình
+Dùng ngay đủ tháng này
+
+Thanh khoản
+Dùng ngay: 24,5M
+Dự phòng: 86M
+
+Tổng tài sản
+Tài sản: 374M
+Nợ: 18M
+
+[Xem]
+```
+
+```txt
+Cần chú ý
+Có vài việc nên xem trong tuần này
+
+Sắp trả
+3 khoản
+Gần nhất: Học phí tháng 7 · 10/07 · 12M
+
+Cần bàn
+1 việc
+Sửa xe phát sinh
+
+[Xem]
+```
+
+```txt
+Kế hoạch dài hạn
+Mục tiêu chính đang tiến triển tốt
+
+Mục tiêu chính
+Quỹ dự phòng
+72%
+
+Bổ sung
+Còn thiếu: 34M
+Tài sản chính: Vàng, Đầu tư
+
+[Xem]
+```
+
+```txt
+Gần đây
+Minh cập nhật khoản học phí · 2 giờ trước
+
+[Xem]
+```
 
 ## 18. Implementation Class Cheatsheet
 
@@ -1345,58 +1655,44 @@ Page:
 
 ```tsx
 <div className="min-h-screen bg-background text-foreground">
-  <div className="mx-auto max-w-screen-2xl px-6 py-6">
-    ...
-  </div>
+  <div className="mx-auto max-w-screen-2xl px-6 py-6">...</div>
 </div>
 ```
 
 Header:
 
 ```tsx
-<div className="mb-6 flex items-start justify-between gap-4">
-  ...
-</div>
+<div className="mb-6 flex items-start justify-between gap-4">...</div>
 ```
 
 Card:
 
 ```tsx
-<Card className="rounded-card border-border bg-card shadow-soft">
-  ...
-</Card>
+<Card className="rounded-card border-border bg-card shadow-soft">...</Card>
 ```
 
 Important card:
 
 ```tsx
-<Card className="rounded-card border-border bg-card shadow-apple">
-  ...
-</Card>
+<Card className="rounded-card border-border bg-card shadow-apple">...</Card>
 ```
 
 Money number:
 
 ```tsx
-<p className="money-number text-6xl leading-none">
-  24.5
-</p>
+<p className="money-number text-6xl leading-none">24.5</p>
 ```
 
 Muted text:
 
 ```tsx
-<p className="text-sm text-muted-foreground">
-  Cập nhật gần nhất · 05/07/2026
-</p>
+<p className="text-sm text-muted-foreground">Cập nhật gần nhất · 05/07/2026</p>
 ```
 
 Primary button:
 
 ```tsx
-<Button className="rounded-full px-5">
-  Cập nhật tình hình
-</Button>
+<Button className="rounded-full px-5">Cập nhật tình hình</Button>
 ```
 
 Soft icon:
@@ -1419,9 +1715,7 @@ Glass sticky action:
 
 ```tsx
 <div className="glass-panel fixed bottom-4 left-1/2 z-50 w-[calc(100%-32px)] max-w-md -translate-x-1/2 rounded-full border border-white/60 p-1 shadow-apple">
-  <Button className="w-full rounded-full">
-    Cập nhật tình hình
-  </Button>
+  <Button className="w-full rounded-full">Cập nhật tình hình</Button>
 </div>
 ```
 
@@ -1448,9 +1742,13 @@ dashboard tài chính phức tạp
 Design goal:
 
 ```txt
-Người dùng mở web lên và hiểu trong 5 giây:
+Người dùng mở web lên và hiểu trong 5–10 giây:
 nhà mình đang ổn không,
 tiền dùng ngay còn bao nhiêu,
 sắp phải trả gì,
-có khoản nào cần chú ý.
+có khoản nào cần chú ý,
+kế hoạch dài hạn đang tiến triển thế nào.
+
+User không cần bấm detail để hiểu overview cơ bản.
+Detail chỉ dùng để xem breakdown, lịch sử, note hoặc chỉnh sửa.
 ```

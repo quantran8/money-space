@@ -1,25 +1,34 @@
 import {
-  Bell,
+  CalendarDays,
   ChartNoAxesCombined,
   Home,
-  PiggyBank,
   ReceiptText,
   Settings,
+  Target,
   Users,
   Wallet,
 } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
+import type { ComponentType } from 'react'
+
 import { cn } from '@/lib/utils'
 
-const navItems = [
+type NavItem = {
+  to: string
+  label: string
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>
+  disabled?: boolean
+}
+
+const navItems: NavItem[] = [
   { to: '/', label: 'Tổng quan', icon: Home },
   { to: '/assets', label: 'Tài sản', icon: Wallet },
-  { to: '/payments', label: 'Khoản sắp tới', icon: Bell },
-  { to: '/goals', label: 'Mục tiêu', icon: PiggyBank },
-  { to: '/events', label: 'Sự kiện tài chính', icon: ReceiptText, badge: '4' },
-  { to: '/members', label: 'Thành viên', icon: Users, disabled: true },
-  { to: '/settings', label: 'Cài đặt', icon: Settings, disabled: true },
+  { to: '/payments', label: 'Khoản sắp tới', icon: CalendarDays },
+  { to: '/goals', label: 'Mục tiêu', icon: Target },
+  { to: '/events', label: 'Sự kiện tài chính', icon: ReceiptText },
+  { to: '/members', label: 'Thành viên', icon: Users },
+  { to: '/settings', label: 'Cài đặt', icon: Settings },
 ]
 
 export function AppShell() {
@@ -28,7 +37,7 @@ export function AppShell() {
       <aside className="hidden w-[264px] border-r px-4 py-5 lg:block">
         <div className="mb-9 flex items-center gap-3 px-2">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-white">
-            <ChartNoAxesCombined className="size-5" />
+            <ChartNoAxesCombined className="size-5" strokeWidth={1.8} />
           </div>
 
           <div>
@@ -38,7 +47,7 @@ export function AppShell() {
         </div>
 
         <nav className="space-y-1">
-          {navItems.map(({ to, label, icon: Icon, badge, disabled }) => (
+          {navItems.map(({ to, label, icon: Icon, disabled }) => (
             <NavLink
               key={to}
               to={disabled ? '#' : to}
@@ -52,13 +61,8 @@ export function AppShell() {
                 )
               }
             >
-              <Icon className="size-4" />
+              <Icon className="size-4" strokeWidth={1.8} />
               <span>{label}</span>
-              {badge ? (
-                <span className="ml-auto rounded-full bg-[hsla(var(--status-blue),0.1)] px-2 py-0.5 text-[11px] font-semibold text-[hsl(var(--status-blue))]">
-                  {badge}
-                </span>
-              ) : null}
             </NavLink>
           ))}
         </nav>

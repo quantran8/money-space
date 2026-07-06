@@ -6,7 +6,7 @@ export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectE
   return (
     <select
       className={cn(
-        'flex h-11 w-full rounded-[22px] border bg-white px-4 py-2 text-sm text-[hsl(var(--foreground))] outline-none transition focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
+        'flex h-11 w-full rounded-[22px] border bg-white px-4 py-2 text-sm text-[hsl(var(--foreground))] outline-none transition focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] aria-[invalid=true]:border-[hsl(var(--status-red))] aria-[invalid=true]:focus-visible:ring-[hsl(var(--status-red))] disabled:opacity-60',
         className,
       )}
       {...props}
