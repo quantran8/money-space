@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Landmark, Plus, Wallet } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { PageHeader } from '@/components/layout/page-header'
@@ -10,7 +10,13 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   assets as seedAssets,
   liquidityLabels,
@@ -45,6 +51,7 @@ export function AssetsPage() {
   const [assets, setAssets] = useState<AssetItem[]>(seedAssets)
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -189,11 +196,22 @@ export function AssetsPage() {
                   />
                 </FormField>
                 <FormField label="Nhóm" error={errors.liquidity?.message}>
-                  <Select aria-invalid={!!errors.liquidity} {...register('liquidity')}>
-                    <option value="usable_now">Dùng ngay</option>
-                    <option value="not_immediate">Dự phòng</option>
-                    <option value="long_term">Dài hạn</option>
-                  </Select>
+                  <Controller
+                    control={control}
+                    name="liquidity"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger aria-invalid={!!errors.liquidity}>
+                          <SelectValue placeholder="Chọn nhóm" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="usable_now">Dùng ngay</SelectItem>
+                          <SelectItem value="not_immediate">Dự phòng</SelectItem>
+                          <SelectItem value="long_term">Dài hạn</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </FormField>
               </div>
 

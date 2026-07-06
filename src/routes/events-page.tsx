@@ -1,23 +1,25 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus, ReceiptText, Sparkles } from 'lucide-react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { EventsDataTable } from '@/components/events/events-data-table'
 import { PageHeader } from '@/components/layout/page-header'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { DatePicker } from '@/components/ui/date-picker'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import {
-  eventCategoryLabels,
-  eventTypeLabels,
-  moneyEvents as seedEvents,
-  type MoneyEventItem,
-} from '@/lib/mock-data'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { moneyEvents as seedEvents, type MoneyEventItem } from '@/lib/mock-data'
 import { isoDate, moneyAmount, optionalText, requiredText } from '@/lib/validation'
 
 const eventSchema = z.object({
@@ -40,10 +42,16 @@ const defaultValues: EventForm = {
   note: '',
 }
 
-function getAmountTone(direction: MoneyEventItem['direction']) {
-  if (direction === 'inflow') return 'text-[hsl(var(--status-green))]'
-  if (direction === 'outflow') return 'text-[hsl(var(--status-red))]'
-  return 'text-[hsl(var(--accent))]'
+type EventRow = MoneyEventItem & {
+  id: string
+}
+
+function createEventId() {
+  return crypto.randomUUID()
+}
+
+function createEventRow(event: MoneyEventItem): EventRow {
+  return { ...event, id: createEventId() }
 }
 
 function getDirection(type: EventForm['type']): MoneyEventItem['direction'] {
@@ -60,9 +68,10 @@ function formatAmount(rawAmount: string, type: EventForm['type']) {
 }
 
 export function EventsPage() {
-  const [events, setEvents] = useState(seedEvents)
+  const [events, setEvents] = useState<EventRow[]>(() => seedEvents.map(createEventRow))
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -74,7 +83,7 @@ export function EventsPage() {
   })
 
   function onSubmit(values: EventForm) {
-    const nextEvent: MoneyEventItem = {
+    const nextEvent: EventRow = createEventRow({
       title: values.title.trim(),
       amount: formatAmount(values.amount, values.type),
       note: values.note.trim() || 'Chưa có ghi chú thêm.',
@@ -82,10 +91,28 @@ export function EventsPage() {
       type: values.type,
       category: values.category,
       direction: getDirection(values.type),
-    }
+    })
 
     setEvents((current) => [nextEvent, ...current])
     reset(defaultValues)
+  }
+
+  function handleDuplicateEvent(id: string) {
+    setEvents((current) => {
+      const target = current.find((event) => event.id === id)
+      if (!target) return current
+
+      const duplicated = createEventRow({
+        ...target,
+        title: `${target.title} (copy)`,
+      })
+
+      return [duplicated, ...current]
+    })
+  }
+
+  function handleDeleteEvent(id: string) {
+    setEvents((current) => current.filter((event) => event.id !== id))
   }
 
   return (
@@ -108,32 +135,12 @@ export function EventsPage() {
             <ReceiptText className="size-5 text-[hsl(var(--accent))]" />
           </div>
 
-          <div className="mt-6 space-y-4">
-            {events.map((event) => (
-              <div
-                key={`${event.title}-${event.date}-${event.amount}`}
-                className="rounded-[28px] border bg-white p-4"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium">{event.title}</p>
-                      <Badge>{eventTypeLabels[event.type]}</Badge>
-                      <Badge>{eventCategoryLabels[event.category] ?? event.category}</Badge>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-                      {event.note}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`money-number text-2xl ${getAmountTone(event.direction)}`}>
-                      {event.amount}
-                    </p>
-                    <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{event.date}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="mt-6">
+            <EventsDataTable
+              events={events}
+              onDuplicate={handleDuplicateEvent}
+              onDelete={handleDeleteEvent}
+            />
           </div>
         </Card>
 
@@ -168,27 +175,59 @@ export function EventsPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField label="Loại event" error={errors.type?.message}>
-                <Select aria-invalid={!!errors.type} {...register('type')}>
-                  <option value="expense">Chi ra</option>
-                  <option value="income">Tiền vào</option>
-                  <option value="transfer">Chuyển khoản nội bộ</option>
-                  <option value="goal_contribution">Góp vào mục tiêu</option>
-                </Select>
+                <Controller
+                  control={control}
+                  name="type"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger aria-invalid={!!errors.type}>
+                        <SelectValue placeholder="Chọn loại event" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="expense">Chi ra</SelectItem>
+                        <SelectItem value="income">Tiền vào</SelectItem>
+                        <SelectItem value="transfer">Chuyển khoản nội bộ</SelectItem>
+                        <SelectItem value="goal_contribution">Góp vào mục tiêu</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </FormField>
               <FormField label="Nhóm" error={errors.category?.message}>
-                <Select aria-invalid={!!errors.category} {...register('category')}>
-                  <option value="education">Giáo dục</option>
-                  <option value="repair">Sửa chữa</option>
-                  <option value="saving">Tiết kiệm</option>
-                  <option value="income">Thu nhập</option>
-                  <option value="household">Sinh hoạt</option>
-                  <option value="other">Khác</option>
-                </Select>
+                <Controller
+                  control={control}
+                  name="category"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger aria-invalid={!!errors.category}>
+                        <SelectValue placeholder="Chọn nhóm" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="education">Giáo dục</SelectItem>
+                        <SelectItem value="repair">Sửa chữa</SelectItem>
+                        <SelectItem value="saving">Tiết kiệm</SelectItem>
+                        <SelectItem value="income">Thu nhập</SelectItem>
+                        <SelectItem value="household">Sinh hoạt</SelectItem>
+                        <SelectItem value="other">Khác</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </FormField>
             </div>
 
             <FormField label="Ngày xảy ra" error={errors.date?.message}>
-              <Input type="date" aria-invalid={!!errors.date} {...register('date')} />
+              <Controller
+                control={control}
+                name="date"
+                render={({ field }) => (
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    aria-invalid={!!errors.date}
+                  />
+                )}
+              />
             </FormField>
 
             <FormField label="Ghi chú" error={errors.note?.message}>

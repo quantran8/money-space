@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PiggyBank, Plus, Target } from 'lucide-react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { PageHeader } from '@/components/layout/page-header'
@@ -11,7 +11,13 @@ import { Card } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import { Select } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   computeProgress,
   financialGoals as seedGoals,
@@ -58,6 +64,7 @@ export function GoalsPage() {
   const [goals, setGoals] = useState<GoalItem[]>(seedGoals)
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -165,11 +172,22 @@ export function GoalsPage() {
             </div>
 
             <FormField label="Mức ưu tiên" error={errors.priority?.message}>
-              <Select aria-invalid={!!errors.priority} {...register('priority')}>
-                <option value="high">Ưu tiên cao</option>
-                <option value="medium">Bình thường</option>
-                <option value="low">Ưu tiên thấp</option>
-              </Select>
+              <Controller
+                control={control}
+                name="priority"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger aria-invalid={!!errors.priority}>
+                      <SelectValue placeholder="Chọn mức ưu tiên" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high">Ưu tiên cao</SelectItem>
+                      <SelectItem value="medium">Bình thường</SelectItem>
+                      <SelectItem value="low">Ưu tiên thấp</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </FormField>
 
             <FormField label="Ghi chú" error={errors.note?.message}>

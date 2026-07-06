@@ -1,16 +1,23 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Clock3, Plus } from 'lucide-react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { PageHeader } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { DatePicker } from '@/components/ui/date-picker'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   paymentStatusLabels,
   upcomingPaymentList as seedPayments,
@@ -67,6 +74,7 @@ export function PaymentsPage() {
   const [payments, setPayments] = useState<UpcomingPaymentItem[]>(seedPayments)
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -157,16 +165,37 @@ export function PaymentsPage() {
                 />
               </FormField>
               <FormField label="Đến hạn" error={errors.due?.message}>
-                <Input type="date" aria-invalid={!!errors.due} {...register('due')} />
+                <Controller
+                  control={control}
+                  name="due"
+                  render={({ field }) => (
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      aria-invalid={!!errors.due}
+                    />
+                  )}
+                />
               </FormField>
             </div>
 
             <FormField label="Trạng thái" error={errors.status?.message}>
-              <Select aria-invalid={!!errors.status} {...register('status')}>
-                <option value="important">Quan trọng</option>
-                <option value="normal">Bình thường</option>
-                <option value="pending">Chờ xác nhận</option>
-              </Select>
+              <Controller
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger aria-invalid={!!errors.status}>
+                      <SelectValue placeholder="Chọn trạng thái" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="important">Quan trọng</SelectItem>
+                      <SelectItem value="normal">Bình thường</SelectItem>
+                      <SelectItem value="pending">Chờ xác nhận</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </FormField>
 
             <Button type="submit" className="w-full" disabled={!isValid}>

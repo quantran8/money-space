@@ -8,7 +8,14 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { household } from '@/lib/mock-data'
 import { requiredText } from '@/lib/validation'
 
@@ -36,32 +43,6 @@ const initialSettings: Settings = {
   updateFrequency: isFrequency(household.updateFrequency) ? household.updateFrequency : 'weekly',
   reminderPayments: true,
   reminderUpdate: true,
-}
-
-function Toggle({
-  checked,
-  onChange,
-}: {
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] ${
-        checked ? 'bg-[hsl(var(--accent))]' : 'bg-[hsl(var(--secondary))]'
-      }`}
-    >
-      <span
-        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-          checked ? 'translate-x-5' : 'translate-x-0.5'
-        }`}
-      />
-    </button>
-  )
 }
 
 export function SettingsPage() {
@@ -126,18 +107,40 @@ export function SettingsPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField label="Đơn vị tiền" error={errors.currency?.message}>
-                <Select aria-invalid={!!errors.currency} {...register('currency')}>
-                  <option value="VND">VND — Việt Nam Đồng</option>
-                  <option value="USD">USD — Đô la Mỹ</option>
-                  <option value="EUR">EUR — Euro</option>
-                </Select>
+                <Controller
+                  control={control}
+                  name="currency"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger aria-invalid={!!errors.currency}>
+                        <SelectValue placeholder="Chọn đơn vị" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="VND">VND - Việt Nam Đồng</SelectItem>
+                        <SelectItem value="USD">USD - Đô la Mỹ</SelectItem>
+                        <SelectItem value="EUR">EUR - Euro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </FormField>
               <FormField label="Nhịp cập nhật" error={errors.updateFrequency?.message}>
-                <Select aria-invalid={!!errors.updateFrequency} {...register('updateFrequency')}>
-                  <option value="weekly">Hằng tuần</option>
-                  <option value="biweekly">Hai tuần một lần</option>
-                  <option value="monthly">Hằng tháng</option>
-                </Select>
+                <Controller
+                  control={control}
+                  name="updateFrequency"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger aria-invalid={!!errors.updateFrequency}>
+                        <SelectValue placeholder="Chọn nhịp cập nhật" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weekly">Hằng tuần</SelectItem>
+                        <SelectItem value="biweekly">Hai tuần một lần</SelectItem>
+                        <SelectItem value="monthly">Hằng tháng</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </FormField>
             </div>
 
@@ -170,7 +173,7 @@ export function SettingsPage() {
                   control={control}
                   name="reminderPayments"
                   render={({ field }) => (
-                    <Toggle checked={field.value} onChange={field.onChange} />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   )}
                 />
               </div>
@@ -186,7 +189,7 @@ export function SettingsPage() {
                   control={control}
                   name="reminderUpdate"
                   render={({ field }) => (
-                    <Toggle checked={field.value} onChange={field.onChange} />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   )}
                 />
               </div>

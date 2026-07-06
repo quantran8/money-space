@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Mail, ShieldCheck, UserPlus, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { PageHeader } from '@/components/layout/page-header'
@@ -10,8 +10,14 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import { cn } from '@/lib/utils'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   householdMembers,
   permissionLabels,
@@ -65,6 +71,7 @@ export function MembersPage() {
   )
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -162,52 +169,61 @@ export function MembersPage() {
                   </div>
 
                   {member.role !== 'owner' ? (
-                    <button
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => removeMember(member.id)}
-                      className="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium text-[hsl(var(--status-red))] transition-colors hover:bg-[hsla(var(--status-red),0.08)]"
+                      className="shrink-0 text-[hsl(var(--status-red))] hover:bg-[hsla(var(--status-red),0.08)] hover:text-[hsl(var(--status-red))]"
                     >
                       Gỡ
-                    </button>
+                    </Button>
                   ) : null}
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+                    <Label className="text-xs text-muted-foreground">
                       Vai trò
-                    </label>
+                    </Label>
                     <Select
                       value={member.role}
                       disabled={member.role === 'owner'}
-                      onChange={(event) =>
-                        updateRole(member.id, event.target.value as HouseholdRole)
-                      }
-                      className={cn(member.role === 'owner' && 'opacity-60')}
+                      onValueChange={(value) => updateRole(member.id, value as HouseholdRole)}
                     >
-                      {(Object.keys(roleLabels) as HouseholdRole[]).map((role) => (
-                        <option key={role} value={role}>
-                          {roleLabels[role]}
-                        </option>
-                      ))}
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(roleLabels) as HouseholdRole[]).map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {roleLabels[role]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+                    <Label className="text-xs text-muted-foreground">
                       Quyền xem
-                    </label>
+                    </Label>
                     <Select
                       value={member.permission}
                       disabled={member.role === 'owner'}
-                      onChange={(event) =>
-                        updatePermission(member.id, event.target.value as PermissionLevel)
+                      onValueChange={(value) =>
+                        updatePermission(member.id, value as PermissionLevel)
                       }
-                      className={cn(member.role === 'owner' && 'opacity-60')}
                     >
-                      {(Object.keys(permissionLabels) as PermissionLevel[]).map((permission) => (
-                        <option key={permission} value={permission}>
-                          {permissionLabels[permission]}
-                        </option>
-                      ))}
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(permissionLabels) as PermissionLevel[]).map((permission) => (
+                          <SelectItem key={permission} value={permission}>
+                            {permissionLabels[permission]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
                 </div>
@@ -237,10 +253,21 @@ export function MembersPage() {
               </FormField>
 
               <FormField label="Vai trò" error={errors.role?.message}>
-                <Select aria-invalid={!!errors.role} {...register('role')}>
-                  <option value="partner">Bạn đời</option>
-                  <option value="viewer">Người xem</option>
-                </Select>
+                <Controller
+                  control={control}
+                  name="role"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger aria-invalid={!!errors.role}>
+                        <SelectValue placeholder="Chọn vai trò" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="partner">Bạn đời</SelectItem>
+                        <SelectItem value="viewer">Người xem</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </FormField>
 
               <div className="surface-muted rounded-[22px] p-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">

@@ -25,11 +25,11 @@ export function PageHeader({
       )}
     >
       <div>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">{eyebrow}</p>
+        <p className="text-sm text-muted-foreground">{eyebrow}</p>
         <h1 className="page-title mt-1 text-4xl font-semibold sm:text-[2.6rem]">
           {title}
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           {description}
         </p>
       </div>
