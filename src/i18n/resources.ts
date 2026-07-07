@@ -46,6 +46,8 @@ export const resources = {
         householdName: 'Nhà Minh',
         householdMembers: '2 thành viên',
         manageHousehold: 'Quản lý nhà',
+        openMenu: 'Mở menu',
+        closeMenu: 'Đóng menu',
       },
       dashboard: {
         status: {
@@ -668,6 +670,8 @@ export const resources = {
         householdName: 'Minh Household',
         householdMembers: '2 members',
         manageHousehold: 'Manage household',
+        openMenu: 'Open menu',
+        closeMenu: 'Close menu',
       },
       dashboard: {
         status: {
