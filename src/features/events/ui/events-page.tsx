@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, ListChecks, Plus, ReceiptText } from 'lucide-react'
+import { AlertCircle, ListChecks, Plus, ReceiptText, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -34,6 +34,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useEvents } from '@/features/events/hooks/use-events'
 import type { MoneyEventItem } from '@/features/events/model/events'
+import { monthKeyOf, monthOptionsOf } from '@/features/events/model/events-month'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 import {
@@ -81,6 +82,18 @@ function getDirection(type: EventForm['type']): MoneyEventItem['direction'] {
 
 type EventFilter = 'all' | 'inflow' | 'outflow' | 'goal'
 
+const shortMonthNames = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+]
+
+/** Format an ISO date "2026-07-05" into the short "05 Jul" display style. */
+function formatShortDate(isoDate: string): string {
+  const [, month, day] = isoDate.split('-')
+  const name = shortMonthNames[Number(month) - 1] ?? month
+  return `${day} ${name}`
+}
+
 /** Parse a signed shorthand amount ("+35M", "-1,2M", "500K") into a VND number. */
 function parseSignedAmountToVnd(raw: string): number {
   const normalized = raw.trim().replace(/,/g, '.')
@@ -108,6 +121,8 @@ export function EventsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [filter, setFilter] = useState<EventFilter>('all')
+  const [monthFilter, setMonthFilter] = useState<string>('all')
+  const [query, setQuery] = useState('')
 
   const eventFilters: { key: EventFilter; label: string }[] = [
     { key: 'all', label: t('events.filters.all') },
@@ -116,33 +131,50 @@ export function EventsPage() {
     { key: 'goal', label: t('events.filters.goal') },
   ]
 
+  const monthOptions = useMemo(() => monthOptionsOf(events), [events])
+
+  // Events scoped to the selected month — drives both the summary strip and list.
+  const monthScopedEvents = useMemo(
+    () =>
+      monthFilter === 'all'
+        ? events
+        : events.filter((event) => monthKeyOf(event.isoDate) === monthFilter),
+    [events, monthFilter],
+  )
+
   const totals = useMemo(() => {
     let inflow = 0
     let outflow = 0
-    for (const event of events) {
+    for (const event of monthScopedEvents) {
       const value = parseSignedAmountToVnd(event.amount)
       if (value >= 0) inflow += value
       else outflow += value
     }
     return { inflow, outflow, net: inflow + outflow }
-  }, [events])
+  }, [monthScopedEvents])
 
   const inflowMagnitude = totals.inflow
   const outflowMagnitude = Math.abs(totals.outflow)
   const flowMax = Math.max(inflowMagnitude, outflowMagnitude, 1)
 
   const filteredEvents = useMemo(() => {
-    if (filter === 'all') return events
-    if (filter === 'goal') return events.filter((event) => event.type === 'goal_contribution')
-    return events.filter((event) => event.direction === filter)
-  }, [events, filter])
+    const needle = query.trim().toLowerCase()
+    return monthScopedEvents.filter((event) => {
+      if (filter === 'goal' && event.type !== 'goal_contribution') return false
+      if ((filter === 'inflow' || filter === 'outflow') && event.direction !== filter) return false
+      if (!needle) return true
+      return (
+        event.title.toLowerCase().includes(needle) || event.note.toLowerCase().includes(needle)
+      )
+    })
+  }, [monthScopedEvents, filter, query])
 
   const reviewEvent = useMemo(
     () =>
-      events
+      monthScopedEvents
         .filter((event) => event.direction === 'outflow')
         .sort((a, b) => parseSignedAmountToVnd(a.amount) - parseSignedAmountToVnd(b.amount))[0],
-    [events],
+    [monthScopedEvents],
   )
   const eventSchema = z.object({
     title: localizedRequiredText(t, t('events.form.name')),
@@ -185,7 +217,8 @@ export function EventsPage() {
       title: values.title.trim(),
       amount: formatAmount(values.amount, values.type),
       note: values.note.trim() || t('common.noAdditionalNote'),
-      date: values.date.slice(8, 10) + ' Jul',
+      date: formatShortDate(values.date),
+      isoDate: values.date,
       type: values.type,
       category: values.category,
       direction: getDirection(values.type),
@@ -230,7 +263,7 @@ export function EventsPage() {
       <SummaryStrip>
         <SummaryTile
           label={t('events.strip.count')}
-          value={t('events.strip.countValue', { count: events.length })}
+          value={t('events.strip.countValue', { count: monthScopedEvents.length })}
         />
         <SummaryTile
           label={t('events.strip.inflow')}
@@ -263,7 +296,32 @@ export function EventsPage() {
             <ReceiptText className="hidden size-5 shrink-0 text-[hsl(var(--accent))] sm:block" />
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t('events.toolbar.searchPlaceholder')}
+                className="pl-11"
+              />
+            </div>
+            <Select value={monthFilter} onValueChange={setMonthFilter}>
+              <SelectTrigger className="sm:w-52">
+                <SelectValue placeholder={t('events.toolbar.allMonths')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('events.toolbar.allMonths')}</SelectItem>
+                {monthOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {t('events.toolbar.month', { month: option.month, year: option.year })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
             {eventFilters.map((option) => (
               <FilterChip
                 key={option.key}
@@ -279,6 +337,7 @@ export function EventsPage() {
               events={filteredEvents}
               onDuplicate={handleDuplicateEvent}
               onDelete={setDeleteId}
+              emptyMessage={t('events.toolbar.empty')}
             />
           </div>
         </Card>

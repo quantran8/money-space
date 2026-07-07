@@ -355,6 +355,12 @@ export const resources = {
           outflow: 'Tiền ra',
           goal: 'Mục tiêu',
         },
+        toolbar: {
+          searchPlaceholder: 'Tìm theo tên hoặc ghi chú...',
+          allMonths: 'Tất cả các tháng',
+          month: 'Tháng {{month}}/{{year}}',
+          empty: 'Không có sự kiện nào phù hợp.',
+        },
         summary: {
           eyebrow: 'Tóm tắt tháng này',
           title: 'Snapshot thay đổi chủ yếu do đâu',
@@ -378,6 +384,7 @@ export const resources = {
         table: {
           title: 'Money events',
           subtitle: 'Những sự kiện làm bức tranh tài chính thay đổi',
+          monthGroup: 'Tháng {{month}}/{{year}}',
           event: 'Event',
           category: 'Phân loại',
           amount: 'Số tiền',
@@ -979,6 +986,12 @@ export const resources = {
           outflow: 'Money out',
           goal: 'Goals',
         },
+        toolbar: {
+          searchPlaceholder: 'Search by name or note...',
+          allMonths: 'All months',
+          month: '{{month}}/{{year}}',
+          empty: 'No matching events.',
+        },
         summary: {
           eyebrow: 'This month at a glance',
           title: 'What moved the snapshot most',
@@ -1002,6 +1015,7 @@ export const resources = {
         table: {
           title: 'Money events',
           subtitle: 'Events that changed the financial picture',
+          monthGroup: '{{month}}/{{year}}',
           event: 'Event',
           category: 'Category',
           amount: 'Amount',

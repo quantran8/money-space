@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { AppearGroup, AppearItem } from '@/components/ui/motion'
 import { Progress } from '@/components/ui/progress'
 import { useDashboardOverview } from '@/features/dashboard/hooks/use-dashboard-overview'
 import { cn } from '@/shared/lib/utils'
@@ -142,8 +143,9 @@ export function DashboardPage() {
   const statusLabel = t(statusKey)
 
   return (
-    <div className="space-y-5">
-      <section className="grid gap-4 lg:grid-cols-12">
+    <AppearGroup className="space-y-5">
+      <AppearItem>
+        <section className="grid gap-4 lg:grid-cols-12">
         <Card className="apple-shadow rounded-[32px] p-6 md:p-8 lg:col-span-9">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -219,8 +221,10 @@ export function DashboardPage() {
             </div>
           </Card>
         </Link>
-      </section>
+        </section>
+      </AppearItem>
 
+      <AppearItem>
       <SectionCard
         title={t('dashboard.sections.money.title')}
         subtitle={t('dashboard.sections.money.subtitle')}
@@ -246,7 +250,9 @@ export function DashboardPage() {
           </SoftGroup>
         </div>
       </SectionCard>
+      </AppearItem>
 
+      <AppearItem>
       <SectionCard
         title={t('dashboard.sections.attention.title')}
         subtitle={t('dashboard.sections.attention.subtitle')}
@@ -304,7 +310,9 @@ export function DashboardPage() {
           </SoftGroup>
         </div>
       </SectionCard>
+      </AppearItem>
 
+      <AppearItem>
       <SectionCard
         title={t('dashboard.sections.longTerm.title')}
         subtitle={t('dashboard.sections.longTerm.subtitle')}
@@ -331,7 +339,9 @@ export function DashboardPage() {
           </SoftGroup>
         </div>
       </SectionCard>
+      </AppearItem>
 
+      <AppearItem>
       <SectionCard
         title={t('dashboard.sections.recent.title')}
         subtitle={`${moneyEvents[0].title} · ${moneyEvents[0].date}`}
@@ -358,6 +368,7 @@ export function DashboardPage() {
           </div>
         </div>
       </SectionCard>
-    </div>
+      </AppearItem>
+    </AppearGroup>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
+import { motion } from 'motion/react'
 import {
   CalendarDays,
   ChartNoAxesCombined,
@@ -13,12 +14,13 @@ import {
   X,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 
 import type { ComponentType } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { pageTransition, pageVariants } from '@/components/ui/motion'
 import { cn } from '@/shared/lib/utils'
 
 type NavItem = {
@@ -68,6 +70,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell() {
   const { t } = useTranslation()
+  const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
@@ -169,9 +172,16 @@ export function AppShell() {
           </Dialog.Portal>
         </Dialog.Root>
 
-        <div className="mx-auto max-w-screen-2xl px-5 py-6 lg:px-8">
+        <motion.div
+          key={location.pathname}
+          initial="initial"
+          animate="animate"
+          variants={pageVariants}
+          transition={pageTransition}
+          className="mx-auto max-w-screen-2xl px-5 py-6 lg:px-8"
+        >
           <Outlet />
-        </div>
+        </motion.div>
       </main>
     </div>
   )
