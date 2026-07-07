@@ -1,18 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, ReceiptText } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { AlertCircle, ListChecks, Plus, ReceiptText } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 
 import { EventsDataTable } from '@/features/events/ui/events-data-table'
 import { PageHeader } from '@/app/layout/page-header'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { DatePicker } from '@/components/ui/date-picker'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
+import { Progress } from '@/components/ui/progress'
+import { SummaryStrip, SummaryTile } from '@/components/ui/summary-strip'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -31,6 +34,8 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useEvents } from '@/features/events/hooks/use-events'
 import type { MoneyEventItem } from '@/features/events/model/events'
+import { formatVndShort } from '@/shared/lib/format-money'
+import { cn } from '@/shared/lib/utils'
 import {
   localizedIsoDate,
   localizedMoneyAmount,
@@ -74,6 +79,21 @@ function getDirection(type: EventForm['type']): MoneyEventItem['direction'] {
   return 'neutral'
 }
 
+type EventFilter = 'all' | 'inflow' | 'outflow' | 'goal'
+
+/** Parse a signed shorthand amount ("+35M", "-1,2M", "500K") into a VND number. */
+function parseSignedAmountToVnd(raw: string): number {
+  const normalized = raw.trim().replace(/,/g, '.')
+  const match = normalized.match(/^([+-]?)(\d+(?:\.\d+)?)\s*([kKmMbB]?)$/)
+  if (!match) return 0
+  const sign = match[1] === '-' ? -1 : 1
+  const base = Number(match[2])
+  const suffix = match[3].toLowerCase()
+  const factor =
+    suffix === 'k' ? 1_000 : suffix === 'm' ? 1_000_000 : suffix === 'b' ? 1_000_000_000 : 1
+  return sign * base * factor
+}
+
 function formatAmount(rawAmount: string, type: EventForm['type']) {
   const normalized = rawAmount.trim()
   if (!normalized) return ''
@@ -87,6 +107,43 @@ export function EventsPage() {
   const [events, setEvents] = useState<EventRow[]>(() => seedEvents.map(createEventRow))
   const [formOpen, setFormOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<EventFilter>('all')
+
+  const eventFilters: { key: EventFilter; label: string }[] = [
+    { key: 'all', label: t('events.filters.all') },
+    { key: 'inflow', label: t('events.filters.inflow') },
+    { key: 'outflow', label: t('events.filters.outflow') },
+    { key: 'goal', label: t('events.filters.goal') },
+  ]
+
+  const totals = useMemo(() => {
+    let inflow = 0
+    let outflow = 0
+    for (const event of events) {
+      const value = parseSignedAmountToVnd(event.amount)
+      if (value >= 0) inflow += value
+      else outflow += value
+    }
+    return { inflow, outflow, net: inflow + outflow }
+  }, [events])
+
+  const inflowMagnitude = totals.inflow
+  const outflowMagnitude = Math.abs(totals.outflow)
+  const flowMax = Math.max(inflowMagnitude, outflowMagnitude, 1)
+
+  const filteredEvents = useMemo(() => {
+    if (filter === 'all') return events
+    if (filter === 'goal') return events.filter((event) => event.type === 'goal_contribution')
+    return events.filter((event) => event.direction === filter)
+  }, [events, filter])
+
+  const reviewEvent = useMemo(
+    () =>
+      events
+        .filter((event) => event.direction === 'outflow')
+        .sort((a, b) => parseSignedAmountToVnd(a.amount) - parseSignedAmountToVnd(b.amount))[0],
+    [events],
+  )
   const eventSchema = z.object({
     title: localizedRequiredText(t, t('events.form.name')),
     amount: localizedMoneyAmount(t),
@@ -170,25 +227,161 @@ export function EventsPage() {
         }
       />
 
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('events.table.title')}</p>
-            <h2 className="section-title mt-1 text-2xl font-semibold">
-              {t('events.table.subtitle')}
-            </h2>
-          </div>
-          <ReceiptText className="size-5 text-[hsl(var(--accent))]" />
-        </div>
+      <SummaryStrip>
+        <SummaryTile
+          label={t('events.strip.count')}
+          value={t('events.strip.countValue', { count: events.length })}
+        />
+        <SummaryTile
+          label={t('events.strip.inflow')}
+          value={`+${formatVndShort(inflowMagnitude)}`}
+          dotColor="hsl(var(--status-green))"
+        />
+        <SummaryTile
+          label={t('events.strip.outflow')}
+          value={`−${formatVndShort(outflowMagnitude)}`}
+          dotColor="hsl(var(--status-red))"
+        />
+        <SummaryTile
+          label={t('events.strip.net')}
+          value={`${totals.net >= 0 ? '+' : '−'}${formatVndShort(Math.abs(totals.net))}`}
+          inverted
+        />
+      </SummaryStrip>
 
-        <div className="mt-6">
-          <EventsDataTable
-            events={events}
-            onDuplicate={handleDuplicateEvent}
-            onDelete={setDeleteId}
-          />
-        </div>
-      </Card>
+      <div className="grid gap-4 lg:grid-cols-12">
+        <Card className="lg:col-span-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {t('events.table.title')}
+              </p>
+              <h2 className="section-title mt-1 text-2xl font-semibold">
+                {t('events.table.subtitle')}
+              </h2>
+            </div>
+            <ReceiptText className="hidden size-5 shrink-0 text-[hsl(var(--accent))] sm:block" />
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            {eventFilters.map((option) => (
+              <FilterChip
+                key={option.key}
+                label={option.label}
+                active={filter === option.key}
+                onClick={() => setFilter(option.key)}
+              />
+            ))}
+          </div>
+
+          <div className="mt-5">
+            <EventsDataTable
+              events={filteredEvents}
+              onDuplicate={handleDuplicateEvent}
+              onDelete={setDeleteId}
+            />
+          </div>
+        </Card>
+
+        <aside className="space-y-4 lg:col-span-4">
+          <Card>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">
+              {t('events.summary.eyebrow')}
+            </p>
+            <h3 className="section-title mt-1 text-xl font-semibold">
+              {t('events.summary.title')}
+            </h3>
+            <div className="mt-6 space-y-4">
+              <div>
+                <div className="mb-2 flex justify-between text-sm">
+                  <span className="text-[hsl(var(--muted-foreground))]">
+                    {t('events.summary.inflow')}
+                  </span>
+                  <span className="font-semibold text-[hsl(var(--status-green))]">
+                    +{formatVndShort(inflowMagnitude)}
+                  </span>
+                </div>
+                <Progress
+                  value={(inflowMagnitude / flowMax) * 100}
+                  className="[&>[data-slot=progress-indicator]]:bg-[hsl(var(--status-green))]"
+                />
+              </div>
+              <div>
+                <div className="mb-2 flex justify-between text-sm">
+                  <span className="text-[hsl(var(--muted-foreground))]">
+                    {t('events.summary.outflow')}
+                  </span>
+                  <span className="font-semibold text-[hsl(var(--status-red))]">
+                    −{formatVndShort(outflowMagnitude)}
+                  </span>
+                </div>
+                <Progress
+                  value={(outflowMagnitude / flowMax) * 100}
+                  className="[&>[data-slot=progress-indicator]]:bg-[hsl(var(--status-red))]"
+                />
+              </div>
+              <div className="surface-muted rounded-3xl p-4">
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                  {t('events.summary.net')}
+                </p>
+                <p className="money-number mt-2 text-3xl font-semibold">
+                  {totals.net >= 0 ? '+' : '−'}
+                  {formatVndShort(Math.abs(totals.net))}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="mb-4 flex items-center gap-2">
+              <AlertCircle className="size-5 text-[hsl(var(--status-orange))]" strokeWidth={1.8} />
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {t('events.review.eyebrow')}
+              </p>
+            </div>
+            {reviewEvent ? (
+              <div className="surface-muted rounded-3xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{reviewEvent.title}</p>
+                    <p className="mt-1 text-sm leading-5 text-[hsl(var(--muted-foreground))]">
+                      {t('events.review.description')}
+                    </p>
+                  </div>
+                  <Badge className="shrink-0 bg-[hsla(var(--status-orange),0.12)] text-[hsl(var(--status-orange))]">
+                    {formatVndShort(Math.abs(parseSignedAmountToVnd(reviewEvent.amount)))}
+                  </Badge>
+                </div>
+                <Button size="sm" className="mt-4">
+                  {t('events.review.discuss')}
+                </Button>
+              </div>
+            ) : (
+              <p className="surface-muted rounded-3xl p-4 text-sm text-[hsl(var(--muted-foreground))]">
+                {t('events.review.empty')}
+              </p>
+            )}
+          </Card>
+
+          <Card>
+            <div className="mb-4 flex items-center gap-2">
+              <ListChecks className="size-5 text-[hsl(var(--accent))]" strokeWidth={1.8} />
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {t('events.rules.eyebrow')}
+              </p>
+            </div>
+            <h3 className="section-title text-xl font-semibold">{t('events.rules.title')}</h3>
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+              {['one', 'two', 'three'].map((key) => (
+                <li key={key} className="flex gap-3">
+                  <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[hsl(var(--foreground))]" />
+                  <span>{t(`events.rules.${key}`)}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </aside>
+      </div>
 
       <ResponsiveDialog open={formOpen} onOpenChange={handleFormOpenChange}>
         <ResponsiveDialogContent>
@@ -308,5 +501,30 @@ export function EventsPage() {
         onConfirm={() => deleteId && deleteEvent(deleteId)}
       />
     </div>
+  )
+}
+
+function FilterChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+        active
+          ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+          : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
+      )}
+    >
+      {label}
+    </button>
   )
 }

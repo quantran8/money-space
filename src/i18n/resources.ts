@@ -103,6 +103,17 @@ export const resources = {
           description:
             'Chia tài sản theo nhóm để cả hai cùng nhìn được tiền dùng ngay, dự phòng và phần dài hạn.',
         },
+        strip: {
+          usableNow: 'Dùng ngay',
+          reserve: 'Dự phòng',
+          longTerm: 'Dài hạn',
+          total: 'Tổng tài sản',
+        },
+        toolbar: {
+          searchPlaceholder: 'Tìm theo tên hoặc ghi chú...',
+          all: 'Tất cả',
+          empty: 'Không có tài sản phù hợp.',
+        },
         list: {
           eyebrow: 'Danh sách tài sản',
           title: 'Các khoản đang có',
@@ -172,10 +183,62 @@ export const resources = {
           description:
             'Nhìn trước 7 đến 30 ngày để biết khoản nào cần chuẩn bị, khoản nào cần cùng trao đổi.',
         },
+        strip: {
+          next7: '7 ngày tới',
+          next30: '30 ngày tới',
+          discuss: 'Cần trao đổi',
+          total: 'Tổng sắp tới',
+          nearest: 'Gần nhất',
+          daysLeft: '{{count}} ngày',
+          shouldReview: 'nên xem',
+        },
+        tabs: {
+          all: 'Tất cả',
+          important: 'Cần chú ý',
+          pending: 'Chờ xác nhận',
+        },
+        toolbar: {
+          search: 'Tìm khoản',
+          searchPlaceholder: 'Tìm khoản...',
+        },
+        groups: {
+          next7: '7 ngày tới',
+          next30: '30 ngày tới',
+          later: 'Sau đó',
+          overdue: 'Quá hạn',
+          needPrepare: 'Cần chuẩn bị {{value}}',
+          countAmount: '{{count}} khoản · {{value}}',
+        },
+        due: {
+          inDays: 'Còn {{count}} ngày',
+          today: 'Đến hạn hôm nay',
+          overdue: 'Quá hạn {{count}} ngày',
+          needConfirm: 'Cần xác nhận',
+        },
+        focus: {
+          eyebrow: 'Chuẩn bị gần nhất',
+          need: 'Cần có trước {{date}}',
+          markPrepared: 'Đánh dấu đã chuẩn bị',
+          empty: 'Không có khoản nào sắp tới. Cả nhà đang thong thả.',
+        },
+        month: {
+          eyebrow: 'Tóm tắt tháng này',
+          title: 'Dòng tiền cần lưu ý',
+          totalNeed: 'Tổng cần chuẩn bị',
+          totalNeedHint: 'Trong 30 ngày tới',
+          discuss: 'Cần trao đổi',
+          discussHint: 'Có ghi chú mở',
+        },
+        gentle: {
+          title: 'Nhắc nhẹ, không gây áp lực',
+          description: 'Thông báo nên dùng giọng "cần xem lại" thay vì "cảnh báo".',
+        },
         list: {
           eyebrow: 'Danh sách khoản',
           title: 'Lịch thanh toán sắp tới',
           empty: 'Chưa có khoản nào. Hãy thêm khoản sắp tới đầu tiên.',
+          emptyFiltered: 'Không có khoản nào trong mục này.',
+          countLabel: '{{count}} khoản',
         },
         form: {
           eyebrow: 'Thêm khoản',
@@ -199,6 +262,44 @@ export const resources = {
           title: 'Giữ tiền có lý do rõ ràng',
           description:
             'Mỗi mục tiêu nên đủ rõ để cả hai biết đang tiết kiệm cho điều gì và tiến độ đã đi tới đâu.',
+        },
+        strip: {
+          count: 'Số mục tiêu',
+          saved: 'Đã tích lũy',
+          target: 'Tổng mục tiêu',
+          avgProgress: 'Tiến độ trung bình',
+        },
+        primary: {
+          eyebrow: 'Mục tiêu chính',
+          remaining: 'Còn thiếu {{value}}',
+          onTrack: 'Đang tiến triển tốt',
+          saved: 'Đã có',
+          remainingLabel: 'Còn thiếu',
+          pace: 'Nhịp đề xuất',
+          paceValue: '{{value}}/tháng',
+        },
+        countLabel: '{{count}} mục tiêu',
+        thisMonth: {
+          eyebrow: 'Tháng này',
+          title: 'Nên ưu tiên {{name}}',
+          description: 'Với dữ liệu hiện có, chỉ cần thêm khoảng {{value}}/tháng để đạt mục tiêu đúng nhịp.',
+          suggestion: 'Gợi ý thêm tháng này',
+          action: 'Ghi nhận khoản thêm',
+        },
+        allocation: {
+          eyebrow: 'Phân bổ mục tiêu',
+          title: 'Tiền đang đi về đâu',
+        },
+        recent: {
+          eyebrow: 'Gần đây',
+          title: 'Cập nhật mục tiêu',
+          empty: 'Chưa có cập nhật nào.',
+          added: 'Thêm {{value}} vào {{name}}',
+        },
+        gentle: {
+          title: 'Giữ mục tiêu nhẹ nhàng',
+          description:
+            'Trang mục tiêu chỉ nên giúp cả hai hiểu tiền đang dành cho điều gì, không tạo cảm giác bị ép tiết kiệm.',
         },
         list: {
           eyebrow: 'Danh sách mục tiêu',
@@ -238,6 +339,39 @@ export const resources = {
           title: 'Sự kiện tài chính',
           description:
             'Chỉ ghi những khoản đủ lớn hoặc đủ quan trọng để cả hai cùng hiểu chuyện gì vừa xảy ra.',
+        },
+        strip: {
+          count: 'Tháng này',
+          countValue: '{{count}} sự kiện',
+          inflow: 'Tiền vào',
+          outflow: 'Tiền ra',
+          net: 'Tác động ròng',
+        },
+        filters: {
+          all: 'Tất cả',
+          inflow: 'Tiền vào',
+          outflow: 'Tiền ra',
+          goal: 'Mục tiêu',
+        },
+        summary: {
+          eyebrow: 'Tóm tắt tháng này',
+          title: 'Snapshot thay đổi chủ yếu do đâu',
+          inflow: 'Tiền vào',
+          outflow: 'Tiền ra',
+          net: 'Tác động ròng',
+        },
+        review: {
+          eyebrow: 'Cần xem lại',
+          description: 'Khoản này cao hơn chi phí sinh hoạt thường ngày.',
+          discuss: 'Trao đổi',
+          empty: 'Không có khoản nào cần xem lại tháng này.',
+        },
+        rules: {
+          eyebrow: 'Quy tắc ghi nhận',
+          title: 'Không cần ghi từng khoản nhỏ',
+          one: 'Ghi khoản lớn làm snapshot thay đổi rõ.',
+          two: 'Ghi khoản cần hai người cùng hiểu bối cảnh.',
+          three: 'Không dùng để soi chi tiêu hằng ngày.',
         },
         table: {
           title: 'Money events',
@@ -282,12 +416,23 @@ export const resources = {
           description:
             'Mời bạn đời hoặc người thân, và quyết định mỗi người thấy được bao nhiêu và làm được những gì.',
         },
+        strip: {
+          active: 'Đang tham gia',
+          invited: 'Đã mời',
+          defaultShare: 'Mức chia sẻ mặc định',
+          defaultShareValue: 'Theo nhóm',
+          lastChange: 'Thay đổi gần nhất',
+        },
         list: {
           eyebrow: 'Danh sách thành viên',
           title: '{{active}} đang tham gia · {{invited}} đã mời',
           pending: 'Chờ xác nhận',
           role: 'Vai trò',
           permission: 'Quyền xem',
+        },
+        quickInvite: {
+          eyebrow: 'Mời nhanh',
+          title: 'Mời thêm người',
         },
         invite: {
           eyebrow: 'Mời người mới',
@@ -308,15 +453,34 @@ export const resources = {
           partner: 'có thể thêm và sửa số liệu nhưng không đổi quyền của người khác.',
           viewer: 'chỉ nhìn được phần được chia sẻ, theo mức quyền bạn chọn.',
         },
+        permissionLevels: {
+          title: 'Các mức quyền xem',
+          view_summary: 'Chỉ thấy tổng quan.',
+          view_grouped: 'Thấy theo nhóm tài sản hoặc khoản.',
+          view_detail: 'Thấy chi tiết những khoản được chia sẻ.',
+          edit_content: 'Có thể thêm và sửa dữ liệu.',
+          admin: 'Quản lý thành viên, quyền và dữ liệu.',
+        },
+        privacy: {
+          eyebrow: 'Về quyền riêng tư',
+          title: 'Không cần chia sẻ mọi thứ',
+          description:
+            'Mặc định nên an toàn: chỉ chia sẻ vừa đủ để cả nhà hiểu tình hình, còn chi tiết là lựa chọn của bạn.',
+        },
       },
       settings: {
         header: {
           eyebrow: 'Cài đặt',
-          title: 'Điều chỉnh cho vừa với nhà mình',
+          title: 'Thiết lập không gian nhà mình',
           description:
-            'Đặt tên hộ, đơn vị tiền, nhịp cập nhật và các nhắc nhở để cả hai luôn nắm được tình hình.',
+            'Quản lý tên hộ, nhịp cập nhật, thông báo, quyền riêng tư mặc định và dữ liệu xuất/xóa.',
           save: 'Lưu thay đổi',
           saved: 'Đã lưu cài đặt.',
+        },
+        strip: {
+          household: 'Household',
+          rhythm: 'Nhịp cập nhật',
+          sharing: 'Mặc định chia sẻ',
         },
         household: {
           eyebrow: 'Thông tin hộ',
@@ -330,6 +494,18 @@ export const resources = {
           languagePlaceholder: 'Chọn ngôn ngữ',
           createdAt: 'Hộ được tạo ngày {{date}}. Đơn vị tiền áp dụng cho toàn bộ số liệu trong không gian này.',
         },
+        privacy: {
+          eyebrow: 'Quyền riêng tư',
+          title: 'Chia sẻ mặc định',
+          description:
+            'Dùng mức mặc định cho tài sản, khoản sắp tới và mục tiêu mới. Bạn vẫn có thể chỉnh từng khoản sau.',
+          assetsTitle: 'Tài sản mới',
+          assetsDescription: 'Người kia thấy theo nhóm, không thấy ghi chú nhạy cảm.',
+          upcomingTitle: 'Khoản sắp tới',
+          upcomingDescription: 'Hiện tên khoản, hạn trả, người phụ trách và trạng thái.',
+          notesTitle: 'Ghi chú riêng tư',
+          notesDescription: 'Không hiển thị ghi chú nhạy cảm trong tổng quan.',
+        },
         reminders: {
           eyebrow: 'Nhắc nhở',
           title: 'Thông báo',
@@ -338,11 +514,12 @@ export const resources = {
           updatesTitle: 'Cập nhật định kỳ',
           updatesDescription: 'Nhắc cả hai cập nhật snapshot theo nhịp đã chọn.',
         },
-        danger: {
-          title: 'Vùng cần cân nhắc',
-          description:
-            'Xóa không gian sẽ gỡ toàn bộ tài sản, khoản chi, mục tiêu và thành viên. Hành động này không thể hoàn tác.',
-          action: 'Xóa không gian',
+        data: {
+          eyebrow: 'Dữ liệu',
+          title: 'Xuất hoặc xóa dữ liệu',
+          description: 'Tải bản sao dữ liệu trước khi thực hiện thay đổi lớn.',
+          export: 'Xuất dữ liệu',
+          delete: 'Xóa không gian',
         },
       },
       options: {
@@ -355,6 +532,11 @@ export const resources = {
           weekly: 'Hằng tuần',
           biweekly: 'Hai tuần một lần',
           monthly: 'Hằng tháng',
+        },
+        sharing: {
+          overview: 'Chỉ tổng quan',
+          grouped: 'Theo nhóm',
+          detailed: 'Chi tiết',
         },
         language: {
           vi: 'Tiếng Việt',
@@ -388,7 +570,7 @@ export const resources = {
           formula_calculated: 'App tự tính',
         },
         paymentStatus: {
-          important: 'Quan trọng',
+          important: 'Cần chú ý',
           normal: 'Bình thường',
           pending: 'Chờ xác nhận',
         },
@@ -543,6 +725,17 @@ export const resources = {
           description:
             'Group assets in a simple way so both of you can see spendable cash, reserve funds, and long-term holdings.',
         },
+        strip: {
+          usableNow: 'Available now',
+          reserve: 'Reserve',
+          longTerm: 'Long-term',
+          total: 'Total assets',
+        },
+        toolbar: {
+          searchPlaceholder: 'Search by name or note...',
+          all: 'All',
+          empty: 'No matching assets.',
+        },
         list: {
           eyebrow: 'Asset list',
           title: 'Current holdings',
@@ -612,10 +805,62 @@ export const resources = {
           description:
             'Look 7 to 30 days ahead to see what needs cash ready and what needs a conversation first.',
         },
+        strip: {
+          next7: 'Next 7 days',
+          next30: 'Next 30 days',
+          discuss: 'Needs discussion',
+          total: 'Total upcoming',
+          nearest: 'Nearest',
+          daysLeft: '{{count}} days',
+          shouldReview: 'to review',
+        },
+        tabs: {
+          all: 'All',
+          important: 'Needs attention',
+          pending: 'Awaiting confirmation',
+        },
+        toolbar: {
+          search: 'Search payments',
+          searchPlaceholder: 'Search payments...',
+        },
+        groups: {
+          next7: 'Next 7 days',
+          next30: 'Next 30 days',
+          later: 'Later',
+          overdue: 'Overdue',
+          needPrepare: 'Prepare {{value}}',
+          countAmount: '{{count}} payments · {{value}}',
+        },
+        due: {
+          inDays: '{{count}} days left',
+          today: 'Due today',
+          overdue: '{{count}} days overdue',
+          needConfirm: 'Needs confirmation',
+        },
+        focus: {
+          eyebrow: 'Nearest to prepare',
+          need: 'Ready by {{date}}',
+          markPrepared: 'Mark as prepared',
+          empty: 'Nothing coming up. You are all clear.',
+        },
+        month: {
+          eyebrow: 'This month',
+          title: 'Cash flow to watch',
+          totalNeed: 'Total to prepare',
+          totalNeedHint: 'In the next 30 days',
+          discuss: 'Needs discussion',
+          discussHint: 'Has open notes',
+        },
+        gentle: {
+          title: 'A gentle nudge, no pressure',
+          description: 'Notifications should say "worth a look" rather than "alert".',
+        },
         list: {
           eyebrow: 'Payment list',
           title: 'Upcoming payment schedule',
           empty: 'No payments yet. Add your first upcoming payment.',
+          emptyFiltered: 'No payments in this view.',
+          countLabel: '{{count}} payments',
         },
         form: {
           eyebrow: 'Add payment',
@@ -639,6 +884,44 @@ export const resources = {
           title: 'Give every savings plan a clear reason',
           description:
             'Each goal should be clear enough that both of you know what you are saving for and how far along it is.',
+        },
+        strip: {
+          count: 'Goals',
+          saved: 'Saved so far',
+          target: 'Total target',
+          avgProgress: 'Average progress',
+        },
+        primary: {
+          eyebrow: 'Primary goal',
+          remaining: '{{value}} to go',
+          onTrack: 'On track',
+          saved: 'Saved',
+          remainingLabel: 'To go',
+          pace: 'Suggested pace',
+          paceValue: '{{value}}/mo',
+        },
+        countLabel: '{{count}} goals',
+        thisMonth: {
+          eyebrow: 'This month',
+          title: 'Prioritize {{name}}',
+          description: 'With current data, adding about {{value}}/month keeps this goal on pace.',
+          suggestion: 'Suggested top-up this month',
+          action: 'Record a top-up',
+        },
+        allocation: {
+          eyebrow: 'Goal allocation',
+          title: 'Where the money is going',
+        },
+        recent: {
+          eyebrow: 'Recently',
+          title: 'Goal updates',
+          empty: 'No updates yet.',
+          added: 'Added {{value}} to {{name}}',
+        },
+        gentle: {
+          title: 'Keep goals gentle',
+          description:
+            'The goals page should help both of you see what money is set aside for — not create pressure to save.',
         },
         list: {
           eyebrow: 'Goal list',
@@ -678,6 +961,39 @@ export const resources = {
           title: 'Money events',
           description:
             'Only log items large enough or important enough that both of you understand what just changed.',
+        },
+        strip: {
+          count: 'This month',
+          countValue: '{{count}} events',
+          inflow: 'Money in',
+          outflow: 'Money out',
+          net: 'Net impact',
+        },
+        filters: {
+          all: 'All',
+          inflow: 'Money in',
+          outflow: 'Money out',
+          goal: 'Goals',
+        },
+        summary: {
+          eyebrow: 'This month at a glance',
+          title: 'What moved the snapshot most',
+          inflow: 'Money in',
+          outflow: 'Money out',
+          net: 'Net impact',
+        },
+        review: {
+          eyebrow: 'Worth a second look',
+          description: 'This amount is higher than everyday household spending.',
+          discuss: 'Discuss',
+          empty: 'Nothing needs a second look this month.',
+        },
+        rules: {
+          eyebrow: 'Logging rules',
+          title: 'No need to log every small item',
+          one: 'Log large items that clearly move the snapshot.',
+          two: 'Log items both people need context on.',
+          three: 'Not for tracking everyday spending.',
         },
         table: {
           title: 'Money events',
@@ -722,12 +1038,23 @@ export const resources = {
           description:
             'Invite your partner or relatives, then decide how much each person can see and do.',
         },
+        strip: {
+          active: 'Active',
+          invited: 'Invited',
+          defaultShare: 'Default sharing',
+          defaultShareValue: 'By group',
+          lastChange: 'Last change',
+        },
         list: {
           eyebrow: 'Member list',
           title: '{{active}} active · {{invited}} invited',
           pending: 'Pending',
           role: 'Role',
           permission: 'Access level',
+        },
+        quickInvite: {
+          eyebrow: 'Quick invite',
+          title: 'Invite someone new',
         },
         invite: {
           eyebrow: 'Invite someone',
@@ -748,15 +1075,34 @@ export const resources = {
           partner: 'can add and edit records but cannot change other people\'s permissions.',
           viewer: 'only sees the parts you share, based on the access level you choose.',
         },
+        permissionLevels: {
+          title: 'Access levels',
+          view_summary: 'Sees the overview only.',
+          view_grouped: 'Sees assets and payments by group.',
+          view_detail: 'Sees details of shared items.',
+          edit_content: 'Can add and edit data.',
+          admin: 'Manages members, permissions and data.',
+        },
+        privacy: {
+          eyebrow: 'On privacy',
+          title: 'You don\'t have to share everything',
+          description:
+            'Safe by default: share just enough for the household to understand the situation — the details stay your choice.',
+        },
       },
       settings: {
         header: {
           eyebrow: 'Settings',
-          title: 'Adjust the space for your household',
+          title: 'Set up your household space',
           description:
-            'Set the household name, currency, update rhythm, and reminders so both of you stay aligned.',
+            'Manage the household name, update rhythm, notifications, default privacy, and data export or deletion.',
           save: 'Save changes',
           saved: 'Settings saved.',
+        },
+        strip: {
+          household: 'Household',
+          rhythm: 'Update rhythm',
+          sharing: 'Default sharing',
         },
         household: {
           eyebrow: 'Household details',
@@ -771,6 +1117,18 @@ export const resources = {
           createdAt:
             'This household was created on {{date}}. The selected currency applies to all figures in this space.',
         },
+        privacy: {
+          eyebrow: 'Privacy',
+          title: 'Default sharing',
+          description:
+            'Applies to new assets, upcoming payments, and goals. You can still adjust each item later.',
+          assetsTitle: 'New assets',
+          assetsDescription: 'The other person sees them grouped, without sensitive notes.',
+          upcomingTitle: 'Upcoming payments',
+          upcomingDescription: 'Show the name, due date, owner, and status.',
+          notesTitle: 'Private notes',
+          notesDescription: 'Keep sensitive notes out of the overview.',
+        },
         reminders: {
           eyebrow: 'Reminders',
           title: 'Notifications',
@@ -779,11 +1137,12 @@ export const resources = {
           updatesTitle: 'Recurring updates',
           updatesDescription: 'Remind both of us to refresh the snapshot on the chosen rhythm.',
         },
-        danger: {
-          title: 'Things to think twice about',
-          description:
-            'Deleting the space removes assets, expenses, goals, and members. This action cannot be undone.',
-          action: 'Delete space',
+        data: {
+          eyebrow: 'Data',
+          title: 'Export or delete data',
+          description: 'Download a copy of your data before making big changes.',
+          export: 'Export data',
+          delete: 'Delete space',
         },
       },
       options: {
@@ -796,6 +1155,11 @@ export const resources = {
           weekly: 'Weekly',
           biweekly: 'Every two weeks',
           monthly: 'Monthly',
+        },
+        sharing: {
+          overview: 'Overview only',
+          grouped: 'Grouped',
+          detailed: 'Detailed',
         },
         language: {
           vi: 'Tieng Viet',
@@ -829,7 +1193,7 @@ export const resources = {
           formula_calculated: 'Auto-calculated',
         },
         paymentStatus: {
-          important: 'Important',
+          important: 'Needs attention',
           normal: 'Normal',
           pending: 'Pending confirmation',
         },

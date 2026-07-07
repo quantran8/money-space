@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Landmark, Plus, Wallet } from 'lucide-react'
+import { Landmark, Plus, Search, Wallet } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -17,6 +17,7 @@ import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { MetricCell } from '@/components/ui/metric-cell'
 import { SubSection } from '@/components/ui/sub-section'
+import { SummaryStrip, SummaryTile } from '@/components/ui/summary-strip'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -46,7 +47,9 @@ import {
   type ValuationMode,
 } from '@/features/assets/model/assets'
 import { useAssets } from '@/features/assets/hooks/use-assets'
+import { liquidityColors } from '@/shared/constants/colors'
 import { formatVndShort } from '@/shared/lib/format-money'
+import { cn } from '@/shared/lib/utils'
 import { localizedOptionalText, localizedRequiredText } from '@/shared/lib/validation'
 
 const AS_OF = '2026-07-06'
@@ -236,6 +239,8 @@ export function AssetsPage() {
   const { assets: seedAssets, snapshots } = useAssets()
   const [assets, setAssets] = useState<Asset[]>(seedAssets)
   const [formOpen, setFormOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [liquidityFilter, setLiquidityFilter] = useState<AssetLiquidity | 'all'>('all')
   const assetSchema = useMemo(() => buildAssetSchema(t), [t])
 
   const {
@@ -277,6 +282,18 @@ export function AssetsPage() {
 
   const total = totals.usable_now + totals.not_immediately_usable + totals.long_term
 
+  const filteredAssets = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    return assets.filter((asset) => {
+      if (liquidityFilter !== 'all' && asset.liquidity !== liquidityFilter) return false
+      if (!needle) return true
+      return (
+        asset.name.toLowerCase().includes(needle) ||
+        asset.note.toLowerCase().includes(needle)
+      )
+    })
+  }, [assets, query, liquidityFilter])
+
   useEffect(() => {
     if (!formOpen) return
     reset({ ...defaultValues })
@@ -310,6 +327,25 @@ export function AssetsPage() {
           </Button>
         }
       />
+
+      <SummaryStrip>
+        <SummaryTile
+          label={t('assets.strip.usableNow')}
+          value={formatVndShort(totals.usable_now)}
+          dotColor={liquidityColors.usable_now}
+        />
+        <SummaryTile
+          label={t('assets.strip.reserve')}
+          value={formatVndShort(totals.not_immediately_usable)}
+          dotColor={liquidityColors.not_immediately_usable}
+        />
+        <SummaryTile
+          label={t('assets.strip.longTerm')}
+          value={formatVndShort(totals.long_term)}
+          dotColor={liquidityColors.long_term}
+        />
+        <SummaryTile label={t('assets.strip.total')} value={formatVndShort(total)} inverted />
+      </SummaryStrip>
 
       <div className="grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-5">
@@ -354,7 +390,41 @@ export function AssetsPage() {
             <Wallet className="size-5 text-[hsl(var(--accent))]" />
           </div>
 
-          <AssetList assets={assets} asOf={AS_OF} />
+          <div className="mb-5 space-y-3">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t('assets.toolbar.searchPlaceholder')}
+                className="pl-11"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <FilterChip
+                label={t('assets.toolbar.all')}
+                active={liquidityFilter === 'all'}
+                onClick={() => setLiquidityFilter('all')}
+              />
+              {liquidityOrder.map((liquidity) => (
+                <FilterChip
+                  key={liquidity}
+                  label={t(`options.liquidity.${liquidity}`)}
+                  active={liquidityFilter === liquidity}
+                  onClick={() => setLiquidityFilter(liquidity)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {filteredAssets.length > 0 ? (
+            <AssetList assets={filteredAssets} asOf={AS_OF} />
+          ) : (
+            <p className="rounded-3xl bg-[hsl(var(--muted))] px-4 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">
+              {t('assets.toolbar.empty')}
+            </p>
+          )}
         </Card>
 
         <div className="space-y-4 lg:col-span-5">
@@ -594,6 +664,31 @@ export function AssetsPage() {
         </ResponsiveDialogContent>
       </ResponsiveDialog>
     </div>
+  )
+}
+
+function FilterChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+        active
+          ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+          : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
+      )}
+    >
+      {label}
+    </button>
   )
 }
 

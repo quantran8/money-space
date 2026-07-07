@@ -1,9 +1,5 @@
 import type { ReactNode } from 'react'
-import {
-  ArrowRight,
-  Bell,
-  RefreshCw,
-} from 'lucide-react'
+import { Bell, ChevronRight, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -12,21 +8,6 @@ import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useDashboardOverview } from '@/features/dashboard/hooks/use-dashboard-overview'
 import { cn } from '@/shared/lib/utils'
-
-type MetricCellProps = {
-  label: string
-  value: string
-  className?: string
-}
-
-function MetricCell({ label, value, className }: MetricCellProps) {
-  return (
-    <div className={cn('rounded-2xl bg-white p-4', className)}>
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">{label}</p>
-      <p className="money-number mt-2 text-2xl font-bold">{value}</p>
-    </div>
-  )
-}
 
 function SectionCard({
   title,
@@ -42,10 +23,10 @@ function SectionCard({
   const { t } = useTranslation()
 
   return (
-    <section className="rounded-[32px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] md:p-8">
-      <div className="mb-6 flex items-center justify-between gap-4">
+    <Card className="rounded-[32px] p-6 md:p-8">
+      <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold">{title}</h2>
+          <h2 className="section-title text-xl font-semibold md:text-2xl">{title}</h2>
           <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{subtitle}</p>
         </div>
 
@@ -54,16 +35,20 @@ function SectionCard({
           className="inline-flex items-center whitespace-nowrap text-sm font-semibold text-[hsl(var(--accent))]"
         >
           {t('common.view')}
-          <ArrowRight className="ml-1 size-4" />
+          <ChevronRight className="ml-0.5 size-4" strokeWidth={1.8} />
         </Link>
       </div>
 
       {children}
-    </section>
+    </Card>
   )
 }
 
-function SubSectionLink({
+/**
+ * A soft-tinted meaning group inside a section (design.md §10.4). Its header
+ * is a link into the relevant detail page.
+ */
+function SoftGroup({
   title,
   to,
   children,
@@ -77,21 +62,32 @@ function SubSectionLink({
   titleClassName?: string
 }) {
   return (
-    <Link
-      to={to}
-      className={cn(
-        'block rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] p-5 transition-colors hover:bg-[hsl(var(--muted))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
-        className,
-      )}
-    >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className={cn('text-sm font-semibold text-[hsl(var(--muted-foreground))]', titleClassName)}>
+    <div className={cn('rounded-3xl bg-[hsl(var(--muted))] p-4', className)}>
+      <Link to={to} className="flex items-center justify-between gap-2 px-1">
+        <p className={cn('text-sm font-medium text-[hsl(var(--muted-foreground))]', titleClassName)}>
           {title}
-        </h3>
-        <ArrowRight className="size-4 text-[hsl(var(--muted-foreground))]" />
-      </div>
-      {children}
-    </Link>
+        </p>
+        <ChevronRight className="size-4 text-[hsl(var(--muted-foreground))]" strokeWidth={1.8} />
+      </Link>
+      <div className="mt-4">{children}</div>
+    </div>
+  )
+}
+
+/**
+ * A divided list of label/value rows on a white surface — the grouped-list
+ * pattern the design system prefers over stacks of mini metric cards.
+ */
+function StatList({ rows }: { rows: { label: string; value: string }[] }) {
+  return (
+    <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-2xl bg-card">
+      {rows.map((row) => (
+        <div key={row.label} className="flex items-center justify-between px-5 py-4">
+          <span className="text-sm text-[hsl(var(--muted-foreground))]">{row.label}</span>
+          <strong className="money-number text-2xl">{row.value}</strong>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -134,7 +130,6 @@ export function DashboardPage() {
       .slice(0, 2)
       .map((item) => item.trim())
       .join(', ') ?? 'Vàng, đầu tư'
-  const nearestPayment = payments[0]
   const firstAttention = attentionItems[0]
   const mainGoal = goals[0]
   const goalGap = amountGap(mainGoal.current, mainGoal.target) || t('common.notCalculated')
@@ -149,7 +144,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-5">
       <section className="grid gap-4 lg:grid-cols-12">
-        <Card className="rounded-[32px] p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] md:p-8 lg:col-span-9">
+        <Card className="apple-shadow rounded-[32px] p-6 md:p-8 lg:col-span-9">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -169,7 +164,7 @@ export function DashboardPage() {
                   {t('dashboard.updatedAt', { date: shortDate(snapshot.updatedAt) })}
                 </span>
               </div>
-              <h1 className="page-title mt-4 text-4xl font-semibold sm:text-[2.8rem]">
+              <h1 className="page-title mt-4 text-4xl font-semibold md:text-5xl">
                 {t('dashboard.title')}
               </h1>
             </div>
@@ -178,129 +173,162 @@ export function DashboardPage() {
               to="/events"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[hsl(var(--primary))] px-5 text-sm font-semibold text-[hsl(var(--primary-foreground))] shadow-[0_8px_24px_rgba(0,0,0,0.04)] transition-opacity hover:opacity-90"
             >
-              <RefreshCw className="size-4" />
+              <RefreshCw className="size-4" strokeWidth={1.8} />
               {t('dashboard.heroButton')}
             </Link>
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-3xl bg-[hsl(var(--secondary))] p-5">
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('dashboard.metrics.liquid')}</p>
-              <p className="money-number mt-2 text-2xl font-bold">{snapshot.liquidDisplay}</p>
+            <div className="rounded-2xl bg-[hsl(var(--muted))] p-5">
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {t('dashboard.metrics.liquid')}
+              </p>
+              <p className="money-number mt-2 text-2xl md:text-3xl">{snapshot.liquidDisplay}</p>
             </div>
-            <div className="rounded-3xl bg-[hsl(var(--secondary))] p-5">
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('dashboard.metrics.upcoming')}</p>
-              <p className="mt-2 text-2xl font-semibold">{t('dashboard.metrics.paymentsCount', { count: payments.length })}</p>
+            <div className="rounded-2xl bg-[hsl(var(--muted))] p-5">
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {t('dashboard.metrics.upcoming')}
+              </p>
+              <p className="mt-2 text-2xl font-semibold md:text-3xl">
+                {t('dashboard.metrics.paymentsCount', { count: payments.length })}
+              </p>
             </div>
-            <div className="rounded-3xl bg-[hsl(var(--secondary))] p-5">
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('dashboard.metrics.attention')}</p>
-              <p className="mt-2 text-2xl font-semibold">{t('dashboard.metrics.attentionCount', { count: snapshot.attentionCount })}</p>
+            <div className="rounded-2xl bg-[hsl(var(--muted))] p-5">
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {t('dashboard.metrics.attention')}
+              </p>
+              <p className="mt-2 text-2xl font-semibold md:text-3xl">
+                {t('dashboard.metrics.attentionCount', { count: snapshot.attentionCount })}
+              </p>
             </div>
           </div>
         </Card>
 
         <Link
           to="/events"
-          className="hidden rounded-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] lg:col-span-3 lg:block"
+          className="hidden rounded-[32px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] lg:col-span-3 lg:block"
         >
-          <Card className="flex h-full min-h-[180px] flex-col justify-between rounded-[32px] bg-[hsl(var(--foreground))] p-6 text-white">
+          <Card className="apple-shadow flex h-full min-h-[180px] flex-col justify-between rounded-[32px] bg-[hsl(var(--foreground))] p-6 text-white">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-white/70">{t('common.quick')}</p>
-              <Bell className="size-5 text-white/80" />
+              <p className="text-sm text-white/60">{t('common.quick')}</p>
+              <Bell className="size-5 text-white/80" strokeWidth={1.8} />
             </div>
             <div>
               <p className="section-title text-3xl font-semibold">{t('dashboard.quickCardTitle')}</p>
-              <p className="mt-2 text-sm text-white/70">{t('common.takesTwoMinutes')}</p>
+              <p className="mt-1 text-sm text-white/60">{t('common.takesTwoMinutes')}</p>
             </div>
           </Card>
         </Link>
       </section>
 
-      <SectionCard title={t('dashboard.sections.money.title')} subtitle={t('dashboard.sections.money.subtitle')} to="/assets">
+      <SectionCard
+        title={t('dashboard.sections.money.title')}
+        subtitle={t('dashboard.sections.money.subtitle')}
+        to="/assets"
+      >
         <div className="grid gap-4 lg:grid-cols-2">
-          <SubSectionLink title={t('dashboard.sections.money.liquidity')} to="/assets">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <MetricCell label={t('dashboard.sections.money.liquid')} value={snapshot.liquidDisplay} />
-              <MetricCell label={t('dashboard.sections.money.reserve')} value={snapshot.savings} />
-            </div>
-          </SubSectionLink>
+          <SoftGroup title={t('dashboard.sections.money.liquidity')} to="/assets">
+            <StatList
+              rows={[
+                { label: t('dashboard.sections.money.liquid'), value: snapshot.liquidDisplay },
+                { label: t('dashboard.sections.money.reserve'), value: snapshot.savings },
+              ]}
+            />
+          </SoftGroup>
 
-          <SubSectionLink title={t('dashboard.sections.money.totalAssets')} to="/assets">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <MetricCell label={t('dashboard.sections.money.assets')} value={longTermAssets} />
-              <MetricCell label={t('dashboard.sections.money.debt')} value={snapshot.debt} />
-            </div>
-          </SubSectionLink>
+          <SoftGroup title={t('dashboard.sections.money.totalAssets')} to="/assets">
+            <StatList
+              rows={[
+                { label: t('dashboard.sections.money.assets'), value: longTermAssets },
+                { label: t('dashboard.sections.money.debt'), value: snapshot.debt },
+              ]}
+            />
+          </SoftGroup>
         </div>
       </SectionCard>
 
-      <SectionCard title={t('dashboard.sections.attention.title')} subtitle={t('dashboard.sections.attention.subtitle')} to="/payments">
+      <SectionCard
+        title={t('dashboard.sections.attention.title')}
+        subtitle={t('dashboard.sections.attention.subtitle')}
+        to="/payments"
+      >
         <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-          <SubSectionLink
+          <SoftGroup
             title={t('dashboard.sections.attention.upcoming')}
             to="/payments"
-            className="border-[hsla(var(--status-orange),0.18)] bg-[hsla(var(--status-orange),0.1)]"
             titleClassName="text-[hsl(var(--status-orange))]"
           >
-            <div className="flex items-center justify-between">
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[hsl(var(--status-orange))]">
-                {t('dashboard.metrics.paymentsCount', { count: payments.length })}
-              </span>
-            </div>
-
-            <div className="mt-5">
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('dashboard.sections.attention.nearest')}</p>
-              <p className="mt-1 text-xl font-bold">{nearestPayment.name}</p>
-              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-                {dueDate(nearestPayment.due)} · {nearestPayment.amount}
-              </p>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2 text-sm">
-              {payments.slice(1, 3).map((payment) => (
-                <span key={payment.name} className="rounded-full bg-white px-3 py-2">
-                  {payment.name} {dueDate(payment.due)}
-                </span>
+            <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-2xl bg-card">
+              {payments.map((payment, index) => (
+                <Link
+                  key={payment.name}
+                  to="/payments"
+                  className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-[hsl(var(--muted))]"
+                >
+                  <div className="min-w-0">
+                    <p
+                      className={cn(
+                        'truncate font-medium tracking-[-0.01em]',
+                        index === 0 && 'font-semibold',
+                      )}
+                    >
+                      {payment.name}
+                    </p>
+                    <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+                      {dueDate(payment.due)}
+                      {payment.amount ? ` · ${payment.amount}` : ''}
+                    </p>
+                  </div>
+                  <ChevronRight
+                    className="size-4 shrink-0 text-[hsl(var(--muted-foreground))]"
+                    strokeWidth={1.8}
+                  />
+                </Link>
               ))}
             </div>
-          </SubSectionLink>
+          </SoftGroup>
 
-          <SubSectionLink title={t('dashboard.sections.attention.discuss')} to="/events">
-            <div className="mt-1">
-              <p className="text-3xl font-bold">{t('dashboard.metrics.attentionCount', { count: snapshot.attentionCount })}</p>
-              <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                {firstAttention.title.replace(' hơi lớn so với mức tiền dùng ngay', '')}
-              </p>
-            </div>
-            <span className="mt-6 inline-flex rounded-full bg-[hsl(var(--foreground))] px-4 py-3 text-sm font-semibold text-white">
+          <SoftGroup title={t('dashboard.sections.attention.discuss')} to="/events">
+            <p className="money-number px-1 text-4xl">
+              {t('dashboard.metrics.attentionCount', { count: snapshot.attentionCount })}
+            </p>
+            <p className="mt-2 px-1 text-sm text-[hsl(var(--muted-foreground))]">
+              {firstAttention.title.replace(' hơi lớn so với mức tiền dùng ngay', '')}
+            </p>
+            <Link
+              to="/events"
+              className="mt-5 inline-flex h-10 items-center rounded-full bg-[hsl(var(--primary))] px-5 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition-opacity hover:opacity-90"
+            >
               {t('dashboard.sections.attention.discussMore')}
-            </span>
-          </SubSectionLink>
+            </Link>
+          </SoftGroup>
         </div>
       </SectionCard>
 
-      <SectionCard title={t('dashboard.sections.longTerm.title')} subtitle={t('dashboard.sections.longTerm.subtitle')} to="/goals">
-        <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-          <SubSectionLink title={t('dashboard.sections.longTerm.mainGoal')} to="/goals">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('dashboard.sections.longTerm.mainGoal')}</p>
-                <p className="mt-2 text-2xl font-bold">{mainGoal.name}</p>
+      <SectionCard
+        title={t('dashboard.sections.longTerm.title')}
+        subtitle={t('dashboard.sections.longTerm.subtitle')}
+        to="/goals"
+      >
+        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <SoftGroup title={t('dashboard.sections.longTerm.mainGoal')} to="/goals">
+            <div className="rounded-2xl bg-card p-5">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-lg font-semibold tracking-[-0.02em]">{mainGoal.name}</p>
+                <p className="money-number text-2xl md:text-3xl">{mainGoal.progress}%</p>
               </div>
-              <p className="money-number text-4xl font-bold">{mainGoal.progress}%</p>
+              <Progress value={mainGoal.progress} className="mt-5 h-2.5" />
             </div>
-            <Progress value={mainGoal.progress} className="mt-6" />
-          </SubSectionLink>
+          </SoftGroup>
 
-          <div className="grid gap-3">
-            <SubSectionLink title={t('dashboard.sections.longTerm.remaining')} to="/goals">
-              <p className="money-number text-2xl font-bold">{goalGap}</p>
-            </SubSectionLink>
-
-            <SubSectionLink title={t('dashboard.sections.longTerm.mainAssets')} to="/assets">
-              <p className="text-xl font-bold">{primaryAssets}</p>
-            </SubSectionLink>
-          </div>
+          <SoftGroup title={t('dashboard.sections.longTerm.remaining')} to="/goals">
+            <div className="rounded-2xl bg-card p-5">
+              <p className="money-number text-3xl">{goalGap}</p>
+              <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
+                {t('dashboard.sections.longTerm.mainAssets')} · {primaryAssets}
+              </p>
+            </div>
+          </SoftGroup>
         </div>
       </SectionCard>
 
@@ -309,29 +337,26 @@ export function DashboardPage() {
         subtitle={`${moneyEvents[0].title} · ${moneyEvents[0].date}`}
         to="/events"
       >
-        <Link
-          to="/events"
-          className="block rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--secondary))] p-5 transition-colors hover:bg-[hsl(var(--muted))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
-        >
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold">{t('dashboard.sections.recent.activity')}</h3>
-            <ArrowRight className="size-4 text-[hsl(var(--muted-foreground))]" />
-          </div>
-          <div className="space-y-3">
+        <div className="rounded-3xl bg-[hsl(var(--muted))] p-4">
+          <p className="px-1 text-sm font-medium text-[hsl(var(--muted-foreground))]">
+            {t('dashboard.sections.recent.activity')}
+          </p>
+          <div className="mt-4 divide-y divide-[hsl(var(--border))] overflow-hidden rounded-2xl bg-card">
             {moneyEvents.slice(0, 3).map((event) => (
-              <div
+              <Link
                 key={`${event.title}-${event.date}`}
-                className="flex items-center justify-between gap-4 rounded-2xl bg-white p-4"
+                to="/events"
+                className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-[hsl(var(--muted))]"
               >
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{event.title}</p>
+                  <p className="truncate font-medium tracking-[-0.01em]">{event.title}</p>
                   <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{event.date}</p>
                 </div>
-                <p className="money-number shrink-0 text-xl">{event.amount}</p>
-              </div>
+                <p className="money-number shrink-0 text-lg">{event.amount}</p>
+              </Link>
             ))}
           </div>
-        </Link>
+        </div>
       </SectionCard>
     </div>
   )
