@@ -16,6 +16,9 @@ export const dashboardSnapshot = {
   },
   savings: '86M',
   debt: '18M',
+  // Total net worth shown in the hero: assets minus debt. In the MVP this is a
+  // seed value; later it becomes a Supabase rollup of the latest snapshot.
+  netWorthDisplay: '466M',
   attentionCount: 1,
 }
 

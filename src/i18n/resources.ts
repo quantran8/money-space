@@ -59,6 +59,14 @@ export const resources = {
         title: 'Tình hình nhà mình',
         heroButton: 'Cập nhật',
         quickCardTitle: 'Cập nhật',
+        hero: {
+          netWorthLabel: 'Tổng tài sản nhà mình',
+          statusLine: {
+            stable: 'Theo dữ liệu hiện có, nhà mình đang ổn.',
+            attention: 'Có một vài khoản cần xem lại.',
+            tense: 'Tháng này có thể hơi căng.',
+          },
+        },
         metrics: {
           liquid: 'Dùng ngay',
           upcoming: 'Sắp trả',
@@ -76,10 +84,13 @@ export const resources = {
             totalAssets: 'Tổng tài sản',
             assets: 'Tài sản',
             debt: 'Nợ',
+            trend: 'Tổng tài sản qua các tháng',
           },
           attention: {
             title: 'Cần chú ý',
             subtitle: 'Có vài việc nên xem trong tuần này',
+            totalCount: 'Tổng số khoản',
+            totalAmount: 'Số tiền cần chi',
             upcoming: 'Sắp trả',
             nearest: 'Gần nhất',
             discuss: 'Cần bàn',
@@ -690,6 +701,14 @@ export const resources = {
         title: 'Your household at a glance',
         heroButton: 'Refresh',
         quickCardTitle: 'Update',
+        hero: {
+          netWorthLabel: 'Your household net worth',
+          statusLine: {
+            stable: 'Based on current data, your household is doing fine.',
+            attention: 'A few items are worth another look.',
+            tense: 'This month may be a little tight.',
+          },
+        },
         metrics: {
           liquid: 'Available now',
           upcoming: 'Due soon',
@@ -707,10 +726,13 @@ export const resources = {
             totalAssets: 'Total assets',
             assets: 'Assets',
             debt: 'Debt',
+            trend: 'Total assets over the months',
           },
           attention: {
             title: 'Needs attention',
             subtitle: 'A few things worth reviewing this week',
+            totalCount: 'Total items',
+            totalAmount: 'Amount to pay',
             upcoming: 'Coming up',
             nearest: 'Nearest',
             discuss: 'Needs discussion',

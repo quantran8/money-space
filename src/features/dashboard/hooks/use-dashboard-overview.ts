@@ -1,3 +1,4 @@
+import { seedSnapshots } from '@/features/assets/api/assets.repository'
 import {
   assetGroups,
   attentionItems,
@@ -20,5 +21,6 @@ export function useDashboardOverview() {
     assetGroups,
     attentionItems,
     recentEvents: moneyEvents,
+    assetTrend: seedSnapshots,
   }
 }

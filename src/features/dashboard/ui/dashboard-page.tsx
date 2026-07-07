@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Bell, ChevronRight, RefreshCw } from 'lucide-react'
+import { ChevronRight, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -8,26 +8,30 @@ import { Card } from '@/components/ui/card'
 import { AppearGroup, AppearItem } from '@/components/ui/motion'
 import { Progress } from '@/components/ui/progress'
 import { useDashboardOverview } from '@/features/dashboard/hooks/use-dashboard-overview'
+import { useMembers } from '@/features/members/hooks/use-members'
+import { NetWorthSparkline } from '@/features/dashboard/ui/net-worth-sparkline'
 import { cn } from '@/shared/lib/utils'
 
 function SectionCard({
   title,
   subtitle,
   to,
+  className,
   children,
 }: {
   title: string
   subtitle: string
   to: string
+  className?: string
   children: ReactNode
 }) {
   const { t } = useTranslation()
 
   return (
-    <Card className="rounded-[32px] p-6 md:p-8">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <Card className={cn('flex h-full flex-col rounded-[28px] p-5 md:p-6', className)}>
+      <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <h2 className="section-title text-xl font-semibold md:text-2xl">{title}</h2>
+          <h2 className="section-title text-lg font-semibold md:text-xl">{title}</h2>
           <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{subtitle}</p>
         </div>
 
@@ -40,55 +44,8 @@ function SectionCard({
         </Link>
       </div>
 
-      {children}
+      <div className="flex-1">{children}</div>
     </Card>
-  )
-}
-
-/**
- * A soft-tinted meaning group inside a section (design.md §10.4). Its header
- * is a link into the relevant detail page.
- */
-function SoftGroup({
-  title,
-  to,
-  children,
-  className,
-  titleClassName,
-}: {
-  title: string
-  to: string
-  children: ReactNode
-  className?: string
-  titleClassName?: string
-}) {
-  return (
-    <div className={cn('rounded-3xl bg-[hsl(var(--muted))] p-4', className)}>
-      <Link to={to} className="flex items-center justify-between gap-2 px-1">
-        <p className={cn('text-sm font-medium text-[hsl(var(--muted-foreground))]', titleClassName)}>
-          {title}
-        </p>
-        <ChevronRight className="size-4 text-[hsl(var(--muted-foreground))]" strokeWidth={1.8} />
-      </Link>
-      <div className="mt-4">{children}</div>
-    </div>
-  )
-}
-
-/**
- * A divided list of label/value rows on a white surface — the grouped-list
- * pattern the design system prefers over stacks of mini metric cards.
- */
-function StatList({ rows }: { rows: { label: string; value: string }[] }) {
-  return (
-    <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-2xl bg-card">
-      {rows.map((row) => (
-        <div key={row.label} className="flex items-center justify-between px-5 py-4">
-          <span className="text-sm text-[hsl(var(--muted-foreground))]">{row.label}</span>
-          <strong className="money-number text-2xl">{row.value}</strong>
-        </div>
-      ))}
-    </div>
   )
 }
 
@@ -100,55 +57,72 @@ function dueDate(value: string) {
   return value.replace(' Jul', '/07')
 }
 
-function amountGap(current: string, target: string) {
-  const currentValue = Number(current.replace(/[^\d.]/g, ''))
-  const targetValue = Number(target.replace(/[^\d.]/g, ''))
+function parseCompactMillions(value: string) {
+  return Number(value.replace('M', '').replace(',', '.'))
+}
 
-  if (!Number.isFinite(currentValue) || !Number.isFinite(targetValue)) {
-    return ''
-  }
-
-  return `${Math.max(targetValue - currentValue, 0)}M`
+function formatCompactMillions(value: number) {
+  const normalized = Number.isInteger(value) ? String(value) : value.toFixed(1)
+  return `${normalized.replace('.', ',')}M`
 }
 
 export function DashboardPage() {
   const { t } = useTranslation()
+  const { members } = useMembers()
   const {
     snapshot,
     payments,
     goals,
     assetGroups,
-    attentionItems,
     recentEvents: moneyEvents,
+    assetTrend,
   } = useDashboardOverview()
 
-  const longTermAssets =
-    assetGroups.find((group) => group.name === 'Dài hạn')?.value ?? '374M'
-  const primaryAssets =
-    assetGroups
-      .find((group) => group.name === 'Dài hạn')
-      ?.note.split(',')
-      .slice(0, 2)
-      .map((item) => item.trim())
-      .join(', ') ?? 'Vàng, đầu tư'
-  const firstAttention = attentionItems[0]
   const mainGoal = goals[0]
-  const goalGap = amountGap(mainGoal.current, mainGoal.target) || t('common.notCalculated')
-  const statusKey =
+  const statusVariant =
     snapshot.attentionCount > 2
-      ? 'dashboard.status.tense'
+      ? 'tense'
       : snapshot.attentionCount > 0
-        ? 'dashboard.status.attention'
-        : 'dashboard.status.stable'
+        ? 'attention'
+        : 'stable'
+  const statusKey = `dashboard.status.${statusVariant}`
+  const statusLineKey = `dashboard.hero.statusLine.${statusVariant}`
   const statusLabel = t(statusKey)
+  const activeMembers = members.filter((member) => member.status === 'active')
+  const invitedMembers = members.filter((member) => member.status === 'invited')
+  const membersSubtitle = t('members.list.title', {
+    active: activeMembers.length,
+    invited: invitedMembers.length,
+  })
+  const attentionTotal = formatCompactMillions(
+    payments.reduce((sum, payment) => sum + parseCompactMillions(payment.amount), 0),
+  )
+
+  // The hero breaks the total down into the three liquidity buckets so the user
+  // sees not just how much, but where the money sits. Sourced from the same
+  // asset groups the assets page uses; each row links into the assets detail.
+  const breakdown = [
+    { label: t('dashboard.sections.money.liquid'), value: assetGroups[0]?.value ?? '24,5M' },
+    { label: t('dashboard.sections.money.reserve'), value: assetGroups[1]?.value ?? '86M' },
+    { label: t('assets.strip.longTerm'), value: assetGroups[2]?.value ?? '374M' },
+  ]
 
   return (
-    <AppearGroup className="space-y-5">
+    <AppearGroup className="space-y-4">
       <AppearItem>
-        <section className="grid gap-4 lg:grid-cols-12">
-        <Card className="apple-shadow rounded-[32px] p-6 md:p-8 lg:col-span-9">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div>
+        <div className="px-1">
+          <h1 className="section-title text-2xl font-semibold tracking-[-0.03em] md:text-3xl">
+            {t('dashboard.title')}
+          </h1>
+        </div>
+      </AppearItem>
+
+      <AppearItem>
+        <Card className="apple-shadow overflow-hidden rounded-[28px] p-5 md:p-7">
+          <div className="grid gap-6 lg:grid-cols-12 lg:items-stretch">
+            {/* Left: total net worth and supporting metrics grouped together
+                so the headline and its breakdown read as one block. */}
+            <div className="flex min-w-0 flex-1 flex-col lg:col-span-4">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   className={cn(
@@ -166,208 +140,195 @@ export function DashboardPage() {
                   {t('dashboard.updatedAt', { date: shortDate(snapshot.updatedAt) })}
                 </span>
               </div>
-              <h1 className="page-title mt-4 text-4xl font-semibold md:text-5xl">
-                {t('dashboard.title')}
-              </h1>
+
+              <p className="mt-4 text-sm font-medium text-[hsl(var(--muted-foreground))]">
+                {t('dashboard.hero.netWorthLabel')}
+              </p>
+              <p className="money-number mt-2 text-5xl leading-none md:text-6xl">
+                {snapshot.netWorthDisplay}
+                <span className="ml-2 align-baseline text-2xl text-[hsl(var(--muted-foreground))] md:text-3xl">
+                  đ
+                </span>
+              </p>
+              <p className="mt-3 max-w-md text-sm md:text-base text-[hsl(var(--muted-foreground))]">
+                {t(statusLineKey)}
+              </p>
+
+              <div className="mt-6 flex flex-col gap-3">
+                <Link
+                  to="/assets"
+                  className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-[24px] bg-[hsl(var(--muted))]"
+                >
+                  {breakdown.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between gap-3 px-4 py-3.5"
+                    >
+                      <span className="text-sm text-[hsl(var(--muted-foreground))]">
+                        {item.label}
+                      </span>
+                      <strong className="money-number text-lg">{item.value} đ</strong>
+                    </div>
+                  ))}
+                </Link>
+
+                <Link
+                  to="/events"
+                  className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-full bg-[hsl(var(--primary))] px-5 text-sm font-semibold text-[hsl(var(--primary-foreground))] shadow-[0_8px_24px_rgba(0,0,0,0.04)] transition-opacity hover:opacity-90"
+                >
+                  <RefreshCw className="size-4" strokeWidth={1.8} />
+                  {t('dashboard.heroButton')}
+                </Link>
+              </div>
             </div>
 
-            <Link
-              to="/events"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[hsl(var(--primary))] px-5 text-sm font-semibold text-[hsl(var(--primary-foreground))] shadow-[0_8px_24px_rgba(0,0,0,0.04)] transition-opacity hover:opacity-90"
-            >
-              <RefreshCw className="size-4" strokeWidth={1.8} />
-              {t('dashboard.heroButton')}
-            </Link>
-          </div>
-
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl bg-[hsl(var(--muted))] p-5">
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                {t('dashboard.metrics.liquid')}
+            {/* Right: trend chart gets its own column so it reads as the
+                visual companion to the headline block on larger screens. */}
+            <div className="flex min-h-[190px] flex-col rounded-[24px] bg-[hsl(var(--muted))] p-4 md:p-5 lg:col-span-8">
+              <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+                {t('dashboard.sections.money.trend')}
               </p>
-              <p className="money-number mt-2 text-2xl md:text-3xl">{snapshot.liquidDisplay}</p>
-            </div>
-            <div className="rounded-2xl bg-[hsl(var(--muted))] p-5">
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                {t('dashboard.metrics.upcoming')}
-              </p>
-              <p className="mt-2 text-2xl font-semibold md:text-3xl">
-                {t('dashboard.metrics.paymentsCount', { count: payments.length })}
-              </p>
-            </div>
-            <div className="rounded-2xl bg-[hsl(var(--muted))] p-5">
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                {t('dashboard.metrics.attention')}
-              </p>
-              <p className="mt-2 text-2xl font-semibold md:text-3xl">
-                {t('dashboard.metrics.attentionCount', { count: snapshot.attentionCount })}
-              </p>
+              <div className="mt-3 flex flex-1 items-center">
+                <NetWorthSparkline snapshots={assetTrend} />
+              </div>
             </div>
           </div>
         </Card>
-
-        <Link
-          to="/events"
-          className="hidden rounded-[32px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] lg:col-span-3 lg:block"
-        >
-          <Card className="apple-shadow flex h-full min-h-[180px] flex-col justify-between rounded-[32px] bg-[hsl(var(--foreground))] p-6 text-white">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-white/60">{t('common.quick')}</p>
-              <Bell className="size-5 text-white/80" strokeWidth={1.8} />
-            </div>
-            <div>
-              <p className="section-title text-3xl font-semibold">{t('dashboard.quickCardTitle')}</p>
-              <p className="mt-1 text-sm text-white/60">{t('common.takesTwoMinutes')}</p>
-            </div>
-          </Card>
-        </Link>
-        </section>
       </AppearItem>
 
+      {/* Row 1 — this-week priority + most recent movement. */}
       <AppearItem>
-      <SectionCard
-        title={t('dashboard.sections.money.title')}
-        subtitle={t('dashboard.sections.money.subtitle')}
-        to="/assets"
-      >
         <div className="grid gap-4 lg:grid-cols-2">
-          <SoftGroup title={t('dashboard.sections.money.liquidity')} to="/assets">
-            <StatList
-              rows={[
-                { label: t('dashboard.sections.money.liquid'), value: snapshot.liquidDisplay },
-                { label: t('dashboard.sections.money.reserve'), value: snapshot.savings },
-              ]}
-            />
-          </SoftGroup>
-
-          <SoftGroup title={t('dashboard.sections.money.totalAssets')} to="/assets">
-            <StatList
-              rows={[
-                { label: t('dashboard.sections.money.assets'), value: longTermAssets },
-                { label: t('dashboard.sections.money.debt'), value: snapshot.debt },
-              ]}
-            />
-          </SoftGroup>
-        </div>
-      </SectionCard>
-      </AppearItem>
-
-      <AppearItem>
-      <SectionCard
-        title={t('dashboard.sections.attention.title')}
-        subtitle={t('dashboard.sections.attention.subtitle')}
-        to="/payments"
-      >
-        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-          <SoftGroup
-            title={t('dashboard.sections.attention.upcoming')}
+          <SectionCard
+            title={t('dashboard.sections.attention.title')}
+            subtitle={t('dashboard.sections.attention.subtitle')}
             to="/payments"
-            titleClassName="text-[hsl(var(--status-orange))]"
           >
-            <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-2xl bg-card">
-              {payments.map((payment, index) => (
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[24px] bg-[hsl(var(--muted))] px-4 py-3.5">
+                  <p className="text-xs font-medium uppercase tracking-[0.08em] text-[hsl(var(--muted-foreground))]">
+                    {t('dashboard.sections.attention.totalCount')}
+                  </p>
+                  <p className="mt-1 text-lg font-semibold tracking-[-0.02em]">
+                    {t('dashboard.metrics.paymentsCount', { count: payments.length })}
+                  </p>
+                </div>
+
+                <div className="rounded-[24px] bg-[hsl(var(--muted))] px-4 py-3.5">
+                  <p className="text-xs font-medium uppercase tracking-[0.08em] text-[hsl(var(--muted-foreground))]">
+                    {t('dashboard.sections.attention.totalAmount')}
+                  </p>
+                  <p className="money-number mt-1 text-lg">{attentionTotal} đ</p>
+                </div>
+              </div>
+
+              <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-[24px] bg-[hsl(var(--muted))]">
+              {payments.slice(0, 3).map((payment) => (
                 <Link
                   key={payment.name}
                   to="/payments"
-                  className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-[hsl(var(--muted))]"
+                  className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-[hsl(var(--secondary))]"
                 >
                   <div className="min-w-0">
-                    <p
-                      className={cn(
-                        'truncate font-medium tracking-[-0.01em]',
-                        index === 0 && 'font-semibold',
-                      )}
-                    >
-                      {payment.name}
-                    </p>
+                    <p className="truncate font-medium tracking-[-0.01em]">{payment.name}</p>
                     <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
                       {dueDate(payment.due)}
-                      {payment.amount ? ` · ${payment.amount}` : ''}
                     </p>
                   </div>
-                  <ChevronRight
-                    className="size-4 shrink-0 text-[hsl(var(--muted-foreground))]"
-                    strokeWidth={1.8}
-                  />
+                  {payment.amount ? (
+                    <span className="money-number shrink-0 text-base">{payment.amount}</span>
+                  ) : null}
+                </Link>
+              ))}
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title={t('dashboard.sections.recent.title')}
+            subtitle={`${moneyEvents[0].title} · ${moneyEvents[0].date}`}
+            to="/events"
+          >
+            <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-[24px] bg-[hsl(var(--muted))]">
+              {moneyEvents.slice(0, 2).map((event) => (
+                <Link
+                  key={`${event.title}-${event.date}`}
+                  to="/events"
+                  className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-[hsl(var(--secondary))]"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium tracking-[-0.01em]">{event.title}</p>
+                    <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{event.date}</p>
+                  </div>
+                  <p className="money-number shrink-0 text-base">{event.amount}</p>
                 </Link>
               ))}
             </div>
-          </SoftGroup>
-
-          <SoftGroup title={t('dashboard.sections.attention.discuss')} to="/events">
-            <p className="money-number px-1 text-4xl">
-              {t('dashboard.metrics.attentionCount', { count: snapshot.attentionCount })}
-            </p>
-            <p className="mt-2 px-1 text-sm text-[hsl(var(--muted-foreground))]">
-              {firstAttention.title.replace(' hơi lớn so với mức tiền dùng ngay', '')}
-            </p>
-            <Link
-              to="/events"
-              className="mt-5 inline-flex h-10 items-center rounded-full bg-[hsl(var(--primary))] px-5 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition-opacity hover:opacity-90"
-            >
-              {t('dashboard.sections.attention.discussMore')}
-            </Link>
-          </SoftGroup>
+          </SectionCard>
         </div>
-      </SectionCard>
       </AppearItem>
 
+      {/* Row 2 — long-term plan + household members. */}
       <AppearItem>
-      <SectionCard
-        title={t('dashboard.sections.longTerm.title')}
-        subtitle={t('dashboard.sections.longTerm.subtitle')}
-        to="/goals"
-      >
-        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-          <SoftGroup title={t('dashboard.sections.longTerm.mainGoal')} to="/goals">
-            <div className="rounded-2xl bg-card p-5">
-              <div className="flex items-start justify-between gap-4">
-                <p className="text-lg font-semibold tracking-[-0.02em]">{mainGoal.name}</p>
-                <p className="money-number text-2xl md:text-3xl">{mainGoal.progress}%</p>
+        <div className="grid gap-4 lg:grid-cols-12">
+          <SectionCard
+            title={t('dashboard.sections.longTerm.title')}
+            subtitle={t('dashboard.sections.longTerm.subtitle')}
+            to="/goals"
+            className="lg:col-span-8"
+          >
+            <div className="flex h-full flex-col justify-center rounded-[24px] bg-[hsl(var(--muted))] p-5">
+              <div className="flex items-end justify-between gap-3">
+                <p className="text-lg font-semibold tracking-[-0.02em] md:text-xl">
+                  {mainGoal.name}
+                </p>
+                <p className="money-number text-3xl md:text-4xl">{mainGoal.progress}%</p>
               </div>
-              <Progress value={mainGoal.progress} className="mt-5 h-2.5" />
+              <Progress value={mainGoal.progress} className="mt-4 h-2" />
             </div>
-          </SoftGroup>
+          </SectionCard>
 
-          <SoftGroup title={t('dashboard.sections.longTerm.remaining')} to="/goals">
-            <div className="rounded-2xl bg-card p-5">
-              <p className="money-number text-3xl">{goalGap}</p>
-              <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                {t('dashboard.sections.longTerm.mainAssets')} · {primaryAssets}
-              </p>
+          <SectionCard
+            title={t('nav.members')}
+            subtitle={membersSubtitle}
+            to="/members"
+            className="lg:col-span-4"
+          >
+            <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-[24px] bg-[hsl(var(--muted))]">
+              {members.slice(0, 3).map((member) => (
+                <Link
+                  key={member.id}
+                  to="/members"
+                  className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-[hsl(var(--secondary))]"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--background))] text-xs font-semibold tracking-[-0.01em]">
+                      {member.initials}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium tracking-[-0.01em]">{member.name}</p>
+                      <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+                        {member.lastActive}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge
+                    className={cn(
+                      member.status === 'active'
+                        ? 'bg-[hsla(var(--status-green),0.1)] text-[hsl(var(--status-green))]'
+                        : 'bg-[hsla(var(--status-orange),0.12)] text-[hsl(var(--status-orange))]',
+                    )}
+                  >
+                    {member.status === 'active'
+                      ? t('members.strip.active')
+                      : t('members.list.pending')}
+                  </Badge>
+                </Link>
+              ))}
             </div>
-          </SoftGroup>
+          </SectionCard>
         </div>
-      </SectionCard>
-      </AppearItem>
-
-      <AppearItem>
-      <SectionCard
-        title={t('dashboard.sections.recent.title')}
-        subtitle={`${moneyEvents[0].title} · ${moneyEvents[0].date}`}
-        to="/events"
-      >
-        <div className="rounded-3xl bg-[hsl(var(--muted))] p-4">
-          <p className="px-1 text-sm font-medium text-[hsl(var(--muted-foreground))]">
-            {t('dashboard.sections.recent.activity')}
-          </p>
-          <div className="mt-4 divide-y divide-[hsl(var(--border))] overflow-hidden rounded-2xl bg-card">
-            {moneyEvents.slice(0, 3).map((event) => (
-              <Link
-                key={`${event.title}-${event.date}`}
-                to="/events"
-                className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-[hsl(var(--muted))]"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium tracking-[-0.01em]">{event.title}</p>
-                  <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{event.date}</p>
-                </div>
-                <p className="money-number shrink-0 text-lg">{event.amount}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </SectionCard>
       </AppearItem>
     </AppearGroup>
   )
