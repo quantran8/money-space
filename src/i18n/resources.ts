@@ -7,6 +7,11 @@ export const resources = {
         add: 'Thêm',
         remove: 'Gỡ',
         update: 'Cập nhật',
+        edit: 'Chỉnh sửa',
+        delete: 'Xóa',
+        cancel: 'Hủy',
+        create: 'Tạo',
+        actions: 'Tùy chọn',
         quick: 'Nhanh',
         takesTwoMinutes: 'Mất 2 phút',
         selectDate: 'Chọn ngày',
@@ -22,6 +27,10 @@ export const resources = {
         dueOn: 'Đến hạn {{date}}',
         joined: 'Tham gia {{date}}',
         activeAt: 'Hoạt động {{value}}',
+        confirmDelete: {
+          title: 'Xóa mục này?',
+          description: 'Bạn có chắc muốn xóa “{{name}}”? Hành động này không thể hoàn tác.',
+        },
       },
       nav: {
         dashboard: 'Tổng quan',
@@ -105,6 +114,8 @@ export const resources = {
         summary: {
           eyebrow: 'Phân nhóm',
           title: 'Tổng quan tài sản',
+          liquidityGroup: 'Thanh khoản',
+          holdingsGroup: 'Tổng tài sản',
           usableNow: 'Có thể dùng ngay',
           easyUse: 'Dễ dùng',
           reserve: 'Tiết kiệm và dự phòng',
@@ -164,10 +175,13 @@ export const resources = {
         list: {
           eyebrow: 'Danh sách khoản',
           title: 'Lịch thanh toán sắp tới',
+          empty: 'Chưa có khoản nào. Hãy thêm khoản sắp tới đầu tiên.',
         },
         form: {
           eyebrow: 'Thêm khoản',
           title: 'Ghi một khoản sắp tới',
+          editEyebrow: 'Chỉnh sửa khoản',
+          editTitle: 'Cập nhật khoản',
           name: 'Tên khoản',
           namePlaceholder: 'Ví dụ: Học phí tháng 8',
           amount: 'Số tiền',
@@ -176,6 +190,7 @@ export const resources = {
           status: 'Trạng thái',
           statusPlaceholder: 'Chọn trạng thái',
           submit: 'Thêm khoản',
+          save: 'Lưu thay đổi',
         },
       },
       goals: {
@@ -188,10 +203,20 @@ export const resources = {
         list: {
           eyebrow: 'Danh sách mục tiêu',
           title: 'Tiến độ mục tiêu chung',
+          empty: 'Chưa có mục tiêu nào. Hãy tạo mục tiêu đầu tiên ở bên phải.',
+        },
+        actions: {
+          menu: 'Tùy chọn mục tiêu',
+          edit: 'Chỉnh sửa',
+          delete: 'Xóa',
+          contribute: 'Cập nhật',
+          contributePlaceholder: 'Thêm số tiền, ví dụ: 5M',
         },
         form: {
           eyebrow: 'Thêm mục tiêu',
           title: 'Đặt một mục tiêu mới',
+          editEyebrow: 'Chỉnh sửa mục tiêu',
+          editTitle: 'Cập nhật mục tiêu',
           name: 'Tên mục tiêu',
           namePlaceholder: 'Ví dụ: Mua xe',
           current: 'Đã có',
@@ -203,6 +228,8 @@ export const resources = {
           note: 'Ghi chú',
           notePlaceholder: 'Ví dụ: Để dành cho năm sau',
           submit: 'Thêm mục tiêu',
+          save: 'Lưu thay đổi',
+          cancel: 'Hủy',
         },
       },
       events: {
@@ -420,6 +447,11 @@ export const resources = {
         add: 'Add',
         remove: 'Remove',
         update: 'Update',
+        edit: 'Edit',
+        delete: 'Delete',
+        cancel: 'Cancel',
+        create: 'Create',
+        actions: 'Options',
         quick: 'Quick',
         takesTwoMinutes: 'Takes 2 minutes',
         selectDate: 'Select date',
@@ -435,6 +467,10 @@ export const resources = {
         dueOn: 'Due {{date}}',
         joined: 'Joined {{date}}',
         activeAt: 'Active {{value}}',
+        confirmDelete: {
+          title: 'Delete this item?',
+          description: 'Are you sure you want to delete “{{name}}”? This can’t be undone.',
+        },
       },
       nav: {
         dashboard: 'Overview',
@@ -518,6 +554,8 @@ export const resources = {
         summary: {
           eyebrow: 'Breakdown',
           title: 'Asset snapshot',
+          liquidityGroup: 'Liquidity',
+          holdingsGroup: 'Total assets',
           usableNow: 'Available now',
           easyUse: 'Easy access',
           reserve: 'Savings and reserve',
@@ -577,10 +615,13 @@ export const resources = {
         list: {
           eyebrow: 'Payment list',
           title: 'Upcoming payment schedule',
+          empty: 'No payments yet. Add your first upcoming payment.',
         },
         form: {
           eyebrow: 'Add payment',
           title: 'Log an upcoming payment',
+          editEyebrow: 'Edit payment',
+          editTitle: 'Update payment',
           name: 'Payment name',
           namePlaceholder: 'Example: August tuition',
           amount: 'Amount',
@@ -589,6 +630,7 @@ export const resources = {
           status: 'Status',
           statusPlaceholder: 'Choose a status',
           submit: 'Add payment',
+          save: 'Save changes',
         },
       },
       goals: {
@@ -601,10 +643,20 @@ export const resources = {
         list: {
           eyebrow: 'Goal list',
           title: 'Shared goal progress',
+          empty: 'No goals yet. Create your first one on the right.',
+        },
+        actions: {
+          menu: 'Goal options',
+          edit: 'Edit',
+          delete: 'Delete',
+          contribute: 'Update',
+          contributePlaceholder: 'Add amount, e.g. 5M',
         },
         form: {
           eyebrow: 'Add goal',
           title: 'Create a new goal',
+          editEyebrow: 'Edit goal',
+          editTitle: 'Update goal',
           name: 'Goal name',
           namePlaceholder: 'Example: Buy a car',
           current: 'Current',
@@ -616,6 +668,8 @@ export const resources = {
           note: 'Note',
           notePlaceholder: 'Example: Save for next year',
           submit: 'Add goal',
+          save: 'Save changes',
+          cancel: 'Cancel',
         },
       },
       events: {
