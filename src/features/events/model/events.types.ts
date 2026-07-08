@@ -6,7 +6,10 @@ export type MoneyEventItem = {
   date: string
   /** Full ISO date (YYYY-MM-DD) used for month grouping and filtering. */
   isoDate: string
-  type: 'expense' | 'income' | 'transfer' | 'goal_contribution'
+  type: 'expense' | 'income' | 'transfer' | 'goal_contribution' | 'debt_update'
   category: string
   direction: 'inflow' | 'outflow' | 'neutral'
+  assetId?: string
+  assetName?: string
+  debtId?: string
 }

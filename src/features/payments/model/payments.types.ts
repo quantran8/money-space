@@ -6,4 +6,5 @@ export type UpcomingPaymentItem = {
   amount: string
   due: string
   status: PaymentStatus
+  debtId?: string
 }

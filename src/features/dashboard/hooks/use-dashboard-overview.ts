@@ -3,6 +3,7 @@ import {
   assetGroups,
   attentionItems,
   dashboardGoals,
+  dashboardDebts,
   dashboardSnapshot,
   upcomingPayments,
 } from '@/features/dashboard/api/dashboard.repository'
@@ -17,6 +18,7 @@ export function useDashboardOverview() {
   return {
     snapshot: dashboardSnapshot,
     payments: upcomingPayments,
+    debts: dashboardDebts,
     goals: dashboardGoals,
     assetGroups,
     attentionItems,

@@ -41,4 +41,15 @@ export const moneyEvents: MoneyEventItem[] = [
     category: 'income',
     direction: 'inflow',
   },
+  {
+    title: 'Ghi nhận khoản vay mua xe',
+    amount: '120M',
+    note: 'Nhận tiền vay vào VCB và bắt đầu theo dõi trong mục Đang nợ.',
+    date: '12 Mar',
+    isoDate: '2026-03-12',
+    type: 'debt_update',
+    category: 'debt',
+    direction: 'neutral',
+    debtId: 'd1',
+  },
 ]

@@ -101,6 +101,11 @@ export function EventsDataTable({
                             defaultValue: event.category,
                           })}
                         </Badge>
+                        {event.assetName && (
+                          <Badge variant="secondary" className="bg-[hsla(var(--accent),0.08)] text-[hsl(var(--accent))] border-none">
+                            {event.assetName}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>

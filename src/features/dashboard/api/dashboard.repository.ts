@@ -28,6 +28,30 @@ export const upcomingPayments = [
   { name: 'Bảo hiểm xe', amount: '1,8M', due: '22 Jul', owner: 'Đang chờ xác nhận' },
 ]
 
+export const dashboardDebts = [
+  {
+    name: 'Vay mua xe',
+    outstanding: '84M',
+    due: '05 Aug',
+    lender: 'VPBank',
+    status: 'Đang trả',
+  },
+  {
+    name: 'Mượn mẹ để sửa nhà',
+    outstanding: '18M',
+    due: 'Linh hoạt',
+    lender: 'Mẹ',
+    status: 'Linh hoạt',
+  },
+  {
+    name: 'Thẻ tín dụng tháng trước',
+    outstanding: '12,8M',
+    due: '20 Jul',
+    lender: 'ACB',
+    status: 'Cần xem lại',
+  },
+]
+
 export const dashboardGoals = [
   {
     name: 'Quỹ dự phòng',

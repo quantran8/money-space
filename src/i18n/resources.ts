@@ -35,6 +35,7 @@ export const resources = {
       nav: {
         dashboard: 'Tổng quan',
         assets: 'Tài sản',
+        debts: 'Đang nợ',
         payments: 'Khoản sắp tới',
         goals: 'Mục tiêu',
         events: 'Sự kiện tài chính',
@@ -56,7 +57,7 @@ export const resources = {
           tense: 'Căng',
         },
         updatedAt: 'Cập nhật {{date}}',
-        title: 'Tình hình nhà mình',
+        title: 'Trang chủ',
         heroButton: 'Cập nhật',
         quickCardTitle: 'Cập nhật',
         hero: {
@@ -423,6 +424,8 @@ export const resources = {
           date: 'Ngày xảy ra',
           note: 'Ghi chú',
           notePlaceholder: 'Thêm một câu ngắn để người kia hiểu vì sao snapshot thay đổi.',
+          asset: 'Tài sản thanh khoản',
+          assetPlaceholder: 'Chọn tài sản dùng ngay...',
           helper:
             'Mục tiêu của money_events không phải ghi hết mọi giao dịch nhỏ. Chỉ cần ghi những khoản đủ lớn hoặc đủ quan trọng để cả hai cùng hiểu vì sao tiền tăng giảm.',
           submit: 'Thêm money event',
@@ -677,6 +680,7 @@ export const resources = {
       nav: {
         dashboard: 'Overview',
         assets: 'Assets',
+        debts: 'Debts',
         payments: 'Upcoming',
         goals: 'Goals',
         events: 'Money events',
@@ -1065,6 +1069,8 @@ export const resources = {
           date: 'Event date',
           note: 'Note',
           notePlaceholder: 'Add one short line so the other person understands the change.',
+          asset: 'Liquid Asset',
+          assetPlaceholder: 'Select an available asset...',
           helper:
             'The goal of money_events is not to track every tiny transaction. Only log items large enough or meaningful enough that both of you understand why money moved.',
           submit: 'Add money event',

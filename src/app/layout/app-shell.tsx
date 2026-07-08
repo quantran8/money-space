@@ -2,9 +2,9 @@ import { useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { motion } from 'motion/react'
 import {
-  CalendarDays,
   ChartNoAxesCombined,
   Home,
+  Landmark,
   Menu,
   ReceiptText,
   Settings,
@@ -33,7 +33,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { to: '/', labelKey: 'nav.dashboard', icon: Home },
   { to: '/assets', labelKey: 'nav.assets', icon: Wallet },
-  { to: '/payments', labelKey: 'nav.payments', icon: CalendarDays },
+  { to: '/debts', labelKey: 'nav.debts', icon: Landmark },
   { to: '/goals', labelKey: 'nav.goals', icon: Target },
   { to: '/events', labelKey: 'nav.events', icon: ReceiptText },
   { to: '/members', labelKey: 'nav.members', icon: Users },
