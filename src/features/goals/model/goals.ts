@@ -8,8 +8,10 @@ export const priorityLabels: Record<GoalPriority, string> = {
   low: 'Ưu tiên thấp',
 }
 
+/** Parse a raw (separator-free) VND digit string into a number. */
 export function parseAmount(raw: string) {
-  const cleaned = raw.replace(/,/g, '.').replace(/[^\d.]/g, '')
+  const cleaned = raw.replace(/\./g, '').trim()
+  if (cleaned === '') return 0
   const value = Number(cleaned)
   return Number.isFinite(value) ? value : 0
 }

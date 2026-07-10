@@ -1,10 +1,32 @@
 import { apiRequest } from '@/shared/api/http'
-import type { UpcomingPaymentItem } from '@/features/payments/model/payments.types'
+import { formatVndShort } from '@/shared/lib/format-money'
+import type { PaymentStatus, UpcomingPaymentItem } from '@/features/payments/model/payments.types'
+
+type PaymentApiItem = {
+  id: string
+  name: string
+  amount: number
+  dueDate?: string
+  due?: string
+  status: PaymentStatus
+  debtId?: string
+  owner?: string
+}
 
 type PaymentListResponse = {
   householdId: string
-  items: UpcomingPaymentItem[]
+  items: PaymentApiItem[]
   total: number
+}
+
+function toPaymentItem(item: PaymentApiItem): UpcomingPaymentItem {
+  const amount = typeof item.amount === 'number' ? item.amount : 0
+  return {
+    ...item,
+    amount: `${formatVndShort(amount)}`,
+    amountValue: amount,
+    due: item.due ?? item.dueDate ?? '',
+  }
 }
 
 export type PaymentPayload = {
@@ -16,8 +38,11 @@ export type PaymentPayload = {
   status: 'important' | 'normal' | 'pending'
 }
 
-export function listPayments(householdId: string) {
-  return apiRequest<PaymentListResponse>(`/api/households/${householdId}/upcoming-payments`)
+export async function listPayments(householdId: string) {
+  const response = await apiRequest<PaymentListResponse>(
+    `/api/households/${householdId}/upcoming-payments`,
+  )
+  return { ...response, items: response.items.map(toPaymentItem) }
 }
 
 export function createPayment(householdId: string, payload: PaymentPayload) {

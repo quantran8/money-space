@@ -3,18 +3,17 @@ import { z } from 'zod'
 type Translate = (key: string, params?: Record<string, unknown>) => string
 
 /**
- * Money shorthand used across the app, e.g. "12M", "1,8M", "20M", "500K", "4.5M".
- * Accepts an optional leading +/- sign, a number (comma or dot decimal),
- * and an optional K/M/B suffix.
+ * Money amount: a plain, separator-free string of digits stored in form state
+ * (the UI groups it with "." for display). A value of "0" is not accepted.
  */
-const moneyPattern = /^[+-]?\d+([.,]\d+)?\s*[kKmMbB]?$/
+const moneyPattern = /^\d+$/
 
 export const moneyAmount = z
   .string()
   .trim()
   .min(1, 'Vui long nhap so tien')
-  .refine((value) => moneyPattern.test(value), {
-    message: 'So tien khong hop le (vi du: 12M, 1,8M, 500K)',
+  .refine((value) => moneyPattern.test(value) && Number(value) > 0, {
+    message: 'So tien khong hop le',
   })
 
 /** Optional money amount — empty string is allowed and treated as "0". */
@@ -22,7 +21,7 @@ export const optionalMoneyAmount = z
   .string()
   .trim()
   .refine((value) => value === '' || moneyPattern.test(value), {
-    message: 'So tien khong hop le (vi du: 12M, 1,8M, 500K)',
+    message: 'So tien khong hop le',
   })
 
 export const localizedMoneyAmount = (t: Translate) =>
@@ -30,7 +29,7 @@ export const localizedMoneyAmount = (t: Translate) =>
     .string()
     .trim()
     .min(1, t('validation.requiredMoney'))
-    .refine((value) => moneyPattern.test(value), {
+    .refine((value) => moneyPattern.test(value) && Number(value) > 0, {
       message: t('validation.invalidMoney'),
     })
 

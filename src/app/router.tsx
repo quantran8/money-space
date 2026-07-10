@@ -2,17 +2,44 @@ import { Navigate, createBrowserRouter } from 'react-router-dom'
 
 import { AppShell } from '@/app/layout/app-shell'
 import { AssetsPage } from '@/features/assets/ui/assets-page'
+import { AuthCallbackPage } from '@/features/auth/ui/auth-callback-page'
+import { AuthPage } from '@/features/auth/ui/auth-page'
+import { RequireAuth } from '@/features/auth/ui/require-auth'
 import { DebtsPage } from '@/features/debts/ui/debts-page'
 import { DashboardPage } from '@/features/dashboard/ui/dashboard-page'
 import { EventsPage } from '@/features/events/ui/events-page'
 import { GoalsPage } from '@/features/goals/ui/goals-page'
 import { MembersPage } from '@/features/members/ui/members-page'
+import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
+import { RequireHousehold } from '@/features/onboarding/ui/require-household'
 import { SettingsPage } from '@/features/settings/ui/settings-page'
 
 export const router = createBrowserRouter([
   {
+    path: '/auth',
+    element: <AuthPage />,
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallbackPage />,
+  },
+  {
+    path: '/onboarding',
+    element: (
+      <RequireAuth>
+        <OnboardingPage />
+      </RequireAuth>
+    ),
+  },
+  {
     path: '/',
-    element: <AppShell />,
+    element: (
+      <RequireAuth>
+        <RequireHousehold>
+          <AppShell />
+        </RequireHousehold>
+      </RequireAuth>
+    ),
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'assets', element: <AssetsPage /> },

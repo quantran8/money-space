@@ -18,8 +18,14 @@ export type DebtItem = {
   debtType: DebtType
   lenderType: LenderType
   lenderName: string
+  /** Compact display string, e.g. "84M". */
   originalAmount: string
+  /** Compact display string, e.g. "84M". */
   outstandingAmount: string
+  /** Raw VND amounts, used to populate the edit form. */
+  originalAmountValue: number
+  outstandingAmountValue: number
+  fixedPaymentAmountValue?: number
   currency: string
   borrowedAt: string
   expectedFinalDueDate?: string
