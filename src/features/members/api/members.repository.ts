@@ -1,44 +1,52 @@
-import type { MemberItem } from '@/features/members/model/members.types'
+import { apiRequest } from '@/shared/api/http'
+import type { HouseholdRole, MemberItem, PermissionLevel } from '@/features/members/model/members.types'
+import type { HouseholdSummary } from '@/shared/hooks/use-active-household'
 
-export const household = {
-  name: 'Nhà Minh',
-  currency: 'VND',
-  updateFrequency: 'weekly',
-  createdAt: '12 Jan 2026',
+type MemberListResponse = {
+  household: HouseholdSummary
+  items: MemberItem[]
+  total: number
 }
 
-export const householdMembers: MemberItem[] = [
-  {
-    id: 'm1',
-    name: 'Minh Nguyễn',
-    email: 'minh@nhaminh.vn',
-    initials: 'MN',
-    role: 'owner',
-    permission: 'admin',
-    joinedAt: '12 Jan 2026',
-    lastActive: 'Hôm nay',
-    status: 'active',
-  },
-  {
-    id: 'm2',
-    name: 'An Trần',
-    email: 'an@nhaminh.vn',
-    initials: 'AT',
-    role: 'partner',
-    permission: 'edit_content',
-    joinedAt: '18 Jan 2026',
-    lastActive: 'Hôm qua',
-    status: 'active',
-  },
-  {
-    id: 'm3',
-    name: 'Bà ngoại',
-    email: 'ngoai@nhaminh.vn',
-    initials: 'BN',
-    role: 'viewer',
-    permission: 'view_summary',
-    joinedAt: '02 Feb 2026',
-    lastActive: '3 ngày trước',
-    status: 'invited',
-  },
-]
+export type MemberPayload = {
+  profileId?: string
+  name: string
+  email: string
+  initials?: string
+  role: HouseholdRole
+  permission?: PermissionLevel
+  joinedAt?: string
+  lastActive?: string
+  status?: 'active' | 'invited'
+}
+
+export function listMembers(householdId: string) {
+  return apiRequest<MemberListResponse>(`/api/households/${householdId}/members`)
+}
+
+export function createMember(householdId: string, payload: MemberPayload) {
+  return apiRequest<MemberItem>(`/api/households/${householdId}/members`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateMember(
+  householdId: string,
+  memberId: string,
+  payload: Partial<MemberPayload>,
+) {
+  return apiRequest<MemberItem>(`/api/households/${householdId}/members/${memberId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteMember(householdId: string, memberId: string) {
+  return apiRequest<{ deleted: boolean; memberId: string }>(
+    `/api/households/${householdId}/members/${memberId}`,
+    {
+      method: 'DELETE',
+    },
+  )
+}

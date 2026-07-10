@@ -169,6 +169,10 @@ function computeFormulaValue(term: CalculationTerm, asOf: string): number {
  * when a market-priced asset has no known price for its symbol.
  */
 export function computeCurrentValue(asset: Asset, asOf: string): number | null {
+  if (typeof asset.currentValue === 'number') {
+    return asset.currentValue
+  }
+
   switch (asset.valuationMode) {
     case 'manual':
       return asset.manualValue ?? 0

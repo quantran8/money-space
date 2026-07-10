@@ -79,7 +79,11 @@ export function DashboardPage() {
     assetTrend,
   } = useDashboardOverview()
 
+  if (!snapshot) {
+    return <div className="px-1 text-sm text-muted-foreground">Loading dashboard...</div>
+  }
   const mainGoal = goals[0]
+
   const statusVariant =
     snapshot.attentionCount > 2
       ? 'tense'
@@ -96,16 +100,16 @@ export function DashboardPage() {
     invited: invitedMembers.length,
   })
   const attentionTotal = formatCompactMillions(
-    payments.reduce((sum, payment) => sum + parseCompactMillions(payment.amount), 0),
+    payments.reduce((sum, payment) => sum + (payment.amountValue ?? parseCompactMillions(payment.amount)), 0) / 1_000_000,
   )
 
   // The hero breaks the total down into the three liquidity buckets so the user
   // sees not just how much, but where the money sits. Sourced from the same
   // asset groups the assets page uses; each row links into the assets detail.
   const breakdown = [
-    { label: t('dashboard.sections.money.liquid'), value: assetGroups[0]?.value ?? '24,5M' },
-    { label: t('dashboard.sections.money.reserve'), value: assetGroups[1]?.value ?? '86M' },
-    { label: t('assets.strip.longTerm'), value: assetGroups[2]?.value ?? '374M' },
+    { label: t('dashboard.sections.money.liquid'), value: assetGroups[0]?.valueDisplay ?? '0M' },
+    { label: t('dashboard.sections.money.reserve'), value: assetGroups[1]?.valueDisplay ?? '0M' },
+    { label: t('assets.strip.longTerm'), value: assetGroups[2]?.valueDisplay ?? '0M' },
   ]
 
   return (
@@ -227,7 +231,7 @@ export function DashboardPage() {
               <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-[24px] bg-[hsl(var(--muted))]">
               {payments.slice(0, 3).map((payment) => (
                 <Link
-                  key={payment.name}
+                  key={payment.id}
                   to="/payments"
                   className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-[hsl(var(--secondary))]"
                 >
@@ -248,13 +252,13 @@ export function DashboardPage() {
 
           <SectionCard
             title={t('dashboard.sections.recent.title')}
-            subtitle={`${moneyEvents[0].title} · ${moneyEvents[0].date}`}
+            subtitle={moneyEvents[0] ? `${moneyEvents[0].title} · ${moneyEvents[0].date}` : ''}
             to="/events"
           >
             <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-[24px] bg-[hsl(var(--muted))]">
               {moneyEvents.slice(0, 2).map((event) => (
                 <Link
-                  key={`${event.title}-${event.date}`}
+                  key={event.id ?? `${event.title}-${event.date}`}
                   to="/events"
                   className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-[hsl(var(--secondary))]"
                 >
@@ -262,7 +266,7 @@ export function DashboardPage() {
                     <p className="truncate font-medium tracking-[-0.01em]">{event.title}</p>
                     <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{event.date}</p>
                   </div>
-                  <p className="money-number shrink-0 text-base">{event.amount}</p>
+                    <p className="money-number shrink-0 text-base">{event.amount}</p>
                 </Link>
               ))}
             </div>
@@ -295,18 +299,18 @@ export function DashboardPage() {
               <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-[24px] bg-[hsl(var(--muted))]">
                 {debts.slice(0, 3).map((debt) => (
                   <Link
-                    key={debt.name}
+                    key={debt.id}
                     to="/debts"
                     className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-[hsl(var(--secondary))]"
                   >
                     <div className="min-w-0">
                       <p className="truncate font-medium tracking-[-0.01em]">{debt.name}</p>
                       <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-                        {debt.lender} · {debt.due}
+                        {debt.lenderName} · {debt.expectedFinalDueDate ?? 'Linh hoạt'}
                       </p>
                     </div>
                     <span className="money-number shrink-0 text-base text-[hsl(var(--status-red))]">
-                      {debt.outstanding}
+                      {debt.outstandingAmount}
                     </span>
                   </Link>
                 ))}
@@ -328,11 +332,11 @@ export function DashboardPage() {
             <div className="flex h-full flex-col justify-center rounded-[24px] bg-[hsl(var(--muted))] p-5">
               <div className="flex items-end justify-between gap-3">
                 <p className="text-lg font-semibold tracking-[-0.02em] md:text-xl">
-                  {mainGoal.name}
+                  {mainGoal?.name ?? 'No active goal'}
                 </p>
-                <p className="money-number text-3xl md:text-4xl">{mainGoal.progress}%</p>
+                <p className="money-number text-3xl md:text-4xl">{mainGoal?.progress ?? 0}%</p>
               </div>
-              <Progress value={mainGoal.progress} className="mt-4 h-2" />
+              <Progress value={mainGoal?.progress ?? 0} className="mt-4 h-2" />
             </div>
           </SectionCard>
 

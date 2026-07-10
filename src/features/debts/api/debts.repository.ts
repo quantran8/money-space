@@ -1,63 +1,117 @@
+import { apiRequest } from '@/shared/api/http'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 
-export const debtItems: DebtItem[] = [
-  {
-    id: 'd1',
-    name: 'Vay mua xe',
-    debtType: 'bank_loan',
-    lenderType: 'bank',
-    lenderName: 'VPBank',
-    originalAmount: '120M',
-    outstandingAmount: '84M',
-    currency: 'VND',
-    borrowedAt: '2026-03-12',
-    expectedFinalDueDate: '2028-03-12',
-    status: 'active',
-    ownerMemberId: 'm1',
-    ownerName: 'Minh',
-    receivedToAssetId: 'a2',
-    receivedToAssetName: 'VCB chung',
-    paymentFrequency: 'monthly',
-    fixedPaymentAmount: '8,5M',
-    interestSummary: '9.2%/năm · reducing balance',
-    note: 'Khoản vay chính để mua xe đi làm và đưa đón con.',
-  },
-  {
-    id: 'd2',
-    name: 'Mượn mẹ để sửa nhà',
-    debtType: 'family_loan',
-    lenderType: 'family',
-    lenderName: 'Mẹ',
-    originalAmount: '40M',
-    outstandingAmount: '18M',
-    currency: 'VND',
-    borrowedAt: '2026-01-18',
-    status: 'active',
-    ownerMemberId: 'm2',
-    ownerName: 'An',
-    receivedToAssetId: 'a3',
-    receivedToAssetName: 'Techcombank',
-    paymentFrequency: 'none',
-    note: 'Trả linh hoạt khi có tiền dư, không tính lãi.',
-  },
-  {
-    id: 'd3',
-    name: 'Thẻ tín dụng tháng trước',
-    debtType: 'credit_card',
-    lenderType: 'bank',
-    lenderName: 'ACB',
-    originalAmount: '12,8M',
-    outstandingAmount: '12,8M',
-    currency: 'VND',
-    borrowedAt: '2026-06-25',
-    expectedFinalDueDate: '2026-07-20',
-    status: 'overdue',
-    ownerMemberId: 'm1',
-    ownerName: 'Minh',
-    receivedToAssetName: 'Chi tiêu thẻ',
-    paymentFrequency: 'monthly',
-    fixedPaymentAmount: '12,8M',
-    interestSummary: 'Tạm tính theo sao kê nếu quá hạn',
-    note: 'Cần chốt nguồn trả trong tuần này.',
-  },
-]
+type DebtListResponse = {
+  householdId: string
+  items: Array<{
+    id: string
+    name: string
+    debtType: DebtItem['debtType']
+    lenderType: DebtItem['lenderType']
+    lenderName?: string
+    originalAmount: number
+    outstandingAmount: number
+    currency: string
+    borrowedAt?: string
+    expectedFinalDueDate?: string
+    status: DebtItem['status']
+    ownerMemberId?: string
+    receivedToAssetId?: string
+    paymentFrequency?: DebtItem['paymentFrequency']
+    fixedPaymentAmount?: number
+    interestType?: string
+    interestCalculation?: string
+    interestRate?: number
+    note?: string
+  }>
+  total: number
+}
+
+export type DebtPayload = {
+  name: string
+  debtType: DebtItem['debtType']
+  lenderType: DebtItem['lenderType']
+  lenderName?: string
+  originalAmount: number
+  outstandingAmount: number
+  currency?: string
+  borrowedAt?: string
+  expectedFinalDueDate?: string
+  status?: DebtItem['status']
+  ownerMemberId?: string
+  receivedToAssetId?: string
+  paymentFrequency?: string
+  fixedPaymentAmount?: number
+  interestType?: string
+  interestCalculation?: string
+  interestRate?: number
+  note?: string
+}
+
+function formatCompact(value?: number) {
+  if (value === undefined || value === null) return undefined
+  if (value >= 1_000_000_000) return `${Math.round((value / 1_000_000_000) * 10) / 10}B`
+  if (value >= 1_000_000) return `${Math.round((value / 1_000_000) * 10) / 10}M`
+  if (value >= 1_000) return `${Math.round((value / 1_000) * 10) / 10}K`
+  return `${value}`
+}
+
+function toDebtItem(record: DebtListResponse['items'][number]): DebtItem {
+  const interestSummary =
+    record.interestRate !== undefined && record.interestRate !== null
+      ? `${record.interestRate}%`
+      : record.interestType
+        ? [record.interestType, record.interestCalculation].filter(Boolean).join(' · ')
+        : undefined
+
+  return {
+    id: record.id,
+    name: record.name,
+    debtType: record.debtType,
+    lenderType: record.lenderType,
+    lenderName: record.lenderName ?? '',
+    originalAmount: formatCompact(record.originalAmount) ?? '0',
+    outstandingAmount: formatCompact(record.outstandingAmount) ?? '0',
+    currency: record.currency,
+    borrowedAt: record.borrowedAt ?? '',
+    expectedFinalDueDate: record.expectedFinalDueDate,
+    status: record.status,
+    ownerMemberId: record.ownerMemberId,
+    receivedToAssetId: record.receivedToAssetId,
+    paymentFrequency: record.paymentFrequency,
+    fixedPaymentAmount: formatCompact(record.fixedPaymentAmount),
+    interestSummary,
+    note: record.note,
+  }
+}
+
+export async function listDebts(householdId: string) {
+  const response = await apiRequest<DebtListResponse>(`/api/households/${householdId}/debts`)
+  return {
+    ...response,
+    items: response.items.map(toDebtItem),
+  }
+}
+
+export function createDebt(householdId: string, payload: DebtPayload) {
+  return apiRequest(`/api/households/${householdId}/debts`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateDebt(householdId: string, debtId: string, payload: Partial<DebtPayload>) {
+  return apiRequest(`/api/households/${householdId}/debts/${debtId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteDebt(householdId: string, debtId: string) {
+  return apiRequest<{ deleted: boolean; debtId: string }>(
+    `/api/households/${householdId}/debts/${debtId}`,
+    {
+      method: 'DELETE',
+    },
+  )
+}

@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { PageHeader } from '@/app/layout/page-header'
@@ -55,6 +56,7 @@ import { SummaryStrip, SummaryTile } from '@/components/ui/summary-strip'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { formatVndShort } from '@/shared/lib/format-money'
+import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { cn } from '@/shared/lib/utils'
 
 type AttentionLevel = 'normal' | 'important' | 'urgent'
@@ -332,6 +334,72 @@ function getPaymentRecordStatus(dueDate: string, status: 'important' | 'normal' 
   return 'unpaid'
 }
 
+function toUpcomingPaymentSeed(
+  payment: { id: string; name: string; amount: string; due: string; status: 'important' | 'normal' | 'pending'; owner?: string },
+  index: number,
+  assets: Array<{ id: string; name: string }>,
+  members: Array<{ id: string; name: string }>,
+): LocalUpcomingPayment {
+  const asset = assets[index % Math.max(assets.length, 1)]
+  const owner = members[index % Math.max(members.length, 1)]
+  const dueMonth = shortMonthNames.indexOf(payment.due.split(' ')[1] ?? 'Jul') + 1
+  const dueDate = `2026-${String(dueMonth > 0 ? dueMonth : 7).padStart(2, '0')}-${String(
+    Number(payment.due.split(' ')[0] ?? '10'),
+  ).padStart(2, '0')}`
+  return {
+    id: payment.id,
+    name: payment.name,
+    amount: parseAmountInput(payment.amount),
+    currency: 'VND',
+    dueDate,
+    status: getPaymentRecordStatus(dueDate, payment.status),
+    attentionLevel: getPaymentAttentionLevel(payment.status),
+    isAttentionNeeded: payment.status !== 'normal',
+    expectedFromAssetId: asset?.id,
+    expectedFromAssetName: asset?.name,
+    ownerMemberId: owner?.id,
+    ownerName: payment.owner || owner?.name,
+    frequency: index === 1 ? 'monthly' : 'once',
+    note:
+      payment.status === 'pending'
+        ? 'Cần cả hai cùng chốt lại số tiền trước khi xử lý.'
+        : 'Khoản đã lên kế hoạch để chủ động chuẩn bị tiền.',
+    autoCreateNext: index === 1,
+  }
+}
+
+function areEventsEqual(left: LocalMoneyEvent[], right: LocalMoneyEvent[]) {
+  if (left.length !== right.length) return false
+  return left.every((item, index) => {
+    const other = right[index]
+    return (
+      item.id === other.id &&
+      item.title === other.title &&
+      item.amount === other.amount &&
+      item.date === other.date &&
+      item.note === other.note &&
+      item.eventType === other.eventType &&
+      item.direction === other.direction
+    )
+  })
+}
+
+function arePaymentsEqual(left: LocalUpcomingPayment[], right: LocalUpcomingPayment[]) {
+  if (left.length !== right.length) return false
+  return left.every((item, index) => {
+    const other = right[index]
+    return (
+      item.id === other.id &&
+      item.name === other.name &&
+      item.amount === other.amount &&
+      item.dueDate === other.dueDate &&
+      item.status === other.status &&
+      item.ownerName === other.ownerName &&
+      item.expectedFromAssetId === other.expectedFromAssetId
+    )
+  })
+}
+
 function getTimelineGroupKey(record: FinancialRecordItem): TimelineGroupKey {
   if (record.sourceType === 'upcoming_payment') return 'upcoming'
   if (record.date === TODAY) return 'today'
@@ -475,42 +543,19 @@ function eventRequiresToAsset(eventType: RecordType) {
 export function EventsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { events: seedEvents } = useEvents()
-  const { payments: seedPayments } = usePayments()
+  const { events: seedEvents, createEvent, updateEvent, deleteEvent: deleteEventMutation } = useEvents()
+  const { payments: seedPayments, createPayment, updatePayment, deletePayment } = usePayments()
   const { assets } = useAssets()
   const { members } = useMembers()
 
-  const [events, setEvents] = useState<LocalMoneyEvent[]>(() => seedEvents.map(toMoneyEventSeed))
-  const [payments, setPayments] = useState<LocalUpcomingPayment[]>(() =>
-    seedPayments.map((payment, index) => {
-      const asset = assets[index % Math.max(assets.length, 1)]
-      const owner = members[index % Math.max(members.length, 1)]
-      const dueMonth = shortMonthNames.indexOf(payment.due.split(' ')[1] ?? 'Jul') + 1
-      const dueDate = `2026-${String(dueMonth > 0 ? dueMonth : 7).padStart(2, '0')}-${String(
-        Number(payment.due.split(' ')[0] ?? '10'),
-      ).padStart(2, '0')}`
-      return {
-        id: payment.id,
-        name: payment.name,
-        amount: parseAmountInput(payment.amount),
-        currency: 'VND',
-        dueDate,
-        status: getPaymentRecordStatus(dueDate, payment.status),
-        attentionLevel: getPaymentAttentionLevel(payment.status),
-        isAttentionNeeded: payment.status !== 'normal',
-        expectedFromAssetId: asset?.id,
-        expectedFromAssetName: asset?.name,
-        ownerMemberId: owner?.id,
-        ownerName: owner?.name,
-        frequency: index === 1 ? 'monthly' : 'once',
-        note:
-          payment.status === 'pending'
-            ? 'Cần cả hai cùng chốt lại số tiền trước khi xử lý.'
-            : 'Khoản đã lên kế hoạch để chủ động chuẩn bị tiền.',
-        autoCreateNext: index === 1,
-      }
-    }),
+  const sourceEvents = useMemo(() => seedEvents.map(toMoneyEventSeed), [seedEvents])
+  const sourcePayments = useMemo(
+    () => seedPayments.map((payment, index) => toUpcomingPaymentSeed(payment, index, assets, members)),
+    [assets, members, seedPayments],
   )
+
+  const [events, setEvents] = useState<LocalMoneyEvent[]>(sourceEvents)
+  const [payments, setPayments] = useState<LocalUpcomingPayment[]>([])
   const [tab, setTab] = useState<RecordTab>('all')
   const [query, setQuery] = useState('')
   const [formOpen, setFormOpen] = useState(false)
@@ -520,6 +565,8 @@ export function EventsPage() {
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [markPaidPaymentId, setMarkPaidPaymentId] = useState<string | null>(null)
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null)
+  const isSavingUpcoming = createPayment.isPending || updatePayment.isPending
+  const isSavingActual = createEvent.isPending || updateEvent.isPending || deletePayment.isPending
 
   const assetOptions = useMemo(
     () => assets.map((asset) => ({ value: asset.id, label: asset.name })),
@@ -785,6 +832,14 @@ export function EventsPage() {
   }, [events, payments, timelineRecords])
 
   useEffect(() => {
+    setEvents((current) => (areEventsEqual(current, sourceEvents) ? current : sourceEvents))
+  }, [sourceEvents])
+
+  useEffect(() => {
+    setPayments((current) => (arePaymentsEqual(current, sourcePayments) ? current : sourcePayments))
+  }, [sourcePayments])
+
+  useEffect(() => {
     if (!formOpen) return
 
     if (quickAction === 'upcoming') {
@@ -927,38 +982,38 @@ export function EventsPage() {
     }
   }
 
-  function onSubmitUpcoming(values: UpcomingRecordForm) {
+  async function onSubmitUpcoming(values: UpcomingRecordForm) {
     const asset = assets.find((item) => item.id === values.expectedFromAssetId)
     const member = members.find((item) => item.id === values.ownerMemberId)
-    const nextPayment: LocalUpcomingPayment = {
-      id: editingPaymentId ?? createId(),
+    const paymentStatus: 'important' | 'normal' | 'pending' =
+      values.attentionLevel === 'urgent'
+        ? 'pending'
+        : values.isAttentionNeeded || values.attentionLevel === 'important'
+          ? 'important'
+          : 'normal'
+    const payload = {
       name: values.name.trim(),
       amount: Math.abs(parseAmountInput(values.amount)),
-      currency: 'VND',
       dueDate: values.dueDate,
-      status: differenceInDays(values.dueDate, TODAY) < 0 ? 'overdue' : 'unpaid',
-      attentionLevel: values.attentionLevel,
-      isAttentionNeeded: values.isAttentionNeeded,
-      expectedFromAssetId: values.expectedFromAssetId || undefined,
-      expectedFromAssetName: asset?.name,
-      ownerMemberId: values.ownerMemberId || undefined,
-      ownerName: member?.name,
-      frequency: values.frequency,
-      note: values.note.trim() || 'Khoản sắp tới chưa làm thay đổi số dư.',
-      autoCreateNext: values.frequency === 'once' ? false : values.autoCreateNext,
+      owner: member?.name ?? asset?.name,
+      status: paymentStatus,
     }
 
-    if (editingPaymentId) {
-      setPayments((current) =>
-        current.map((payment) => (payment.id === editingPaymentId ? nextPayment : payment)),
-      )
-    } else {
-      setPayments((current) => [nextPayment, ...current])
+    try {
+      if (editingPaymentId) {
+        await updatePayment.mutateAsync({ paymentId: editingPaymentId, payload })
+        toast.success('Cap nhat record sap toi thanh cong.')
+      } else {
+        await createPayment.mutateAsync(payload)
+        toast.success('Tao record sap toi thanh cong.')
+      }
+      handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, editingPaymentId ? 'Khong the cap nhat record sap toi.' : 'Khong the tao record sap toi.'))
     }
-    handleFormOpenChange(false)
   }
 
-  function onSubmitActual(values: ActualRecordForm) {
+  async function onSubmitActual(values: ActualRecordForm) {
     const resolvedAction: Exclude<QuickAction, 'upcoming'> =
       quickAction && quickAction !== 'upcoming' ? quickAction : 'expense'
     const resolvedEventType: RecordType =
@@ -985,47 +1040,40 @@ export function EventsPage() {
           : resolvedAction === 'payment_paid'
             ? `Đã trả ${relatedPayment?.name ?? ''}`.trim()
             : values.title.trim()
-    const nextEvent: LocalMoneyEvent = {
-      id: editingEventId ?? createId(),
+    const payload = {
       title: autoTitle,
       amount,
-      currency: 'VND',
-      date: values.eventDate,
-      displayDate: formatShortDate(values.eventDate),
-      status: 'recorded',
-      attentionLevel: values.attentionLevel,
-      isAttentionNeeded: values.isAttentionNeeded,
-      eventType: resolvedEventType,
+      isoDate: values.eventDate,
+      type: resolvedEventType,
       direction: getDirectionFromEventType(resolvedEventType),
       category: values.category.trim() || 'other',
       fromAssetId: values.fromAssetId || undefined,
-      fromAssetName: fromAsset?.name,
       toAssetId: values.toAssetId || undefined,
-      toAssetName: toAsset?.name,
       upcomingPaymentId: values.upcomingPaymentId || undefined,
       financialGoalId: values.financialGoalId || undefined,
       note: values.note.trim() || t('common.noAdditionalNote'),
     }
 
-    if (markPaidPaymentId) {
-      setPayments((current) =>
-        current.map((payment) =>
-          payment.id === markPaidPaymentId ? { ...payment, status: 'paid' } : payment,
-        ),
-      )
-      setEvents((current) => [nextEvent, ...current])
-      handleFormOpenChange(false)
-      return
-    }
+    try {
+      if (markPaidPaymentId) {
+        await createEvent.mutateAsync(payload)
+        await deletePayment.mutateAsync(markPaidPaymentId)
+        toast.success('Da ghi nhan khoan da tra.')
+        handleFormOpenChange(false)
+        return
+      }
 
-    if (editingEventId) {
-      setEvents((current) =>
-        current.map((event) => (event.id === editingEventId ? nextEvent : event)),
-      )
-    } else {
-      setEvents((current) => [nextEvent, ...current])
+      if (editingEventId) {
+        await updateEvent.mutateAsync({ eventId: editingEventId, payload })
+        toast.success('Cap nhat record thanh cong.')
+      } else {
+        await createEvent.mutateAsync(payload)
+        toast.success('Tao record thanh cong.')
+      }
+      handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, editingEventId ? 'Khong the cap nhat record.' : 'Khong the tao record.'))
     }
-    handleFormOpenChange(false)
   }
 
   function togglePaymentAttention(paymentId: string) {
@@ -1063,37 +1111,54 @@ export function EventsPage() {
   }
 
   function postponePayment(paymentId: string) {
-    setPayments((current) =>
-      current.map((payment) =>
-        payment.id === paymentId
-          ? {
-              ...payment,
-              dueDate: new Date(startOfDay(payment.dueDate).setDate(startOfDay(payment.dueDate).getDate() + 7))
-                .toISOString()
-                .slice(0, 10),
-              status: 'postponed',
-              attentionLevel: payment.attentionLevel === 'normal' ? 'important' : payment.attentionLevel,
-            }
-          : payment,
-      ),
+    const payment = payments.find((item) => item.id === paymentId)
+    if (!payment) return
+    const nextDueDate = new Date(
+      startOfDay(payment.dueDate).setDate(startOfDay(payment.dueDate).getDate() + 7),
     )
+      .toISOString()
+      .slice(0, 10)
+    void updatePayment
+      .mutateAsync({
+        paymentId,
+        payload: {
+          dueDate: nextDueDate,
+          status: payment.attentionLevel === 'normal' ? 'important' : 'pending',
+        },
+      })
+      .then(() => toast.success('Da doi ngay xu ly.'))
+      .catch((error) => toast.error(getErrorMessage(error, 'Khong the doi ngay xu ly.')))
   }
 
   function duplicateEvent(eventId: string) {
     const event = events.find((item) => item.id === eventId)
     if (!event) return
-    setEvents((current) => [
-      {
-        ...event,
-        id: createId(),
+    void createEvent
+      .mutateAsync({
         title: `${event.title} (copy)`,
-      },
-      ...current,
-    ])
+        amount: Math.abs(event.amount),
+        isoDate: event.date,
+        type: event.eventType,
+        direction: event.direction,
+        category: event.category,
+        fromAssetId: event.fromAssetId,
+        toAssetId: event.toAssetId,
+        upcomingPaymentId: event.upcomingPaymentId,
+        financialGoalId: event.financialGoalId,
+        note: event.note,
+      })
+      .then(() => toast.success('Da nhan ban record.'))
+      .catch((error) => toast.error(getErrorMessage(error, 'Khong the nhan ban record.')))
   }
 
-  function deleteEvent(eventId: string) {
-    setEvents((current) => current.filter((event) => event.id !== eventId))
+  async function handleDeleteEvent(eventId: string) {
+    try {
+      await deleteEventMutation.mutateAsync(eventId)
+      toast.success('Da xoa record.')
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the xoa record.'))
+      throw error
+    }
   }
 
   const deletingEvent = deleteEventId ? events.find((event) => event.id === deleteEventId) : undefined
@@ -1258,8 +1323,8 @@ export function EventsPage() {
                           <div className="mt-4 flex flex-wrap gap-2 lg:justify-end">
                             {record.sourceType === 'upcoming_payment' ? (
                               <>
-                                <Button size="sm" onClick={() => openMarkPaid(record.id)}>
-                                  Đã trả
+                                <Button size="sm" disabled={isSavingActual} onClick={() => openMarkPaid(record.id)}>
+                                  {isSavingActual ? 'Dang xu ly...' : 'Đã trả'}
                                 </Button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
@@ -1490,8 +1555,8 @@ export function EventsPage() {
                   <Button type="button" variant="secondary" onClick={() => handleFormOpenChange(false)}>
                     {t('common.cancel')}
                   </Button>
-                  <Button type="submit" disabled={!isUpcomingValid}>
-                    Lưu khoản sắp tới
+                  <Button type="submit" disabled={!isUpcomingValid || isSavingUpcoming}>
+                    {isSavingUpcoming ? 'Dang luu...' : 'Lưu khoản sắp tới'}
                   </Button>
                 </ResponsiveDialogFooter>
               </form>
@@ -1692,8 +1757,10 @@ export function EventsPage() {
                   <Button type="button" variant="secondary" onClick={() => handleFormOpenChange(false)}>
                     {t('common.cancel')}
                   </Button>
-                  <Button type="submit" disabled={!isActualValid}>
-                    {quickAction === 'expense' || quickAction === 'payment_paid'
+                  <Button type="submit" disabled={!isActualValid || isSavingActual}>
+                    {isSavingActual
+                      ? 'Dang luu...'
+                      : quickAction === 'expense' || quickAction === 'payment_paid'
                       ? 'Lưu khoản đã chi'
                       : quickAction === 'income'
                         ? 'Lưu khoản tiền vào'
@@ -1713,7 +1780,9 @@ export function EventsPage() {
         onOpenChange={(open) => !open && setDeleteEventId(null)}
         title="Xóa record này?"
         description={`Bạn có chắc muốn xóa “${deletingEvent?.title ?? ''}”? Hành động này không thể hoàn tác.`}
-        onConfirm={() => deleteEventId && deleteEvent(deleteEventId)}
+        confirmDisabled={deleteEventMutation.isPending}
+        confirmLoadingLabel="Dang xoa..."
+        onConfirm={() => (deleteEventId ? handleDeleteEvent(deleteEventId) : undefined)}
       />
     </div>
   )

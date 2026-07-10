@@ -3,6 +3,7 @@ import { Landmark, Plus, Search, Wallet } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { AssetCompositionChart } from '@/features/assets/ui/asset-composition-chart'
@@ -49,6 +50,7 @@ import {
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { liquidityColors } from '@/shared/constants/colors'
 import { formatVndShort } from '@/shared/lib/format-money'
+import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { cn } from '@/shared/lib/utils'
 import { localizedOptionalText, localizedRequiredText } from '@/shared/lib/validation'
 
@@ -236,8 +238,7 @@ function modeSuffix(mode: ValuationMode): 'Manual' | 'Market' | 'Formula' {
 
 export function AssetsPage() {
   const { t } = useTranslation()
-  const { assets: seedAssets, snapshots } = useAssets()
-  const [assets, setAssets] = useState<Asset[]>(seedAssets)
+  const { assets, snapshots, summary, asOf, createAsset } = useAssets()
   const [formOpen, setFormOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [liquidityFilter, setLiquidityFilter] = useState<AssetLiquidity | 'all'>('all')
@@ -268,17 +269,12 @@ export function AssetsPage() {
     return draft ? computeCurrentValue(draft, AS_OF) : null
   }, [mode, watchedValues])
 
-  const totals = useMemo(() => {
-    const acc: Record<AssetLiquidity, number> = {
-      usable_now: 0,
-      not_immediately_usable: 0,
-      long_term: 0,
-    }
-    for (const asset of assets) {
-      acc[asset.liquidity] += computeCurrentValue(asset, AS_OF) ?? 0
-    }
-    return acc
-  }, [assets])
+  const totals = summary?.totals ?? {
+    usable_now: 0,
+    not_immediately_usable: 0,
+    long_term: 0,
+    totalAssets: 0,
+  }
 
   const total = totals.usable_now + totals.not_immediately_usable + totals.long_term
 
@@ -307,11 +303,26 @@ export function AssetsPage() {
     setFormOpen(open)
   }
 
-  function onSubmit(values: AssetForm) {
-    const nextAsset = toAsset(crypto.randomUUID(), values)
-    if (!nextAsset) return
-    setAssets((current) => [nextAsset, ...current])
-    handleFormOpenChange(false)
+  async function onSubmit(values: AssetForm) {
+    try {
+      const nextAsset = toAsset(crypto.randomUUID(), values)
+      if (!nextAsset) return
+      await createAsset.mutateAsync({
+        name: nextAsset.name,
+        type: nextAsset.type,
+        valuationMode: nextAsset.valuationMode,
+        liquidity: nextAsset.liquidity,
+        currency: nextAsset.currency,
+        note: nextAsset.note,
+        manualValue: nextAsset.manualValue,
+        marketPosition: nextAsset.marketPosition,
+        calculationTerm: nextAsset.calculationTerm,
+      })
+      toast.success('Tao tai san thanh cong.')
+      handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the tao tai san.'))
+    }
   }
 
   return (
@@ -419,7 +430,7 @@ export function AssetsPage() {
           </div>
 
           {filteredAssets.length > 0 ? (
-            <AssetList assets={filteredAssets} asOf={AS_OF} />
+            <AssetList assets={filteredAssets} asOf={asOf || AS_OF} />
           ) : (
             <p className="rounded-3xl bg-[hsl(var(--muted))] px-4 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">
               {t('assets.toolbar.empty')}
@@ -655,9 +666,9 @@ export function AssetsPage() {
               <Button type="button" variant="secondary" onClick={() => handleFormOpenChange(false)}>
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" disabled={!isValid}>
+              <Button type="submit" disabled={!isValid || createAsset.isPending}>
                 <Plus className="mr-2 size-4" />
-                {t('assets.form.submit')}
+                {createAsset.isPending ? 'Dang luu...' : t('assets.form.submit')}
               </Button>
             </ResponsiveDialogFooter>
           </form>

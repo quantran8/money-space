@@ -21,6 +21,8 @@ import type { ComponentType } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { pageTransition, pageVariants } from '@/components/ui/motion'
+import { useMembers } from '@/features/members/hooks/use-members'
+import { useActiveHousehold } from '@/shared/hooks/use-active-household'
 import { cn } from '@/shared/lib/utils'
 
 type NavItem = {
@@ -72,6 +74,16 @@ export function AppShell() {
   const { t } = useTranslation()
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const { activeHousehold } = useActiveHousehold()
+  const { members } = useMembers()
+  const activeMembers = members.filter((member) => member.status === 'active').length
+  const initials = activeHousehold?.name
+    ?.split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0] ?? '')
+    .join('')
+    .toUpperCase()
+    || 'MS'
 
   return (
     <div className="flex min-h-screen">
@@ -91,14 +103,16 @@ export function AppShell() {
 
         <Card className="fixed bottom-5 w-[232px]">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-semibold">
-              MN
-            </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-semibold">
+                    {initials}
+                  </div>
 
-            <div>
-              <p className="text-sm font-medium">{t('shell.householdName')}</p>
-              <p className="text-xs text-muted-foreground">{t('shell.householdMembers')}</p>
-            </div>
+                  <div>
+                    <p className="text-sm font-medium">{activeHousehold?.name ?? t('shell.householdName')}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {activeMembers > 0 ? `${activeMembers} members` : t('shell.householdMembers')}
+                    </p>
+                  </div>
           </div>
 
           <Button variant="secondary" className="w-full">
@@ -155,12 +169,12 @@ export function AppShell() {
               <Card className="mt-auto">
                 <div className="mb-4 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-semibold">
-                    MN
+                    {initials}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{t('shell.householdName')}</p>
+                    <p className="text-sm font-medium">{activeHousehold?.name ?? t('shell.householdName')}</p>
                     <p className="text-xs text-muted-foreground">
-                      {t('shell.householdMembers')}
+                      {activeMembers > 0 ? `${activeMembers} members` : t('shell.householdMembers')}
                     </p>
                   </div>
                 </div>

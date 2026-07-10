@@ -1,8 +1,51 @@
+import { apiRequest } from '@/shared/api/http'
 import type { UpcomingPaymentItem } from '@/features/payments/model/payments.types'
 
-export const upcomingPaymentList: UpcomingPaymentItem[] = [
-  { id: 'p1', name: 'Học phí tháng 7', amount: '12M', due: '10 Jul', status: 'important' },
-  { id: 'p2', name: 'Tiền nhà', amount: '8M', due: '15 Jul', status: 'normal' },
-  { id: 'p-loan-1', name: 'Trả nợ VPBank tháng 8', amount: '8,5M', due: '05 Aug', status: 'normal', debtId: 'd1' },
-  { id: 'p3', name: 'Bảo hiểm xe', amount: '1,8M', due: '22 Jul', status: 'pending' },
-]
+type PaymentListResponse = {
+  householdId: string
+  items: UpcomingPaymentItem[]
+  total: number
+}
+
+export type PaymentPayload = {
+  name: string
+  amount: number
+  dueDate: string
+  owner?: string
+  debtId?: string
+  status: 'important' | 'normal' | 'pending'
+}
+
+export function listPayments(householdId: string) {
+  return apiRequest<PaymentListResponse>(`/api/households/${householdId}/upcoming-payments`)
+}
+
+export function createPayment(householdId: string, payload: PaymentPayload) {
+  return apiRequest<UpcomingPaymentItem>(`/api/households/${householdId}/upcoming-payments`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updatePayment(
+  householdId: string,
+  paymentId: string,
+  payload: Partial<PaymentPayload>,
+) {
+  return apiRequest<UpcomingPaymentItem>(
+    `/api/households/${householdId}/upcoming-payments/${paymentId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    },
+  )
+}
+
+export function deletePayment(householdId: string, paymentId: string) {
+  return apiRequest<{ deleted: boolean; paymentId: string }>(
+    `/api/households/${householdId}/upcoming-payments/${paymentId}`,
+    {
+      method: 'DELETE',
+    },
+  )
+}

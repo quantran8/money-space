@@ -1,90 +1,31 @@
-/**
- * Dashboard overview data (mock).
- *
- * The home dashboard reads a pre-aggregated snapshot of the household's
- * situation. In the MVP this is seed data; later it becomes a Supabase
- * read of the latest snapshot + derived rollups.
- */
+import { apiRequest } from '@/shared/api/http'
 
-export const dashboardSnapshot = {
-  updatedAt: '05/07/2026',
-  liquid: '24.5',
-  liquidDisplay: '24,5M',
+export type DashboardOverview = {
+  updatedAt: string
+  liquid: string
+  liquidDisplay: string
   liquidSplit: {
-    cash: '4.5M',
-    account: '20M',
-  },
-  savings: '86M',
-  debt: '18M',
-  // Total net worth shown in the hero: assets minus debt. In the MVP this is a
-  // seed value; later it becomes a Supabase rollup of the latest snapshot.
-  netWorthDisplay: '466M',
-  attentionCount: 1,
+    cash: string
+    account: string
+  }
+  savings: string
+  debt: string
+  netWorthDisplay: string
+  attentionCount: number
 }
 
-export const upcomingPayments = [
-  { name: 'Học phí tháng 7', amount: '12M', due: '10 Jul', owner: 'An phụ trách' },
-  { name: 'Tiền nhà', amount: '8M', due: '15 Jul', owner: 'Minh phụ trách' },
-  { name: 'Bảo hiểm xe', amount: '1,8M', due: '22 Jul', owner: 'Đang chờ xác nhận' },
-]
+export type AttentionItem = {
+  title: string
+  reason: string
+  level: string
+}
 
-export const dashboardDebts = [
-  {
-    name: 'Vay mua xe',
-    outstanding: '84M',
-    due: '05 Aug',
-    lender: 'VPBank',
-    status: 'Đang trả',
-  },
-  {
-    name: 'Mượn mẹ để sửa nhà',
-    outstanding: '18M',
-    due: 'Linh hoạt',
-    lender: 'Mẹ',
-    status: 'Linh hoạt',
-  },
-  {
-    name: 'Thẻ tín dụng tháng trước',
-    outstanding: '12,8M',
-    due: '20 Jul',
-    lender: 'ACB',
-    status: 'Cần xem lại',
-  },
-]
+export function getDashboard(householdId: string) {
+  return apiRequest<DashboardOverview>(`/api/households/${householdId}/dashboard`)
+}
 
-export const dashboardGoals = [
-  {
-    name: 'Quỹ dự phòng',
-    progress: 72,
-    current: '86M',
-    target: '120M',
-    deadline: 'Q4/2026',
-  },
-  {
-    name: 'Du lịch cuối năm',
-    progress: 38,
-    current: '19M',
-    target: '50M',
-    deadline: 'Dec 2026',
-  },
-]
-
-export const assetGroups = [
-  { name: 'Có thể dùng ngay', value: '24,5M', note: 'Tiền mặt, VCB, Techcombank' },
-  { name: 'Tiết kiệm & dự phòng', value: '86M', note: '2 sổ tiết kiệm, quỹ khẩn cấp' },
-  { name: 'Dài hạn', value: '374M', note: 'Vàng, đầu tư, bảo hiểm, đất' },
-]
-
-export const attentionItems = [
-  {
-    title: 'Học phí tháng 7 hơi lớn so với mức tiền dùng ngay',
-    reason: 'Nên chốt nguồn chi trước 10 Jul để tránh rút từ quỹ dự phòng.',
-    level: 'Quan trọng',
-  },
-  {
-    title: 'Bảo dưỡng xe tháng này cao hơn bình thường',
-    reason:
-      'Khoản 5M đã ghi nhận là sự kiện lớn, nên để lại ghi chú cho cả hai cùng hiểu.',
-    level: 'Cần trao đổi',
-  },
-]
+export function listAttentionItems(householdId: string) {
+  return apiRequest<{ householdId: string; items: AttentionItem[]; total: number }>(
+    `/api/households/${householdId}/attention-items`,
+  )
+}

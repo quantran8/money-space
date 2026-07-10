@@ -3,6 +3,7 @@ import { Info, MoreVertical, Pencil, PiggyBank, Plus, Trash2 } from 'lucide-reac
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { PageHeader } from '@/app/layout/page-header'
@@ -36,12 +37,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  computeProgress,
   parseAmount,
   type GoalItem,
   type GoalPriority,
 } from '@/features/goals/model/goals'
 import { useGoals } from '@/features/goals/hooks/use-goals'
+import { getErrorMessage } from '@/shared/lib/get-error-message'
 import {
   localizedMoneyAmount,
   localizedOptionalMoneyAmount,
@@ -54,6 +55,7 @@ type GoalForm = {
   current: string
   target: string
   priority: GoalPriority
+  deadline: string
   note: string
 }
 
@@ -67,6 +69,7 @@ const defaultValues: GoalForm = {
   current: '',
   target: '',
   priority: 'medium',
+  deadline: '',
   note: '',
 }
 
@@ -97,14 +100,14 @@ function suggestedPace(goal: GoalItem) {
 
 export function GoalsPage() {
   const { t } = useTranslation()
-  const { goals: seedGoals } = useGoals()
-  const [goals, setGoals] = useState<GoalItem[]>(seedGoals)
+  const { goals, createGoal, updateGoal, deleteGoal, isLoading } = useGoals()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [contributions, setContributions] = useState<Record<string, string>>({})
   const [recent, setRecent] = useState<RecentUpdate[]>([])
   const isEditing = editingId !== null
+  const isSavingGoal = createGoal.isPending || updateGoal.isPending
 
   const priorityRank: Record<GoalPriority, number> = { high: 0, medium: 1, low: 2 }
   const stats = useMemo(() => {
@@ -142,6 +145,7 @@ export function GoalsPage() {
       current: localizedOptionalMoneyAmount(t),
       target: localizedMoneyAmount(t),
       priority: z.enum(['high', 'medium', 'low']),
+      deadline: z.string(),
       note: localizedOptionalText(t, 120),
     })
     .refine((data) => parseAmount(data.current || '0') <= parseAmount(data.target), {
@@ -177,6 +181,7 @@ export function GoalsPage() {
         current: editingGoal.current,
         target: editingGoal.target,
         priority: editingGoal.priority,
+        deadline: editingGoal.deadline === 'No deadline' ? '' : (editingGoal.deadline ?? ''),
         note: editingGoal.note,
       })
     } else {
@@ -199,70 +204,69 @@ export function GoalsPage() {
     if (!open) setEditingId(null)
   }
 
-  function onSubmit(values: GoalForm) {
-    const current = values.current.trim() || '0M'
-    const target = values.target.trim()
-
-    if (editingId) {
-      setGoals((prev) =>
-        prev.map((goal) =>
-          goal.id === editingId
-            ? {
-                ...goal,
-                name: values.name.trim(),
-                current,
-                target,
-                progress: computeProgress(current, target),
-                priority: values.priority,
-                note: values.note.trim() || priorityLabels[values.priority],
-              }
-            : goal,
-        ),
-      )
-    } else {
-      const nextGoal: GoalItem = {
-        id: `g${goals.length + 1}-${values.name}`,
+  async function onSubmit(values: GoalForm) {
+    try {
+      const current = values.current.trim() || '0M'
+      const payload = {
         name: values.name.trim(),
-        current,
-        target,
-        progress: computeProgress(current, target),
+        currentAmount: parseAmount(current) * 1_000_000,
+        targetAmount: parseAmount(values.target.trim()) * 1_000_000,
         priority: values.priority,
+        deadline: values.deadline || undefined,
         note: values.note.trim() || priorityLabels[values.priority],
       }
-      setGoals((prev) => [...prev, nextGoal])
+
+      if (editingId) {
+        await updateGoal.mutateAsync({ goalId: editingId, payload })
+        toast.success('Cap nhat muc tieu thanh cong.')
+      } else {
+        await createGoal.mutateAsync(payload)
+        toast.success('Tao muc tieu thanh cong.')
+      }
+
+      handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, editingId ? 'Khong the cap nhat muc tieu.' : 'Khong the tao muc tieu.'))
     }
-
-    handleFormOpenChange(false)
   }
 
-  function deleteGoal(goalId: string) {
-    setGoals((prev) => prev.filter((goal) => goal.id !== goalId))
-    setContributions((prev) => {
-      const next = { ...prev }
-      delete next[goalId]
-      return next
-    })
-    if (editingId === goalId) handleFormOpenChange(false)
+  async function handleDeleteGoal(goalId: string) {
+    try {
+      await deleteGoal.mutateAsync(goalId)
+      toast.success('Da xoa muc tieu.')
+      setContributions((prev) => {
+        const next = { ...prev }
+        delete next[goalId]
+        return next
+      })
+      if (editingId === goalId) handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the xoa muc tieu.'))
+      throw error
+    }
   }
 
-  function addContribution(goalId: string) {
+  async function addContribution(goalId: string) {
     const raw = contributions[goalId]?.trim()
     if (!raw) return
     const delta = parseAmount(raw)
     if (delta <= 0) return
 
     const goal = goals.find((item) => item.id === goalId)
-    setGoals((prev) =>
-      prev.map((item) => {
-        if (item.id !== goalId) return item
-        const nextCurrent = formatAmount(parseAmount(item.current) + delta)
-        return {
-          ...item,
-          current: nextCurrent,
-          progress: computeProgress(nextCurrent, item.target),
-        }
-      }),
-    )
+    try {
+      if (goal) {
+        await updateGoal.mutateAsync({
+          goalId,
+          payload: {
+            currentAmount: (goal.currentAmount ?? parseAmount(goal.current) * 1_000_000) + delta * 1_000_000,
+          },
+        })
+        toast.success('Da cap nhat dong gop cho muc tieu.')
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the cap nhat dong gop.'))
+      return
+    }
     setContributions((prev) => ({ ...prev, [goalId]: '' }))
     if (goal) {
       setRecent((prev) =>
@@ -296,7 +300,7 @@ export function GoalsPage() {
         }
       />
 
-      {goals.length > 0 ? (
+      {!isLoading && goals.length > 0 ? (
         <SummaryStrip>
           <SummaryTile
             label={t('goals.strip.count')}
@@ -458,9 +462,9 @@ export function GoalsPage() {
                         className="h-9 flex-1"
                         aria-label={t('goals.actions.contribute')}
                       />
-                      <Button type="submit" variant="secondary" size="sm" className="shrink-0">
+                      <Button type="submit" variant="secondary" size="sm" className="shrink-0" disabled={updateGoal.isPending}>
                         <Plus className="mr-1 size-4" />
-                        {t('goals.actions.contribute')}
+                        {updateGoal.isPending ? 'Dang cap nhat...' : t('goals.actions.contribute')}
                       </Button>
                     </form>
                   </div>
@@ -610,6 +614,10 @@ export function GoalsPage() {
               </FormField>
             </div>
 
+            <FormField label="Deadline">
+              <Input type="date" {...register('deadline')} />
+            </FormField>
+
             <FormField label={t('goals.form.priority')} error={errors.priority?.message}>
               <Controller
                 control={control}
@@ -645,8 +653,8 @@ export function GoalsPage() {
               >
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" disabled={!isValid}>
-                {isEditing ? t('goals.form.save') : t('goals.form.submit')}
+              <Button type="submit" disabled={!isValid || isSavingGoal}>
+                {isSavingGoal ? 'Dang luu...' : isEditing ? t('goals.form.save') : t('goals.form.submit')}
               </Button>
             </ResponsiveDialogFooter>
           </form>
@@ -658,7 +666,9 @@ export function GoalsPage() {
         onOpenChange={(open) => !open && setDeleteId(null)}
         title={t('common.confirmDelete.title')}
         description={t('common.confirmDelete.description', { name: deletingGoal?.name ?? '' })}
-        onConfirm={() => deleteId && deleteGoal(deleteId)}
+        confirmDisabled={deleteGoal.isPending}
+        confirmLoadingLabel="Dang xoa..."
+        onConfirm={() => (deleteId ? handleDeleteGoal(deleteId) : undefined)}
       />
     </div>
   )

@@ -73,6 +73,9 @@ export type Asset = {
   marketPosition?: MarketPosition
   /** Present for formula-calculated assets. */
   calculationTerm?: CalculationTerm
+  currentValue?: number
+  currentValueDisplay?: string
+  valueUpdatedAt?: string
 }
 
 /** Price of one `unit` expressed in `quoteCurrency`. */

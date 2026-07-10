@@ -1,55 +1,54 @@
+import { apiRequest } from '@/shared/api/http'
 import type { MoneyEventItem } from '@/features/events/model/events.types'
 
-export const moneyEvents: MoneyEventItem[] = [
-  {
-    title: 'Bảo dưỡng xe',
-    amount: '-5M',
-    note: 'Chi sửa xe để đi làm tuần này',
-    date: '05 Jul',
-    isoDate: '2026-07-05',
-    type: 'expense',
-    category: 'repair',
-    direction: 'outflow',
-  },
-  {
-    title: 'Chuyển thêm vào quỹ dự phòng',
-    amount: '+10M',
-    note: 'Bổ sung từ tài khoản lương',
-    date: '02 Jul',
-    isoDate: '2026-07-02',
-    type: 'goal_contribution',
-    category: 'saving',
-    direction: 'neutral',
-  },
-  {
-    title: 'Đóng trước tiền điện nước',
-    amount: '-1,2M',
-    note: 'Giảm áp lực giữa tháng',
-    date: '01 Jul',
-    isoDate: '2026-07-01',
-    type: 'expense',
-    category: 'household',
-    direction: 'outflow',
-  },
-  {
-    title: 'Nhận lương tháng 7',
-    amount: '+35M',
-    note: 'Tiền lương chuyển vào tài khoản chung',
-    date: '30 Jun',
-    isoDate: '2026-06-30',
-    type: 'income',
-    category: 'income',
-    direction: 'inflow',
-  },
-  {
-    title: 'Ghi nhận khoản vay mua xe',
-    amount: '120M',
-    note: 'Nhận tiền vay vào VCB và bắt đầu theo dõi trong mục Đang nợ.',
-    date: '12 Mar',
-    isoDate: '2026-03-12',
-    type: 'debt_update',
-    category: 'debt',
-    direction: 'neutral',
-    debtId: 'd1',
-  },
-]
+type EventListResponse = {
+  householdId: string
+  items: Array<MoneyEventItem & { id: string; amountValue: number }>
+  total: number
+}
+
+export type EventPayload = {
+  title: string
+  amount: number
+  note?: string
+  isoDate: string
+  type: 'expense' | 'income' | 'transfer' | 'asset_purchase' | 'asset_sale' | 'payment_paid' | 'goal_contribution' | 'debt_update' | 'adjustment' | 'other'
+  category: string
+  direction?: 'inflow' | 'outflow' | 'neutral'
+  fromAssetId?: string
+  toAssetId?: string
+  upcomingPaymentId?: string
+  debtId?: string
+  financialGoalId?: string
+}
+
+export function listEvents(householdId: string, month?: string) {
+  return apiRequest<EventListResponse>(
+    `/api/households/${householdId}/money-events`,
+    undefined,
+    month ? { month } : undefined,
+  )
+}
+
+export function createEvent(householdId: string, payload: EventPayload) {
+  return apiRequest(`/api/households/${householdId}/money-events`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateEvent(householdId: string, eventId: string, payload: Partial<EventPayload>) {
+  return apiRequest(`/api/households/${householdId}/money-events/${eventId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteEvent(householdId: string, eventId: string) {
+  return apiRequest<{ deleted: boolean; eventId: string }>(
+    `/api/households/${householdId}/money-events/${eventId}`,
+    {
+      method: 'DELETE',
+    },
+  )
+}

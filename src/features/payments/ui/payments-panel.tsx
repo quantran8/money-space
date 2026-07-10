@@ -3,6 +3,7 @@ import { Clock3, MoreVertical, Pencil, Plus, Search, ShieldCheck, Trash2 } from 
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { PageHeader } from '@/app/layout/page-header'
@@ -41,6 +42,7 @@ import {
   type UpcomingPaymentItem,
 } from '@/features/payments/model/payments'
 import { cn } from '@/shared/lib/utils'
+import { getErrorMessage } from '@/shared/lib/get-error-message'
 import {
   localizedIsoDate,
   localizedMoneyAmount,
@@ -74,13 +76,6 @@ const statusTone: Record<PaymentStatus, string> = {
 }
 
 const monthAbbr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-function formatDue(iso: string) {
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return iso
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${day} ${monthAbbr[date.getMonth()]}`
-}
 
 function dueToIso(due: string) {
   const parsed = new Date(due)
@@ -127,14 +122,14 @@ type PaymentTab = 'all' | 'important' | 'pending'
 
 export function PaymentsPanel({ embedded = false }: PaymentsPanelProps) {
   const { t } = useTranslation()
-  const { payments: seedPayments } = usePayments()
-  const [payments, setPayments] = useState<UpcomingPaymentItem[]>(seedPayments)
+  const { payments, createPayment, updatePayment, deletePayment } = usePayments()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [tab, setTab] = useState<PaymentTab>('all')
   const [query, setQuery] = useState('')
   const isEditing = editingId !== null
+  const isSavingPayment = createPayment.isPending || updatePayment.isPending
 
   const strip = useMemo(() => {
     const next7 = payments.filter((p) => {
@@ -266,38 +261,38 @@ export function PaymentsPanel({ embedded = false }: PaymentsPanelProps) {
     if (!open) setEditingId(null)
   }
 
-  function onSubmit(values: PaymentForm) {
-    if (editingId) {
-      setPayments((prev) =>
-        prev.map((payment) =>
-          payment.id === editingId
-            ? {
-                ...payment,
-                name: values.name.trim(),
-                amount: values.amount.trim(),
-                due: formatDue(values.due),
-                status: values.status,
-              }
-            : payment,
-        ),
-      )
-    } else {
-      const nextPayment: UpcomingPaymentItem = {
-        id: `p${payments.length + 1}-${values.name}`,
+  async function onSubmit(values: PaymentForm) {
+    try {
+      const payload = {
         name: values.name.trim(),
-        amount: values.amount.trim(),
-        due: formatDue(values.due),
+        amount: Number(values.amount.replace(/,/g, '.').replace(/[^\d.]/g, '')) * 1_000_000,
+        dueDate: values.due,
         status: values.status,
-      }
-      setPayments((prev) => [...prev, nextPayment])
-    }
+      } as const
 
-    handleFormOpenChange(false)
+      if (editingId) {
+        await updatePayment.mutateAsync({ paymentId: editingId, payload })
+        toast.success('Cap nhat khoan sap toi thanh cong.')
+      } else {
+        await createPayment.mutateAsync(payload)
+        toast.success('Tao khoan sap toi thanh cong.')
+      }
+
+      handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, editingId ? 'Khong the cap nhat khoan sap toi.' : 'Khong the tao khoan sap toi.'))
+    }
   }
 
-  function deletePayment(paymentId: string) {
-    setPayments((prev) => prev.filter((payment) => payment.id !== paymentId))
-    if (editingId === paymentId) handleFormOpenChange(false)
+  async function handleDeletePayment(paymentId: string) {
+    try {
+      await deletePayment.mutateAsync(paymentId)
+      toast.success('Da xoa khoan sap toi.')
+      if (editingId === paymentId) handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the xoa khoan sap toi.'))
+      throw error
+    }
   }
 
   return (
@@ -640,8 +635,8 @@ export function PaymentsPanel({ embedded = false }: PaymentsPanelProps) {
               >
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" disabled={!isValid}>
-                {isEditing ? t('payments.form.save') : t('payments.form.submit')}
+              <Button type="submit" disabled={!isValid || isSavingPayment}>
+                {isSavingPayment ? 'Dang luu...' : isEditing ? t('payments.form.save') : t('payments.form.submit')}
               </Button>
             </ResponsiveDialogFooter>
           </form>
@@ -653,7 +648,9 @@ export function PaymentsPanel({ embedded = false }: PaymentsPanelProps) {
         onOpenChange={(open) => !open && setDeleteId(null)}
         title={t('common.confirmDelete.title')}
         description={t('common.confirmDelete.description', { name: deletingPayment?.name ?? '' })}
-        onConfirm={() => deleteId && deletePayment(deleteId)}
+        confirmDisabled={deletePayment.isPending}
+        confirmLoadingLabel="Dang xoa..."
+        onConfirm={() => (deleteId ? handleDeletePayment(deleteId) : undefined)}
       />
     </div>
   )

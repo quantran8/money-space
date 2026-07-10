@@ -1,28 +1,50 @@
-import { seedSnapshots } from '@/features/assets/api/assets.repository'
-import {
-  assetGroups,
-  attentionItems,
-  dashboardGoals,
-  dashboardDebts,
-  dashboardSnapshot,
-  upcomingPayments,
-} from '@/features/dashboard/api/dashboard.repository'
-import { moneyEvents } from '@/features/events/api/events.repository'
+import { useQuery } from '@tanstack/react-query'
 
-/**
- * Read seam for the home dashboard. Aggregates the household snapshot,
- * upcoming payments, goals, asset groups, attention items and recent events
- * from mock seed data; swap for Supabase reads/rollups later.
- */
+import { useAssets } from '@/features/assets/hooks/use-assets'
+import { getDashboard, listAttentionItems } from '@/features/dashboard/api/dashboard.repository'
+import { useDebts } from '@/features/debts/hooks/use-debts'
+import { useEvents } from '@/features/events/hooks/use-events'
+import { useGoals } from '@/features/goals/hooks/use-goals'
+import { usePayments } from '@/features/payments/hooks/use-payments'
+import { queryKeys } from '@/shared/api/query-keys'
+import { useActiveHousehold } from '@/shared/hooks/use-active-household'
+
 export function useDashboardOverview() {
+  const { activeHouseholdId } = useActiveHousehold()
+  const assets = useAssets()
+  const payments = usePayments()
+  const goals = useGoals()
+  const debts = useDebts()
+  const events = useEvents()
+
+  const dashboardQuery = useQuery({
+    queryKey: activeHouseholdId ? queryKeys.dashboard(activeHouseholdId) : ['dashboard', 'inactive'],
+    queryFn: () => getDashboard(activeHouseholdId!),
+    enabled: !!activeHouseholdId,
+  })
+
+  const attentionQuery = useQuery({
+    queryKey: activeHouseholdId ? queryKeys.attentionItems(activeHouseholdId) : ['attention-items', 'inactive'],
+    queryFn: () => listAttentionItems(activeHouseholdId!),
+    enabled: !!activeHouseholdId,
+  })
+
   return {
-    snapshot: dashboardSnapshot,
-    payments: upcomingPayments,
-    debts: dashboardDebts,
-    goals: dashboardGoals,
-    assetGroups,
-    attentionItems,
-    recentEvents: moneyEvents,
-    assetTrend: seedSnapshots,
+    snapshot: dashboardQuery.data,
+    payments: payments.payments,
+    debts: debts.debts,
+    goals: goals.goals,
+    assetGroups: assets.summary?.groups ?? [],
+    attentionItems: attentionQuery.data?.items ?? [],
+    recentEvents: events.events,
+    assetTrend: assets.snapshots,
+    isLoading:
+      dashboardQuery.isLoading ||
+      attentionQuery.isLoading ||
+      assets.isLoading ||
+      payments.isLoading ||
+      goals.isLoading ||
+      debts.isLoading ||
+      events.isLoading,
   }
 }

@@ -3,6 +3,7 @@ import { Lock, Mail, ShieldCheck, UserPlus, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { PageHeader } from '@/app/layout/page-header'
@@ -31,10 +32,10 @@ import {
 import { SummaryStrip, SummaryTile } from '@/components/ui/summary-strip'
 import {
   type HouseholdRole,
-  type MemberItem,
   type PermissionLevel,
 } from '@/features/members/model/members'
 import { useMembers } from '@/features/members/hooks/use-members'
+import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { localizedEmailField } from '@/shared/lib/validation'
 
 const roleTone: Record<HouseholdRole, string> = {
@@ -63,8 +64,7 @@ type InviteForm = {
 
 export function MembersPage() {
   const { t } = useTranslation()
-  const { members: householdMembers } = useMembers()
-  const [members, setMembers] = useState<MemberItem[]>(householdMembers)
+  const { members, createMember, updateMember, deleteMember, isLoading } = useMembers()
   const [formOpen, setFormOpen] = useState(false)
   const [removeId, setRemoveId] = useState<string | null>(null)
   const roleLabels: Record<HouseholdRole, string> = {
@@ -119,43 +119,49 @@ export function MembersPage() {
     if (!open) reset({ email: '', role: 'partner' })
   }
 
-  function handleInvite(values: InviteForm) {
-    const email = values.email.trim()
-
-    const nextMember: MemberItem = {
-      id: `m${members.length + 1}-${email}`,
-      name: email.split('@')[0],
-      email,
-      initials: makeInitials(email),
-      role: values.role,
-      permission: defaultPermissionForRole[values.role],
-      joinedAt: t('members.invite.justInvited'),
-      lastActive: t('members.invite.notActiveYet'),
-      status: 'invited',
+  async function handleInvite(values: InviteForm) {
+    try {
+      const email = values.email.trim()
+      await createMember.mutateAsync({
+        name: email.split('@')[0],
+        email,
+        initials: makeInitials(email),
+        role: values.role,
+        permission: defaultPermissionForRole[values.role],
+        status: 'invited',
+      })
+      toast.success('Da them thanh vien.')
+      handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the them thanh vien.'))
     }
-
-    setMembers((current) => [...current, nextMember])
-    handleFormOpenChange(false)
   }
 
   function updateRole(id: string, role: HouseholdRole) {
-    setMembers((current) =>
-      current.map((member) =>
-        member.id === id
-          ? { ...member, role, permission: defaultPermissionForRole[role] }
-          : member,
-      ),
-    )
+    void updateMember
+      .mutateAsync({
+        memberId: id,
+        payload: { role, permission: defaultPermissionForRole[role] },
+      })
+      .then(() => toast.success('Da cap nhat vai tro thanh vien.'))
+      .catch((error) => toast.error(getErrorMessage(error, 'Khong the cap nhat vai tro.')))
   }
 
   function updatePermission(id: string, permission: PermissionLevel) {
-    setMembers((current) =>
-      current.map((member) => (member.id === id ? { ...member, permission } : member)),
-    )
+    void updateMember
+      .mutateAsync({ memberId: id, payload: { permission } })
+      .then(() => toast.success('Da cap nhat quyen thanh vien.'))
+      .catch((error) => toast.error(getErrorMessage(error, 'Khong the cap nhat quyen.')))
   }
 
-  function removeMember(id: string) {
-    setMembers((current) => current.filter((member) => member.id !== id))
+  async function removeMember(id: string) {
+    try {
+      await deleteMember.mutateAsync(id)
+      toast.success('Da xoa thanh vien.')
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the xoa thanh vien.'))
+      throw error
+    }
   }
 
   return (
@@ -209,7 +215,7 @@ export function MembersPage() {
           </div>
 
           <div className="space-y-3">
-            {members.map((member) => (
+            {!isLoading && members.map((member) => (
               <div key={member.id} className="surface-muted rounded-3xl p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-3">
@@ -256,7 +262,7 @@ export function MembersPage() {
                     </Label>
                     <Select
                       value={member.role}
-                      disabled={member.role === 'owner'}
+                      disabled={member.role === 'owner' || updateMember.isPending}
                       onValueChange={(value) => updateRole(member.id, value as HouseholdRole)}
                     >
                       <SelectTrigger>
@@ -277,7 +283,7 @@ export function MembersPage() {
                     </Label>
                     <Select
                       value={member.permission}
-                      disabled={member.role === 'owner'}
+                      disabled={member.role === 'owner' || updateMember.isPending}
                       onValueChange={(value) =>
                         updatePermission(member.id, value as PermissionLevel)
                       }
@@ -434,9 +440,9 @@ export function MembersPage() {
               >
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" disabled={!isValid}>
+              <Button type="submit" disabled={!isValid || createMember.isPending}>
                 <Mail className="mr-2 size-4" />
-                {t('members.invite.submit')}
+                {createMember.isPending ? 'Dang gui...' : t('members.invite.submit')}
               </Button>
             </ResponsiveDialogFooter>
           </form>
@@ -451,7 +457,9 @@ export function MembersPage() {
           name: removingMember?.name ?? removingMember?.email ?? '',
         })}
         confirmLabel={t('common.remove')}
-        onConfirm={() => removeId && removeMember(removeId)}
+        confirmDisabled={deleteMember.isPending}
+        confirmLoadingLabel="Dang xoa..."
+        onConfirm={() => (removeId ? removeMember(removeId) : undefined)}
       />
     </div>
   )

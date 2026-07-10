@@ -1,140 +1,116 @@
-/**
- * Assets data source (mock).
- *
- * Stands in for the future Supabase-backed asset store and the
- * market_prices / fx_rates caches (§13, §14). The UI reads seed data and
- * mock quotes from here; swap these functions for Supabase queries when the
- * backend is wired up.
- */
-
+import { apiRequest } from '@/shared/api/http'
 import type {
+  Asset,
   AssetClass,
   AssetSnapshotPoint,
-  Asset,
   MarketQuote,
 } from '@/features/assets/model/assets.types'
 
-// ---------------------------------------------------------------------------
-// Mock market data (stands in for market_prices / fx_rates cache, §13, §14)
-// ---------------------------------------------------------------------------
-
-/** Latest prices keyed by asset class + symbol (uppercased). */
-const mockPrices: Record<string, MarketQuote> = {
-  'gold:SJC': { price: 7_400_000, unit: 'chi', quoteCurrency: 'VND' },
-  'gold:9999': { price: 7_250_000, unit: 'chi', quoteCurrency: 'VND' },
-  'crypto:BTC': { price: 62_000, unit: 'BTC', quoteCurrency: 'USD' },
-  'crypto:ETH': { price: 3_100, unit: 'ETH', quoteCurrency: 'USD' },
-  'stock:FPT': { price: 132_000, unit: 'shares', quoteCurrency: 'VND' },
-  'stock:VNM': { price: 68_000, unit: 'shares', quoteCurrency: 'VND' },
-  'fund:VESAF': { price: 28_500, unit: 'units', quoteCurrency: 'VND' },
-  'foreign_currency:USD': { price: 1, unit: 'USD', quoteCurrency: 'USD' },
-  'foreign_currency:EUR': { price: 1.08, unit: 'EUR', quoteCurrency: 'USD' },
+type AssetRecord = Asset & {
+  currentValue: number
+  currentValueDisplay: string
+  valueUpdatedAt: string
 }
 
-/** FX rates into VND (household base currency for the MVP). */
-const mockFxToVnd: Record<string, number> = {
-  VND: 1,
-  USD: 25_400,
-  EUR: 27_450,
+type AssetListResponse = {
+  household: {
+    id: string
+    name: string
+    currency: string
+    updateFrequency: string
+    createdAt: string
+  }
+  asOf: string
+  items: AssetRecord[]
+  total: number
 }
 
-export function latestPrice(assetClass: AssetClass, symbol: string): MarketQuote | null {
-  return mockPrices[`${assetClass}:${symbol.trim().toUpperCase()}`] ?? null
+type AssetSummaryResponse = {
+  householdId: string
+  asOf: string
+  totals: {
+    usable_now: number
+    not_immediately_usable: number
+    long_term: number
+    totalAssets: number
+  }
+  groups: Array<{
+    liquidity: 'usable_now' | 'not_immediately_usable' | 'long_term'
+    name: string
+    value: number
+    valueDisplay: string
+  }>
 }
 
-export function fxToVnd(currency: string): number {
-  return mockFxToVnd[currency.trim().toUpperCase()] ?? 1
+type AssetSnapshotsResponse = {
+  householdId: string
+  items: Array<{
+    date: string
+    usableNow: number
+    notImmediatelyUsable: number
+    longTerm: number
+  }>
+  total: number
 }
 
-// ---------------------------------------------------------------------------
-// Snapshot history (frozen totals over time, §10 / §17)
-// ---------------------------------------------------------------------------
+export type AssetPayload = Omit<Asset, 'id'>
 
-/**
- * Six months of frozen household snapshots leading up to `AS_OF`. Values are in
- * VND and trend upward as savings accrue and gold/crypto move — the last point
- * lines up with the computed current totals of `seedAssets`.
- */
-export const seedSnapshots: AssetSnapshotPoint[] = [
-  { date: '2026-02-01', usable_now: 18_000_000, not_immediately_usable: 86_400_000, long_term: 96_000_000 },
-  { date: '2026-03-01', usable_now: 21_500_000, not_immediately_usable: 86_800_000, long_term: 101_000_000 },
-  { date: '2026-04-01', usable_now: 19_000_000, not_immediately_usable: 87_100_000, long_term: 108_500_000 },
-  { date: '2026-05-01', usable_now: 26_000_000, not_immediately_usable: 87_500_000, long_term: 112_000_000 },
-  { date: '2026-06-01', usable_now: 23_000_000, not_immediately_usable: 87_900_000, long_term: 110_500_000 },
-  { date: '2026-07-06', usable_now: 24_500_000, not_immediately_usable: 88_300_000, long_term: 115_700_000 },
-]
+export function listAssets(householdId: string) {
+  return apiRequest<AssetListResponse>(`/api/households/${householdId}/assets`)
+}
 
-// ---------------------------------------------------------------------------
-// Seed data (a couple's household across all three valuation modes)
-// ---------------------------------------------------------------------------
+export function getAssetSummary(householdId: string) {
+  return apiRequest<AssetSummaryResponse>(`/api/households/${householdId}/assets/summary`)
+}
 
-export const seedAssets: Asset[] = [
-  {
-    id: 'a1',
-    name: 'Tiền mặt ở nhà',
-    type: 'cash',
-    valuationMode: 'manual',
-    liquidity: 'usable_now',
-    currency: 'VND',
-    note: 'Chi tiêu hằng ngày',
-    manualValue: 4_500_000,
-  },
-  {
-    id: 'a2',
-    name: 'VCB Family',
-    type: 'bank_account',
-    valuationMode: 'manual',
-    liquidity: 'usable_now',
-    currency: 'VND',
-    note: 'Tài khoản chung',
-    manualValue: 20_000_000,
-  },
-  {
-    id: 'a3',
-    name: 'Sổ tiết kiệm ACB',
-    type: 'saving_deposit',
-    valuationMode: 'formula_calculated',
-    liquidity: 'not_immediately_usable',
-    currency: 'VND',
-    note: 'Quỹ dự phòng 6 tháng',
-    calculationTerm: {
-      calculationType: 'saving_deposit',
-      principalAmount: 86_000_000,
-      interestRate: 5.2,
-      startDate: '2026-01-01',
-      maturityDate: '2027-01-01',
+export async function getAssetSnapshots(householdId: string) {
+  const response = await apiRequest<AssetSnapshotsResponse>(
+    `/api/households/${householdId}/assets/snapshots`,
+  )
+  return {
+    ...response,
+    items: response.items.map(
+      (item): AssetSnapshotPoint => ({
+        date: item.date,
+        usable_now: item.usableNow,
+        not_immediately_usable: item.notImmediatelyUsable,
+        long_term: item.longTerm,
+      }),
+    ),
+  }
+}
+
+export function createAsset(householdId: string, payload: AssetPayload) {
+  return apiRequest(`/api/households/${householdId}/assets`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateAsset(
+  householdId: string,
+  assetId: string,
+  payload: Partial<AssetPayload>,
+) {
+  return apiRequest(`/api/households/${householdId}/assets/${assetId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteAsset(householdId: string, assetId: string) {
+  return apiRequest<{ deleted: boolean; assetId: string }>(
+    `/api/households/${householdId}/assets/${assetId}`,
+    {
+      method: 'DELETE',
     },
-  },
-  {
-    id: 'a4',
-    name: 'Vàng SJC',
-    type: 'gold',
-    valuationMode: 'market_priced',
-    liquidity: 'long_term',
-    currency: 'VND',
-    note: 'Giữ dài hạn',
-    marketPosition: {
-      assetClass: 'gold',
-      symbol: 'SJC',
-      quantity: 5,
-      unit: 'chi',
-      quoteCurrency: 'VND',
-    },
-  },
-  {
-    id: 'a5',
-    name: 'Bitcoin',
-    type: 'crypto',
-    valuationMode: 'market_priced',
-    liquidity: 'long_term',
-    currency: 'VND',
-    note: 'Đầu tư nhỏ',
-    marketPosition: {
-      assetClass: 'crypto',
-      symbol: 'BTC',
-      quantity: 0.05,
-      unit: 'BTC',
-      quoteCurrency: 'USD',
-    },
-  },
-]
+  )
+}
+
+export function latestPrice(_assetClass: AssetClass, _symbol: string): MarketQuote | null {
+  return null
+}
+
+export function fxToVnd(_currency: string): number {
+  return 1
+}

@@ -52,6 +52,12 @@ function isFrequency(value: string): value is Settings['updateFrequency'] {
 export function SettingsPage() {
   const { i18n, t } = useTranslation()
   const { household } = useMembers()
+  const safeHousehold = household ?? {
+    name: '',
+    currency: 'VND',
+    updateFrequency: 'weekly',
+    createdAt: '',
+  }
   const settingsSchema = useMemo(
     () =>
       z.object({
@@ -68,9 +74,9 @@ export function SettingsPage() {
     [t],
   )
   const initialSettings: Settings = {
-    householdName: household.name,
-    currency: isCurrency(household.currency) ? household.currency : 'VND',
-    updateFrequency: isFrequency(household.updateFrequency) ? household.updateFrequency : 'weekly',
+    householdName: safeHousehold.name,
+    currency: isCurrency(safeHousehold.currency) ? safeHousehold.currency : 'VND',
+    updateFrequency: isFrequency(safeHousehold.updateFrequency) ? safeHousehold.updateFrequency : 'weekly',
     language: i18n.resolvedLanguage === 'en' ? 'en' : 'vi',
     reminderPayments: true,
     reminderUpdate: true,
@@ -119,7 +125,7 @@ export function SettingsPage() {
       <SummaryStrip className="sm:grid-cols-3 xl:grid-cols-3">
         <SummaryTile
           label={t('settings.strip.household')}
-          value={<span className="section-title text-2xl">{household.name}</span>}
+          value={<span className="section-title text-2xl">{safeHousehold.name}</span>}
         />
         <SummaryTile
           label={t('settings.strip.rhythm')}
@@ -227,7 +233,7 @@ export function SettingsPage() {
               </div>
 
               <div className="surface-muted rounded-3xl p-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-                {t('settings.household.createdAt', { date: household.createdAt })}
+                {t('settings.household.createdAt', { date: safeHousehold.createdAt })}
               </div>
             </div>
           </Card>

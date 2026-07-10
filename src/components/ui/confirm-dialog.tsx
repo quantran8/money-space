@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -16,10 +17,12 @@ type ConfirmDialogProps = {
   title: string
   description?: string
   confirmLabel?: string
+  confirmLoadingLabel?: string
   cancelLabel?: string
   /** Style the confirm button as a destructive action. Defaults to true. */
   destructive?: boolean
-  onConfirm: () => void
+  confirmDisabled?: boolean
+  onConfirm: () => void | Promise<void>
 }
 
 /**
@@ -33,15 +36,23 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  confirmLoadingLabel,
   cancelLabel,
   destructive = true,
+  confirmDisabled = false,
   onConfirm,
 }: ConfirmDialogProps) {
   const { t } = useTranslation()
+  const [isConfirming, setIsConfirming] = React.useState(false)
 
-  function handleConfirm() {
-    onConfirm()
-    onOpenChange(false)
+  async function handleConfirm() {
+    try {
+      setIsConfirming(true)
+      await onConfirm()
+      onOpenChange(false)
+    } finally {
+      setIsConfirming(false)
+    }
   }
 
   return (
@@ -58,9 +69,12 @@ export function ConfirmDialog({
           <Button
             type="button"
             variant={destructive ? 'destructive' : 'default'}
+            disabled={confirmDisabled || isConfirming}
             onClick={handleConfirm}
           >
-            {confirmLabel ?? t('common.delete')}
+            {isConfirming
+              ? (confirmLoadingLabel ?? confirmLabel ?? t('common.delete'))
+              : (confirmLabel ?? t('common.delete'))}
           </Button>
         </DialogFooter>
       </DialogContent>
