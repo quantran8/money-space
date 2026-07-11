@@ -67,38 +67,21 @@ export function GoalFormDialog({
             />
           </FormField>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label={t('goals.form.current')} error={errors.current?.message}>
-              <Controller
-                control={control}
-                name="current"
-                render={({ field }) => (
-                  <MoneyInput
-                    placeholder={t('goals.form.currentPlaceholder')}
-                    aria-invalid={!!errors.current}
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                  />
-                )}
-              />
-            </FormField>
-            <FormField label={t('goals.form.target')} error={errors.target?.message}>
-              <Controller
-                control={control}
-                name="target"
-                render={({ field }) => (
-                  <MoneyInput
-                    placeholder={t('goals.form.targetPlaceholder')}
-                    aria-invalid={!!errors.target}
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                  />
-                )}
-              />
-            </FormField>
-          </div>
+          <FormField label={t('goals.form.target')} error={errors.target?.message}>
+            <Controller
+              control={control}
+              name="target"
+              render={({ field }) => (
+                <MoneyInput
+                  placeholder={t('goals.form.targetPlaceholder')}
+                  aria-invalid={!!errors.target}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                />
+              )}
+            />
+          </FormField>
 
           <FormField label="Deadline">
             <Input type="date" {...register('deadline')} />

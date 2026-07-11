@@ -1,5 +1,5 @@
 import { apiRequest } from '@/shared/api/http'
-import type { DebtItem } from '@/features/debts/model/debts.types'
+import type { DebtInterestPeriodDto, DebtItem } from '@/features/debts/model/debts.types'
 
 type DebtListResponse = {
   householdId: string
@@ -22,6 +22,7 @@ type DebtListResponse = {
     interestType?: string
     interestCalculation?: string
     interestRate?: number
+    interestPeriods?: DebtInterestPeriodDto[]
     note?: string
   }>
   total: number
@@ -45,7 +46,20 @@ export type DebtPayload = {
   interestType?: string
   interestCalculation?: string
   interestRate?: number
+  interestPeriods?: DebtInterestPeriodDto[]
   note?: string
+  /**
+   * Required when editing a debt that already has money-event history. Absent
+   * for a new debt or a history-less edit (the backend keeps the simple
+   * overwrite path). See the debt-update-mode dialog + memory/debts.md.
+   */
+  updateMode?:
+    | { kind: 'correction' }
+    | {
+        kind: 'effective'
+        effectiveDate: string
+        balanceIntent?: 'fix_original' | 'additional_disbursement' | 'reconcile_balance'
+      }
 }
 
 function formatCompact(value?: number) {
@@ -84,6 +98,8 @@ function toDebtItem(record: DebtListResponse['items'][number]): DebtItem {
     paymentFrequency: record.paymentFrequency,
     fixedPaymentAmount: formatCompact(record.fixedPaymentAmount),
     interestSummary,
+    interestCalculation: record.interestCalculation,
+    interestPeriods: record.interestPeriods,
     note: record.note,
   }
 }

@@ -265,9 +265,10 @@ Schema MVP vì vậy cần thêm:
 
 ```txt
 debts
-debt_terms
 debt_interest_periods
 ```
+
+Ghi chú: các điều khoản trả nợ (payment_frequency, fixed_payment_amount, minimum_payment_amount, interest_type, interest_calculation) đã được gộp thẳng vào bảng `debts`, không tách riêng bảng `debt_terms`.
 
 `upcoming_payments` và `money_events` cũng nên có `debt_id` để nối kỳ trả nợ và các sự kiện liên quan về đúng khoản vay gốc.
 
@@ -292,10 +293,10 @@ assets
 asset_valuations
 snapshot_asset_values
 debts
-debt_terms
 debt_interest_periods
 upcoming_payments
 money_events
+money_event_categories
 financial_goals
 attention_items
 ```
@@ -525,10 +526,15 @@ households 1 - n asset_valuations
 households 1 - n snapshot_asset_values
 households 1 - n upcoming_payments
 households 1 - n money_events
+households 1 - n money_event_categories
 households 1 - n financial_goals
 households 1 - n attention_items
 households 1 - n audit_logs
 ```
+
+## Note
+
+`currency` reference tới `currencies(code)` (xem §14A). Không còn dùng enum/text tự do cho tiền tệ.
 
 ---
 
@@ -538,7 +544,7 @@ households 1 - n audit_logs
 
 Lưu user nào thuộc household nào và có quyền gì.
 
-Đây là bảng quan trọng cho permission và RLS.
+Đây là bảng quan trọng cho permission và enforcement quyền (app-layer guard, xem §31).
 
 ## Fields
 
@@ -549,13 +555,16 @@ household_id        uuid not null references households(id)
 user_id             uuid not null references profiles(id)
 
 role                text not null
-permission_level    text not null
+permission_level    text                    (nullable, null = derive từ role)
+
+status              text not null default 'active'
 
 joined_at           timestamptz
 invited_by          uuid references profiles(id)
 
 created_at          timestamptz not null default now()
 updated_at          timestamptz
+deleted_at          timestamptz
 ```
 
 ## Enum
@@ -572,7 +581,35 @@ permission_level:
 - view_detail
 - edit_content
 - admin
+
+status:
+- active
+- invited
 ```
+
+## Note về permission_level
+
+`permission_level` giờ NULLABLE và chỉ là override.
+
+```txt
+permission_level = null
+→ capability được derive từ role (role → permission mặc định)
+
+permission_level = <giá trị>
+→ override, dùng thẳng giá trị này thay cho mặc định của role
+```
+
+`status`:
+
+```txt
+active
+= member đang hoạt động
+
+invited
+= record được tạo sẵn cho lời mời, chưa join thật
+```
+
+Bảng dùng soft-delete qua `deleted_at`.
 
 ## Constraints
 
@@ -636,7 +673,7 @@ token                      text not null unique
 status                     text not null default 'pending'
 
 default_role               text not null default 'partner'
-default_permission_level   text not null default 'view_detail'
+default_permission_level   text                    (nullable, null = derive từ default_role)
 
 expires_at                 timestamptz not null
 
@@ -711,30 +748,33 @@ total_debt                 numeric not null default 0
 upcoming_due_amount        numeric not null default 0
 attention_count            integer not null default 0
 
-status                     text not null default 'insufficient_data'
-source_mode                text not null default 'manual'
-
 note                       text
 
-created_by                 uuid references profiles(id)
+created_by                 uuid references profiles(id)     (nullable, ON DELETE SET NULL)
 created_at                 timestamptz not null default now()
 deleted_at                 timestamptz
 ```
 
-## Enum
+## Derived values (không lưu cột)
+
+`status` và `source_mode` KHÔNG còn là cột trong bảng. Chúng được **derive lúc đọc**:
 
 ```txt
-status:
+status
+= tính từ totals (total_liquid / total_debt / upcoming_due_amount) + attention_count
 - good
 - attention
 - tight
 - insufficient_data
 
-source_mode:
-- manual
-- calculated
-- mixed
+source_mode (sourceMode khi trả về API)
+= derive từ valuation_method của các snapshot_asset_values thuộc snapshot đó
+- manual   → tất cả đều manual
+- calculated → tất cả đều formula/market
+- mixed    → có cả hai
 ```
+
+Vì hai giá trị này derive được từ dữ liệu đã freeze trong `snapshot_asset_values` + totals, không cần lưu để tránh lệch trạng thái.
 
 ## Constraints
 
@@ -767,6 +807,16 @@ money_events
 ```
 
 Snapshot không bắt buộc luôn khớp tuyệt đối với tổng assets tại hiện tại, vì snapshot là bản ghi lịch sử.
+
+## Endpoints
+
+```txt
+POST /snapshots
+= tạo snapshot thật theo flow §26 (freeze snapshot_asset_values)
+
+GET /snapshots
+= đọc snapshots, status + sourceMode được derive lúc đọc
+```
 
 ---
 
@@ -1089,6 +1139,65 @@ rate = 25400
 ```txt
 fx_rates(base_currency, quote_currency, rate_time desc)
 ```
+
+## Note
+
+`base_currency` và `quote_currency` reference tới `currencies(code)` (xem §14A).
+
+---
+
+# 14A. Table: currencies
+
+## Dùng để làm gì?
+
+Bảng chuẩn hóa danh mục tiền tệ theo ISO-4217. Đây là **nguồn chuẩn hóa đa tiền tệ** duy nhất, thay cho các bộ enum currency mâu thuẫn nhau trước đây (households.currency, assets.currency, quote_currency của market position/fx_rate...).
+
+## Fields
+
+```txt
+code         char(3) primary key         (ISO-4217, ví dụ VND, USD, EUR)
+
+name         text not null
+symbol       text
+decimals     integer not null default 0
+is_active    boolean not null default true
+```
+
+## Constraints
+
+```txt
+code <> ''
+decimals >= 0
+```
+
+## Example
+
+```txt
+code = VND, name = Vietnamese Dong, symbol = ₫, decimals = 0
+code = USD, name = US Dollar,       symbol = $, decimals = 2
+```
+
+## Note về FK
+
+Mọi cột currency trong schema giờ có foreign key tới `currencies(code)`:
+
+```txt
+households.currency
+assets.currency
+asset_valuations.currency
+asset_calculation_terms.currency
+snapshot_asset_values.currency
+upcoming_payments (amount cùng household currency)
+money_events.currency
+financial_goals (theo household currency)
+debts.currency
+asset_market_positions.quote_currency
+market_prices.quote_currency
+fx_rates.base_currency
+fx_rates.quote_currency
+```
+
+Điều này thay thế 3 bộ enum tiền tệ mâu thuẫn trước đây bằng một danh mục duy nhất.
 
 ---
 
@@ -1454,7 +1563,6 @@ debt_id               uuid references debts(id)
 
 status                text not null default 'unpaid'
 attention_level       text not null default 'normal'
-is_attention_needed   boolean not null default false
 
 note                  text
 
@@ -1573,7 +1681,7 @@ title                    text not null
 description              text
 
 event_type               text not null
-category                 text
+category                 text                    (code, FK mềm tới money_event_categories.code)
 
 amount                   numeric not null default 0
 currency                 text not null default 'VND'
@@ -1588,9 +1696,6 @@ upcoming_payment_id      uuid references upcoming_payments(id)
 debt_id                  uuid references debts(id)
 financial_goal_id        uuid references financial_goals(id)
 snapshot_id              uuid references snapshots(id)
-
-is_large_event           boolean not null default false
-is_attention_needed      boolean not null default false
 
 visibility_level         text not null default 'detail'
 status                   text not null default 'recorded'
@@ -1643,6 +1748,12 @@ expected_final_due_date  date
 
 status                   text not null default 'active'
 
+payment_frequency        text
+fixed_payment_amount     numeric
+minimum_payment_amount   numeric
+interest_type            text not null default 'none'
+interest_calculation     text
+
 owner_member_id          uuid references household_members(id)
 received_to_asset_id     uuid references assets(id)
 
@@ -1654,6 +1765,8 @@ updated_by               uuid references profiles(id)
 updated_at               timestamptz
 deleted_at               timestamptz
 ```
+
+Ghi chú: các điều khoản trả nợ trước đây nằm ở bảng `debt_terms` đã được gộp thẳng vào `debts` (payment_frequency, fixed_payment_amount, minimum_payment_amount, interest_type, interest_calculation). Các cột repayment_type / principal_payment_type / has_interest / grace_period_months bị bỏ (derived hoặc không dùng).
 
 Enum:
 
@@ -1684,34 +1797,6 @@ status:
 - cancelled
 ```
 
-## Table: debt_terms
-
-```txt
-id                         uuid primary key
-household_id               uuid not null references households(id)
-debt_id                    uuid not null references debts(id)
-
-repayment_type             text not null
-principal_payment_type     text
-payment_frequency          text
-
-fixed_payment_amount       numeric
-minimum_payment_amount     numeric
-
-start_date                 date
-end_date                   date
-
-has_interest               boolean not null default false
-interest_type              text not null default 'none'
-interest_calculation       text
-
-grace_period_months        integer
-
-created_at                 timestamptz not null default now()
-updated_at                 timestamptz
-deleted_at                 timestamptz
-```
-
 ## Table: debt_interest_periods
 
 ```txt
@@ -1722,6 +1807,8 @@ debt_id              uuid not null references debts(id)
 start_date           date not null
 end_date             date
 
+term_months          integer
+
 interest_rate        numeric not null
 rate_type            text not null default 'fixed'
 
@@ -1731,6 +1818,8 @@ created_at           timestamptz not null default now()
 updated_at           timestamptz
 deleted_at           timestamptz
 ```
+
+Ghi chú: `term_months` là cột thật (số tháng của kỳ lãi). Trước đây thông tin này bị nhét vào `note` dạng "months:N"; giờ tách thành cột riêng.
 
 ```txt
 direction:
@@ -1756,24 +1845,30 @@ visibility_level:
 
 ## Category
 
+`category` KHÔNG còn là enum cứng. Nó là một string `code` tham chiếu mềm (FK mềm) tới bảng `money_event_categories.code` (xem §19B). Nhờ vậy category có thể mở rộng theo household mà không phải sửa enum.
+
+Các code hệ thống (is_system) mặc định:
+
 ```txt
-category:
-- housing
-- education
-- transport
-- health
-- family_support
-- insurance
-- saving
-- investment
-- debt
-- income
-- repair
-- household
-- children
-- travel
-- other
+housing
+education
+transport
+health
+family_support
+insurance
+saving
+investment
+debt
+interest
+income
+repair
+household
+children
+travel
+other
 ```
+
+`interest` là category mới được thêm (dùng cho sự kiện lãi).
 
 ## Constraints
 
@@ -1848,6 +1943,53 @@ financial_goal_id = Quỹ dự phòng
 
 ---
 
+# 19B. Table: money_event_categories
+
+## Dùng để làm gì?
+
+Danh mục category cho `money_events`, thay cho enum cứng trước đây. Cho phép vừa có category hệ thống (global) vừa có category riêng của từng household.
+
+## Fields
+
+```txt
+id             uuid primary key
+
+household_id   uuid references households(id)     (nullable, null = global/system)
+code           text not null
+label          text not null
+
+is_system      boolean not null default false
+sort_order     integer not null default 0
+
+created_at     timestamptz not null default now()
+deleted_at     timestamptz
+```
+
+## Constraints
+
+```txt
+code <> ''
+unique theo scope + code:
+- global scope: unique(code) where household_id is null
+- household scope: unique(household_id, code)
+```
+
+## Note
+
+```txt
+household_id = null
+= category hệ thống dùng chung cho mọi household (is_system = true)
+
+household_id = <id>
+= category riêng của household đó
+```
+
+`money_events.category` lưu chính là `code` (FK mềm). Khi resolve, ưu tiên category của household rồi mới tới category global cùng code.
+
+Category hệ thống bao gồm cả `interest` (mới thêm). Danh sách code mặc định xem §19 phần Category.
+
+---
+
 # 20. Table: financial_goals
 
 ## Dùng để làm gì?
@@ -1873,7 +2015,6 @@ name               text not null
 category           text not null
 
 target_amount      numeric not null default 0
-current_amount     numeric not null default 0
 
 deadline           date
 priority           text not null default 'medium'
@@ -1920,21 +2061,23 @@ status:
 - cancelled
 ```
 
+## Derived: current_amount
+
+`current_amount` KHÔNG còn là cột. Nó được **derive lúc đọc**:
+
+```txt
+current_amount
+= Σ amount của money_events có event_type = 'goal_contribution' và financial_goal_id = goal.id
+```
+
+Nhờ vậy tiến độ goal luôn khớp với các khoản đã góp thật, không lệch do quên cập nhật cột.
+
 ## Constraints
 
 ```txt
 target_amount >= 0
-current_amount >= 0
 name <> ''
 ```
-
-Có thể thêm:
-
-```txt
-current_amount <= target_amount
-```
-
-Nhưng nếu muốn cho phép vượt mục tiêu thì không nên thêm constraint này.
 
 ## Note
 
@@ -1983,7 +2126,7 @@ status                text not null default 'open'
 
 visibility_level      text not null default 'detail'
 
-created_by            uuid references profiles(id)
+created_by            uuid references profiles(id)     (nullable, ON DELETE SET NULL)
 created_at            timestamptz not null default now()
 
 seen_by               uuid references profiles(id)
@@ -1991,9 +2134,11 @@ seen_at               timestamptz
 
 resolved_by           uuid references profiles(id)
 resolved_at           timestamptz
-
-deleted_at            timestamptz
 ```
+
+## Note về xóa
+
+`attention_items` KHÔNG có `deleted_at`. Trạng thái "đã xóa" được biểu diễn bằng `status = dismissed` thay cho soft-delete.
 
 ## Enum
 
@@ -2056,7 +2201,7 @@ Vì dữ liệu tài chính gia đình nhạy cảm, nên cần biết ai tạo/
 id             uuid primary key
 
 household_id   uuid references households(id)
-actor_id       uuid references profiles(id)
+actor_id       uuid references profiles(id)     (nullable, null = system/worker; ON DELETE SET NULL)
 
 action         text not null
 entity_type    text not null
@@ -2427,7 +2572,7 @@ Dữ liệu chưa cập nhật quá lâu
 
 Tiền dùng ngay thấp hơn khoản sắp phải trả
 
-Có money_event được đánh dấu is_attention_needed = true
+User tạo attention_item liên quan tới một money_event
 
 Asset giảm/tăng mạnh so với snapshot trước
 ```
@@ -2495,19 +2640,38 @@ Cách này dễ hiểu cho user hơn.
 
 ---
 
-# 31. RLS rule gợi ý
+# 31. Enforcement quyền (app-layer)
 
-## Base rule
+Enforcement quyền được làm ở **app-layer** (NestJS guards), **KHÔNG dùng Postgres RLS**. Lý do: giữ DB portable, không khóa vào Supabase/Postgres RLS.
 
-User chỉ được access dữ liệu nếu họ là member của household đó:
+## Guard stack
 
 ```txt
-exists household_members
-where household_members.household_id = row.household_id
-and household_members.user_id = auth.uid()
+SupabaseAuthGuard   (global)
+= xác thực token, resolve user hiện tại
+
+HouseholdAccessGuard (global)
+= đảm bảo user là member (deleted_at is null) của household đang truy cập
+
+@RequireCapability(...) (trên từng route ghi)
+= kiểm tra capability cần thiết cho hành động ghi
 ```
 
-## Permission rules
+## Hai trục enforcement
+
+Quyền được chia thành 2 trục độc lập:
+
+### 1. Capability (role → permission)
+
+```txt
+role → permission mặc định
+permission_level (nullable) = override
+
+null  → derive từ role
+<val> → dùng thẳng giá trị override
+```
+
+Capability levels:
 
 ```txt
 view_summary
@@ -2530,16 +2694,25 @@ admin
 - quản lý member, invite, permission, household settings
 ```
 
-## Private records
+### 2. Visibility (VisibilityLevel tier + private)
 
 ```txt
-visibility_level = private
-→ chỉ created_by hoặc admin được xem
+visibility_level tier: summary_only < grouped < detail
+= record chỉ hiện nếu capability của user đạt tier tương ứng
+
+private
+= chỉ created_by hoặc admin được xem, không tính vào tổng chia sẻ
 ```
+
+## Base rule
+
+User chỉ được access dữ liệu nếu họ là member (còn active) của household đó — kiểm tra ở `HouseholdAccessGuard`, không phải ở policy DB.
 
 ---
 
-# 32. Indexes nên có
+# 32. Indexes
+
+Backend đã implement đầy đủ index: composite `(household_id, deleted_at)` dạng partial (where deleted_at is null) cho các bảng có soft-delete, index cho các FK, index sort, và index latest-price. Danh sách chính:
 
 ```txt
 household_members(user_id)
@@ -2575,18 +2748,23 @@ snapshot_asset_values(asset_id)
 
 upcoming_payments(household_id, due_date)
 upcoming_payments(household_id, status)
-upcoming_payments(household_id, is_attention_needed)
+upcoming_payments(household_id, attention_level)
 
 money_events(household_id, event_date desc)
 money_events(household_id, event_type)
-money_events(household_id, is_attention_needed)
+money_events(household_id, category)
 money_events(from_asset_id)
 money_events(to_asset_id)
+
+money_event_categories(household_id, code)
 
 financial_goals(household_id, status)
 
 attention_items(household_id, status)
 attention_items(household_id, level)
+
+debts(household_id, deleted_at)
+debt_interest_periods(household_id, debt_id)
 
 audit_logs(household_id, created_at desc)
 ```

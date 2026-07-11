@@ -3,13 +3,18 @@ import type { MoneyEventItem } from '@/features/events/model/events.types'
 
 type EventListResponse = {
   householdId: string
-  items: Array<MoneyEventItem & { id: string; amountValue: number }>
+  items: Array<MoneyEventItem & { id: string }>
   total: number
 }
 
 export type EventPayload = {
   title: string
   amount: number
+  /** Sale/purchase fee in VND. Defaults to 0. See asset-sale. */
+  feeAmount?: number
+  /** For an asset_sale: resolved sold quantity (market) / value (manual). */
+  soldQuantity?: number
+  soldValue?: number
   note?: string
   isoDate: string
   type: 'expense' | 'income' | 'transfer' | 'asset_purchase' | 'asset_sale' | 'payment_paid' | 'goal_contribution' | 'debt_update' | 'adjustment' | 'other'

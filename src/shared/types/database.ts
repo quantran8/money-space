@@ -281,6 +281,7 @@ export type Database = {
             quantity: number
             unit: string | null
             quote_currency: string
+            unit_price: number | null
             price_source: string | null
             price_source_symbol: string | null
             last_price: number | null

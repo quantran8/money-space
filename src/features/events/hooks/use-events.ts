@@ -22,6 +22,13 @@ export function useEvents(month?: string) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.events(activeHouseholdId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeHouseholdId) }),
+      // Recording a repayment reduces the linked debt's outstanding balance
+      // (see backend MoneyEventsService), so the debts view must refetch.
+      queryClient.invalidateQueries({ queryKey: queryKeys.debts(activeHouseholdId) }),
+      // Asset purchase/sale/transfer events change asset values, the liquidity
+      // buckets and the per-asset value history — refetch the assets views too.
+      // (Prefix-matches the assets list, summary, snapshots and value-history.)
+      queryClient.invalidateQueries({ queryKey: queryKeys.assets(activeHouseholdId) }),
     ])
   }
 

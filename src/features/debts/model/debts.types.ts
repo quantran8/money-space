@@ -12,6 +12,16 @@ export type LenderType = 'family' | 'friend' | 'bank' | 'credit_institution' | '
 
 export type DebtStatus = 'active' | 'paid_off' | 'paused' | 'overdue' | 'cancelled'
 
+/** One interest stage as returned by / sent to the backend. */
+export type DebtInterestPeriodDto = {
+  /** Annual interest rate in percent, e.g. 9.2. */
+  interestRate: number
+  /** Stage length in months; omitted means "remaining term". */
+  months?: number
+  startDate?: string
+  endDate?: string
+}
+
 export type DebtItem = {
   id: string
   name: string
@@ -37,5 +47,9 @@ export type DebtItem = {
   paymentFrequency?: 'none' | 'monthly' | 'quarterly' | 'yearly'
   fixedPaymentAmount?: string
   interestSummary?: string
+  /** Backend interest-calculation enum, used to rehydrate the calc method. */
+  interestCalculation?: string
+  /** Full interest schedule (one entry per stage). */
+  interestPeriods?: DebtInterestPeriodDto[]
   note?: string
 }

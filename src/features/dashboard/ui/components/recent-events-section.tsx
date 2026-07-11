@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import type { MoneyEventItem } from '@/features/events/model/events.types'
 import { SectionCard } from '@/features/dashboard/ui/components/section-card'
+import { formatVndSigned } from '@/shared/lib/format-money'
 
 type RecentEventsSectionProps = {
   moneyEvents: MoneyEventItem[]
@@ -25,7 +26,7 @@ export function RecentEventsSection({ moneyEvents, subtitle }: RecentEventsSecti
               <p className="truncate font-medium tracking-[-0.01em]">{event.title}</p>
               <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{event.date}</p>
             </div>
-            <p className="money-number shrink-0 text-base">{event.amount}</p>
+            <p className="money-number shrink-0 text-base">{formatVndSigned(event.amount)}</p>
           </Link>
         ))}
       </div>

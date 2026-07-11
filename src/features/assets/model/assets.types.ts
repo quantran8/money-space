@@ -34,6 +34,9 @@ export type AssetLiquidity = 'usable_now' | 'not_immediately_usable' | 'long_ter
 
 export type AssetClass = 'gold' | 'crypto' | 'stock' | 'fund' | 'foreign_currency'
 
+/** Lifecycle status. `sold` = fully sold (kept for history); see asset-sale. */
+export type AssetStatus = 'active' | 'sold' | 'closed'
+
 export type CalculationType =
   | 'saving_deposit'
   | 'bond'
@@ -47,7 +50,23 @@ export type MarketPosition = {
   quantity: number
   unit: string
   quoteCurrency: string
+  /**
+   * User-entered price of one `unit` in `quoteCurrency` (e.g. price of 1 BTC,
+   * 1 share). When present, value = quantity × unitPrice × fx; falls back to
+   * the market-data lookup otherwise.
+   */
+  unitPrice?: number
 }
+
+/** How interest is paid out during the term (kỳ trả lãi). */
+export type InterestPayment = 'end_of_term' | 'monthly'
+
+/**
+ * Where auto-credited interest lands.
+ * - `wallet`: credit `receivingWalletId` (a cash/bank asset).
+ * - `principal`: capitalize into the deposit (compounds).
+ */
+export type InterestDestination = 'wallet' | 'principal'
 
 /** Inputs the user gives for a formula-calculated asset (§15, §25). */
 export type CalculationTerm = {
@@ -57,6 +76,18 @@ export type CalculationTerm = {
   interestRate: number
   startDate: string
   maturityDate: string | null
+  /** Interest payout schedule. Persisted via the backend `payoutFrequency`. */
+  interestPayment: InterestPayment
+  /**
+   * Non-term interest rate (lãi suất không kỳ hạn), annual %. Applied when a
+   * saving deposit is withdrawn before maturity. Required for saving_deposit;
+   * 0 for other formula types.
+   */
+  nonTermRate: number
+  /** Destination for auto-credited interest. Defaults to `principal`. */
+  interestDestination: InterestDestination
+  /** Wallet asset that receives interest when destination = `wallet`. */
+  receivingWalletId: string | null
 }
 
 export type Asset = {
@@ -67,6 +98,10 @@ export type Asset = {
   liquidity: AssetLiquidity
   currency: string
   note: string
+  /** Lifecycle status; defaults to `active`. A `sold` asset is kept for history. */
+  status?: AssetStatus
+  /** ISO date the asset was fully sold, when `status === 'sold'`. */
+  soldAt?: string
   /** Present for manual assets — the user-entered estimated value (VND). */
   manualValue?: number
   /** Present for market-priced assets. */
@@ -74,7 +109,6 @@ export type Asset = {
   /** Present for formula-calculated assets. */
   calculationTerm?: CalculationTerm
   currentValue?: number
-  currentValueDisplay?: string
   valueUpdatedAt?: string
 }
 

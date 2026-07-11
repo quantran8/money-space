@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { parseRawMoney } from '@/shared/lib/number-format'
+import type { InterestCalc, InterestPeriod } from '@/features/debts/model/debts-interest'
 import type { DebtStatus, DebtType, LenderType } from '@/features/debts/model/debts.types'
 
 export type DebtForm = {
@@ -16,7 +17,12 @@ export type DebtForm = {
   receivedToAssetId: string
   paymentFrequency: 'none' | 'monthly' | 'quarterly' | 'yearly'
   fixedPaymentAmount: string
-  interestSummary: string
+  /** Whether the user has overridden the auto-computed payment amount. */
+  fixedPaymentTouched: boolean
+  /** How the periodic payment is derived (annuity vs. reducing balance). */
+  interestCalc: InterestCalc
+  /** One or more interest stages (rate %/year + months). */
+  interestPeriods: InterestPeriod[]
   note: string
 }
 
@@ -40,7 +46,9 @@ export const defaultValues: DebtForm = {
   receivedToAssetId: '',
   paymentFrequency: 'none',
   fixedPaymentAmount: '',
-  interestSummary: '',
+  fixedPaymentTouched: false,
+  interestCalc: 'fixed',
+  interestPeriods: [{ ratePct: '', months: '' }],
   note: '',
 }
 
@@ -130,7 +138,16 @@ export function buildDebtSchema() {
       receivedToAssetId: z.string(),
       paymentFrequency: z.enum(['none', 'monthly', 'quarterly', 'yearly']),
       fixedPaymentAmount: z.string(),
-      interestSummary: z.string(),
+      fixedPaymentTouched: z.boolean(),
+      interestCalc: z.enum(['fixed', 'reducing']),
+      interestPeriods: z
+        .array(
+          z.object({
+            ratePct: z.string(),
+            months: z.string(),
+          }),
+        )
+        .min(1),
       note: z.string(),
     })
     .superRefine((value, ctx) => {

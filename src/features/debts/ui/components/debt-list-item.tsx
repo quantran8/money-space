@@ -1,4 +1,4 @@
-import { Landmark, MoreHorizontal } from 'lucide-react'
+import { Eye, Landmark, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -6,6 +6,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { formatDate, getStatusLabel, getStatusTone } from '@/features/debts/model/debts-form'
@@ -18,6 +19,8 @@ type DebtListItemProps = {
   isUpdating: boolean
   onEdit: (id: string) => void
   onMarkPaidOff: (id: string) => void
+  onViewDetail: (id: string) => void
+  onDelete: (id: string) => void
 }
 
 export function DebtListItem({
@@ -27,6 +30,8 @@ export function DebtListItem({
   isUpdating,
   onEdit,
   onMarkPaidOff,
+  onViewDetail,
+  onDelete,
 }: DebtListItemProps) {
   return (
     <article className="rounded-[28px] border border-border/80 bg-white p-4 shadow-[0_14px_40px_rgba(15,23,42,0.05)] sm:p-5">
@@ -37,7 +42,13 @@ export function DebtListItem({
               <Landmark className="size-5 text-foreground" strokeWidth={1.8} />
             </div>
             <div className="min-w-0">
-              <p className="truncate text-lg font-semibold tracking-[-0.02em]">{debt.name}</p>
+              <button
+                type="button"
+                onClick={() => onViewDetail(debt.id)}
+                className="truncate text-left text-lg font-semibold tracking-[-0.02em] transition hover:text-[hsl(var(--status-blue))]"
+              >
+                {debt.name}
+              </button>
               <p className="mt-1 text-sm text-muted-foreground">
                 {debt.lenderName} · vay ngày {formatDate(debt.borrowedAt)}
               </p>
@@ -88,7 +99,22 @@ export function DebtListItem({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(debt.id)}>Chỉnh sửa</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onViewDetail(debt.id)}>
+                  <Eye className="mr-2 size-4" />
+                  Xem chi tiết
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEdit(debt.id)}>
+                  <Pencil className="mr-2 size-4" />
+                  Chỉnh sửa
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
+                  onClick={() => onDelete(debt.id)}
+                >
+                  <Trash2 className="mr-2 size-4" />
+                  Xóa khoản nợ
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

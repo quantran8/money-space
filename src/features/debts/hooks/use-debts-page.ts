@@ -1,11 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useDebts } from '@/features/debts/hooks/use-debts'
+import type { DebtPayload } from '@/features/debts/api/debts.repository'
+import type { DebtUpdateModeChoice } from '@/features/debts/ui/components/debt-update-mode-dialog'
+import { useEvents } from '@/features/events/hooks/use-events'
 import {
   amountToRaw,
   buildDebtSchema,
@@ -14,18 +17,57 @@ import {
   type DebtForm,
   type DebtSummary,
 } from '@/features/debts/model/debts-form'
-import type { DebtStatus } from '@/features/debts/model/debts.types'
+import {
+  averageAnnualRate,
+  calcFromBackendEnum,
+  calcToBackendEnum,
+  estimateRepayment,
+  fromInterestPeriodDtos,
+  monthsBetween,
+  toInterestPeriodDtos,
+} from '@/features/debts/model/debts-interest'
+import type { DebtItem, DebtStatus } from '@/features/debts/model/debts.types'
 import { useMembers } from '@/features/members/hooks/use-members'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 export function useDebtsPage() {
   const location = useLocation()
-  const { debts, createDebt, updateDebt, isLoading } = useDebts()
+  const navigate = useNavigate()
+  const { debts, createDebt, updateDebt, deleteDebt, isLoading } = useDebts()
+  const { events } = useEvents()
   const { assets } = useAssets()
   const { members } = useMembers()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showMoreDetails, setShowMoreDetails] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  // When editing a debt that already has money-event history, we don't submit
+  // straight away — we stash the built payload and ask which update mode applies,
+  // showing a before→after preview. `before`/`totalRepaid` are captured at submit
+  // time because `editingId` is cleared once the form dialog closes.
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    debtId: string
+    payload: DebtPayload
+    originalAmountChanged: boolean
+    before: {
+      originalAmount: number
+      outstandingAmount: number
+      fixedPaymentAmount?: number
+      interestRate?: number
+      installments?: number
+      debtType: DebtItem['debtType']
+      name: string
+    }
+    after: {
+      originalAmount: number
+      fixedPaymentAmount?: number
+      interestRate?: number
+      installments?: number
+      debtType: DebtItem['debtType']
+      name: string
+    }
+    totalRepaid: number
+  } | null>(null)
 
   const debtSchema = useMemo(() => buildDebtSchema(), [])
 
@@ -60,9 +102,47 @@ export function useDebtsPage() {
   )
 
   const editingDebt = editingId ? debts.find((item) => item.id === editingId) : undefined
+  // A debt "has history" once any money event links to it (a borrow inflow or a
+  // recorded repayment). Editing such a debt requires choosing an update mode.
+  function hasHistory(debtId: string) {
+    return events.some((event) => event.debtId === debtId)
+  }
   const selectedLenderType = useWatch({ control, name: 'lenderType' })
   const originalAmountValue = useWatch({ control, name: 'originalAmount' })
   const isSavingDebt = createDebt.isPending || updateDebt.isPending
+
+  // Live repayment estimate — recomputed as the user edits the loan terms.
+  const watchedBorrowedAt = useWatch({ control, name: 'borrowedAt' })
+  const watchedDueDate = useWatch({ control, name: 'expectedFinalDueDate' })
+  const watchedFrequency = useWatch({ control, name: 'paymentFrequency' })
+  const watchedPeriods = useWatch({ control, name: 'interestPeriods' })
+  const watchedCalc = useWatch({ control, name: 'interestCalc' })
+  const watchedPaymentTouched = useWatch({ control, name: 'fixedPaymentTouched' })
+
+  const termMonths = useMemo(
+    () => monthsBetween(watchedBorrowedAt, watchedDueDate),
+    [watchedBorrowedAt, watchedDueDate],
+  )
+
+  const repaymentEstimate = useMemo(
+    () =>
+      estimateRepayment({
+        principal: parseAmountInput(originalAmountValue),
+        frequency: watchedFrequency ?? 'none',
+        termMonths,
+        periods: watchedPeriods ?? [],
+        calc: watchedCalc ?? 'fixed',
+      }),
+    [originalAmountValue, watchedFrequency, termMonths, watchedPeriods, watchedCalc],
+  )
+
+  // Keep the (non-overridden) payment field in sync with the live estimate so
+  // the stored value matches what the user sees suggested.
+  useEffect(() => {
+    if (watchedPaymentTouched) return
+    const next = repaymentEstimate ? String(repaymentEstimate.perPayment) : ''
+    setValue('fixedPaymentAmount', next, { shouldValidate: false })
+  }, [repaymentEstimate, watchedPaymentTouched, setValue])
 
   const summary = useMemo<DebtSummary>(() => {
     const activeDebts = debts.filter((debt) => debt.status === 'active' || debt.status === 'overdue')
@@ -99,6 +179,14 @@ export function useDebtsPage() {
     if (!dialogOpen) return
 
     if (editingDebt) {
+      // Rehydrate the interest stages straight from the persisted periods.
+      // Fall back to a single stage seeded from the averaged rate the backend
+      // returns (e.g. "9.2%") for older debts with no per-stage detail.
+      const fallbackRate = (editingDebt.interestSummary ?? '').replace(/[^0-9.,]/g, '')
+      const periods =
+        fromInterestPeriodDtos(editingDebt.interestPeriods) ??
+        (fallbackRate ? [{ ratePct: fallbackRate, months: '' }] : defaultValues.interestPeriods)
+
       reset({
         name: editingDebt.name,
         debtType: editingDebt.debtType,
@@ -112,7 +200,10 @@ export function useDebtsPage() {
         receivedToAssetId: editingDebt.receivedToAssetId ?? '',
         paymentFrequency: editingDebt.paymentFrequency ?? 'none',
         fixedPaymentAmount: amountToRaw(editingDebt.fixedPaymentAmountValue),
-        interestSummary: editingDebt.interestSummary ?? '',
+        // Editing a saved debt: keep whatever amount is stored as-is.
+        fixedPaymentTouched: editingDebt.fixedPaymentAmountValue !== undefined,
+        interestCalc: calcFromBackendEnum(editingDebt.interestCalculation),
+        interestPeriods: periods,
         note: editingDebt.note ?? '',
       })
       return
@@ -147,6 +238,11 @@ export function useDebtsPage() {
 
   async function onSubmit(values: DebtForm) {
     try {
+      const termMonths = monthsBetween(values.borrowedAt, values.expectedFinalDueDate)
+      const avgRate = averageAnnualRate(values.interestPeriods, termMonths)
+      const hasInterest = avgRate > 0
+      const interestPeriods = toInterestPeriodDtos(values.interestPeriods)
+
       const payload = {
         name: values.name.trim(),
         debtType: values.debtType,
@@ -166,8 +262,60 @@ export function useDebtsPage() {
         fixedPaymentAmount: values.fixedPaymentAmount.trim()
           ? parseAmountInput(values.fixedPaymentAmount)
           : undefined,
-        interestType: values.interestSummary.trim() ? values.interestSummary.trim() : undefined,
+        // Send backend-valid enums, not free-form labels: `interestType` is the
+        // DebtInterestType enum and `interestRate` is the numeric averaged rate.
+        interestType: hasInterest ? 'fixed' : 'none',
+        interestCalculation: hasInterest ? calcToBackendEnum(values.interestCalc) : undefined,
+        interestRate: hasInterest ? Math.round(avgRate * 100) / 100 : undefined,
+        // Each stage is persisted as its own debt_interest_periods row.
+        interestPeriods: interestPeriods.length > 0 ? interestPeriods : undefined,
         note: values.note.trim() || undefined,
+      }
+
+      // Editing a debt that already has history: don't submit yet — stash the
+      // payload and ask whether this is a correction or an effective-from-now
+      // change (the backend rejects a history-ful update without a mode), and
+      // capture a before-snapshot + total repaid for the before→after preview.
+      if (editingId && hasHistory(editingId)) {
+        const originalAmountChanged =
+          payload.originalAmount !== editingDebt?.originalAmountValue
+        const totalRepaid = events
+          .filter((event) => event.debtId === editingId && event.direction === 'outflow')
+          .reduce((sum, event) => sum + Math.abs(event.amount), 0)
+        // The "before" repayment figures come from the debt as it stands now;
+        // the "after" figures are the live estimate for the edited form values.
+        const beforeEstimate = estimateRepayment({
+          principal: editingDebt?.originalAmountValue ?? 0,
+          frequency: editingDebt?.paymentFrequency ?? 'none',
+          termMonths: monthsBetween(editingDebt?.borrowedAt, editingDebt?.expectedFinalDueDate),
+          periods: fromInterestPeriodDtos(editingDebt?.interestPeriods) ?? [],
+          calc: calcFromBackendEnum(editingDebt?.interestCalculation),
+        })
+        setPendingUpdate({
+          debtId: editingId,
+          payload,
+          originalAmountChanged,
+          totalRepaid,
+          before: {
+            originalAmount: editingDebt?.originalAmountValue ?? 0,
+            outstandingAmount: editingDebt?.outstandingAmountValue ?? 0,
+            fixedPaymentAmount: editingDebt?.fixedPaymentAmountValue,
+            interestRate: beforeEstimate?.annualRatePct,
+            installments: beforeEstimate?.installments,
+            debtType: editingDebt?.debtType ?? payload.debtType,
+            name: editingDebt?.name ?? payload.name,
+          },
+          after: {
+            originalAmount: payload.originalAmount,
+            fixedPaymentAmount: payload.fixedPaymentAmount,
+            interestRate: repaymentEstimate?.annualRatePct,
+            installments: repaymentEstimate?.installments,
+            debtType: payload.debtType,
+            name: payload.name,
+          },
+        })
+        setDialogOpen(false)
+        return
       }
 
       if (editingId) {
@@ -187,6 +335,52 @@ export function useDebtsPage() {
         ),
       )
     }
+  }
+
+  async function confirmUpdateMode(choice: DebtUpdateModeChoice) {
+    if (!pendingUpdate) return
+    const { debtId, payload } = pendingUpdate
+    // Map the chosen mode onto the payload. For a reconcile, the amount the user
+    // typed in the "loan amount" field is really the new outstanding balance —
+    // carry it there as a Partial update and leave originalAmount unchanged.
+    let nextPayload: Partial<DebtPayload> = { ...payload, updateMode: choice }
+    if (choice.kind === 'effective' && choice.balanceIntent === 'reconcile_balance') {
+      const { originalAmount, ...rest } = nextPayload
+      nextPayload = { ...rest, outstandingAmount: originalAmount }
+    }
+    try {
+      await updateDebt.mutateAsync({ debtId, payload: nextPayload })
+      toast.success('Cap nhat khoan no thanh cong.')
+      setPendingUpdate(null)
+      onOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the cap nhat khoan no.'))
+    }
+  }
+
+  const deletingDebt = deletingId ? debts.find((item) => item.id === deletingId) : undefined
+
+  function requestDelete(id: string) {
+    setDeletingId(id)
+  }
+
+  function cancelDelete() {
+    setDeletingId(null)
+  }
+
+  async function confirmDelete() {
+    if (!deletingId) return
+    try {
+      await deleteDebt.mutateAsync(deletingId)
+      toast.success('Da xoa khoan no.')
+      setDeletingId(null)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the xoa khoan no.'))
+    }
+  }
+
+  function openDetail(id: string) {
+    navigate(`/debts/${id}`)
   }
 
   function markPaidOff(id: string) {
@@ -236,6 +430,9 @@ export function useDebtsPage() {
     originalAmountValue,
     isSavingDebt,
     isUpdating: updateDebt.isPending,
+    // computed repayment
+    repaymentEstimate,
+    termMonths,
     // dialog
     dialogOpen,
     editingId,
@@ -246,5 +443,22 @@ export function useDebtsPage() {
     openEdit,
     markPaidOff,
     pasteAmountFromClipboard,
+    // delete
+    deletingDebt,
+    isDeleting: deleteDebt.isPending,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+    // update mode gate (debt with history)
+    updateModeOpen: pendingUpdate !== null,
+    updateModeOriginalChanged: pendingUpdate?.originalAmountChanged ?? false,
+    updateModeBefore: pendingUpdate?.before,
+    updateModeAfter: pendingUpdate?.after,
+    updateModeTotalRepaid: pendingUpdate?.totalRepaid ?? 0,
+    isSavingUpdateMode: updateDebt.isPending,
+    confirmUpdateMode,
+    cancelUpdateMode: () => setPendingUpdate(null),
+    // detail
+    openDetail,
   }
 }

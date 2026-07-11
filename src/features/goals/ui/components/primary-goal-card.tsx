@@ -30,8 +30,8 @@ export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps)
             {goal.name}
           </h2>
           <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-            {formatAmount(goalAmount(goal.currentAmount, goal.current))} /{' '}
-            {formatAmount(goalAmount(goal.targetAmount, goal.target))} ·{' '}
+            {formatAmount(goalAmount(goal.currentAmount))} /{' '}
+            {formatAmount(goalAmount(goal.targetAmount))} ·{' '}
             {t('goals.primary.remaining', { value: formatAmount(remaining) })}
           </p>
         </div>
@@ -48,7 +48,7 @@ export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps)
             {t('goals.primary.saved')}
           </p>
           <p className="money-number mt-2 text-2xl font-semibold">
-            {formatAmount(goalAmount(goal.currentAmount, goal.current))}
+            {formatAmount(goalAmount(goal.currentAmount))}
           </p>
         </div>
         <div className="surface-muted rounded-3xl p-4">

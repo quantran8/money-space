@@ -46,7 +46,10 @@ export function DatePicker({
   const resolvedPlaceholder = placeholder ?? t('common.selectDate')
 
   return (
-    <Popover>
+    // `modal` keeps the calendar's clicks from reaching a parent Dialog's
+    // interact-outside handler (which would otherwise close the whole modal
+    // when the popover is portaled outside the dialog's DOM).
+    <Popover modal>
       <PopoverTrigger asChild>
         <Button
           type="button"

@@ -4,27 +4,33 @@ import {
   BanknoteArrowUp,
   CalendarClock,
   Goal,
+  HandCoins,
   Landmark,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 import type { QuickAction } from '@/features/events/model/events-form'
 
+/** Picker entries include the real quick actions plus secondary navigations. */
+type PickerKey = QuickAction | 'sell_asset'
+
 type QuickActionPickerProps = {
   onSelect: (action: QuickAction) => void
   onBorrowMoney: () => void
+  onSellAsset: () => void
 }
 
-const ACTIONS: [QuickAction, string, string, LucideIcon][] = [
+const ACTIONS: [PickerKey, string, string, LucideIcon][] = [
   ['upcoming', 'Khoản sắp tới', 'Có khoản cần chuẩn bị', CalendarClock],
   ['expense', 'Đã chi / đã trả', 'Ghi nhận một khoản tiền ra', BanknoteArrowDown],
   ['income', 'Nhận tiền', 'Lương, thưởng hoặc khoản tiền vào', BanknoteArrowUp],
   ['transfer', 'Chuyển tiền', 'Chuyển giữa tài khoản/quỹ', ArrowLeftRight],
   ['debt_borrow', 'Vay tiền', 'Tạo khoản vay và theo dõi trong mục đang nợ', Landmark],
+  ['sell_asset', 'Bán tài sản', 'Bán tài sản trong mục tài sản', HandCoins],
   ['goal_contribution', 'Góp mục tiêu', 'Thêm tiền vào mục tiêu chung', Goal],
 ]
 
-export function QuickActionPicker({ onSelect, onBorrowMoney }: QuickActionPickerProps) {
+export function QuickActionPicker({ onSelect, onBorrowMoney, onSellAsset }: QuickActionPickerProps) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {ACTIONS.map(([action, title, subtitle, Icon]) => (
@@ -34,6 +40,10 @@ export function QuickActionPicker({ onSelect, onBorrowMoney }: QuickActionPicker
           onClick={() => {
             if (action === 'debt_borrow') {
               onBorrowMoney()
+              return
+            }
+            if (action === 'sell_asset') {
+              onSellAsset()
               return
             }
             onSelect(action)

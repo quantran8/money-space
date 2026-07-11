@@ -45,6 +45,7 @@ export function EventsPage() {
     isActualValid,
     openCreate,
     openBorrowMoney,
+    openSellAsset,
     openEditPayment,
     openEditEvent,
     openMarkPaid,
@@ -102,6 +103,7 @@ export function EventsPage() {
         quickAction={quickAction}
         onSelectQuickAction={handleSelectQuickAction}
         onBorrowMoney={openBorrowMoney}
+        onSellAsset={openSellAsset}
         showMoreDetails={showMoreDetails}
         onToggleMoreDetails={() => setShowMoreDetails((current) => !current)}
         markPaidPaymentId={markPaidPaymentId}

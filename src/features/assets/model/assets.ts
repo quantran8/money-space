@@ -26,6 +26,7 @@ export type {
   Asset,
   CalculationTerm,
   CalculationType,
+  InterestPayment,
   MarketPosition,
   MarketQuote,
   AssetSnapshotPoint,
@@ -131,6 +132,31 @@ export const liquidityOrder: AssetLiquidity[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// Sellable assets (see asset-sale)
+// ---------------------------------------------------------------------------
+
+/**
+ * Asset types the user can sell ("Bán tài sản"). The first six are market
+ * assets (they hold a `marketPosition`, so they're sold by quantity);
+ * `real_estate` and `investment` are manual assets sold by VND value.
+ */
+export const SELLABLE_ASSET_TYPES: Set<AssetType> = new Set([
+  'gold',
+  'stock',
+  'crypto',
+  'fund',
+  'foreign_currency',
+  'bond',
+  'real_estate',
+  'investment',
+])
+
+/** Whether an asset of this type can be sold via the "Bán tài sản" flow. */
+export function isSellableAssetType(type: AssetType): boolean {
+  return SELLABLE_ASSET_TYPES.has(type)
+}
+
+// ---------------------------------------------------------------------------
 // Current-value computation (§24, §25)
 // ---------------------------------------------------------------------------
 
@@ -142,6 +168,10 @@ function daysBetween(from: string, to: string): number {
 }
 
 function computeMarketValue(position: MarketPosition): number | null {
+  // Prefer the user-entered unit price; fall back to the market-data lookup.
+  if (typeof position.unitPrice === 'number' && Number.isFinite(position.unitPrice)) {
+    return position.quantity * position.unitPrice * fxToVnd(position.quoteCurrency)
+  }
   const quote = latestPrice(position.assetClass, position.symbol)
   if (!quote) return null
   const valueInQuote = position.quantity * quote.price
@@ -193,6 +223,69 @@ export function computeMaturityValue(term: CalculationTerm): number | null {
   const rate = term.interestRate / 100
   const years = daysBetween(term.startDate, term.maturityDate) / 365
   return term.principalAmount + term.principalAmount * rate * years
+}
+
+// ---------------------------------------------------------------------------
+// Saving-deposit withdrawal projections (display-only)
+//
+// Derived on demand from the calculation term; NOT persisted into the stored
+// current value. `computeCurrentValue` stays the single source of truth for a
+// saving asset's snapshot value.
+// ---------------------------------------------------------------------------
+
+export type SavingBreakdown = {
+  principal: number
+  /** Interest received (negative = clawed back from principal). */
+  interest: number
+  /** Amount the depositor takes home. */
+  total: number
+}
+
+/** Term length of a saving deposit in years (derived from start→maturity). */
+export function savingTermYears(term: CalculationTerm): number {
+  if (!term.maturityDate) return 0
+  return daysBetween(term.startDate, term.maturityDate) / 365
+}
+
+/** Term length in whole months (for the withdraw-month control). */
+export function termMonthsOf(term: CalculationTerm): number {
+  return Math.round(savingTermYears(term) * 12)
+}
+
+/** Payout when the deposit is held to maturity (rút đúng hạn). */
+export function computeSavingOnTime(term: CalculationTerm): SavingBreakdown {
+  const principal = term.principalAmount
+  const rate = term.interestRate / 100
+  const interest = principal * rate * savingTermYears(term)
+  // end_of_term and monthly yield the same total interest at maturity; for
+  // `monthly` it was already paid out over the term, then principal is returned.
+  return { principal, interest, total: principal + interest }
+}
+
+/**
+ * Payout when the deposit is withdrawn early at month `withdrawMonth`
+ * (rút trước hạn). The contracted rate is void — the non-term rate applies to
+ * the elapsed period. For a `monthly` payout the bank claws back interest it
+ * already paid at the contracted rate.
+ */
+export function computeSavingEarly(
+  term: CalculationTerm,
+  withdrawMonth: number,
+): SavingBreakdown {
+  const principal = term.principalAmount
+  const contractRate = term.interestRate / 100
+  const nonTerm = term.nonTermRate / 100
+  const n = withdrawMonth
+  const actualInterest = principal * nonTerm * (n / 12)
+
+  if (term.interestPayment === 'end_of_term') {
+    return { principal, interest: actualInterest, total: principal + actualInterest }
+  }
+
+  // monthly: interest was paid at the contracted rate; claw back the excess.
+  const interestAlreadyPaid = principal * contractRate * (n / 12)
+  const clawback = interestAlreadyPaid - actualInterest
+  return { principal, interest: -clawback, total: principal - clawback }
 }
 
 /** Total asset value of a snapshot point across all liquidity buckets. */

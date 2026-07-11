@@ -9,6 +9,7 @@ import {
   type NetWorthBreakdownItem,
 } from '@/features/dashboard/model/dashboard'
 import { useMembers } from '@/features/members/hooks/use-members'
+import { formatVndShort } from '@/shared/lib/format-money'
 
 export function useDashboardPage() {
   const { t } = useTranslation()
@@ -53,9 +54,9 @@ export function useDashboardPage() {
   // sees not just how much, but where the money sits. Sourced from the same
   // asset groups the assets page uses; each row links into the assets detail.
   const breakdown: NetWorthBreakdownItem[] = [
-    { label: t('dashboard.sections.money.liquid'), value: assetGroups[0]?.valueDisplay ?? '0M' },
-    { label: t('dashboard.sections.money.reserve'), value: assetGroups[1]?.valueDisplay ?? '0M' },
-    { label: t('assets.strip.longTerm'), value: assetGroups[2]?.valueDisplay ?? '0M' },
+    { label: t('dashboard.sections.money.liquid'), value: formatVndShort(assetGroups[0]?.value ?? 0) },
+    { label: t('dashboard.sections.money.reserve'), value: formatVndShort(assetGroups[1]?.value ?? 0) },
+    { label: t('assets.strip.longTerm'), value: formatVndShort(assetGroups[2]?.value ?? 0) },
   ]
 
   const recentSubtitle = moneyEvents[0]

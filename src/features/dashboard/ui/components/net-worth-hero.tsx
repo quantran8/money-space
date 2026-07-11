@@ -8,6 +8,7 @@ import type { DashboardOverview } from '@/features/dashboard/api/dashboard.repos
 import type { NetWorthBreakdownItem } from '@/features/dashboard/model/dashboard'
 import { NetWorthSparkline } from '@/features/dashboard/ui/components/net-worth-sparkline'
 import type { AssetSnapshotPoint } from '@/features/assets/model/assets'
+import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
 type NetWorthHeroProps = {
@@ -57,7 +58,7 @@ export function NetWorthHero({
             {t('dashboard.hero.netWorthLabel')}
           </p>
           <p className="money-number mt-2 text-5xl leading-none md:text-6xl">
-            {snapshot.netWorthDisplay}
+            {formatVndShort(snapshot.netWorth)}
             <span className="ml-2 align-baseline text-2xl text-[hsl(var(--muted-foreground))] md:text-3xl">
               đ
             </span>

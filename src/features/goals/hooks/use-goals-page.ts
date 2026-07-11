@@ -4,8 +4,12 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
+import { useQueryClient } from '@tanstack/react-query'
+
+import { useEvents } from '@/features/events/hooks/use-events'
 import { useGoals } from '@/features/goals/hooks/use-goals'
 import { parseAmount, type GoalPriority } from '@/features/goals/model/goals'
+import { queryKeys } from '@/shared/api/query-keys'
 import {
   allocationColors,
   amountToRaw,
@@ -24,7 +28,14 @@ import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 export function useGoalsPage() {
   const { t } = useTranslation()
-  const { goals, createGoal, updateGoal, deleteGoal, isLoading } = useGoals()
+  const queryClient = useQueryClient()
+  const { goals, activeHouseholdId, createGoal, updateGoal, deleteGoal, isLoading } = useGoals()
+  // Contributions are recorded as `goal_contribution` money events; the goal's
+  // currentAmount/progress is derived server-side from their sum (there is no
+  // stored current_amount column). `createEvent` already invalidates events,
+  // dashboard, debts and assets — we additionally refetch goals below so the
+  // progress bar reflects the new contribution.
+  const { createEvent } = useEvents()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -34,8 +45,8 @@ export function useGoalsPage() {
   const isSavingGoal = createGoal.isPending || updateGoal.isPending
 
   const stats = useMemo<GoalStats>(() => {
-    const saved = goals.reduce((sum, goal) => sum + goalAmount(goal.currentAmount, goal.current), 0)
-    const target = goals.reduce((sum, goal) => sum + goalAmount(goal.targetAmount, goal.target), 0)
+    const saved = goals.reduce((sum, goal) => sum + goalAmount(goal.currentAmount), 0)
+    const target = goals.reduce((sum, goal) => sum + goalAmount(goal.targetAmount), 0)
     const avg = goals.length
       ? Math.round(goals.reduce((sum, goal) => sum + goal.progress, 0) / goals.length)
       : 0
@@ -56,7 +67,7 @@ export function useGoalsPage() {
     return goals.map((goal, index) => ({
       id: goal.id,
       name: goal.name,
-      percent: Math.round((goalAmount(goal.currentAmount, goal.current) / stats.saved) * 100),
+      percent: Math.round((goalAmount(goal.currentAmount) / stats.saved) * 100),
       color: allocationColors[index % allocationColors.length],
     }))
   }, [goals, stats.saved])
@@ -85,8 +96,7 @@ export function useGoalsPage() {
     if (editingGoal) {
       reset({
         name: editingGoal.name,
-        current: amountToRaw(goalAmount(editingGoal.currentAmount, editingGoal.current)),
-        target: amountToRaw(goalAmount(editingGoal.targetAmount, editingGoal.target)),
+        target: amountToRaw(goalAmount(editingGoal.targetAmount)),
         priority: editingGoal.priority,
         deadline: editingGoal.deadline === 'No deadline' ? '' : (editingGoal.deadline ?? ''),
         note: editingGoal.note,
@@ -113,10 +123,11 @@ export function useGoalsPage() {
 
   async function onSubmit(values: GoalForm) {
     try {
-      const current = values.current.trim() || '0'
+      // currentAmount is NOT part of the payload: progress is derived server-side
+      // from goal_contribution money events. To raise progress, add a
+      // contribution (addContribution) rather than editing the goal.
       const payload = {
         name: values.name.trim(),
-        currentAmount: parseAmount(current),
         targetAmount: parseAmount(values.target.trim()),
         priority: values.priority,
         deadline: values.deadline || undefined,
@@ -160,16 +171,22 @@ export function useGoalsPage() {
     if (delta <= 0) return
 
     const goal = goals.find((item) => item.id === goalId)
+    if (!goal) return
     try {
-      if (goal) {
-        await updateGoal.mutateAsync({
-          goalId,
-          payload: {
-            currentAmount: goalAmount(goal.currentAmount, goal.current) + delta,
-          },
-        })
-        toast.success('Da cap nhat dong gop cho muc tieu.')
+      await createEvent.mutateAsync({
+        title: t('goals.recent.added', { value: formatAmount(delta), name: goal.name }),
+        amount: delta,
+        isoDate: new Date().toISOString().slice(0, 10),
+        type: 'goal_contribution',
+        category: 'saving',
+        financialGoalId: goalId,
+      })
+      // currentAmount is derived from goal_contribution events — refetch goals
+      // so the progress bar and allocation reflect this contribution.
+      if (activeHouseholdId) {
+        await queryClient.invalidateQueries({ queryKey: queryKeys.goals(activeHouseholdId) })
       }
+      toast.success('Da cap nhat dong gop cho muc tieu.')
     } catch (error) {
       toast.error(getErrorMessage(error, 'Khong the cap nhat dong gop.'))
       return
@@ -194,8 +211,8 @@ export function useGoalsPage() {
 
   const primaryRemaining = primaryGoal
     ? Math.max(
-        goalAmount(primaryGoal.targetAmount, primaryGoal.target) -
-          goalAmount(primaryGoal.currentAmount, primaryGoal.current),
+        goalAmount(primaryGoal.targetAmount) -
+          goalAmount(primaryGoal.currentAmount),
         0,
       )
     : 0
@@ -216,7 +233,7 @@ export function useGoalsPage() {
     contributions,
     setContribution,
     addContribution,
-    isContributing: updateGoal.isPending,
+    isContributing: createEvent.isPending,
     // form
     form,
     isEditing,

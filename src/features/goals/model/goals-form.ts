@@ -1,17 +1,15 @@
 import { z } from 'zod'
 
-import { parseAmount, type GoalItem, type GoalPriority } from '@/features/goals/model/goals'
+import type { GoalItem, GoalPriority } from '@/features/goals/model/goals'
 import { formatVndShort } from '@/shared/lib/format-money'
 import {
   localizedMoneyAmount,
-  localizedOptionalMoneyAmount,
   localizedOptionalText,
   localizedRequiredText,
 } from '@/shared/lib/validation'
 
 export type GoalForm = {
   name: string
-  current: string
   target: string
   priority: GoalPriority
   deadline: string
@@ -38,7 +36,6 @@ export type GoalAllocationSlice = {
 
 export const defaultGoalFormValues: GoalForm = {
   name: '',
-  current: '',
   target: '',
   priority: 'medium',
   deadline: '',
@@ -73,29 +70,28 @@ export function amountToRaw(value?: number): string {
 
 /** Suggested monthly top-up: remaining spread over ~4 months, min 1M when short. */
 export function suggestedPace(goal: GoalItem) {
-  const remaining = Math.max(goalAmount(goal.targetAmount, goal.target) - goalAmount(goal.currentAmount, goal.current), 0)
+  const remaining = Math.max(goalAmount(goal.targetAmount) - goalAmount(goal.currentAmount), 0)
   if (remaining <= 0) return 0
   return Math.max(1_000_000, Math.round(remaining / 4))
 }
 
-/** Prefer the raw VND numeric field, falling back to parsing the digit string. */
-export function goalAmount(amount: number | undefined, raw: string): number {
-  if (typeof amount === 'number' && Number.isFinite(amount)) return amount
-  return parseAmount(raw)
+/**
+ * The goal's VND amount as a number. The API sends the raw numeric
+ * `currentAmount` / `targetAmount`; this normalizes a possibly-missing value
+ * to 0.
+ */
+export function goalAmount(amount: number | undefined): number {
+  return typeof amount === 'number' && Number.isFinite(amount) ? amount : 0
 }
 
 export function buildGoalSchema(t: (key: string, params?: Record<string, unknown>) => string) {
-  return z
-    .object({
-      name: localizedRequiredText(t, t('goals.form.name')),
-      current: localizedOptionalMoneyAmount(t),
-      target: localizedMoneyAmount(t),
-      priority: z.enum(['high', 'medium', 'low']),
-      deadline: z.string(),
-      note: localizedOptionalText(t, 120),
-    })
-    .refine((data) => parseAmount(data.current || '0') <= parseAmount(data.target), {
-      path: ['current'],
-      message: t('validation.currentExceedsTarget'),
-    })
+  // No `current` field: progress is driven by goal_contribution money events,
+  // not entered on the goal form. See addContribution in use-goals-page.
+  return z.object({
+    name: localizedRequiredText(t, t('goals.form.name')),
+    target: localizedMoneyAmount(t),
+    priority: z.enum(['high', 'medium', 'low']),
+    deadline: z.string(),
+    note: localizedOptionalText(t, 120),
+  })
 }

@@ -49,6 +49,7 @@ export type LocalUpcomingPayment = {
   frequency?: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
   note?: string
   autoCreateNext?: boolean
+  debtId?: string
 }
 
 export type LocalMoneyEvent = {
@@ -237,16 +238,18 @@ export function getDirectionFromEventType(eventType: RecordType): RecordDirectio
 }
 
 export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
+  // `event.amount` is now a raw signed number from the API (no longer a
+  // formatted string), so it feeds the local model directly.
   return {
     id: createId(),
     title: event.title,
-    amount: parseAmountInput(event.amount),
+    amount: event.amount,
     currency: 'VND',
     date: event.isoDate,
     displayDate: event.date,
     status: 'recorded',
     attentionLevel: event.direction === 'outflow' ? 'important' : 'normal',
-    isAttentionNeeded: event.direction === 'outflow' && parseAmountInput(event.amount) <= -5_000_000,
+    isAttentionNeeded: event.direction === 'outflow' && event.amount <= -5_000_000,
     eventType: event.type === 'goal_contribution' ? 'goal_contribution' : event.type,
     direction: event.direction,
     category: event.category,
@@ -279,6 +282,7 @@ export function toUpcomingPaymentSeed(
     due: string
     status: 'important' | 'normal' | 'pending'
     owner?: string
+    debtId?: string
   },
   index: number,
   assets: Array<{ id: string; name: string }>,
@@ -309,6 +313,7 @@ export function toUpcomingPaymentSeed(
         ? 'Cần cả hai cùng chốt lại số tiền trước khi xử lý.'
         : 'Khoản đã lên kế hoạch để chủ động chuẩn bị tiền.',
     autoCreateNext: index === 1,
+    debtId: payment.debtId,
   }
 }
 

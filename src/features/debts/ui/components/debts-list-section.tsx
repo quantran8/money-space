@@ -12,6 +12,8 @@ type DebtsListSectionProps = {
   isUpdating: boolean
   onEdit: (id: string) => void
   onMarkPaidOff: (id: string) => void
+  onViewDetail: (id: string) => void
+  onDelete: (id: string) => void
 }
 
 export function DebtsListSection({
@@ -22,6 +24,8 @@ export function DebtsListSection({
   isUpdating,
   onEdit,
   onMarkPaidOff,
+  onViewDetail,
+  onDelete,
 }: DebtsListSectionProps) {
   return (
     <Card className="p-5 md:p-6">
@@ -51,6 +55,8 @@ export function DebtsListSection({
                 isUpdating={isUpdating}
                 onEdit={onEdit}
                 onMarkPaidOff={onMarkPaidOff}
+                onViewDetail={onViewDetail}
+                onDelete={onDelete}
               />
             )
           })}

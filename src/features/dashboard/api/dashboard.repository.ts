@@ -2,15 +2,15 @@ import { apiRequest } from '@/shared/api/http'
 
 export type DashboardOverview = {
   updatedAt: string
-  liquid: string
-  liquidDisplay: string
+  /** Raw VND amounts; format for display with `formatVndShort`. */
+  liquid: number
   liquidSplit: {
-    cash: string
-    account: string
+    cash: number
+    account: number
   }
-  savings: string
-  debt: string
-  netWorthDisplay: string
+  savings: number
+  debt: number
+  netWorth: number
   attentionCount: number
 }
 
@@ -24,12 +24,11 @@ type DashboardResponse = {
 
 const EMPTY_OVERVIEW: DashboardOverview = {
   updatedAt: '',
-  liquid: '0',
-  liquidDisplay: '0M',
-  liquidSplit: { cash: '0M', account: '0M' },
-  savings: '0M',
-  debt: '0M',
-  netWorthDisplay: '0M',
+  liquid: 0,
+  liquidSplit: { cash: 0, account: 0 },
+  savings: 0,
+  debt: 0,
+  netWorth: 0,
   attentionCount: 0,
 }
 

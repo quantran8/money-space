@@ -1,10 +1,18 @@
-import { Sparkles } from 'lucide-react'
+import { HandCoins, MoreVertical, Pencil, Sparkles, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   computeCurrentValue,
   computeMaturityValue,
+  isSellableAssetType,
   type Asset,
 } from '@/features/assets/model/assets'
 import { formatVndShort } from '@/shared/lib/format-money'
@@ -12,9 +20,13 @@ import { formatVndShort } from '@/shared/lib/format-money'
 type AssetListProps = {
   assets: Asset[]
   asOf: string
+  onOpen?: (assetId: string) => void
+  onEdit: (assetId: string) => void
+  onSell?: (assetId: string) => void
+  onDelete: (assetId: string) => void
 }
 
-export function AssetList({ assets, asOf }: AssetListProps) {
+export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: AssetListProps) {
   const { t } = useTranslation()
 
   return (
@@ -23,13 +35,20 @@ export function AssetList({ assets, asOf }: AssetListProps) {
         const value = computeCurrentValue(asset, asOf)
         const isAutoPriced = asset.valuationMode !== 'manual'
         const priceMissing = value === null
+        const isSold = asset.status === 'sold'
+        const canSell = !isSold && isSellableAssetType(asset.type)
 
         return (
           <div
             key={asset.id}
             className="surface-muted flex items-center justify-between rounded-3xl px-4 py-4"
           >
-            <div className="min-w-0">
+            <button
+              type="button"
+              onClick={() => onOpen?.(asset.id)}
+              className="min-w-0 flex-1 cursor-pointer text-left"
+              aria-label={asset.name}
+            >
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-medium">{asset.name}</p>
                 <Badge variant="outline">{t(`options.assetType.${asset.type}`)}</Badge>
@@ -38,6 +57,11 @@ export function AssetList({ assets, asOf }: AssetListProps) {
                   <Badge className="bg-[hsla(var(--accent),0.12)] text-[hsl(var(--accent))]">
                     <Sparkles className="mr-1 size-3" />
                     {t('assets.list.autoPriced')}
+                  </Badge>
+                ) : null}
+                {isSold ? (
+                  <Badge className="bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                    {t('options.assetStatus.sold')}
                   </Badge>
                 ) : null}
               </div>
@@ -66,11 +90,50 @@ export function AssetList({ assets, asOf }: AssetListProps) {
                   })()}
                 </p>
               ) : null}
-            </div>
+            </button>
 
-            <p className="money-number shrink-0 pl-3 text-2xl">
-              {priceMissing ? t('assets.list.priceUnavailable') : formatVndShort(value ?? 0)}
-            </p>
+            <div className="flex shrink-0 items-center gap-2 pl-3">
+              <p
+                className={
+                  isSold
+                    ? 'money-number text-2xl text-[hsl(var(--muted-foreground))] line-through'
+                    : 'money-number text-2xl'
+                }
+              >
+                {priceMissing ? t('assets.list.priceUnavailable') : formatVndShort(value ?? 0)}
+              </p>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 shrink-0"
+                    aria-label={t('common.actions')}
+                  >
+                    <MoreVertical className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={() => onEdit(asset.id)}>
+                    <Pencil className="size-4" />
+                    {t('common.edit')}
+                  </DropdownMenuItem>
+                  {canSell && onSell ? (
+                    <DropdownMenuItem onSelect={() => onSell(asset.id)}>
+                      <HandCoins className="size-4" />
+                      {t('assets.sale.action')}
+                    </DropdownMenuItem>
+                  ) : null}
+                  <DropdownMenuItem
+                    className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
+                    onSelect={() => onDelete(asset.id)}
+                  >
+                    <Trash2 className="size-4" />
+                    {t('common.delete')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         )
       })}

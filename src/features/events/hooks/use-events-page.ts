@@ -342,6 +342,11 @@ export function useEventsPage() {
     navigate('/debts', { state: { openCreate: true } })
   }
 
+  function openSellAsset() {
+    handleFormOpenChange(false)
+    navigate('/assets')
+  }
+
   function openEditPayment(paymentId: string) {
     setEditingPaymentId(paymentId)
     setEditingEventId(null)
@@ -449,6 +454,10 @@ export function useEventsPage() {
       fromAssetId: values.fromAssetId || undefined,
       toAssetId: values.toAssetId || undefined,
       upcomingPaymentId: values.upcomingPaymentId || undefined,
+      // Carry the linked debt through so the backend can reduce that debt's
+      // outstanding balance when this repayment is recorded. Only a payment
+      // generated from a debt's schedule has a debtId.
+      debtId: relatedPayment?.debtId || undefined,
       financialGoalId: values.financialGoalId || undefined,
       note: values.note.trim() || t('common.noAdditionalNote'),
     }
@@ -606,6 +615,7 @@ export function useEventsPage() {
     // handlers
     openCreate,
     openBorrowMoney,
+    openSellAsset,
     openEditPayment,
     openEditEvent,
     openMarkPaid,

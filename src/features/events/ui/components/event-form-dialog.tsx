@@ -30,6 +30,7 @@ type EventFormDialogProps = {
   quickAction: QuickAction | null
   onSelectQuickAction: (action: QuickAction) => void
   onBorrowMoney: () => void
+  onSellAsset: () => void
   showMoreDetails: boolean
   onToggleMoreDetails: () => void
   markPaidPaymentId: string | null
@@ -61,6 +62,7 @@ export function EventFormDialog({
   quickAction,
   onSelectQuickAction,
   onBorrowMoney,
+  onSellAsset,
   showMoreDetails,
   onToggleMoreDetails,
   markPaidPaymentId,
@@ -99,7 +101,11 @@ export function EventFormDialog({
 
         <div className="space-y-5">
           {!quickAction ? (
-            <QuickActionPicker onSelect={onSelectQuickAction} onBorrowMoney={onBorrowMoney} />
+            <QuickActionPicker
+              onSelect={onSelectQuickAction}
+              onBorrowMoney={onBorrowMoney}
+              onSellAsset={onSellAsset}
+            />
           ) : quickAction === 'upcoming' ? (
             <UpcomingRecordForm
               control={upcomingControl}

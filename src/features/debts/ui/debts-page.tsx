@@ -2,8 +2,10 @@ import { Plus } from 'lucide-react'
 
 import { PageHeader } from '@/app/layout/page-header'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useDebtsPage } from '@/features/debts/hooks/use-debts-page'
 import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
+import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
 import { DebtsListSection } from '@/features/debts/ui/components/debts-list-section'
 import { DebtsSummaryStrip } from '@/features/debts/ui/components/debts-summary-strip'
 
@@ -26,6 +28,8 @@ export function DebtsPage() {
     originalAmountValue,
     isSavingDebt,
     isUpdating,
+    repaymentEstimate,
+    termMonths,
     dialogOpen,
     editingId,
     showMoreDetails,
@@ -35,6 +39,20 @@ export function DebtsPage() {
     openEdit,
     markPaidOff,
     pasteAmountFromClipboard,
+    deletingDebt,
+    isDeleting,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+    openDetail,
+    updateModeOpen,
+    updateModeOriginalChanged,
+    updateModeBefore,
+    updateModeAfter,
+    updateModeTotalRepaid,
+    isSavingUpdateMode,
+    confirmUpdateMode,
+    cancelUpdateMode,
   } = useDebtsPage()
 
   return (
@@ -61,6 +79,8 @@ export function DebtsPage() {
         isUpdating={isUpdating}
         onEdit={openEdit}
         onMarkPaidOff={markPaidOff}
+        onViewDetail={openDetail}
+        onDelete={requestDelete}
       />
 
       <DebtFormDialog
@@ -79,8 +99,43 @@ export function DebtsPage() {
         setShowMoreDetails={setShowMoreDetails}
         assetOptions={assetOptions}
         memberOptions={memberOptions}
+        repaymentEstimate={repaymentEstimate}
+        termMonths={termMonths}
         onSubmit={submit}
         pasteAmountFromClipboard={pasteAmountFromClipboard}
+      />
+
+      {updateModeOpen ? (
+        <DebtUpdateModeDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) cancelUpdateMode()
+          }}
+          originalAmountChanged={updateModeOriginalChanged}
+          before={updateModeBefore}
+          after={updateModeAfter}
+          totalRepaid={updateModeTotalRepaid}
+          isSubmitting={isSavingUpdateMode}
+          onConfirm={confirmUpdateMode}
+        />
+      ) : null}
+
+      <ConfirmDialog
+        open={!!deletingDebt}
+        onOpenChange={(open) => {
+          if (!open) cancelDelete()
+        }}
+        title="Xóa khoản nợ?"
+        description={
+          deletingDebt
+            ? `Khoản "${deletingDebt.name}" sẽ bị xóa khỏi danh sách. Hành động này không thể hoàn tác.`
+            : undefined
+        }
+        confirmLabel="Xóa"
+        confirmLoadingLabel="Đang xóa..."
+        cancelLabel="Hủy"
+        confirmDisabled={isDeleting}
+        onConfirm={confirmDelete}
       />
     </div>
   )

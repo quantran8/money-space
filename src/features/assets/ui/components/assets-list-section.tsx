@@ -14,6 +14,10 @@ type AssetsListSectionProps = {
   onQueryChange: (value: string) => void
   liquidityFilter: AssetLiquidity | 'all'
   onLiquidityFilterChange: (value: AssetLiquidity | 'all') => void
+  onOpen: (assetId: string) => void
+  onEdit: (assetId: string) => void
+  onSell: (assetId: string) => void
+  onDelete: (assetId: string) => void
 }
 
 export function AssetsListSection({
@@ -23,6 +27,10 @@ export function AssetsListSection({
   onQueryChange,
   liquidityFilter,
   onLiquidityFilterChange,
+  onOpen,
+  onEdit,
+  onSell,
+  onDelete,
 }: AssetsListSectionProps) {
   const { t } = useTranslation()
 
@@ -65,7 +73,14 @@ export function AssetsListSection({
       </div>
 
       {assets.length > 0 ? (
-        <AssetList assets={assets} asOf={asOf} />
+        <AssetList
+          assets={assets}
+          asOf={asOf}
+          onOpen={onOpen}
+          onEdit={onEdit}
+          onSell={onSell}
+          onDelete={onDelete}
+        />
       ) : (
         <p className="rounded-3xl bg-[hsl(var(--muted))] px-4 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">
           {t('assets.toolbar.empty')}

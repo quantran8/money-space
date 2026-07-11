@@ -8,7 +8,6 @@ import type {
 
 type AssetRecord = Asset & {
   currentValue: number
-  currentValueDisplay: string
   valueUpdatedAt: string
 }
 
@@ -38,7 +37,6 @@ type AssetSummaryResponse = {
     liquidity: 'usable_now' | 'not_immediately_usable' | 'long_term'
     name: string
     value: number
-    valueDisplay: string
   }>
 }
 
@@ -51,6 +49,19 @@ type AssetSnapshotsResponse = {
     longTerm: number
   }>
   total: number
+}
+
+type AssetValueHistoryResponse = {
+  householdId: string
+  assetId: string
+  currentValue: number
+  items: Array<{ date: string; value: number }>
+  total: number
+}
+
+export type AssetValuePoint = {
+  date: string
+  value: number
 }
 
 export type AssetPayload = Omit<Asset, 'id'>
@@ -76,6 +87,18 @@ export async function getAssetSnapshots(householdId: string) {
         not_immediately_usable: item.notImmediatelyUsable,
         long_term: item.longTerm,
       }),
+    ),
+  }
+}
+
+export async function getAssetValueHistory(householdId: string, assetId: string) {
+  const response = await apiRequest<AssetValueHistoryResponse>(
+    `/api/households/${householdId}/assets/${assetId}/value-history`,
+  )
+  return {
+    currentValue: response.currentValue,
+    items: response.items.map(
+      (item): AssetValuePoint => ({ date: item.date, value: item.value }),
     ),
   }
 }

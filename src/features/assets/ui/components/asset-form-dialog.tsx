@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react'
+import { Plus, Save } from 'lucide-react'
 import {
   Controller,
   type UseFormReturn,
@@ -37,6 +37,8 @@ import {
   type ValuationMode,
 } from '@/features/assets/model/assets'
 
+type WalletOption = { value: string; label: string }
+
 type AssetFormDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -44,6 +46,8 @@ type AssetFormDialogProps = {
   setValue: UseFormSetValue<AssetForm>
   mode: ValuationMode
   previewValue: number | null
+  walletOptions: WalletOption[]
+  isEditing: boolean
   isSubmitting: boolean
   onSubmit: () => void
 }
@@ -55,6 +59,8 @@ export function AssetFormDialog({
   setValue,
   mode,
   previewValue,
+  walletOptions,
+  isEditing,
   isSubmitting,
   onSubmit,
 }: AssetFormDialogProps) {
@@ -62,15 +68,22 @@ export function AssetFormDialog({
   const {
     control,
     register,
+    watch,
     formState: { errors, isValid },
   } = form
+  const isSaving = watch('type') === 'saving_deposit'
+  const interestDestination = watch('interestDestination')
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>{t('assets.form.title')}</ResponsiveDialogTitle>
-          <ResponsiveDialogDescription>{t('assets.form.eyebrow')}</ResponsiveDialogDescription>
+          <ResponsiveDialogTitle>
+            {isEditing ? t('assets.form.editTitle') : t('assets.form.title')}
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
+            {isEditing ? t('assets.form.editEyebrow') : t('assets.form.eyebrow')}
+          </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
         <form className="space-y-4" onSubmit={onSubmit} noValidate>
@@ -196,6 +209,21 @@ export function AssetFormDialog({
                   />
                 </FormField>
               </div>
+              <FormField label={t('assets.form.unitPrice')} error={errors.unitPrice?.message}>
+                <Controller
+                  control={control}
+                  name="unitPrice"
+                  render={({ field }) => (
+                    <MoneyInput
+                      placeholder={t('assets.form.unitPricePlaceholder')}
+                      aria-invalid={!!errors.unitPrice}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
+                />
+              </FormField>
               <ComputedPreview value={previewValue} />
             </>
           ) : null}
@@ -238,6 +266,107 @@ export function AssetFormDialog({
                 </FormField>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  label={t('assets.form.interestPayment')}
+                  error={errors.interestPayment?.message}
+                >
+                  <Controller
+                    control={control}
+                    name="interestPayment"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger aria-invalid={!!errors.interestPayment}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="end_of_term">
+                            {t('options.interestPayment.end_of_term')}
+                          </SelectItem>
+                          <SelectItem value="monthly">
+                            {t('options.interestPayment.monthly')}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </FormField>
+                {isSaving ? (
+                  <FormField
+                    label={t('assets.form.nonTermRate')}
+                    error={errors.nonTermRate?.message}
+                  >
+                    <Controller
+                      control={control}
+                      name="nonTermRate"
+                      render={({ field }) => (
+                        <DecimalInput
+                          placeholder={t('assets.form.nonTermRatePlaceholder')}
+                          aria-invalid={!!errors.nonTermRate}
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                        />
+                      )}
+                    />
+                  </FormField>
+                ) : null}
+              </div>
+              {isSaving ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    label={t('assets.form.interestDestination')}
+                    error={errors.interestDestination?.message}
+                  >
+                    <Controller
+                      control={control}
+                      name="interestDestination"
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="principal">
+                              {t('options.interestDestination.principal')}
+                            </SelectItem>
+                            <SelectItem value="wallet">
+                              {t('options.interestDestination.wallet')}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </FormField>
+                  {interestDestination === 'wallet' ? (
+                    <FormField
+                      label={t('assets.form.receivingWallet')}
+                      error={errors.receivingWalletId?.message}
+                    >
+                      <Controller
+                        control={control}
+                        name="receivingWalletId"
+                        render={({ field }) => (
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger aria-invalid={!!errors.receivingWalletId}>
+                              <SelectValue
+                                placeholder={t('assets.form.receivingWalletPlaceholder')}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {walletOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </FormField>
+                  ) : null}
+                </div>
+              ) : null}
+              <div className="grid gap-4 sm:grid-cols-2">
                 <FormField label={t('assets.form.startDate')} error={errors.startDate?.message}>
                   <Controller
                     control={control}
@@ -277,8 +406,12 @@ export function AssetFormDialog({
               {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={!isValid || isSubmitting}>
-              <Plus className="mr-2 size-4" />
-              {isSubmitting ? 'Dang luu...' : t('assets.form.submit')}
+              {isEditing ? <Save className="mr-2 size-4" /> : <Plus className="mr-2 size-4" />}
+              {isSubmitting
+                ? 'Dang luu...'
+                : isEditing
+                  ? t('assets.form.save')
+                  : t('assets.form.submit')}
             </Button>
           </ResponsiveDialogFooter>
         </form>

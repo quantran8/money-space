@@ -1,10 +1,12 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 
 import { AppShell } from '@/app/layout/app-shell'
+import { AssetDetailPage } from '@/features/assets/ui/asset-detail-page'
 import { AssetsPage } from '@/features/assets/ui/assets-page'
 import { AuthCallbackPage } from '@/features/auth/ui/auth-callback-page'
 import { AuthPage } from '@/features/auth/ui/auth-page'
 import { RequireAuth } from '@/features/auth/ui/require-auth'
+import { DebtDetailPage } from '@/features/debts/ui/debt-detail-page'
 import { DebtsPage } from '@/features/debts/ui/debts-page'
 import { DashboardPage } from '@/features/dashboard/ui/dashboard-page'
 import { EventsPage } from '@/features/events/ui/events-page'
@@ -43,7 +45,9 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'assets', element: <AssetsPage /> },
+      { path: 'assets/:assetId', element: <AssetDetailPage /> },
       { path: 'debts', element: <DebtsPage /> },
+      { path: 'debts/:debtId', element: <DebtDetailPage /> },
       { path: 'events', element: <EventsPage /> },
       { path: 'goals', element: <GoalsPage /> },
       { path: 'payments', element: <Navigate to="/events" replace /> },

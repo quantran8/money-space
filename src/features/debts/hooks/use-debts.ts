@@ -19,6 +19,9 @@ export function useDebts() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.debts(activeHouseholdId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeHouseholdId) }),
+      // An effective-from-now / disbursement / reconcile update logs a money
+      // event, so the events timeline (and the debt detail history) must refetch.
+      queryClient.invalidateQueries({ queryKey: queryKeys.events(activeHouseholdId) }),
     ])
   }
 

@@ -5,10 +5,12 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { useAssets } from '@/features/assets/hooks/use-assets'
+import { useAssetSale } from '@/features/assets/hooks/use-asset-sale'
 import {
   AS_OF,
   buildAssetSchema,
   defaultAssetFormValues,
+  fromAsset,
   toAsset,
   type AssetForm,
   type AssetTotals,
@@ -29,11 +31,22 @@ const EMPTY_TOTALS: AssetTotals = {
 
 export function useAssetsPage() {
   const { t } = useTranslation()
-  const { assets, snapshots, summary, asOf, createAsset } = useAssets()
+  const { assets, snapshots, summary, asOf, createAsset, updateAsset, deleteAsset } = useAssets()
+  const sale = useAssetSale()
+
+  function openSale(assetId: string) {
+    const asset = assets.find((item) => item.id === assetId)
+    if (asset) sale.openSale(asset)
+  }
 
   const [formOpen, setFormOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [liquidityFilter, setLiquidityFilter] = useState<AssetLiquidity | 'all'>('all')
+
+  const isEditing = editingId !== null
+  const isSubmitting = createAsset.isPending || updateAsset.isPending
 
   const assetSchema = useMemo(() => buildAssetSchema(t), [t])
 
@@ -56,6 +69,15 @@ export function useAssetsPage() {
     return draft ? computeCurrentValue(draft, AS_OF) : null
   }, [mode, watchedValues])
 
+  // Wallet (cash/bank) assets that can receive auto-credited saving interest.
+  const walletOptions = useMemo(
+    () =>
+      assets
+        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .map((asset) => ({ value: asset.id, label: asset.name })),
+    [assets],
+  )
+
   const totals = summary?.totals ?? EMPTY_TOTALS
   const total = totals.usable_now + totals.not_immediately_usable + totals.long_term
 
@@ -70,24 +92,34 @@ export function useAssetsPage() {
     })
   }, [assets, query, liquidityFilter])
 
+  const editingAsset = editingId ? assets.find((asset) => asset.id === editingId) : undefined
+  const deletingAsset = deleteId ? assets.find((asset) => asset.id === deleteId) : undefined
+
   useEffect(() => {
     if (!formOpen) return
-    reset({ ...defaultAssetFormValues })
-  }, [formOpen, reset])
+    reset(editingAsset ? fromAsset(editingAsset) : { ...defaultAssetFormValues })
+  }, [formOpen, editingAsset, reset])
 
   function openCreate() {
+    setEditingId(null)
+    setFormOpen(true)
+  }
+
+  function openEdit(assetId: string) {
+    setEditingId(assetId)
     setFormOpen(true)
   }
 
   function handleFormOpenChange(open: boolean) {
     setFormOpen(open)
+    if (!open) setEditingId(null)
   }
 
   async function onSubmit(values: AssetForm) {
     try {
-      const nextAsset = toAsset(crypto.randomUUID(), values)
+      const nextAsset = toAsset(editingId ?? crypto.randomUUID(), values)
       if (!nextAsset) return
-      await createAsset.mutateAsync({
+      const payload = {
         name: nextAsset.name,
         type: nextAsset.type,
         valuationMode: nextAsset.valuationMode,
@@ -97,11 +129,32 @@ export function useAssetsPage() {
         manualValue: nextAsset.manualValue,
         marketPosition: nextAsset.marketPosition,
         calculationTerm: nextAsset.calculationTerm,
-      })
-      toast.success('Tao tai san thanh cong.')
+      }
+
+      if (editingId) {
+        await updateAsset.mutateAsync({ assetId: editingId, payload })
+        toast.success('Cap nhat tai san thanh cong.')
+      } else {
+        await createAsset.mutateAsync(payload)
+        toast.success('Tao tai san thanh cong.')
+      }
       handleFormOpenChange(false)
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Khong the tao tai san.'))
+      toast.error(
+        getErrorMessage(error, editingId ? 'Khong the cap nhat tai san.' : 'Khong the tao tai san.'),
+      )
+    }
+  }
+
+  async function handleDeleteAsset(assetId: string) {
+    try {
+      await deleteAsset.mutateAsync(assetId)
+      toast.success('Da xoa tai san.')
+      setDeleteId(null)
+      if (editingId === assetId) handleFormOpenChange(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Khong the xoa tai san.'))
+      throw error
     }
   }
 
@@ -121,12 +174,24 @@ export function useAssetsPage() {
     form,
     mode,
     previewValue,
+    walletOptions,
     setValue,
-    isSubmitting: createAsset.isPending,
+    isEditing,
+    isSubmitting,
     submit: handleSubmit(onSubmit),
     // dialog
     formOpen,
     openCreate,
+    openEdit,
     handleFormOpenChange,
+    // sale
+    openSale,
+    sale,
+    // delete
+    deleteId,
+    setDeleteId,
+    deletingAsset,
+    isDeleting: deleteAsset.isPending,
+    handleDeleteAsset,
   }
 }

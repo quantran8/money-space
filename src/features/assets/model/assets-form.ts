@@ -33,11 +33,16 @@ export type AssetForm = {
   symbol: string
   quantity: string
   unit: string
+  unitPrice: string
   // formula-calculated
   principal: string
   interestRate: string
   startDate: string
   maturityDate: string
+  interestPayment: 'end_of_term' | 'monthly'
+  nonTermRate: string
+  interestDestination: 'wallet' | 'principal'
+  receivingWalletId: string
 }
 
 export const defaultAssetFormValues: AssetForm = {
@@ -49,10 +54,15 @@ export const defaultAssetFormValues: AssetForm = {
   symbol: '',
   quantity: '',
   unit: '',
+  unitPrice: '',
   principal: '',
   interestRate: '',
   startDate: AS_OF,
   maturityDate: '',
+  interestPayment: 'end_of_term',
+  nonTermRate: '',
+  interestDestination: 'principal',
+  receivingWalletId: '',
 }
 
 /** Parse a raw (separator-free) money string like "20000000" into VND. */
@@ -81,6 +91,7 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
     const assetClass = assetClassForType(values.type)
     const quantity = parseRawDecimal(values.quantity)
     if (!assetClass || !values.symbol.trim() || !Number.isFinite(quantity)) return null
+    const unitPrice = parseMoneyToVnd(values.unitPrice)
     return {
       ...base,
       valuationMode: 'market_priced',
@@ -90,6 +101,7 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
         quantity,
         unit: values.unit.trim() || 'unit',
         quoteCurrency: 'VND',
+        unitPrice: Number.isFinite(unitPrice) ? unitPrice : undefined,
       },
     }
   }
@@ -100,6 +112,9 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
   const rate = parseRawDecimal(values.interestRate)
   if (!calculationType || !Number.isFinite(principal) || !Number.isFinite(rate) || !values.startDate)
     return null
+  const nonTermRate = parseRawDecimal(values.nonTermRate)
+  // saving_deposit needs a non-term (early-withdrawal) rate; others default to 0.
+  if (values.type === 'saving_deposit' && !Number.isFinite(nonTermRate)) return null
   return {
     ...base,
     valuationMode: 'formula_calculated',
@@ -109,7 +124,50 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
       interestRate: rate,
       startDate: values.startDate,
       maturityDate: values.maturityDate || null,
+      interestPayment: values.interestPayment,
+      nonTermRate: Number.isFinite(nonTermRate) ? nonTermRate : 0,
+      interestDestination: values.interestDestination,
+      receivingWalletId:
+        values.interestDestination === 'wallet' && values.receivingWalletId
+          ? values.receivingWalletId
+          : null,
     },
+  }
+}
+
+/** Convert a stored VND/whole number into the raw digit string a money field holds. */
+function moneyToRaw(value?: number): string {
+  if (value === undefined || value === null || !Number.isFinite(value)) return ''
+  return String(Math.round(value))
+}
+
+/** Convert a stored number into the raw string a decimal field holds ("," decimals). */
+function decimalToRaw(value?: number): string {
+  if (value === undefined || value === null || !Number.isFinite(value)) return ''
+  return String(value).replace('.', ',')
+}
+
+/** Build editable form values from an existing asset (edit mode). */
+export function fromAsset(asset: Asset): AssetForm {
+  return {
+    ...defaultAssetFormValues,
+    name: asset.name,
+    type: asset.type,
+    liquidity: asset.liquidity,
+    note: asset.note,
+    value: moneyToRaw(asset.manualValue),
+    symbol: asset.marketPosition?.symbol ?? '',
+    quantity: decimalToRaw(asset.marketPosition?.quantity),
+    unit: asset.marketPosition?.unit ?? '',
+    unitPrice: moneyToRaw(asset.marketPosition?.unitPrice),
+    principal: moneyToRaw(asset.calculationTerm?.principalAmount),
+    interestRate: decimalToRaw(asset.calculationTerm?.interestRate),
+    startDate: asset.calculationTerm?.startDate ?? AS_OF,
+    maturityDate: asset.calculationTerm?.maturityDate ?? '',
+    interestPayment: asset.calculationTerm?.interestPayment ?? 'end_of_term',
+    nonTermRate: decimalToRaw(asset.calculationTerm?.nonTermRate),
+    interestDestination: asset.calculationTerm?.interestDestination ?? 'principal',
+    receivingWalletId: asset.calculationTerm?.receivingWalletId ?? '',
   }
 }
 
@@ -126,10 +184,15 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
       symbol: z.string().trim(),
       quantity: z.string().trim(),
       unit: z.string().trim(),
+      unitPrice: z.string().trim(),
       principal: z.string().trim(),
       interestRate: z.string().trim(),
       startDate: z.string().trim(),
       maturityDate: z.string().trim(),
+      interestPayment: z.enum(['end_of_term', 'monthly']),
+      nonTermRate: z.string().trim(),
+      interestDestination: z.enum(['wallet', 'principal']),
+      receivingWalletId: z.string().trim(),
     })
     .superRefine((values, ctx) => {
       const mode = valuationModeForType(values.type)
@@ -162,6 +225,15 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
         } else if (!Number.isFinite(quantity) || quantity < 0) {
           ctx.addIssue({ path: ['quantity'], code: 'custom', message: invalidMoney })
         }
+        if (!values.unitPrice) {
+          ctx.addIssue({
+            path: ['unitPrice'],
+            code: 'custom',
+            message: required(t('assets.form.unitPrice')),
+          })
+        } else if (!moneyLike.test(values.unitPrice)) {
+          ctx.addIssue({ path: ['unitPrice'], code: 'custom', message: invalidMoney })
+        }
       }
 
       if (mode === 'formula_calculated') {
@@ -184,6 +256,31 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
         }
         if (!values.startDate) {
           ctx.addIssue({ path: ['startDate'], code: 'custom', message: t('validation.requiredDate') })
+        }
+        // Non-term (early-withdrawal) rate is required for saving deposits.
+        if (values.type === 'saving_deposit') {
+          const nonTerm = parseRawDecimal(values.nonTermRate)
+          if (!values.nonTermRate || !Number.isFinite(nonTerm) || nonTerm < 0) {
+            ctx.addIssue({
+              path: ['nonTermRate'],
+              code: 'custom',
+              message: required(t('assets.form.nonTermRate')),
+            })
+          } else if (Number.isFinite(rate) && nonTerm > rate) {
+            ctx.addIssue({
+              path: ['nonTermRate'],
+              code: 'custom',
+              message: t('assets.form.nonTermRateTooHigh'),
+            })
+          }
+          // A wallet destination needs a receiving wallet.
+          if (values.interestDestination === 'wallet' && !values.receivingWalletId) {
+            ctx.addIssue({
+              path: ['receivingWalletId'],
+              code: 'custom',
+              message: required(t('assets.form.receivingWallet')),
+            })
+          }
         }
       }
     })

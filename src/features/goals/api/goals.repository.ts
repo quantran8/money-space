@@ -3,9 +3,7 @@ import { apiRequest } from '@/shared/api/http'
 export type GoalRecord = {
   id: string
   name: string
-  current: string
   currentAmount: number
-  target: string
   targetAmount: number
   progress: number
   priority: 'high' | 'medium' | 'low'
@@ -21,7 +19,9 @@ type GoalListResponse = {
 
 export type GoalPayload = {
   name: string
-  currentAmount?: number
+  // No currentAmount: progress is derived server-side from the sum of the goal's
+  // goal_contribution money events. Raise progress by adding a contribution
+  // (a goal_contribution money event), not by PATCHing the goal.
   targetAmount: number
   priority: 'high' | 'medium' | 'low'
   note?: string

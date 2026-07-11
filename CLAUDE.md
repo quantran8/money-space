@@ -45,6 +45,20 @@ Money Space (package name `family-finance-app`) is a Vietnamese-first family/hou
 - **Money input parsing**: user-entered amounts use a shorthand (`"20M"`, `"1,8M"`, `"500K"`, `"1.2B"`) validated by `moneyPattern` and parsed to VND by `parseMoneyToVnd`. Comma is a decimal separator.
 - **Styling**: Tailwind v4 utility classes with CSS variables, e.g. `text-[hsl(var(--muted-foreground))]`, `bg-[hsl(var(--accent))]`. Chart colors are centralized (e.g. `liquidityColors` in assets.ts) — follow the dataviz palette rather than inventing per-chart hues.
 
+## Task logging for mobile app parity
+
+**Every task done in this frontend-web repo must be recorded** in a session file at `session/<date>/<task-name>/` (e.g. `session/2026-07-10/add-asset-filter/`). The purpose is to keep a durable record of what changed so the mobile app repo can be updated to match later. When starting any task here, create this folder, copy [session/TEMPLATE.md](session/TEMPLATE.md) into it as `README.md`, and log what the task is, which files/features changed, and the key decisions — so a future pass can port the same changes to mobile. See [session/README.md](session/README.md).
+
+## Business logic memory
+
+**All business logic (nghiệp vụ) of the app must be documented under `memory/`.** This is the durable source of truth for how the app's domain flows work.
+
+- **Before changing anything that touches business logic**, read the relevant files in `memory/` first to understand the flow and the nghiệp vụ.
+- **Whenever a task changes business logic**, update the corresponding file(s) in `memory/` so they stay accurate.
+- One concern per file, named clearly (e.g. `asset-valuation.md`, `household-sharing.md`). See [memory/README.md](memory/README.md).
+
+This rule applies to all three repos (`backend`, `frontend-web`, `mobile-app`) — the business logic in `memory/` should describe the shared domain, kept consistent across repos.
+
 ## Backend reference
 
 The full Postgres schema (Supabase, with RLS policies) lives in [supabase/migrations/20260705223000_init_money_space.sql](supabase/migrations/20260705223000_init_money_space.sql). TypeScript row types are in [src/types/database.ts](src/types/database.ts). The design/spec docs at the repo root (`# Product Spec v1.md`, `# Backend Tables & Relationships — Money.md`, `design.md`) are the source of truth for domain rules; the frontend enum unions in `src/lib/assets.ts` deliberately mirror the SQL enums.

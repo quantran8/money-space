@@ -81,8 +81,8 @@ export function GoalsListSection({
                 </div>
                 <div className="flex items-center gap-2">
                   <p className="whitespace-nowrap text-sm text-[hsl(var(--muted-foreground))]">
-                    {formatAmount(goalAmount(goal.currentAmount, goal.current))} /{' '}
-                    {formatAmount(goalAmount(goal.targetAmount, goal.target))}
+                    {formatAmount(goalAmount(goal.currentAmount))} /{' '}
+                    {formatAmount(goalAmount(goal.targetAmount))}
                   </p>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

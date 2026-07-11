@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { MoneyEventItem } from '@/features/events/model/events'
 import { monthKeyOf } from '@/features/events/model/events-month'
+import { formatVndSigned } from '@/shared/lib/format-money'
 
 type EventRow = MoneyEventItem & {
   id: string
@@ -114,7 +115,7 @@ export function EventsDataTable({
                     <p
                       className={`money-number text-xl font-semibold ${getAmountTone(event.direction)}`}
                     >
-                      {event.amount}
+                      {formatVndSigned(event.amount)}
                     </p>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
