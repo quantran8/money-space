@@ -204,6 +204,8 @@ export const resources = {
         sale: {
           action: 'Bán',
           title: 'Bán tài sản',
+          editTitle: 'Sửa giao dịch bán',
+          submitEdit: 'Lưu thay đổi',
           eyebrow: 'Ghi nhận một khoản bán tài sản',
           holdingQuantity: 'Đang giữ {{quantity}} {{unit}}',
           holdingValue: 'Giá trị hiện tại {{value}}',
@@ -701,6 +703,7 @@ export const resources = {
           expense: 'Chi ra',
           income: 'Tiền vào',
           transfer: 'Chuyển khoản nội bộ',
+          asset_update: 'Định giá lại',
           goal_contribution: 'Góp vào mục tiêu',
         },
         eventCategory: {
@@ -1079,6 +1082,8 @@ export const resources = {
         sale: {
           action: 'Sell',
           title: 'Sell asset',
+          editTitle: 'Edit sale',
+          submitEdit: 'Save changes',
           eyebrow: 'Record an asset sale',
           holdingQuantity: 'Holding {{quantity}} {{unit}}',
           holdingValue: 'Current value {{value}}',
@@ -1577,6 +1582,7 @@ export const resources = {
           expense: 'Money out',
           income: 'Money in',
           transfer: 'Internal transfer',
+          asset_update: 'Revaluation',
           goal_contribution: 'Goal contribution',
         },
         eventCategory: {

@@ -72,11 +72,22 @@ export type LocalMoneyEvent = {
   upcomingPaymentId?: string
   financialGoalId?: string
   note?: string
+  // Type-specific fields carried through so an edit can preserve them instead of
+  // silently dropping them. `asset_sale` needs fee + sold qty/value; a debt
+  // repayment needs its `debtId` so the backend still reduces the right debt.
+  feeAmount?: number
+  soldQuantity?: number
+  soldValue?: number
+  debtId?: string
 }
 
 export type FinancialRecordItem = {
   id: string
   sourceType: 'upcoming_payment' | 'money_event'
+  /** Whether this record can be edited in-place (false for system / dedicated-
+   *  flow money events — see {@link isEditableEventType}). Upcoming payments are
+   *  always editable. */
+  canEdit?: boolean
   title: string
   amount: number
   currency: string
@@ -131,7 +142,20 @@ export type ActualRecordForm = {
   note: string
 }
 
-export const TODAY = '2026-07-08'
+// The real current date (local time) as an ISO `YYYY-MM-DD` string. Used both to
+// anchor the timeline grouping (today / this week / this month / older) and as the
+// default date for new records. Previously this was frozen to a hardcoded seed date,
+// which made records land in the wrong buckets (e.g. an 08 Jul record shown under
+// "today" long after the real today had moved on).
+function todayIsoDate() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export const TODAY = todayIsoDate()
 
 export const upcomingDefaults: UpcomingRecordForm = {
   name: '',
@@ -241,7 +265,12 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
   // `event.amount` is now a raw signed number from the API (no longer a
   // formatted string), so it feeds the local model directly.
   return {
-    id: createId(),
+    // Keep the API event id so edit/delete + type-routing (which look the event
+    // up in the raw list by id) match. Only fall back to a fresh id for a
+    // seed without one. Previously this ALWAYS minted a new id, so
+    // `seedEvents.find(id)` never matched → asset_sale / asset_update edits fell
+    // through to the generic form.
+    id: event.id ?? createId(),
     title: event.title,
     amount: event.amount,
     currency: 'VND',
@@ -250,14 +279,24 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
     status: 'recorded',
     attentionLevel: event.direction === 'outflow' ? 'important' : 'normal',
     isAttentionNeeded: event.direction === 'outflow' && event.amount <= -5_000_000,
-    eventType: event.type === 'goal_contribution' ? 'goal_contribution' : event.type,
+    // `asset_update` (a system-generated revaluation) isn't a form-creatable
+    // type; if such an event is ever opened in the form, represent it as the
+    // neutral `adjustment` bookkeeping type.
+    eventType: event.type === 'asset_update' ? 'adjustment' : event.type,
     direction: event.direction,
     category: event.category,
-    fromAssetId: event.direction !== 'inflow' ? event.assetId : undefined,
-    fromAssetName: event.direction !== 'inflow' ? event.assetName : undefined,
-    toAssetId: event.direction === 'inflow' ? event.assetId : undefined,
-    toAssetName: event.direction === 'inflow' ? event.assetName : undefined,
+    // Prefer the explicit from/to on the event (a transfer sets both); fall back
+    // to the direction-derived single `assetId` for legacy single-sided events.
+    fromAssetId: event.fromAssetId ?? (event.direction !== 'inflow' ? event.assetId : undefined),
+    fromAssetName: event.fromAssetId ? undefined : (event.direction !== 'inflow' ? event.assetName : undefined),
+    toAssetId: event.toAssetId ?? (event.direction === 'inflow' ? event.assetId : undefined),
+    toAssetName: event.toAssetId ? undefined : (event.direction === 'inflow' ? event.assetName : undefined),
     note: event.note,
+    // Carry type-specific fields through so an edit preserves them.
+    feeAmount: event.feeAmount,
+    soldQuantity: event.soldQuantity,
+    soldValue: event.soldValue,
+    debtId: event.debtId,
   }
 }
 
@@ -387,6 +426,44 @@ export function getTimelineTypeLabel(record: FinancialRecordItem) {
   }
 }
 
+/**
+ * Compact type label for the minimal timeline row (mockup style): "Money in" /
+ * "Money out" for the common inflow/outflow events, and the raw record type
+ * (e.g. `asset_sale`, `Revaluation`) for the rest. Upcoming payments read as
+ * "Planned".
+ */
+export function getTimelineRowTypeLabel(record: FinancialRecordItem) {
+  if (record.sourceType === 'upcoming_payment') return 'Planned'
+  switch (record.eventType) {
+    case 'income':
+      return 'Money in'
+    case 'expense':
+    case 'payment_paid':
+      return 'Money out'
+    case 'transfer':
+      return 'Transfer'
+    case 'goal_contribution':
+      return 'Goal'
+    case 'debt_update':
+      return 'Debt'
+    case 'asset_purchase':
+      return 'asset_purchase'
+    case 'asset_sale':
+      return 'asset_sale'
+    case 'adjustment':
+      return 'Revaluation'
+    default:
+      return 'Other'
+  }
+}
+
+/** Render an ISO date (`2026-07-10`) as the mockup's `D/M/YYYY` (`10/7/2026`). */
+export function formatTimelineRowDate(isoDate: string) {
+  const date = new Date(`${isoDate}T00:00:00`)
+  if (Number.isNaN(date.getTime())) return isoDate
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+}
+
 export function getStatusLabel(status: RecordStatus) {
   switch (status) {
     case 'unpaid':
@@ -436,10 +513,11 @@ export function formatRecordAmount(record: FinancialRecordItem, formatVndShort: 
 }
 
 export function getRecordAmountTone(record: FinancialRecordItem) {
-  if (record.direction === 'inflow') return 'text-[hsl(var(--status-green))]'
-  if (record.direction === 'outflow') return 'text-[hsl(var(--status-red))]'
+  // Inflow / neutral records (income, asset sale, revaluation) read green;
+  // money out reads orange — matching the timeline row's arrow colors.
+  if (record.direction === 'outflow') return 'text-[hsl(var(--status-orange))]'
   if (record.sourceType === 'upcoming_payment') return 'text-foreground'
-  return 'text-[hsl(var(--accent))]'
+  return 'text-[hsl(var(--status-green))]'
 }
 
 export function getTimelineGroupLabel(key: TimelineGroupKey) {
@@ -479,6 +557,31 @@ export function getQuickActionFromEventType(eventType: RecordType): Exclude<Quic
   if (eventType === 'payment_paid') return 'payment_paid'
   if (eventType === 'debt_update') return 'expense'
   return 'expense'
+}
+
+/**
+ * Money-event types that can be edited through the generic events form.
+ * Excluded types are system-generated or driven by a dedicated flow that also
+ * mutates other state (an `asset_sale` reduces an asset's position; an
+ * `asset_update` is a revaluation side-effect of re-pricing an asset; a
+ * `debt_update` / `asset_purchase` ties into a debt or purchase flow). Editing
+ * those through the plain form would desync that state or rewrite their type, so
+ * the UI offers Delete (+ redo via the proper flow) instead of Edit.
+ * Takes the RAW event type (`MoneyEventItem['type']`, which includes
+ * `asset_update`).
+ */
+const EDITABLE_EVENT_TYPES: ReadonlySet<string> = new Set([
+  'expense',
+  'income',
+  'transfer',
+  'goal_contribution',
+  'payment_paid',
+  'adjustment',
+  'other',
+])
+
+export function isEditableEventType(type: string): boolean {
+  return EDITABLE_EVENT_TYPES.has(type)
 }
 
 export function eventRequiresFromAsset(eventType: RecordType) {

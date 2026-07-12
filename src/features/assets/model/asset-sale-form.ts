@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { computeCurrentValue, type Asset } from '@/features/assets/model/assets'
 import type { EventPayload } from '@/features/events/api/events.repository'
+import type { MoneyEventItem } from '@/features/events/model/events.types'
 import { parseRawDecimal, parseRawMoney } from '@/shared/lib/number-format'
 
 type Translate = (key: string, params?: Record<string, unknown>) => string
@@ -39,9 +40,19 @@ export function currentQuantity(asset: Asset): number {
   return asset.marketPosition?.quantity ?? 0
 }
 
-export function buildAssetSaleSchema(t: Translate, asset: Asset) {
+/**
+ * The quantity a sale form may sell up to. On CREATE it is the asset's current
+ * holding; on EDIT of an existing sale the backend first reverses that sale
+ * (adds `soldQuantity` back), so the editable max is `current + this sale's
+ * soldQuantity` — the pre-sale holding.
+ */
+export function effectiveHeldQuantity(asset: Asset, editingEvent?: MoneyEventItem): number {
+  return currentQuantity(asset) + (editingEvent?.soldQuantity ?? 0)
+}
+
+export function buildAssetSaleSchema(t: Translate, asset: Asset, editingEvent?: MoneyEventItem) {
   const market = isMarketSale(asset)
-  const heldQuantity = currentQuantity(asset)
+  const heldQuantity = effectiveHeldQuantity(asset, editingEvent)
   const required = (label: string) => t('validation.required', { label })
   const invalidMoney = t('validation.invalidMoney')
 
@@ -133,6 +144,32 @@ export const defaultAssetSaleValues: AssetSaleForm = {
   sellAll: false,
 }
 
+/**
+ * Prefill the sale form from an existing `asset_sale` money event, for editing.
+ * `sellAll` is derived: a market sale that sold the whole pre-sale holding, or a
+ * manual sale that emptied the asset. Money/decimal fields become raw strings.
+ */
+export function toSaleEditValues(
+  asset: Asset,
+  event: MoneyEventItem,
+): AssetSaleForm {
+  const market = isMarketSale(asset)
+  const soldQuantity = event.soldQuantity ?? 0
+  const preSaleQuantity = effectiveHeldQuantity(asset, event)
+  const soldAll = market
+    ? preSaleQuantity > 0 && soldQuantity >= preSaleQuantity
+    : currentQuantity(asset) === 0 && !!event.soldValue
+  return {
+    quantity: market && !soldAll && soldQuantity ? String(soldQuantity) : '',
+    proceeds: event.amount ? String(Math.round(Math.abs(event.amount))) : '',
+    fee: event.feeAmount ? String(Math.round(event.feeAmount)) : '',
+    toAssetId: event.toAssetId ?? '',
+    date: event.isoDate,
+    note: event.note ?? '',
+    sellAll: soldAll,
+  }
+}
+
 /** Net amount credited to the wallet: gross proceeds minus fee. */
 export function computeNet(proceeds: string, fee: string): number {
   const gross = parseRawMoney(proceeds)
@@ -144,9 +181,17 @@ export function computeNet(proceeds: string, fee: string): number {
 
 /**
  * Build the `asset_sale` money event payload from the sold asset and raw form
- * values. `asOf` is used to resolve a manual asset's full-sale value.
+ * values. `asOf` resolves a manual asset's full-sale value. `editingEvent` is
+ * passed when editing an existing sale: `sellAll` then resolves against the
+ * PRE-sale holding (current + the sale's own soldQuantity/value), since the
+ * backend reverses this sale before re-applying the edited one.
  */
-export function toSalePayload(asset: Asset, values: AssetSaleForm, asOf: string): EventPayload {
+export function toSalePayload(
+  asset: Asset,
+  values: AssetSaleForm,
+  asOf: string,
+  editingEvent?: MoneyEventItem,
+): EventPayload {
   const market = isMarketSale(asset)
   const proceeds = parseRawMoney(values.proceeds)
   const fee = values.fee ? parseRawMoney(values.fee) : 0
@@ -154,7 +199,7 @@ export function toSalePayload(asset: Asset, values: AssetSaleForm, asOf: string)
   const feeAmount = Number.isFinite(fee) ? fee : 0
 
   const payload: EventPayload = {
-    title: `Đã bán ${asset.name}`,
+    title: editingEvent?.title || `Đã bán ${asset.name}`,
     amount,
     feeAmount,
     type: 'asset_sale',
@@ -166,13 +211,17 @@ export function toSalePayload(asset: Asset, values: AssetSaleForm, asOf: string)
   }
 
   if (market) {
-    // Full sale → the current held quantity; partial → the entered amount.
-    const quantity = values.sellAll ? currentQuantity(asset) : parseRawDecimal(values.quantity)
+    // Full sale → the pre-sale held quantity; partial → the entered amount.
+    const quantity = values.sellAll
+      ? effectiveHeldQuantity(asset, editingEvent)
+      : parseRawDecimal(values.quantity)
     payload.soldQuantity = Number.isFinite(quantity) ? quantity : 0
   } else {
-    // Manual asset: sold VND value. Full sale → current value.
+    // Manual asset: sold VND value. Full sale → pre-sale value (current value
+    // plus what this sale had already taken out, when editing).
     const currentValue = computeCurrentValue(asset, asOf) ?? 0
-    payload.soldValue = values.sellAll ? currentValue : amount
+    const preSaleValue = currentValue + (editingEvent?.soldValue ?? 0)
+    payload.soldValue = values.sellAll ? preSaleValue : amount
   }
 
   return payload

@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react'
 import { Controller } from 'react-hook-form'
 import type {
   Control,
@@ -9,9 +10,6 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
-import { FormField } from '@/components/ui/form-field'
-import { Input } from '@/components/ui/input'
-import { MoneyInput } from '@/components/ui/number-input'
 import { ResponsiveDialogFooter } from '@/components/ui/responsive-dialog'
 import {
   Select,
@@ -21,12 +19,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
+import {
+  EventField,
+  EventFieldInput,
+  EventFieldTextarea,
+  EventMoneyInput,
+  eventDateTriggerClass,
+  eventSelectTriggerClass,
+} from '@/features/events/ui/components/event-field'
 import type {
   ActualRecordForm as ActualRecordFormValues,
   LocalUpcomingPayment,
   QuickAction,
 } from '@/features/events/model/events-form'
+import { cn } from '@/shared/lib/utils'
 
 type Option = { value: string; label: string }
 
@@ -37,6 +43,9 @@ type ActualRecordFormProps = {
   handleSubmit: UseFormHandleSubmit<ActualRecordFormValues>
   onSubmit: (values: ActualRecordFormValues) => void
   quickAction: QuickAction
+  /** Editing an `asset_update` revaluation → simplified form: value/date/name/
+   *  note only, no wallet ("Trả từ đâu") and no "Thêm chi tiết". */
+  isRevaluation?: boolean
   markPaidPaymentId: string | null
   selectedUpcomingForMarkPaid?: LocalUpcomingPayment
   payments: LocalUpcomingPayment[]
@@ -55,6 +64,7 @@ export function ActualRecordForm({
   handleSubmit,
   onSubmit,
   quickAction,
+  isRevaluation = false,
   markPaidPaymentId,
   selectedUpcomingForMarkPaid,
   payments,
@@ -69,62 +79,40 @@ export function ActualRecordForm({
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <p className="text-lg font-semibold tracking-[-0.02em]">
-        {quickAction === 'expense'
-          ? 'Bạn vừa chi khoản gì?'
-          : quickAction === 'income'
-            ? 'Bạn nhận khoản gì?'
-            : quickAction === 'transfer'
-              ? 'Chuyển tiền giữa các nơi'
-              : quickAction === 'goal_contribution'
-                ? 'Góp thêm vào mục tiêu nào?'
-                : 'Đánh dấu đã trả'}
-      </p>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label="Số tiền" error={errors.amount?.message}>
-          <Controller
-            control={control}
-            name="amount"
-            render={({ field }) => (
-              <MoneyInput
-                placeholder="Ví dụ: 8.000.000"
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-              />
-            )}
-          />
-        </FormField>
-        <FormField label={quickAction === 'payment_paid' ? 'Ngày trả' : 'Ngày'} error={errors.eventDate?.message}>
-          <Controller
-            control={control}
-            name="eventDate"
-            render={({ field }) => (
-              <DatePicker value={field.value} onChange={field.onChange} />
-            )}
-          />
-        </FormField>
-      </div>
+      {/* Hero amount field */}
+      <EventField label={isRevaluation ? 'Giá trị mới' : 'Số tiền'} error={errors.amount?.message} trailing={<span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>}>
+        <Controller
+          control={control}
+          name="amount"
+          render={({ field }) => (
+            <EventMoneyInput
+              placeholder="0"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
+        />
+      </EventField>
 
       {quickAction !== 'transfer' && quickAction !== 'goal_contribution' && quickAction !== 'payment_paid' ? (
-        <FormField label="Tên khoản" error={errors.title?.message}>
-          <Input
+        <EventField label="Nội dung" error={errors.title?.message}>
+          <EventFieldInput
             placeholder={quickAction === 'income' ? 'Ví dụ: Lương tháng 7' : 'Ví dụ: Tiền nhà tháng 7'}
             {...register('title')}
           />
-        </FormField>
+        </EventField>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {(quickAction === 'expense' || quickAction === 'payment_paid' || quickAction === 'transfer' || quickAction === 'goal_contribution') ? (
-          <FormField
+        {!isRevaluation && (quickAction === 'expense' || quickAction === 'payment_paid' || quickAction === 'transfer' || quickAction === 'goal_contribution') ? (
+          <EventField
             label={
               quickAction === 'transfer'
                 ? 'Từ đâu?'
                 : quickAction === 'goal_contribution'
                   ? 'Lấy từ đâu?'
-                  : 'Trả từ đâu?'
+                  : 'Nguồn tiền'
             }
             error={errors.fromAssetId?.message}
           >
@@ -133,8 +121,8 @@ export function ActualRecordForm({
               name="fromAssetId"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn nơi tiền đi ra" />
+                  <SelectTrigger className={eventSelectTriggerClass}>
+                    <SelectValue placeholder="Chọn ví thanh toán" />
                   </SelectTrigger>
                   <SelectContent>
                     {assetOptions.map((option) => (
@@ -146,11 +134,11 @@ export function ActualRecordForm({
                 </Select>
               )}
             />
-          </FormField>
+          </EventField>
         ) : null}
 
-        {(quickAction === 'income' || quickAction === 'transfer') ? (
-          <FormField
+        {!isRevaluation && (quickAction === 'income' || quickAction === 'transfer') ? (
+          <EventField
             label={quickAction === 'income' ? 'Nhận vào đâu?' : 'Đến đâu?'}
             error={errors.toAssetId?.message}
           >
@@ -159,7 +147,7 @@ export function ActualRecordForm({
               name="toAssetId"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
+                  <SelectTrigger className={eventSelectTriggerClass}>
                     <SelectValue placeholder="Chọn nơi tiền đi vào" />
                   </SelectTrigger>
                   <SelectContent>
@@ -172,46 +160,67 @@ export function ActualRecordForm({
                 </Select>
               )}
             />
-          </FormField>
+          </EventField>
         ) : null}
 
-        {quickAction === 'goal_contribution' ? (
-          <FormField label="Mục tiêu" error={errors.financialGoalId?.message}>
-            <Input placeholder="Ví dụ: Quỹ dự phòng" {...register('financialGoalId')} />
-          </FormField>
+        {!isRevaluation && quickAction === 'goal_contribution' ? (
+          <EventField label="Mục tiêu" error={errors.financialGoalId?.message}>
+            <EventFieldInput placeholder="Ví dụ: Quỹ dự phòng" {...register('financialGoalId')} />
+          </EventField>
         ) : null}
+
+        <EventField label={quickAction === 'payment_paid' ? 'Ngày trả' : 'Ngày'} error={errors.eventDate?.message}>
+          <Controller
+            control={control}
+            name="eventDate"
+            render={({ field }) => (
+              <DatePicker value={field.value} onChange={field.onChange} className={eventDateTriggerClass} />
+            )}
+          />
+        </EventField>
       </div>
 
       {quickAction === 'payment_paid' && selectedUpcomingForMarkPaid ? (
-        <div className="rounded-3xl bg-[hsl(var(--muted))]/50 px-4 py-3 text-sm text-muted-foreground">
+        <div className="rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4 text-sm text-[hsl(var(--muted-foreground))]">
           Đang ghi nhận khoản đã trả cho "{selectedUpcomingForMarkPaid.name}".
         </div>
       ) : null}
 
-      <button
-        type="button"
-        onClick={onToggleMoreDetails}
-        className="text-sm font-semibold text-[hsl(var(--accent))]"
-      >
-        {showMoreDetails ? 'Ẩn bớt chi tiết' : 'Thêm chi tiết'}
-      </button>
+      {/* Revaluation: no wallet / details — just a plain note field. */}
+      {isRevaluation ? (
+        <EventField label="Ghi chú">
+          <EventFieldTextarea rows={3} placeholder="Lý do định giá lại (không bắt buộc)." {...register('note')} />
+        </EventField>
+      ) : null}
 
-      {showMoreDetails ? (
-        <div className="grid gap-4 rounded-3xl border border-border/70 bg-[hsl(var(--muted))]/40 p-4">
+      {!isRevaluation ? (
+        <button
+          type="button"
+          onClick={onToggleMoreDetails}
+          className="flex w-full items-center justify-between px-1 py-2 text-left text-[16px] font-semibold text-[hsl(var(--accent))] transition hover:opacity-80"
+          aria-expanded={showMoreDetails}
+        >
+          <span>{showMoreDetails ? 'Ẩn bớt chi tiết' : 'Thêm chi tiết'}</span>
+          <ChevronDown className={cn('size-5 transition-transform', showMoreDetails && 'rotate-180')} />
+        </button>
+      ) : null}
+
+      {!isRevaluation && showMoreDetails ? (
+        <div className="space-y-4">
           {(quickAction === 'expense' || quickAction === 'income') ? (
-            <FormField label="Danh mục">
-              <Input placeholder="Ví dụ: housing, salary, saving" {...register('category')} />
-            </FormField>
+            <EventField label="Danh mục">
+              <EventFieldInput placeholder="Ví dụ: housing, salary, saving" {...register('category')} />
+            </EventField>
           ) : null}
 
           {(quickAction === 'expense' && !markPaidPaymentId) ? (
-            <FormField label="Khoản này có liên quan đến payment sắp tới không?">
+            <EventField label="Liên quan đến khoản sắp tới?">
               <Controller
                 control={control}
                 name="upcomingPaymentId"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className={eventSelectTriggerClass}>
                       <SelectValue placeholder="Không bắt buộc" />
                     </SelectTrigger>
                     <SelectContent>
@@ -226,17 +235,17 @@ export function ActualRecordForm({
                   </Select>
                 )}
               />
-            </FormField>
+            </EventField>
           ) : null}
 
           {quickAction === 'goal_contribution' ? (
-            <FormField label="Đến asset nào">
+            <EventField label="Đến asset nào">
               <Controller
                 control={control}
                 name="toAssetId"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className={eventSelectTriggerClass}>
                       <SelectValue placeholder="Không bắt buộc" />
                     </SelectTrigger>
                     <SelectContent>
@@ -249,42 +258,49 @@ export function ActualRecordForm({
                   </Select>
                 )}
               />
-            </FormField>
+            </EventField>
           ) : null}
 
-          <FormField label="Cần chú ý">
-            <div className="flex h-11 items-center justify-between rounded-2xl border border-border bg-card px-4">
-              <span className="text-sm text-muted-foreground">Đánh dấu để cùng xem lại</span>
-              <Controller
-                control={control}
-                name="isAttentionNeeded"
-                render={({ field }) => (
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                )}
-              />
+          <div className="flex items-center justify-between rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
+            <div>
+              <p className="text-[15px] font-medium text-foreground">Cần chú ý</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">Đánh dấu để cùng xem lại</p>
             </div>
-          </FormField>
+            <Controller
+              control={control}
+              name="isAttentionNeeded"
+              render={({ field }) => (
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
+              )}
+            />
+          </div>
 
-          <FormField label="Ghi chú">
-            <Textarea rows={4} placeholder="Thêm bối cảnh để cả hai cùng hiểu record này." {...register('note')} />
-          </FormField>
+          <EventField label="Ghi chú">
+            <EventFieldTextarea rows={3} placeholder="Thêm ghi chú ngắn..." {...register('note')} />
+          </EventField>
         </div>
       ) : null}
 
-      <ResponsiveDialogFooter className="border-t border-border/70 pt-4">
-        <Button type="button" variant="secondary" onClick={onCancel}>
+      <ResponsiveDialogFooter className="-mx-6 mt-2 border-t border-black/[0.06] px-6 pt-4 sm:-mx-8 sm:px-8">
+        <Button type="button" variant="ghost" onClick={onCancel} className="text-foreground hover:bg-[hsl(var(--muted))]">
           {t('common.cancel')}
         </Button>
-        <Button type="submit" disabled={!isValid || isSaving}>
+        <Button
+          type="submit"
+          disabled={!isValid || isSaving}
+          className="bg-[hsl(var(--accent))] px-6 text-white hover:bg-[hsl(var(--accent))]/90"
+        >
           {isSaving
             ? 'Dang luu...'
-            : quickAction === 'expense' || quickAction === 'payment_paid'
-            ? 'Lưu khoản đã chi'
-            : quickAction === 'income'
-              ? 'Lưu khoản tiền vào'
-              : quickAction === 'transfer'
-                ? 'Lưu chuyển tiền'
-                : 'Lưu đóng góp'}
+            : isRevaluation
+              ? 'Lưu định giá'
+              : quickAction === 'expense' || quickAction === 'payment_paid'
+                ? 'Lưu khoản đã chi'
+                : quickAction === 'income'
+                  ? 'Lưu khoản tiền vào'
+                  : quickAction === 'transfer'
+                    ? 'Lưu chuyển tiền'
+                    : 'Lưu đóng góp'}
         </Button>
       </ResponsiveDialogFooter>
     </form>

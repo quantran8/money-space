@@ -15,6 +15,7 @@ import {
 import { ActualRecordForm } from '@/features/events/ui/components/actual-record-form'
 import { QuickActionPicker } from '@/features/events/ui/components/quick-action-picker'
 import { UpcomingRecordForm } from '@/features/events/ui/components/upcoming-record-form'
+import { eventTypeLabels } from '@/features/events/model/events'
 import type {
   ActualRecordForm as ActualRecordFormValues,
   LocalUpcomingPayment,
@@ -28,6 +29,10 @@ type EventFormDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   quickAction: QuickAction | null
+  /** Raw type of the event being edited (undefined when creating). Drives the
+   *  edit-specific title so the dialog reflects the actual record, not a generic
+   *  "quick update". */
+  editingEventType?: string
   onSelectQuickAction: (action: QuickAction) => void
   onBorrowMoney: () => void
   onSellAsset: () => void
@@ -60,6 +65,7 @@ export function EventFormDialog({
   open,
   onOpenChange,
   quickAction,
+  editingEventType,
   onSelectQuickAction,
   onBorrowMoney,
   onSellAsset,
@@ -85,21 +91,36 @@ export function EventFormDialog({
   isActualValid,
   isSavingActual,
 }: EventFormDialogProps) {
+  const eyebrow = editingEventType
+    ? 'Chỉnh sửa record'
+    : quickAction === 'payment_paid'
+      ? 'Ghi nhận thanh toán'
+      : quickAction === 'upcoming'
+        ? 'Khoản sắp tới'
+        : 'Record mới'
+
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="sm:max-w-3xl">
-        <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>
-            {quickAction === 'payment_paid' ? 'Đánh dấu đã trả' : 'Cập nhật nhanh'}
+      <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[720px]">
+        <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
+          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">{eyebrow}</p>
+          <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
+            {editingEventType
+              ? `Sửa: ${eventTypeLabels[editingEventType as keyof typeof eventTypeLabels] ?? 'record'}`
+              : quickAction === 'payment_paid'
+                ? 'Đánh dấu đã trả'
+                : 'Cập nhật nhanh'}
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription>
-            {quickAction === 'payment_paid'
-              ? 'Ghi nhận khoản đã trả để timeline của nhà mình rõ hơn.'
-              : 'Thêm khoản sắp tới hoặc ghi nhận một thay đổi đáng chú ý của nhà mình.'}
+          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
+            {editingEventType
+              ? 'Chỉnh sửa thông tin của record này.'
+              : quickAction === 'payment_paid'
+                ? 'Ghi nhận khoản đã trả để timeline của nhà mình rõ hơn.'
+                : 'Thêm khoản sắp tới hoặc ghi nhận một thay đổi đáng chú ý của nhà mình.'}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <div className="space-y-5">
+        <div className="mt-6 space-y-5 px-6 pb-6 sm:px-8 sm:pb-8">
           {!quickAction ? (
             <QuickActionPicker
               onSelect={onSelectQuickAction}
@@ -129,6 +150,7 @@ export function EventFormDialog({
               handleSubmit={handleActualSubmit}
               onSubmit={onSubmitActual}
               quickAction={quickAction}
+              isRevaluation={editingEventType === 'asset_update'}
               markPaidPaymentId={markPaidPaymentId}
               selectedUpcomingForMarkPaid={selectedUpcomingForMarkPaid}
               payments={payments}

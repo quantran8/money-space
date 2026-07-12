@@ -17,7 +17,7 @@ export type EventPayload = {
   soldValue?: number
   note?: string
   isoDate: string
-  type: 'expense' | 'income' | 'transfer' | 'asset_purchase' | 'asset_sale' | 'payment_paid' | 'goal_contribution' | 'debt_update' | 'adjustment' | 'other'
+  type: 'expense' | 'income' | 'transfer' | 'asset_purchase' | 'asset_sale' | 'asset_update' | 'payment_paid' | 'goal_contribution' | 'debt_update' | 'adjustment' | 'other'
   category: string
   direction?: 'inflow' | 'outflow' | 'neutral'
   fromAssetId?: string

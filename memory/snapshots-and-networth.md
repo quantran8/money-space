@@ -18,33 +18,38 @@ A `Snapshot` is a periodic (weekly/monthly) net-worth snapshot of a household. I
 
 Denormalizes **each asset's value/type/liquidity/visibility at snapshot time** (unique per `[snapshotId, assetId]`). This is what the dashboard's `assetTrend` reads.
 
-## Creation flow (spec §26)
+## Auto-snapshot (system-written, per-day, granular)
 
-Creating a snapshot (backend `SnapshotsService.createSnapshot(householdId, dto)`):
-1. Reads active assets with computed `currentValue` via the **same valuation
-   engine as the live dashboard** (so snapshot totals can't diverge from live),
-   plus the outstanding-debt total (Σ active debts), upcoming-due total (Σ unpaid
-   payments), and the open attention count.
-2. Builds a frozen line per asset, each referencing the asset's current
-   `AssetValuation` via `valuationId` (lineage back-pointer; null if none — the
-   line still freezes the value).
-3. In ONE transaction: insert the `snapshots` row (`created_by` resolved from the
-   household owner, not a request user) → bulk-insert `snapshot_asset_values` →
-   `snapshot.created` audit log.
+Snapshots are written **automatically by the system** whenever net worth changes
+— there is **NO manual create endpoint** (only GET list/detail). Triggers: asset
+create/update/delete, asset sale, every money-event write, debt create/update/delete.
+Each fires AFTER the triggering write commits.
+
+**Per-day upsert**: one live snapshot per household per day (keyed on "today" in
+the household timezone, default `Asia/Ho_Chi_Minh`). The first change of the day
+creates the parent + **seeds a FULL line per active asset**; later changes are
+**granular** — upsert only the changed asset's line, or remove it if the asset was
+deleted / fully sold. Each frozen line references the asset's current
+`AssetValuation` via `valuationId` (lineage; null if none — the line still freezes
+the value).
+
+**Totals = SUM of children, always**: the parent `total_liquid/savings/long_term`
+are recomputed from `SUM(value) GROUP BY liquidity` over the current child rows
+(+ outstanding-debt total, upcoming-due total, open attention count), so the
+parent can never diverge from its children.
 
 **Live vs. historical**: the dashboard header net worth is computed on the fly
 (from the live valuation engine + the real outstanding-debt total — the old
 hardcoded `totalDebt = 18_000_000` is gone), NOT read from the latest snapshot,
 so it reflects today's prices. The `assetTrend` reads the frozen `snapshots` rows.
 
-**Worker seam**: creating a snapshot is a manual trigger for now
-(`POST /api/households/:id/snapshots`); no in-app cron — an external worker calls
-it on a schedule, and `createSnapshot` is free of HTTP/schedule concerns so a
-future batch endpoint can reuse it.
-
 ## Immutability invariant
 
-**Snapshots are immutable.** Editing an old valuation must NOT silently rewrite past snapshots — history is frozen at snapshot time. See [[domain-overview]]. Enforced by omission: there is NO update/delete of snapshot rows or line items.
+**Snapshots before today are immutable.** Only TODAY's snapshot is mutated
+(granular upsert / recompute) until the day rolls over; days before today are
+never touched. Editing an old valuation therefore can't rewrite past snapshots.
+Enforced by omission: no update/delete of snapshot rows/lines (today's lines are
+hard-replaced only during the same-day granular upsert). See [[domain-overview]].
 
 ## AttentionItem
 

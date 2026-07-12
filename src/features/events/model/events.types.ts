@@ -19,6 +19,9 @@ export type MoneyEventItem = {
     | 'transfer'
     | 'asset_purchase'
     | 'asset_sale'
+    // Revaluation: the user re-priced an asset directly. Neutral — moves no
+    // wallet, excluded from income/expense. See asset-valuation.
+    | 'asset_update'
     | 'payment_paid'
     | 'goal_contribution'
     | 'debt_update'

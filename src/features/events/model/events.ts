@@ -8,6 +8,7 @@ export const eventTypeLabels: Record<MoneyEventItem['type'], string> = {
   transfer: 'Chuyển khoản',
   asset_purchase: 'Mua tài sản',
   asset_sale: 'Bán tài sản',
+  asset_update: 'Định giá lại',
   payment_paid: 'Đã thanh toán',
   goal_contribution: 'Góp mục tiêu',
   debt_update: 'Khoản nợ',

@@ -3,6 +3,8 @@ import { Plus } from 'lucide-react'
 import { PageHeader } from '@/app/layout/page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
+import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useEventsPage } from '@/features/events/hooks/use-events-page'
 import { EventFormDialog } from '@/features/events/ui/components/event-form-dialog'
 import { EventsSummaryStrip } from '@/features/events/ui/components/events-summary-strip'
@@ -10,7 +12,9 @@ import { EventsTimelineCard } from '@/features/events/ui/components/events-timel
 import type { QuickAction } from '@/features/events/model/events-form'
 
 export function EventsPage() {
+  const { asOf } = useAssets()
   const {
+    sale,
     summary,
     groupedRecords,
     payments,
@@ -21,6 +25,7 @@ export function EventsPage() {
     formOpen,
     quickAction,
     setQuickAction,
+    editingEventType,
     showMoreDetails,
     setShowMoreDetails,
     markPaidPaymentId,
@@ -101,6 +106,7 @@ export function EventsPage() {
         open={formOpen}
         onOpenChange={handleFormOpenChange}
         quickAction={quickAction}
+        editingEventType={editingEventType}
         onSelectQuickAction={handleSelectQuickAction}
         onBorrowMoney={openBorrowMoney}
         onSellAsset={openSellAsset}
@@ -135,6 +141,21 @@ export function EventsPage() {
         confirmDisabled={isDeleting}
         confirmLoadingLabel="Dang xoa..."
         onConfirm={() => (deleteEventId ? handleDeleteEvent(deleteEventId) : undefined)}
+      />
+
+      <AssetSaleDialog
+        open={sale.saleOpen}
+        onOpenChange={sale.handleOpenChange}
+        asset={sale.sellingAsset}
+        asOf={asOf}
+        form={sale.form}
+        walletOptions={sale.walletOptions}
+        isMarketAsset={sale.isMarketAsset}
+        currentQuantity={sale.currentQuantity}
+        previewNet={sale.previewNet}
+        isSubmitting={sale.isSubmitting}
+        isEditing={sale.isEditing}
+        onSubmit={sale.submit}
       />
     </div>
   )

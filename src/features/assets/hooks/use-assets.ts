@@ -39,10 +39,15 @@ export function useAssets() {
   const invalidate = async () => {
     if (!activeHouseholdId) return
     await Promise.all([
+      // `assets` is a prefix of the per-asset value-history key, so this also
+      // refreshes the value-over-time chart.
       queryClient.invalidateQueries({ queryKey: queryKeys.assets(activeHouseholdId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.assetSummary(activeHouseholdId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.assetSnapshots(activeHouseholdId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeHouseholdId) }),
+      // A create/update/delete asset can log an `asset_update` revaluation money
+      // event (see asset-valuation), so refresh the events list too.
+      queryClient.invalidateQueries({ queryKey: queryKeys.events(activeHouseholdId) }),
     ])
   }
 

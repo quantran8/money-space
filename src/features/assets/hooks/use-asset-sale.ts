@@ -9,14 +9,16 @@ import { AS_OF } from '@/features/assets/model/assets-form'
 import {
   buildAssetSaleSchema,
   computeNet,
-  currentQuantity,
   defaultAssetSaleValues,
+  effectiveHeldQuantity,
   isMarketSale,
+  toSaleEditValues,
   toSalePayload,
   type AssetSaleForm,
 } from '@/features/assets/model/asset-sale-form'
 import type { Asset } from '@/features/assets/model/assets'
 import { useEvents } from '@/features/events/hooks/use-events'
+import type { MoneyEventItem } from '@/features/events/model/events.types'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 /** A neutral fallback schema so the form has a resolver before an asset is chosen. */
@@ -33,15 +35,17 @@ const FALLBACK_ASSET: Asset = {
 export function useAssetSale() {
   const { t } = useTranslation()
   const { assets, asOf } = useAssets()
-  const { createEvent } = useEvents()
+  const { createEvent, updateEvent } = useEvents()
 
   const [saleOpen, setSaleOpen] = useState(false)
   const [sellingAsset, setSellingAsset] = useState<Asset | null>(null)
+  // Set when editing an existing asset_sale event (null = creating a new sale).
+  const [editingEvent, setEditingEvent] = useState<MoneyEventItem | null>(null)
 
   const effectiveAsset = sellingAsset ?? FALLBACK_ASSET
   const saleSchema = useMemo(
-    () => buildAssetSaleSchema(t, effectiveAsset),
-    [t, effectiveAsset],
+    () => buildAssetSaleSchema(t, effectiveAsset, editingEvent ?? undefined),
+    [t, effectiveAsset, editingEvent],
   )
 
   const form = useForm<AssetSaleForm>({
@@ -61,7 +65,11 @@ export function useAssetSale() {
   )
 
   const isMarketAsset = sellingAsset ? isMarketSale(sellingAsset) : false
-  const heldQuantity = sellingAsset ? currentQuantity(sellingAsset) : 0
+  // On edit, show the PRE-sale holding (the backend adds this sale's quantity
+  // back before re-applying), so the user can raise the quantity if they want.
+  const heldQuantity = sellingAsset
+    ? effectiveHeldQuantity(sellingAsset, editingEvent ?? undefined)
+    : 0
 
   const proceeds = watch('proceeds')
   const fee = watch('fee')
@@ -69,6 +77,11 @@ export function useAssetSale() {
 
   useEffect(() => {
     if (!saleOpen) return
+    // Editing an existing sale → prefill from the event; creating → blank form.
+    if (editingEvent && sellingAsset) {
+      reset(toSaleEditValues(sellingAsset, editingEvent))
+      return
+    }
     reset({
       ...defaultAssetSaleValues,
       date: asOf || AS_OF,
@@ -76,9 +89,17 @@ export function useAssetSale() {
     })
     // walletOptions intentionally omitted: only re-seed on open / asset change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saleOpen, sellingAsset, asOf, reset])
+  }, [saleOpen, sellingAsset, editingEvent, asOf, reset])
 
   function openSale(asset: Asset) {
+    setEditingEvent(null)
+    setSellingAsset(asset)
+    setSaleOpen(true)
+  }
+
+  /** Open the sale dialog to EDIT an existing `asset_sale` event. */
+  function openSaleForEdit(asset: Asset, event: MoneyEventItem) {
+    setEditingEvent(event)
     setSellingAsset(asset)
     setSaleOpen(true)
   }
@@ -86,6 +107,7 @@ export function useAssetSale() {
   function closeSale() {
     setSaleOpen(false)
     setSellingAsset(null)
+    setEditingEvent(null)
   }
 
   function handleOpenChange(open: boolean) {
@@ -99,27 +121,44 @@ export function useAssetSale() {
   async function onSubmit(values: AssetSaleForm) {
     if (!sellingAsset) return
     try {
-      const payload = toSalePayload(sellingAsset, values, asOf || AS_OF)
-      await createEvent.mutateAsync(payload)
-      toast.success('Da ban tai san.')
+      const payload = toSalePayload(
+        sellingAsset,
+        values,
+        asOf || AS_OF,
+        editingEvent ?? undefined,
+      )
+      if (editingEvent?.id) {
+        await updateEvent.mutateAsync({ eventId: editingEvent.id, payload })
+        toast.success('Da cap nhat giao dich ban.')
+      } else {
+        await createEvent.mutateAsync(payload)
+        toast.success('Da ban tai san.')
+      }
       closeSale()
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Khong the ban tai san.'))
+      toast.error(
+        getErrorMessage(
+          error,
+          editingEvent ? 'Khong the cap nhat giao dich ban.' : 'Khong the ban tai san.',
+        ),
+      )
     }
   }
 
   return {
     saleOpen,
     openSale,
+    openSaleForEdit,
     closeSale,
     handleOpenChange,
     sellingAsset,
+    isEditing: !!editingEvent,
     form,
     walletOptions,
     isMarketAsset,
     currentQuantity: heldQuantity,
     previewNet,
-    isSubmitting: createEvent.isPending,
+    isSubmitting: createEvent.isPending || updateEvent.isPending,
     submit: handleSubmit(onSubmit),
   }
 }

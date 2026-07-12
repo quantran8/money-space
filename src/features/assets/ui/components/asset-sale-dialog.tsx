@@ -41,6 +41,7 @@ type AssetSaleDialogProps = {
   currentQuantity: number
   previewNet: number
   isSubmitting: boolean
+  isEditing?: boolean
   onSubmit: () => void
 }
 
@@ -55,6 +56,7 @@ export function AssetSaleDialog({
   currentQuantity,
   previewNet,
   isSubmitting,
+  isEditing = false,
   onSubmit,
 }: AssetSaleDialogProps) {
   const { t } = useTranslation()
@@ -82,7 +84,9 @@ export function AssetSaleDialog({
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>{t('assets.sale.title')}</ResponsiveDialogTitle>
+          <ResponsiveDialogTitle>
+            {isEditing ? t('assets.sale.editTitle') : t('assets.sale.title')}
+          </ResponsiveDialogTitle>
           <ResponsiveDialogDescription>
             {asset ? `${asset.name} · ${holdingLabel}` : t('assets.sale.eyebrow')}
           </ResponsiveDialogDescription>
@@ -215,7 +219,11 @@ export function AssetSaleDialog({
             </Button>
             <Button type="submit" disabled={!isValid || isSubmitting}>
               <HandCoins className="mr-2 size-4" />
-              {isSubmitting ? t('assets.sale.submitting') : t('assets.sale.submit')}
+              {isSubmitting
+                ? t('assets.sale.submitting')
+                : isEditing
+                  ? t('assets.sale.submitEdit')
+                  : t('assets.sale.submit')}
             </Button>
           </ResponsiveDialogFooter>
         </form>

@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { useAssets } from '@/features/assets/hooks/use-assets'
+import { useAssetSale } from '@/features/assets/hooks/use-asset-sale'
 import { useEvents } from '@/features/events/hooks/use-events'
 import {
   actualDefaults,
@@ -21,6 +22,7 @@ import {
   getTimelineGroupKey,
   getTimelineGroupOrder,
   isAttentionRecord,
+  isEditableEventType,
   isQuickActualAction,
   isSameMonthAsToday,
   parseAmountInput,
@@ -50,6 +52,9 @@ export function useEventsPage() {
   const { payments: seedPayments, createPayment, updatePayment, deletePayment } = usePayments()
   const { assets } = useAssets()
   const { members } = useMembers()
+  // Reused for editing an existing asset_sale event through its dedicated dialog
+  // (the generic form can't express quantity / fee / receiving wallet).
+  const sale = useAssetSale()
 
   const sourceEvents = useMemo(() => seedEvents.map(toMoneyEventSeed), [seedEvents])
   const sourcePayments = useMemo(
@@ -116,6 +121,7 @@ export function useEventsPage() {
       .map((payment) => ({
         id: payment.id,
         sourceType: 'upcoming_payment' as const,
+        canEdit: true,
         title: payment.name,
         amount: payment.amount,
         currency: payment.currency,
@@ -135,6 +141,14 @@ export function useEventsPage() {
     const actualRecords = events.map((event) => ({
       id: event.id,
       sourceType: 'money_event' as const,
+      // Editability is decided on the RAW event type (the local model downgrades
+      // asset_update → adjustment). asset_sale edits via its dedicated dialog;
+      // asset_update edits via a simplified generic form (value/date/name/note);
+      // everything else editable goes through the generic form.
+      canEdit: (() => {
+        const rawType = seedEvents.find((raw) => raw.id === event.id)?.type ?? event.eventType
+        return rawType === 'asset_sale' || rawType === 'asset_update' || isEditableEventType(rawType)
+      })(),
       title: event.title,
       amount: Math.abs(event.amount),
       currency: event.currency,
@@ -167,7 +181,7 @@ export function useEventsPage() {
       }
       return right.date.localeCompare(left.date)
     })
-  }, [events, payments])
+  }, [events, payments, seedEvents])
 
   const filteredRecords = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -273,9 +287,19 @@ export function useEventsPage() {
     if (editingEventId) {
       const event = events.find((item) => item.id === editingEventId)
       if (!event) return
+      const raw = seedEvents.find((item) => item.id === editingEventId)
+      // A revaluation stores a DELTA in `amount`; the form edits the ABSOLUTE
+      // asset value, so prefill it from the linked asset's current value.
+      const revaluedAsset =
+        raw?.type === 'asset_update'
+          ? assets.find((item) => item.id === raw.toAssetId)
+          : undefined
+      const prefillAmount = revaluedAsset
+        ? (revaluedAsset.currentValue ?? 0)
+        : Math.abs(event.amount)
       resetActual({
         title: event.title,
-        amount: formatAmountInput(Math.abs(event.amount)),
+        amount: formatAmountInput(prefillAmount),
         eventDate: event.date,
         eventType: event.eventType,
         category: event.category,
@@ -316,6 +340,7 @@ export function useEventsPage() {
     })
   }, [
     assetOptions,
+    assets,
     editingEventId,
     editingPaymentId,
     events,
@@ -326,6 +351,7 @@ export function useEventsPage() {
     quickAction,
     resetActual,
     resetUpcoming,
+    seedEvents,
   ])
 
   function openCreate() {
@@ -357,12 +383,39 @@ export function useEventsPage() {
   }
 
   function openEditEvent(eventId: string) {
+    const raw = seedEvents.find((item) => item.id === eventId)
+
+    // An asset_sale edits through its dedicated dialog (quantity / fee /
+    // receiving wallet can't be expressed in the generic form). The backend
+    // reverses the old sale's position and re-applies the edited one.
+    if (raw?.type === 'asset_sale') {
+      const soldAsset = assets.find((item) => item.id === raw.fromAssetId)
+      if (!soldAsset) {
+        toast.error('Không tìm thấy tài sản của giao dịch bán này.')
+        return
+      }
+      sale.openSaleForEdit(soldAsset, raw)
+      return
+    }
+
+    // Other system / dedicated-flow events aren't editable through this form —
+    // they'd desync asset positions / debt balances or lose their type. Guard on
+    // the RAW type. `asset_update` (revaluation) is the exception: it edits via a
+    // SIMPLIFIED form (value/date/name/note only — no wallet/details), and the
+    // backend syncs the new value back to the asset + its value-history point.
+    const isRevaluation = raw?.type === 'asset_update'
+    if (raw && !isRevaluation && !isEditableEventType(raw.type)) {
+      toast.error('Loại record này không sửa trực tiếp được. Hãy xóa và tạo lại qua đúng luồng.')
+      return
+    }
     const event = events.find((item) => item.id === eventId)
     setEditingEventId(eventId)
     setEditingPaymentId(null)
     setMarkPaidPaymentId(null)
+    // A revaluation edits as a neutral "expense-like" form but simplified; the
+    // form hides wallet + details when editingEventType is asset_update.
     setQuickAction(event ? getQuickActionFromEventType(event.eventType) : 'expense')
-    setShowMoreDetails(true)
+    setShowMoreDetails(false)
     setFormOpen(true)
   }
 
@@ -418,10 +471,47 @@ export function useEventsPage() {
   }
 
   async function onSubmitActual(values: ActualRecordForm) {
+    // On EDIT, preserve the event's original type + type-specific fields rather
+    // than collapsing to a generic quick-action type (which used to rewrite an
+    // asset_sale / debt repayment into a plain expense and drop its fee / sold
+    // qty / debtId). On CREATE, derive the type from the chosen quick-action.
+    const editingEvent = editingEventId
+      ? events.find((item) => item.id === editingEventId)
+      : undefined
+    // Raw event keeps the true type (the local model downgrades asset_update →
+    // adjustment). A revaluation edit must send `asset_update` back.
+    const editingRaw = editingEventId
+      ? seedEvents.find((item) => item.id === editingEventId)
+      : undefined
+    const isRevaluationEdit = editingRaw?.type === 'asset_update'
     const resolvedAction: Exclude<QuickAction, 'upcoming'> =
       quickAction && quickAction !== 'upcoming' ? quickAction : 'expense'
-    const resolvedEventType: RecordType =
-      resolvedAction === 'expense'
+    // Revaluation edit: send `asset_update` with amount = the new ABSOLUTE asset
+    // value and the linked asset on `toAssetId`; the backend re-prices the asset
+    // + its value-history point. Short-circuit the generic payload build below.
+    if (isRevaluationEdit && editingEventId && editingRaw) {
+      const revaluationPayload = {
+        title: values.title.trim() || editingRaw.title,
+        amount: Math.abs(parseAmountInput(values.amount)),
+        isoDate: values.eventDate,
+        type: 'asset_update' as const,
+        direction: 'neutral' as const,
+        category: editingRaw.category || 'other',
+        toAssetId: editingRaw.toAssetId || undefined,
+        note: values.note.trim() || t('common.noAdditionalNote'),
+      }
+      try {
+        await updateEvent.mutateAsync({ eventId: editingEventId, payload: revaluationPayload })
+        toast.success('Cap nhat dinh gia lai thanh cong.')
+        handleFormOpenChange(false)
+      } catch (error) {
+        toast.error(getErrorMessage(error, 'Khong the cap nhat dinh gia lai.'))
+      }
+      return
+    }
+    const resolvedEventType: RecordType = editingEvent
+      ? editingEvent.eventType
+      : resolvedAction === 'expense'
         ? 'expense'
         : resolvedAction === 'income'
           ? 'income'
@@ -436,8 +526,10 @@ export function useEventsPage() {
     const relatedPayment = markPaidPaymentId
       ? payments.find((item) => item.id === markPaidPaymentId)
       : undefined
-    const autoTitle =
-      resolvedAction === 'transfer' && fromAsset && toAsset
+    // When editing, keep the user's title; only auto-generate on create.
+    const autoTitle = editingEvent
+      ? values.title.trim() || editingEvent.title
+      : resolvedAction === 'transfer' && fromAsset && toAsset
         ? `Chuyển từ ${fromAsset.name} sang ${toAsset.name}`
         : resolvedAction === 'goal_contribution'
           ? `Góp vào ${values.financialGoalId.trim() || 'mục tiêu chung'}`
@@ -454,10 +546,15 @@ export function useEventsPage() {
       fromAssetId: values.fromAssetId || undefined,
       toAssetId: values.toAssetId || undefined,
       upcomingPaymentId: values.upcomingPaymentId || undefined,
-      // Carry the linked debt through so the backend can reduce that debt's
-      // outstanding balance when this repayment is recorded. Only a payment
-      // generated from a debt's schedule has a debtId.
-      debtId: relatedPayment?.debtId || undefined,
+      // Carry the linked debt through so the backend still reduces the right
+      // debt's balance: from the marked-paid payment on create, or from the
+      // event being edited (a debt repayment keeps its debtId).
+      debtId: relatedPayment?.debtId || editingEvent?.debtId || undefined,
+      // Preserve sale specifics on edit so an edited asset_sale keeps its fee and
+      // sold qty/value (the position reversal on the backend needs them).
+      feeAmount: editingEvent?.feeAmount,
+      soldQuantity: editingEvent?.soldQuantity,
+      soldValue: editingEvent?.soldValue,
       financialGoalId: values.financialGoalId || undefined,
       note: values.note.trim() || t('common.noAdditionalNote'),
     }
@@ -573,8 +670,15 @@ export function useEventsPage() {
   const selectedUpcomingForMarkPaid = markPaidPaymentId
     ? payments.find((payment) => payment.id === markPaidPaymentId)
     : undefined
+  // Raw type of the event currently being edited — drives the edit-specific
+  // dialog title (undefined when creating).
+  const editingEventType = editingEventId
+    ? seedEvents.find((event) => event.id === editingEventId)?.type
+    : undefined
 
   return {
+    // asset-sale edit dialog (reused for editing an asset_sale event)
+    sale,
     // derived data
     summary,
     groupedRecords,
@@ -588,6 +692,7 @@ export function useEventsPage() {
     formOpen,
     quickAction,
     setQuickAction,
+    editingEventType,
     showMoreDetails,
     setShowMoreDetails,
     markPaidPaymentId,

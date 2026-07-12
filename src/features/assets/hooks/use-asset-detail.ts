@@ -49,9 +49,11 @@ function touchesAsset(event: MoneyEventItem, assetId: string): boolean {
  * Resolve a single asset plus the timeline of money events that touched it, and
  * the value-over-time series.
  *
- * The value series comes from the backend `value-history` endpoint, which
- * reconstructs it from the asset's linked money events (see the assets service).
- * The related-events timeline is derived here from the household's events.
+ * The value series comes from the backend `value-history` endpoint, which reads
+ * the persisted `asset_value_history` series (a point is appended per
+ * value-changing action, linked to the money event that caused it; older assets
+ * fall back to reconstruction from money events). The related-events timeline is
+ * derived here from the household's events.
  */
 export function useAssetDetail(assetId: string | undefined) {
   const { activeHouseholdId } = useActiveHousehold()

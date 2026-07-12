@@ -334,7 +334,10 @@ export type Database = {
             updated_at: string
           }
       >
-      asset_valuations: Table<
+      // Time series of an asset's value: one row per value-changing action
+      // (money-event effect or a direct revaluation). Formerly `asset_valuations`.
+      // `money_event_id` links a point to the money event whose effect produced it.
+      asset_value_history: Table<
         Timestamped &
           SoftDeleted & {
             id: string
@@ -349,6 +352,7 @@ export type Database = {
             market_price_id: string | null
             fx_rate_id: string | null
             calculation_term_id: string | null
+            money_event_id: string | null
             note: string | null
             created_by: string | null
             updated_by: string | null

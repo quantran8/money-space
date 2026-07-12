@@ -91,31 +91,60 @@ Exactly one valuation source per asset — changing mode clears the others:
 - `market_priced` → clears manualValue + calculationTerm.
 - `formula_calculated` → clears manualValue + marketPosition.
 
-## Valuation persistence
+## Valuation persistence (`asset_value_history`)
 
-`upsertCurrentValuation` (backend) recomputes via `computeCurrentValue` and writes/updates an `AssetValuation` row dated `AS_OF`, mapping mode → method:
-`manual → manual`, `market_priced → market_price_api`, `formula_calculated → formula_calculated`. It also writes **lineage** (`source`: user/market_price_api/formula; `confidenceLevel`: high for manual, else medium; `marketPriceId`/`fxRateId`/`calculationTermId` stay null until a pricing-API writer + term-id-on-entity land) and — crucially — **writes the derived value back to `assets.current_value`** so the cache is true for EVERY mode. Previously the plain create/update path only wrote `manualValue`, leaving `current_value` stale for market_priced/formula assets.
+The value-history table is **`asset_value_history`** (renamed from
+`asset_valuations` — it is a **time series** of an asset's value, one row per
+value-changing action, not a single current valuation). Each row keeps the value
++ how it was produced (`valuation_method` / `source` / `confidence_level` /
+lineage ids) + a **`money_event_id`** linking it to the money event whose effect
+produced it. Frontend row type: `src/shared/types/database.ts` →
+`asset_value_history`.
+
+`upsertCurrentValuation(asset, context?)` (backend) recomputes via
+`computeCurrentValue`, then: (1) keeps the `AS_OF` "value now" row current
+(unlinked) mapping mode → method (`manual → manual`,
+`market_priced → market_price_api`, `formula_calculated → formula_calculated`),
+with lineage (`source` user/market_price_api/formula; `confidenceLevel` high for
+manual else medium); (2) writes the derived value back to `assets.current_value`
+(cache true for EVERY mode); (3) **when the change came from a money event**,
+appends/updates a history point linked to that event (keyed on
+`(money_event_id, asset_id)`, dated at the event's date).
+
+**Every action that changes an asset's value records a money event + a linked
+history point:** money-event effects (credit/debit/`asset_sale`); a **direct
+re-pricing** (user edits value/unitPrice/quantity/term via create/update asset)
+logs a neutral **`asset_update`** money event (moves no wallet, excluded from
+income/expense) that the appended point links to; saving-deposit interest writes
+one dated point per period. Editing a money event updates its linked point(s);
+deleting one soft-deletes them.
 
 ## Value history over time (asset detail page)
 
-`asset_valuations` holds at most one row per asset (always dated `AS_OF`), so the
-asset detail page's "value over time" chart (biến động theo thời gian)
-**reconstructs** the series on the backend
-(`GET /api/households/:householdId/assets/:assetId/value-history`,
-`AssetsService.getAssetValueHistory`), unwinding the asset's money events from
-today's value. **Two modes:**
-- **market_priced** (gold/stock/crypto/fund/foreign_currency/bond) — priced from
-  the **market position**: rebuild quantity held at each point (a sale adds
-  `soldQuantity` back going into the past) and value it at the current unit price
-  (`currentValue / currentQuantity`). A sale drops the line by
-  `quantitySold × today's price`, not by the cash the sale fetched.
+The asset detail page's "value over time" chart (biến động theo thời gian) reads
+`GET /api/households/:householdId/assets/:assetId/value-history`
+(`AssetsService.getAssetValueHistory`), which now returns the **persisted**
+`asset_value_history` series straight (collapsing duplicate dates, oldest →
+newest). **The endpoint response shape is unchanged** —
+`{ currentValue, items: [{ date, value }] }` — so the frontend chart consumes it
+exactly as before.
+
+**Fallback** (backend) for an asset with no persisted points (created before the
+series existed): reconstruct from money events, unwinding from today's value:
+- **market_priced** — priced from the **market position**: rebuild quantity held
+  at each point (a sale adds `soldQuantity` back going into the past) and value
+  it at the current unit price (`currentValue / currentQuantity`).
 - **manual / formula** — unwind each event's signed cash amount (in via
   `toAsset` = +, out via `fromAsset` = −), floored at 0.
 
 Frontend `use-asset-detail.ts` reads the endpoint for the chart; the
 related-events timeline is derived separately from the household's events.
 Money-event mutations invalidate the assets query prefix so the chart refreshes.
-MVP approximation — replace with a real valuation-history query when one exists.
+
+**Known limitation** (accepted, Hướng A): a `market_priced` asset only gets a
+history point on days it has a money event — pure market-price drift between
+events produces no new point (no event to hook). A periodic snapshot worker
+would be needed to capture that; deliberately out of scope for now.
 
 ## Where it lives in code
 

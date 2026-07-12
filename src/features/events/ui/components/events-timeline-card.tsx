@@ -104,7 +104,7 @@ export function EventsTimelineCard({
                 </h3>
               </div>
 
-              <div className="space-y-3">
+              <div className="divide-y divide-border/70">
                 {records.map((record) => (
                   <RecordCard
                     key={`${record.sourceType}-${record.id}`}
