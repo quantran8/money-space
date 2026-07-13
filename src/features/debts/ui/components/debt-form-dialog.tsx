@@ -2,6 +2,7 @@ import { ChevronDown, Plus, X } from 'lucide-react'
 import {
   Controller,
   useFieldArray,
+  useWatch,
   type Control,
   type FieldErrors,
   type UseFormRegister,
@@ -9,12 +10,11 @@ import {
 } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/form-field'
-import { Input } from '@/components/ui/input'
-import { MoneyInput } from '@/components/ui/number-input'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
+  ResponsiveDialogDescription,
   ResponsiveDialogFooter,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
@@ -26,10 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import {
+  EventField,
+  EventFieldInput,
+  EventFieldTextarea,
+  EventMoneyInput,
+  eventDateTriggerClass,
+  eventSelectTriggerClass,
+} from '@/features/events/ui/components/event-field'
 import { quickLenderTypes, type DebtForm } from '@/features/debts/model/debts-form'
 import type { RepaymentEstimate } from '@/features/debts/model/debts-interest'
 import type { LenderType } from '@/features/debts/model/debts.types'
+import { cn } from '@/shared/lib/utils'
 
 type Option = { value: string; label: string }
 
@@ -53,10 +62,10 @@ type DebtFormDialogProps = {
   isSavingDebt: boolean
   setValue: UseFormSetValue<DebtForm>
   selectedLenderType: LenderType
-  originalAmountValue: string
   showMoreDetails: boolean
   setShowMoreDetails: (updater: (value: boolean) => boolean) => void
-  assetOptions: Option[]
+  /** Wallets eligible to receive the borrowed money (cash / bank account only). */
+  receiveAssetOptions: Option[]
   memberOptions: Option[]
   repaymentEstimate: RepaymentEstimate | null
   termMonths: number | null
@@ -75,10 +84,9 @@ export function DebtFormDialog({
   isSavingDebt,
   setValue,
   selectedLenderType,
-  originalAmountValue,
   showMoreDetails,
   setShowMoreDetails,
-  assetOptions,
+  receiveAssetOptions,
   memberOptions,
   repaymentEstimate,
   termMonths,
@@ -90,62 +98,58 @@ export function DebtFormDialog({
     append: appendInterest,
     remove: removeInterest,
   } = useFieldArray({ control, name: 'interestPeriods' })
+  const hasInterest = useWatch({ control, name: 'hasInterest' })
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="gap-0 overflow-hidden border-white bg-[#fcfcfd] p-0 shadow-[0_28px_80px_rgba(15,23,42,0.18)] sm:max-w-[560px] sm:rounded-[32px]">
-        <ResponsiveDialogHeader className="gap-0 border-b border-[#e8e8ee] px-5 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
-          <ResponsiveDialogTitle className="pr-10 text-[28px] font-semibold leading-tight tracking-[-0.045em] text-[#1d1d1f]">
+      <ResponsiveDialogContent className="grid max-h-[90dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[560px]">
+        <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
+          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+            {editingId ? 'Chỉnh sửa khoản vay' : 'Khoản vay mới'}
+          </p>
+          <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
             {editingId ? 'Sửa khoản nợ' : 'Ghi nhanh khoản vay'}
           </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
+            Khoản vay được tính vào nợ của nhà mình, nên tài sản ròng không bị nhìn đẹp giả.
+          </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <form className="flex max-h-[calc(94dvh-170px)] flex-col" onSubmit={onSubmit} noValidate>
-          <div className="space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
-            <section className="rounded-[30px] border border-[#e5e5ea] bg-[#f2f2f7]/70 p-4 sm:p-5">
-              <FormField
-                label="Số tiền vay"
-                error={errors.originalAmount?.message}
-                className="space-y-3"
-              >
-                <div className="flex min-h-[92px] items-end gap-2 rounded-[26px] border border-white/80 bg-white px-4 pb-4 pt-5 transition focus-within:border-[#7ab6ff] focus-within:shadow-[0_0_0_4px_rgba(0,122,255,0.1)] sm:min-h-[108px] sm:px-5">
-                  <Controller
-                    control={control}
-                    name="originalAmount"
-                    render={({ field }) => (
-                      <MoneyInput
-                        placeholder="100.000.000"
-                        className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 pb-0 pt-0 text-[52px] font-semibold leading-none tracking-[-0.07em] text-[#1d1d1f] ring-0 placeholder:text-[#a1a1a6] focus-visible:ring-0 sm:text-[68px]"
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                      />
-                    )}
+        <form className="grid min-h-0 min-w-0 grid-rows-[1fr_auto]" onSubmit={onSubmit} noValidate>
+          <div className="min-h-0 space-y-4 overflow-y-auto overflow-x-hidden px-6 pb-2 pt-6 sm:px-8">
+            {/* Hero amount field */}
+            <EventField
+              label="Số tiền vay"
+              error={errors.originalAmount?.message}
+              trailing={
+                <span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
+              }
+            >
+              <Controller
+                control={control}
+                name="originalAmount"
+                render={({ field }) => (
+                  <EventMoneyInput
+                    placeholder="0"
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
                   />
-                  <span className="mb-1 shrink-0 text-2xl font-semibold tracking-[-0.04em] text-[#6e6e73] sm:mb-2 sm:text-3xl">
-                    đ
-                  </span>
-                </div>
-              </FormField>
+                )}
+              />
+            </EventField>
 
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 px-1">
-                <p className="text-sm text-[#6e6e73]">
-                  {originalAmountValue?.trim()
-                    ? 'Khoản vay ban đầu'
-                    : 'Nhập số tiền, ví dụ 100.000.000'}
-                </p>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="h-9 bg-white px-3 text-sm font-semibold text-[hsl(var(--status-blue))] hover:bg-white/90"
-                  onClick={pasteAmountFromClipboard}
-                >
-                  Dán số tiền
-                </Button>
-              </div>
-            </section>
+            <div className="flex justify-end px-1">
+              <button
+                type="button"
+                onClick={pasteAmountFromClipboard}
+                className="text-sm font-semibold text-[hsl(var(--accent))] transition hover:opacity-80"
+              >
+                Dán số tiền
+              </button>
+            </div>
 
+            {/* Lender quick-pick */}
             <div className="grid grid-cols-3 gap-2">
               {quickLenderTypes.map((option) => {
                 const active =
@@ -154,15 +158,9 @@ export function DebtFormDialog({
                     : selectedLenderType === option.value
 
                 return (
-                  <Button
+                  <button
                     key={option.value}
                     type="button"
-                    variant={active ? 'default' : 'secondary'}
-                    className={
-                      active
-                        ? 'bg-[#1d1d1f] text-white hover:bg-[#1d1d1f]/90'
-                        : 'bg-[#f2f2f7] text-[#1d1d1f] hover:bg-[#e8e8ee]'
-                    }
                     onClick={() => {
                       setValue('lenderType', option.value, {
                         shouldDirty: true,
@@ -175,127 +173,111 @@ export function DebtFormDialog({
                         shouldValidate: true,
                       })
                     }}
+                    className={cn(
+                      'rounded-[18px] px-4 py-3 text-[15px] font-semibold transition',
+                      active
+                        ? 'bg-[hsl(var(--accent))] text-white'
+                        : 'bg-[hsl(var(--muted))] text-foreground hover:opacity-80',
+                    )}
                   >
                     {option.label}
-                  </Button>
+                  </button>
                 )
               })}
             </div>
 
-            <div className="space-y-4">
-              <FormField label="Tên khoản vay" error={errors.name?.message}>
-                <Input
-                  placeholder="Ví dụ: Vay mẹ sửa nhà"
-                  className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]"
-                  {...register('name')}
-                />
-              </FormField>
+            <EventField label="Tên khoản vay" error={errors.name?.message}>
+              <EventFieldInput placeholder="Ví dụ: Vay mẹ sửa nhà" {...register('name')} />
+            </EventField>
 
-              <FormField label="Mình vay ai?" error={errors.lenderName?.message}>
-                <Input
-                  placeholder="Ví dụ: Mẹ, VPBank"
-                  className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]"
-                  {...register('lenderName')}
-                />
-              </FormField>
+            <EventField label="Mình vay ai?" error={errors.lenderName?.message}>
+              <EventFieldInput placeholder="Ví dụ: Mẹ, VPBank" {...register('lenderName')} />
+            </EventField>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label="Hiện còn nợ" error={errors.outstandingAmount?.message}>
-                  <div className="flex h-[52px] items-center gap-2 rounded-[20px] border border-[#e5e5ea] bg-white px-4">
-                    <Controller
-                      control={control}
-                      name="outstandingAmount"
-                      render={({ field }) => (
-                        <MoneyInput
-                          placeholder="84.000.000"
-                          className="h-auto border-0 bg-transparent px-0 py-0 text-[17px] font-semibold focus-visible:ring-0"
-                          value={field.value}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                        />
-                      )}
-                    />
-                    <span className="shrink-0 text-sm font-medium text-[#6e6e73]">đ</span>
-                  </div>
-                </FormField>
-
-                <FormField label="Ngày vay">
-                  <Input
-                    type="date"
-                    className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]"
-                    {...register('borrowedAt')}
-                  />
-                </FormField>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-[#e5e5ea] bg-[#f2f2f7]/70 p-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-sm">
-                  ↗
-                </div>
-                <div>
-                  <p className="text-[15px] font-semibold tracking-[-0.02em] text-[#1d1d1f]">
-                    Khoản này sẽ được tính vào nợ của nhà mình.
-                  </p>
-                  <p className="mt-1 text-sm leading-5 text-[#6e6e73]">
-                    Số tiền vay và số còn nợ sẽ được cập nhật trong tổng quan, nên tài sản ròng không
-                    bị nhìn đẹp giả.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <section className="overflow-hidden rounded-3xl border border-[#e5e5ea] bg-white">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
-                onClick={() => setShowMoreDetails((value) => !value)}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <EventField
+                label="Hiện còn nợ"
+                error={errors.outstandingAmount?.message}
+                trailing={
+                  <span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">
+                    ₫
+                  </span>
+                }
               >
-                <div>
-                  <p className="text-[15px] font-semibold tracking-[-0.02em] text-[#1d1d1f]">
-                    Thêm lịch trả nợ, ghi chú
-                  </p>
-                  <p className="mt-1 text-sm text-[#6e6e73]">Không bắt buộc, có thể bổ sung sau</p>
-                </div>
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f2f2f7] text-[#6e6e73]">
-                  <ChevronDown
-                    className={`size-4 transition-transform ${showMoreDetails ? 'rotate-180' : ''}`}
-                  />
-                </div>
-              </button>
-
-              {showMoreDetails ? (
-                <div className="grid gap-4 border-t border-[#e5e5ea]/70 px-4 py-4 sm:grid-cols-2">
-                  <FormField label="Tiền nhận vào đâu?">
-                    <Controller
-                      control={control}
-                      name="receivedToAssetId"
-                      render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]">
-                            <SelectValue placeholder="Chọn nơi nhận tiền" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {assetOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
+                <Controller
+                  control={control}
+                  name="outstandingAmount"
+                  render={({ field }) => (
+                    <EventMoneyInput
+                      placeholder="0"
+                      className="text-[22px] sm:text-[24px]"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
                     />
-                  </FormField>
+                  )}
+                />
+              </EventField>
 
-                  <FormField label="Người phụ trách">
+              <EventField label="Ngày vay" error={errors.borrowedAt?.message}>
+                <Controller
+                  control={control}
+                  name="borrowedAt"
+                  render={({ field }) => (
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      className={eventDateTriggerClass}
+                    />
+                  )}
+                />
+              </EventField>
+            </div>
+
+            <EventField label="Nhận nợ vào đâu?">
+              <Controller
+                control={control}
+                name="receivedToAssetId"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className={eventSelectTriggerClass}>
+                      <SelectValue placeholder="Chọn ví tiền mặt hoặc tài khoản" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {receiveAssetOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </EventField>
+
+            <button
+              type="button"
+              onClick={() => setShowMoreDetails((value) => !value)}
+              className="flex w-full items-center justify-between px-1 py-2 text-left text-[16px] font-semibold text-[hsl(var(--accent))] transition hover:opacity-80"
+              aria-expanded={showMoreDetails}
+            >
+              <span>{showMoreDetails ? 'Ẩn bớt chi tiết' : 'Thêm lịch trả nợ, ghi chú'}</span>
+              <ChevronDown
+                className={cn('size-5 transition-transform', showMoreDetails && 'rotate-180')}
+              />
+            </button>
+
+            {showMoreDetails ? (
+              <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <EventField label="Người phụ trách">
                     <Controller
                       control={control}
                       name="ownerMemberId"
                       render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]">
-                            <SelectValue placeholder="Chọn người phụ trách" />
+                          <SelectTrigger className={eventSelectTriggerClass}>
+                            <SelectValue placeholder="Không bắt buộc" />
                           </SelectTrigger>
                           <SelectContent>
                             {memberOptions.map((option) => (
@@ -307,23 +289,29 @@ export function DebtFormDialog({
                         </Select>
                       )}
                     />
-                  </FormField>
+                  </EventField>
 
-                  <FormField label="Dự kiến trả xong">
-                    <Input
-                      type="date"
-                      className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]"
-                      {...register('expectedFinalDueDate')}
+                  <EventField label="Dự kiến trả xong">
+                    <Controller
+                      control={control}
+                      name="expectedFinalDueDate"
+                      render={({ field }) => (
+                        <DatePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          className={eventDateTriggerClass}
+                        />
+                      )}
                     />
-                  </FormField>
+                  </EventField>
 
-                  <FormField label="Tần suất trả">
+                  <EventField label="Tần suất trả">
                     <Controller
                       control={control}
                       name="paymentFrequency"
                       render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]">
+                          <SelectTrigger className={eventSelectTriggerClass}>
                             <SelectValue placeholder="Chọn tần suất" />
                           </SelectTrigger>
                           <SelectContent>
@@ -335,15 +323,15 @@ export function DebtFormDialog({
                         </Select>
                       )}
                     />
-                  </FormField>
+                  </EventField>
 
-                  <FormField label="Loại khoản vay">
+                  <EventField label="Loại khoản vay">
                     <Controller
                       control={control}
                       name="debtType"
                       render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]">
+                          <SelectTrigger className={eventSelectTriggerClass}>
                             <SelectValue placeholder="Chọn loại khoản vay" />
                           </SelectTrigger>
                           <SelectContent>
@@ -359,179 +347,207 @@ export function DebtFormDialog({
                         </Select>
                       )}
                     />
-                  </FormField>
-
-                  <div className="sm:col-span-2">
-                    <FormField label="Lãi suất theo giai đoạn">
-                      <div className="space-y-2">
-                        {interestFields.map((item, index) => (
-                          <div key={item.id} className="flex items-center gap-2">
-                            <div className="flex h-[52px] flex-1 items-center gap-1 rounded-[20px] border border-[#e5e5ea] bg-white px-3">
-                              <Input
-                                inputMode="decimal"
-                                placeholder="9.2"
-                                className="h-auto border-0 bg-transparent px-1 text-[15px] font-semibold focus-visible:ring-0"
-                                {...register(`interestPeriods.${index}.ratePct` as const)}
-                              />
-                              <span className="shrink-0 text-sm font-medium text-[#6e6e73]">
-                                %/năm
-                              </span>
-                            </div>
-                            <div className="flex h-[52px] w-[132px] items-center gap-1 rounded-[20px] border border-[#e5e5ea] bg-white px-3">
-                              <Input
-                                inputMode="numeric"
-                                placeholder={index === interestFields.length - 1 ? 'còn lại' : '12'}
-                                className="h-auto border-0 bg-transparent px-1 text-[15px] focus-visible:ring-0"
-                                {...register(`interestPeriods.${index}.months` as const)}
-                              />
-                              <span className="shrink-0 text-sm font-medium text-[#6e6e73]">
-                                tháng
-                              </span>
-                            </div>
-                            {interestFields.length > 1 ? (
-                              <button
-                                type="button"
-                                onClick={() => removeInterest(index)}
-                                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#f2f2f7] text-[#6e6e73] transition hover:bg-[#e8e8ee]"
-                                aria-label="Xóa giai đoạn"
-                              >
-                                <X className="size-4" />
-                              </button>
-                            ) : null}
-                          </div>
-                        ))}
-
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          className="h-9 bg-[#f2f2f7] text-[hsl(var(--status-blue))] hover:bg-[#e8e8ee]"
-                          onClick={() => appendInterest({ ratePct: '', months: '' })}
-                        >
-                          <Plus className="mr-1 size-4" />
-                          Thêm giai đoạn
-                        </Button>
-                        <p className="text-xs text-[#8e8e93]">
-                          Để trống ô tháng ở giai đoạn cuối nếu áp dụng cho các kỳ còn lại.
-                        </p>
-                      </div>
-                    </FormField>
-                  </div>
-
-                  <FormField label="Cách tính lãi" className="sm:col-span-2">
-                    <Controller
-                      control={control}
-                      name="interestCalc"
-                      render={({ field }) => (
-                        <div className="grid grid-cols-2 gap-2">
-                          {CALC_OPTIONS.map((option) => {
-                            const active = field.value === option.value
-                            return (
-                              <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => field.onChange(option.value)}
-                                className={`rounded-[18px] border px-4 py-3 text-left transition ${
-                                  active
-                                    ? 'border-[#1d1d1f] bg-[#1d1d1f] text-white'
-                                    : 'border-[#e5e5ea] bg-white text-[#1d1d1f] hover:bg-[#f2f2f7]'
-                                }`}
-                              >
-                                <p className="text-[14px] font-semibold tracking-[-0.01em]">
-                                  {option.label}
-                                </p>
-                                <p
-                                  className={`mt-0.5 text-xs ${active ? 'text-white/70' : 'text-[#8e8e93]'}`}
-                                >
-                                  {option.hint}
-                                </p>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )}
-                    />
-                  </FormField>
-
-                  <div className="sm:col-span-2">
-                    <FormField label="Mỗi kỳ trả khoảng">
-                      <Controller
-                        control={control}
-                        name="fixedPaymentAmount"
-                        render={({ field }) => (
-                          <div className="flex h-[52px] items-center gap-2 rounded-[20px] border border-[#e5e5ea] bg-white px-4">
-                            <MoneyInput
-                              placeholder="Ví dụ: 8.500.000"
-                              className="h-auto flex-1 border-0 bg-transparent px-0 text-[15px] font-semibold focus-visible:ring-0"
-                              value={field.value}
-                              onChange={(value) => {
-                                field.onChange(value)
-                                // User is editing → stop syncing to the estimate.
-                                setValue('fixedPaymentTouched', true, { shouldDirty: true })
-                              }}
-                              onBlur={field.onBlur}
-                            />
-                            <span className="shrink-0 text-sm font-medium text-[#6e6e73]">đ</span>
-                          </div>
-                        )}
-                      />
-                    </FormField>
-
-                    {repaymentEstimate ? (
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[#f2f2f7]/80 px-4 py-3">
-                        <div>
-                          <p className="text-[13px] text-[#6e6e73]">
-                            Gợi ý: {formatVnd(repaymentEstimate.perPayment)} đ mỗi kỳ
-                          </p>
-                          <p className="mt-0.5 text-xs text-[#8e8e93]">
-                            {repaymentEstimate.installments} kỳ
-                            {termMonths ? ` · ${termMonths} tháng` : ''}
-                            {repaymentEstimate.annualRatePct > 0
-                              ? ` · ~${repaymentEstimate.annualRatePct.toFixed(1)}%/năm`
-                              : ''}
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          className="h-8 bg-white px-3 text-xs font-semibold text-[hsl(var(--status-blue))] hover:bg-white/90"
-                          onClick={() => {
-                            setValue('fixedPaymentAmount', String(repaymentEstimate.perPayment), {
-                              shouldValidate: true,
-                            })
-                            setValue('fixedPaymentTouched', false, { shouldDirty: true })
-                          }}
-                        >
-                          Dùng số gợi ý
-                        </Button>
-                      </div>
-                    ) : (
-                      <p className="mt-2 px-1 text-xs text-[#8e8e93]">
-                        Nhập ngày vay, dự kiến trả xong và tần suất để tự tính số tiền mỗi kỳ.
-                      </p>
-                    )}
-                  </div>
-
-                  <FormField label="Ghi chú" className="sm:col-span-2">
-                    <Textarea
-                      rows={4}
-                      placeholder="Thêm bối cảnh nếu cần."
-                      className="rounded-[20px] border-[#e5e5ea] bg-white text-[15px]"
-                      {...register('note')}
-                    />
-                  </FormField>
+                  </EventField>
                 </div>
-              ) : null}
-            </section>
+
+                <div className="flex items-center justify-between rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
+                  <div>
+                    <p className="text-[15px] font-medium text-foreground">Khoản vay có lãi</p>
+                    <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                      Bật để nhập lãi suất và cách tính lãi
+                    </p>
+                  </div>
+                  <Controller
+                    control={control}
+                    name="hasInterest"
+                    render={({ field }) => (
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    )}
+                  />
+                </div>
+
+                {hasInterest ? (
+                  <>
+                <EventField label="Lãi suất theo giai đoạn">
+                  <div className="space-y-2">
+                    {interestFields.map((item, index) => (
+                      <div key={item.id} className="flex items-center gap-2">
+                        <div className="flex flex-1 items-center gap-1 rounded-[14px] bg-white/60 px-3 py-2">
+                          <input
+                            inputMode="decimal"
+                            placeholder="9.2"
+                            className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+                            {...register(`interestPeriods.${index}.ratePct` as const)}
+                          />
+                          <span className="shrink-0 text-sm font-medium text-[hsl(var(--muted-foreground))]">
+                            %/năm
+                          </span>
+                        </div>
+                        <div className="flex w-[110px] min-w-0 shrink items-center gap-1 rounded-[14px] bg-white/60 px-2.5 py-2">
+                          <input
+                            inputMode="numeric"
+                            placeholder={index === interestFields.length - 1 ? 'còn lại' : '12'}
+                            className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+                            {...register(`interestPeriods.${index}.months` as const)}
+                          />
+                          <span className="shrink-0 text-sm font-medium text-[hsl(var(--muted-foreground))]">
+                            tháng
+                          </span>
+                        </div>
+                        {interestFields.length > 1 ? (
+                          <button
+                            type="button"
+                            onClick={() => removeInterest(index)}
+                            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/60 text-[hsl(var(--muted-foreground))] transition hover:opacity-80"
+                            aria-label="Xóa giai đoạn"
+                          >
+                            <X className="size-4" />
+                          </button>
+                        ) : null}
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => appendInterest({ ratePct: '', months: '' })}
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-[hsl(var(--accent))] transition hover:opacity-80"
+                    >
+                      <Plus className="size-4" />
+                      Thêm giai đoạn
+                    </button>
+                    <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                      Để trống ô tháng ở giai đoạn cuối nếu áp dụng cho các kỳ còn lại.
+                    </p>
+                  </div>
+                </EventField>
+
+                <EventField label="Cách tính lãi">
+                  <Controller
+                    control={control}
+                    name="interestCalc"
+                    render={({ field }) => (
+                      <div className="grid grid-cols-2 gap-2">
+                        {CALC_OPTIONS.map((option) => {
+                          const active = field.value === option.value
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => field.onChange(option.value)}
+                              className={cn(
+                                'rounded-[14px] px-3 py-2.5 text-left transition',
+                                active
+                                  ? 'bg-[hsl(var(--accent))] text-white'
+                                  : 'bg-white/60 text-foreground hover:opacity-80',
+                              )}
+                            >
+                              <p className="text-[14px] font-semibold tracking-[-0.01em]">
+                                {option.label}
+                              </p>
+                              <p
+                                className={cn(
+                                  'mt-0.5 text-xs',
+                                  active ? 'text-white/70' : 'text-[hsl(var(--muted-foreground))]',
+                                )}
+                              >
+                                {option.hint}
+                              </p>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  />
+                </EventField>
+                  </>
+                ) : null}
+
+                <EventField
+                  label="Mỗi kỳ trả khoảng"
+                  trailing={
+                    <span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">
+                      ₫
+                    </span>
+                  }
+                >
+                  <Controller
+                    control={control}
+                    name="fixedPaymentAmount"
+                    render={({ field }) => (
+                      <EventMoneyInput
+                        placeholder="0"
+                        className="text-[22px] sm:text-[24px]"
+                        value={field.value}
+                        onChange={(value) => {
+                          field.onChange(value)
+                          // User is editing → stop syncing to the estimate.
+                          setValue('fixedPaymentTouched', true, { shouldDirty: true })
+                        }}
+                        onBlur={field.onBlur}
+                      />
+                    )}
+                  />
+                </EventField>
+
+                {repaymentEstimate ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
+                    <div>
+                      <p className="text-[15px] font-medium text-foreground">
+                        Gợi ý: {formatVnd(repaymentEstimate.perPayment)} ₫ mỗi kỳ
+                      </p>
+                      <p className="mt-0.5 text-sm text-[hsl(var(--muted-foreground))]">
+                        {repaymentEstimate.installments} kỳ
+                        {termMonths ? ` · ${termMonths} tháng` : ''}
+                        {repaymentEstimate.annualRatePct > 0
+                          ? ` · ~${repaymentEstimate.annualRatePct.toFixed(1)}%/năm`
+                          : ''}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue('fixedPaymentAmount', String(repaymentEstimate.perPayment), {
+                          shouldValidate: true,
+                        })
+                        setValue('fixedPaymentTouched', false, { shouldDirty: true })
+                      }}
+                      className="text-sm font-semibold text-[hsl(var(--accent))] transition hover:opacity-80"
+                    >
+                      Dùng số gợi ý
+                    </button>
+                  </div>
+                ) : (
+                  <p className="px-1 text-xs text-[hsl(var(--muted-foreground))]">
+                    Nhập ngày vay, dự kiến trả xong và tần suất để tự tính số tiền mỗi kỳ.
+                  </p>
+                )}
+
+                <EventField label="Ghi chú">
+                  <EventFieldTextarea
+                    rows={3}
+                    placeholder="Thêm bối cảnh nếu cần."
+                    {...register('note')}
+                  />
+                </EventField>
+              </div>
+            ) : null}
           </div>
 
-          <ResponsiveDialogFooter className="border-t border-[#e8e8ee] bg-[#fcfcfd] px-5 py-4 sm:px-6">
-            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+          <ResponsiveDialogFooter className="border-t border-black/[0.06] px-6 py-4 sm:px-8">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              className="text-foreground hover:bg-[hsl(var(--muted))]"
+            >
               Hủy
             </Button>
-            <Button type="submit" disabled={!isValid || isSavingDebt}>
-              {isSavingDebt ? 'Dang luu...' : editingId ? 'Lưu thay đổi' : 'Lưu khoản vay'}
+            <Button
+              type="submit"
+              disabled={!isValid || isSavingDebt}
+              className="bg-[hsl(var(--accent))] px-6 text-white hover:bg-[hsl(var(--accent))]/90"
+            >
+              {isSavingDebt ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Lưu khoản vay'}
             </Button>
           </ResponsiveDialogFooter>
         </form>

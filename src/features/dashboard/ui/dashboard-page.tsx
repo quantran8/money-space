@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { AppearGroup, AppearItem } from '@/components/ui/motion'
 import { useDashboardPage } from '@/features/dashboard/hooks/use-dashboard-page'
 import { AttentionSection } from '@/features/dashboard/ui/components/attention-section'
-import { DebtsSection } from '@/features/dashboard/ui/components/debts-section'
+import { DashboardSkeleton } from '@/features/dashboard/ui/components/dashboard-skeleton'
 import { LongTermGoalSection } from '@/features/dashboard/ui/components/long-term-goal-section'
-import { MembersSection } from '@/features/dashboard/ui/components/members-section'
+import { MoneySection } from '@/features/dashboard/ui/components/money-section'
 import { NetWorthHero } from '@/features/dashboard/ui/components/net-worth-hero'
 import { RecentEventsSection } from '@/features/dashboard/ui/components/recent-events-section'
 
@@ -13,63 +13,80 @@ export function DashboardPage() {
   const { t } = useTranslation()
   const {
     snapshot,
-    members,
     payments,
-    debts,
     mainGoal,
     moneyEvents,
-    assetTrend,
-    statusKey,
-    statusLineKey,
     statusLabel,
+    statusLineKey,
     updatedAtLabel,
-    membersSubtitle,
     recentSubtitle,
-    attentionTotal,
-    breakdown,
+    upcomingCount,
+    upcomingTotalLabel,
+    discussItem,
+    discussCount,
+    mainGoalRemaining,
+    totalAssets,
+    longTermValue,
+    debtCount,
   } = useDashboardPage()
 
   if (!snapshot) {
-    return <div className="px-1 text-sm text-muted-foreground">Loading dashboard...</div>
+    return <DashboardSkeleton />
   }
 
   return (
-    <AppearGroup className="space-y-4">
-      <AppearItem>
-        <div className="px-1">
-          <h1 className="section-title text-2xl font-semibold tracking-[-0.03em] md:text-3xl">
-            {t('dashboard.title')}
-          </h1>
-        </div>
-      </AppearItem>
-
+    <AppearGroup className="space-y-6">
+      {/* 1. Hero — dark focal panel + supporting overview (mockup #overview). */}
       <AppearItem>
         <NetWorthHero
           snapshot={snapshot}
-          statusKey={statusKey}
-          statusLineKey={statusLineKey}
           statusLabel={statusLabel}
+          statusLineKey={statusLineKey}
           updatedAtLabel={updatedAtLabel}
-          breakdown={breakdown}
-          assetTrend={assetTrend}
+          upcomingCount={upcomingCount}
+          discussCount={discussCount}
         />
       </AppearItem>
 
-      {/* Row 1 — this-week priority + most recent movement. */}
+      {/* 2. Tiền nhà mình — liquidity + assets/debt (mockup #money). */}
       <AppearItem>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <AttentionSection payments={payments} attentionTotal={attentionTotal} />
-          <RecentEventsSection moneyEvents={moneyEvents} subtitle={recentSubtitle} />
-          <DebtsSection snapshot={snapshot} debts={debts} />
-        </div>
+        <MoneySection
+          snapshot={snapshot}
+          totalAssets={totalAssets}
+          longTermValue={longTermValue}
+          debtCount={debtCount}
+        />
       </AppearItem>
 
-      {/* Row 2 — long-term plan + household members. */}
+      {/* 3. Cần chú ý + Cần bàn (mockup #attention). */}
       <AppearItem>
-        <div className="grid gap-4 lg:grid-cols-12">
-          <LongTermGoalSection mainGoal={mainGoal} />
-          <MembersSection members={members} subtitle={membersSubtitle} />
-        </div>
+        <AttentionSection
+          payments={payments}
+          upcomingCount={upcomingCount}
+          upcomingTotalLabel={upcomingTotalLabel}
+          discussItem={discussItem}
+          discussCount={discussCount}
+        />
+      </AppearItem>
+
+      {/* 4. Kế hoạch dài hạn (mockup #plan). */}
+      <AppearItem>
+        <LongTermGoalSection mainGoal={mainGoal} remaining={mainGoalRemaining} />
+      </AppearItem>
+
+      {/* 5. Gần đây (mockup #recent). */}
+      <AppearItem>
+        <RecentEventsSection
+          moneyEvents={moneyEvents}
+          subtitle={recentSubtitle || t('dashboard.sections.recent.subtitle')}
+        />
+      </AppearItem>
+
+      {/* Footer note (mockup footer). */}
+      <AppearItem>
+        <p className="px-1 pb-2 text-center text-xs leading-5 text-[hsl(var(--muted-foreground))]">
+          {t('dashboard.footerNote')}
+        </p>
       </AppearItem>
     </AppearGroup>
   )

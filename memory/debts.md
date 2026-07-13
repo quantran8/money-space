@@ -10,6 +10,8 @@ CRUD over `Debt` (name, debtType, lenderType, lenderName, original/outstanding a
 
 A debt links to the asset that received the money (`receivedToAssetId`). Borrowing raises an asset **and** a debt equally → **net worth unchanged**. See [[domain-overview]].
 
+**`receivedToAssetId` can only be a spendable wallet — `cash` or `bank_account`.** Borrowed money lands in a wallet, never in a valued asset (gold, stock, savings…). The create/edit form's "Nhận nợ vào đâu?" select filters assets to these two types (same rule the events page applies to its "nguồn tiền" source select). The create default seeds from the first such wallet.
+
 ## Repayment terms live on the `debts` row
 
 **Repayment terms are columns directly on `debts`** (folded in from the former

@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { DebtListItem } from '@/features/debts/ui/components/debt-list-item'
 import type { Asset } from '@/features/assets/model/assets.types'
 import type { DebtItem } from '@/features/debts/model/debts.types'
@@ -39,6 +40,9 @@ export function DebtsListSection({
       </div>
 
       <div className="space-y-3">
+        {isLoading
+          ? Array.from({ length: 3 }).map((_, index) => <DebtListItemSkeleton key={index} />)
+          : null}
         {!isLoading &&
           debts.map((debt) => {
             const ownerName = members.find((member) => member.id === debt.ownerMemberId)?.name
@@ -62,5 +66,39 @@ export function DebtsListSection({
           })}
       </div>
     </Card>
+  )
+}
+
+function DebtListItemSkeleton() {
+  return (
+    <article className="rounded-[28px] border border-border/80 bg-white p-4 shadow-[0_14px_40px_rgba(15,23,42,0.05)] sm:p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="size-10 rounded-full" />
+            <div className="min-w-0 space-y-2">
+              <Skeleton className="h-5 w-40 rounded-full" />
+              <Skeleton className="h-4 w-56 rounded-full" />
+            </div>
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Skeleton className="h-6 w-32 rounded-full" />
+            <Skeleton className="h-6 w-28 rounded-full" />
+          </div>
+
+          <Skeleton className="mt-3 h-4 w-3/4 rounded-full" />
+        </div>
+
+        <div className="lg:w-[220px]">
+          <Skeleton className="h-8 w-32 rounded-full lg:ml-auto" />
+          <div className="mt-4 flex flex-wrap gap-2 lg:justify-end">
+            <Skeleton className="h-9 w-28 rounded-full" />
+            <Skeleton className="h-9 w-10 rounded-full" />
+          </div>
+        </div>
+      </div>
+    </article>
   )
 }

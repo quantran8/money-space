@@ -27,9 +27,27 @@ export type EventPayload = {
   financialGoalId?: string
 }
 
+/** Backend-computed thu/chi/net aggregate for a month (source of truth). */
+export type EventsSummaryResponse = {
+  householdId: string
+  month: string
+  recordedCount: number
+  totalIncome: number
+  totalOutcome: number
+  netChange: number
+}
+
 export function listEvents(householdId: string, month?: string) {
   return apiRequest<EventListResponse>(
     `/api/households/${householdId}/money-events`,
+    undefined,
+    month ? { month } : undefined,
+  )
+}
+
+export function getEventsSummary(householdId: string, month?: string) {
+  return apiRequest<EventsSummaryResponse>(
+    `/api/households/${householdId}/money-events/summary`,
     undefined,
     month ? { month } : undefined,
   )

@@ -90,6 +90,16 @@ export function useDebtsPage() {
     () => assets.map((asset) => ({ value: asset.id, label: asset.name })),
     [assets],
   )
+  // Money borrowed lands in a spendable wallet — cash or a bank account — never a
+  // valued asset (gold, stock, savings…). Mirror the events page "nguồn tiền"
+  // rule so the "nhận nợ vào đâu" select only offers real wallets.
+  const receiveAssetOptions = useMemo(
+    () =>
+      assets
+        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .map((asset) => ({ value: asset.id, label: asset.name })),
+    [assets],
+  )
   const memberOptions = useMemo(
     () =>
       members
@@ -117,6 +127,7 @@ export function useDebtsPage() {
   const watchedFrequency = useWatch({ control, name: 'paymentFrequency' })
   const watchedPeriods = useWatch({ control, name: 'interestPeriods' })
   const watchedCalc = useWatch({ control, name: 'interestCalc' })
+  const watchedHasInterest = useWatch({ control, name: 'hasInterest' })
   const watchedPaymentTouched = useWatch({ control, name: 'fixedPaymentTouched' })
 
   const termMonths = useMemo(
@@ -130,10 +141,11 @@ export function useDebtsPage() {
         principal: parseAmountInput(originalAmountValue),
         frequency: watchedFrequency ?? 'none',
         termMonths,
-        periods: watchedPeriods ?? [],
+        // Interest off → estimate as a 0% loan (principal split across installments).
+        periods: watchedHasInterest ? (watchedPeriods ?? []) : [],
         calc: watchedCalc ?? 'fixed',
       }),
-    [originalAmountValue, watchedFrequency, termMonths, watchedPeriods, watchedCalc],
+    [originalAmountValue, watchedFrequency, termMonths, watchedPeriods, watchedCalc, watchedHasInterest],
   )
 
   // Keep the (non-overridden) payment field in sync with the live estimate so
@@ -202,6 +214,8 @@ export function useDebtsPage() {
         fixedPaymentAmount: amountToRaw(editingDebt.fixedPaymentAmountValue),
         // Editing a saved debt: keep whatever amount is stored as-is.
         fixedPaymentTouched: editingDebt.fixedPaymentAmountValue !== undefined,
+        // Show the interest fields only if the saved debt actually charges interest.
+        hasInterest: periods.some((period) => parseFloat(period.ratePct) > 0),
         interestCalc: calcFromBackendEnum(editingDebt.interestCalculation),
         interestPeriods: periods,
         note: editingDebt.note ?? '',
@@ -212,9 +226,9 @@ export function useDebtsPage() {
     reset({
       ...defaultValues,
       ownerMemberId: memberOptions[0]?.value ?? '',
-      receivedToAssetId: assetOptions[0]?.value ?? '',
+      receivedToAssetId: receiveAssetOptions[0]?.value ?? '',
     })
-  }, [assetOptions, dialogOpen, editingDebt, memberOptions, reset])
+  }, [receiveAssetOptions, dialogOpen, editingDebt, memberOptions, reset])
 
   function openCreate() {
     setEditingId(null)
@@ -240,8 +254,12 @@ export function useDebtsPage() {
     try {
       const termMonths = monthsBetween(values.borrowedAt, values.expectedFinalDueDate)
       const avgRate = averageAnnualRate(values.interestPeriods, termMonths)
-      const hasInterest = avgRate > 0
-      const interestPeriods = toInterestPeriodDtos(values.interestPeriods)
+      // The user's interest switch is the source of truth: when off, we drop any
+      // rate/period values so the debt is persisted as interest-free.
+      const hasInterest = values.hasInterest && avgRate > 0
+      const interestPeriods = values.hasInterest
+        ? toInterestPeriodDtos(values.interestPeriods)
+        : []
 
       const payload = {
         name: values.name.trim(),
@@ -418,6 +436,7 @@ export function useDebtsPage() {
     isLoading,
     summary,
     assetOptions,
+    receiveAssetOptions,
     memberOptions,
     // form
     control,

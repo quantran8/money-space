@@ -20,7 +20,10 @@ export function useEvents(month?: string) {
   const invalidate = async () => {
     if (!activeHouseholdId) return
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.events(activeHouseholdId) }),
+      // Invalidate by the `events` prefix so BOTH the list (`…, 'events', month`)
+      // and the backend-computed thu/chi/net summary (`…, 'events', 'summary',
+      // month`) refetch — the summary is the source of truth for the totals.
+      queryClient.invalidateQueries({ queryKey: ['households', activeHouseholdId, 'events'] }),
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeHouseholdId) }),
       // Recording a repayment reduces the linked debt's outstanding balance
       // (see backend MoneyEventsService), so the debts view must refetch.

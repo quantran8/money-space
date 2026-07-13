@@ -22,9 +22,14 @@ export function useDashboardPage() {
     assetGroups,
     recentEvents: moneyEvents,
     assetTrend,
+    isLoading,
   } = useDashboardOverview()
 
-  if (!snapshot) {
+  // Keep the skeleton up until EVERY underlying query has resolved — not just
+  // the dashboard snapshot. The snapshot query can finish before assets /
+  // payments / goals / etc., and rendering on `!snapshot` alone would flash the
+  // page with empty breakdown/lists before those fill in.
+  if (isLoading || !snapshot) {
     return { snapshot: undefined } as const
   }
 
@@ -43,12 +48,49 @@ export function useDashboardPage() {
     invited: invitedMembers.length,
   })
 
-  const attentionTotal = formatCompactMillions(
-    payments.reduce(
-      (sum, payment) => sum + (payment.amountValue ?? parseCompactMillions(payment.amount)),
-      0,
-    ) / 1_000_000,
+  const upcomingTotalVnd = payments.reduce(
+    (sum, payment) =>
+      sum + (payment.amountValue ?? parseCompactMillions(payment.amount) * 1_000_000),
+    0,
   )
+  const attentionTotal = formatCompactMillions(upcomingTotalVnd / 1_000_000)
+  const upcomingCount = payments.length
+  const upcomingTotalLabel = formatVndShort(upcomingTotalVnd)
+
+  // "Cần bàn" (needs discussion) has no dedicated feature yet, so we surface the
+  // single most material open item to talk about: the largest open debt if one
+  // exists, otherwise the main long-term goal. Wired to real data per product.
+  const openDebts = debts.filter((debt) => debt.status !== 'paid_off')
+  const largestOpenDebt = [...openDebts].sort(
+    (a, b) => b.outstandingAmountValue - a.outstandingAmountValue,
+  )[0]
+  const discussItem = largestOpenDebt
+    ? {
+        to: '/debts',
+        title: largestOpenDebt.name,
+        line: t('dashboard.sections.discuss.debtLine', {
+          amount: formatVndShort(largestOpenDebt.outstandingAmountValue),
+        }),
+      }
+    : mainGoal
+      ? {
+          to: '/goals',
+          title: mainGoal.name,
+          line: t('dashboard.sections.discuss.goalLine'),
+        }
+      : null
+  const discussCount = discussItem ? 1 : 0
+
+  // Long-term goal supporting numbers for the plan section.
+  const mainGoalTarget = mainGoal?.targetAmount ?? 0
+  const mainGoalCurrent = mainGoal?.currentAmount ?? 0
+  const mainGoalRemaining = Math.max(0, mainGoalTarget - mainGoalCurrent)
+
+  // Money section: total assets = net worth + debt; long-term bucket from the
+  // asset groups; count of currently open debts.
+  const totalAssets = snapshot.netWorth + snapshot.debt
+  const longTermValue = assetGroups[2]?.value ?? 0
+  const debtCount = openDebts.length
 
   // The hero breaks the total down into the three liquidity buckets so the user
   // sees not just how much, but where the money sits. Sourced from the same
@@ -79,5 +121,15 @@ export function useDashboardPage() {
     recentSubtitle,
     attentionTotal,
     breakdown,
+    // New layout fields
+    statusVariant,
+    upcomingCount,
+    upcomingTotalLabel,
+    discussItem,
+    discussCount,
+    mainGoalRemaining,
+    totalAssets,
+    longTermValue,
+    debtCount,
   } as const
 }

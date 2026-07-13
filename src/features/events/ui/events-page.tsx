@@ -17,6 +17,7 @@ export function EventsPage() {
     sale,
     summary,
     groupedRecords,
+    isLoading,
     payments,
     tab,
     setTab,
@@ -37,6 +38,7 @@ export function EventsPage() {
     isSavingActual,
     isDeleting,
     assetOptions,
+    sourceAssetOptions,
     memberOptions,
     upcomingControl,
     registerUpcoming,
@@ -91,6 +93,7 @@ export function EventsPage() {
         tab={tab}
         onTabChange={setTab}
         groupedRecords={groupedRecords}
+        isLoading={isLoading}
         isSavingActual={isSavingActual}
         onMarkPaid={openMarkPaid}
         onPostponePayment={postponePayment}
@@ -116,6 +119,7 @@ export function EventsPage() {
         selectedUpcomingForMarkPaid={selectedUpcomingForMarkPaid}
         payments={payments}
         assetOptions={assetOptions}
+        sourceAssetOptions={sourceAssetOptions}
         memberOptions={memberOptions}
         upcomingControl={upcomingControl}
         registerUpcoming={registerUpcoming}

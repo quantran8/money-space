@@ -13,6 +13,8 @@ export const queryKeys = {
   payments: (householdId: string) => ['households', householdId, 'payments'] as const,
   events: (householdId: string, month?: string) =>
     ['households', householdId, 'events', month ?? 'all'] as const,
+  eventsSummary: (householdId: string, month?: string) =>
+    ['households', householdId, 'events', 'summary', month ?? 'current'] as const,
   dashboard: (householdId: string) => ['households', householdId, 'dashboard'] as const,
   attentionItems: (householdId: string) =>
     ['households', householdId, 'attention-items'] as const,

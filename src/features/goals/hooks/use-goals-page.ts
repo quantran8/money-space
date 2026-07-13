@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 import { useQueryClient } from '@tanstack/react-query'
 
+import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useEvents } from '@/features/events/hooks/use-events'
 import { useGoals } from '@/features/goals/hooks/use-goals'
 import { parseAmount, type GoalPriority } from '@/features/goals/model/goals'
@@ -30,6 +31,17 @@ export function useGoalsPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { goals, activeHouseholdId, createGoal, updateGoal, deleteGoal, isLoading } = useGoals()
+  const { assets } = useAssets()
+  // Each contribution debits a wallet — its `fromAssetId` must be a spendable
+  // cash / bank_account asset (chosen per contribution, not stored on the goal).
+  // Same filter the asset-sale wallet picker uses (see use-asset-sale).
+  const walletOptions = useMemo(
+    () =>
+      assets
+        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .map((asset) => ({ value: asset.id, label: asset.name })),
+    [assets],
+  )
   // Contributions are recorded as `goal_contribution` money events; the goal's
   // currentAmount/progress is derived server-side from their sum (there is no
   // stored current_amount column). `createEvent` already invalidates events,
@@ -40,6 +52,9 @@ export function useGoalsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [contributions, setContributions] = useState<Record<string, string>>({})
+  // Per-goal chosen source wallet for the quick-add contribution row. Defaults to
+  // the first wallet (below) so the required picker starts pre-filled.
+  const [contributionSources, setContributionSources] = useState<Record<string, string>>({})
   const [recent, setRecent] = useState<RecentUpdate[]>([])
   const isEditing = editingId !== null
   const isSavingGoal = createGoal.isPending || updateGoal.isPending
@@ -105,6 +120,25 @@ export function useGoalsPage() {
       reset(defaultGoalFormValues)
     }
   }, [formOpen, editingGoal, reset])
+
+  // Default each goal's contribution source to the first wallet, so the required
+  // "nguồn tiền" picker on the quick-add row starts pre-filled. Only fills goals
+  // not yet chosen; never overrides a user's pick.
+  useEffect(() => {
+    const fallback = walletOptions[0]?.value
+    if (!fallback || goals.length === 0) return
+    setContributionSources((prev) => {
+      let changed = false
+      const next = { ...prev }
+      for (const goal of goals) {
+        if (!next[goal.id]) {
+          next[goal.id] = fallback
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [goals, walletOptions])
 
   function openCreate() {
     setEditingId(null)
@@ -172,6 +206,15 @@ export function useGoalsPage() {
 
     const goal = goals.find((item) => item.id === goalId)
     if (!goal) return
+
+    // A contribution moves money out of a spendable wallet — the source is chosen
+    // per contribution and is required (the backend rejects a goal_contribution
+    // with no / non-wallet fromAssetId). Block + prompt when none is picked.
+    const fromAssetId = contributionSources[goalId]
+    if (!fromAssetId) {
+      toast.error(t('goals.actions.sourceRequired'))
+      return
+    }
     try {
       await createEvent.mutateAsync({
         title: t('goals.recent.added', { value: formatAmount(delta), name: goal.name }),
@@ -180,6 +223,9 @@ export function useGoalsPage() {
         type: 'goal_contribution',
         category: 'saving',
         financialGoalId: goalId,
+        // Debits the chosen wallet; backend requires a cash/bank fromAssetId for
+        // goal_contribution. See memory/goals.md.
+        fromAssetId,
       })
       // currentAmount is derived from goal_contribution events — refetch goals
       // so the progress bar and allocation reflect this contribution.
@@ -209,6 +255,10 @@ export function useGoalsPage() {
     setContributions((prev) => ({ ...prev, [goalId]: value }))
   }
 
+  function setContributionSource(goalId: string, assetId: string) {
+    setContributionSources((prev) => ({ ...prev, [goalId]: assetId }))
+  }
+
   const primaryRemaining = primaryGoal
     ? Math.max(
         goalAmount(primaryGoal.targetAmount) -
@@ -232,6 +282,9 @@ export function useGoalsPage() {
     // contributions
     contributions,
     setContribution,
+    contributionSources,
+    setContributionSource,
+    walletOptions,
     addContribution,
     isContributing: createEvent.isPending,
     // form

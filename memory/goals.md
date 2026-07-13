@@ -4,10 +4,22 @@ Shared savings goals with progress. Related: [[money-events]] (goal_contribution
 
 ## Overview
 
-CRUD over `FinancialGoal` (name, category, targetAmount, deadline, priority, status, optional `linkedAssetId`). Every response is a card including a derived **currentAmount** and a computed **progress %**.
+CRUD over `FinancialGoal` (name, category, targetAmount, deadline, priority, status). The goal form has **no** source-wallet field. Every response is a card including a derived **currentAmount** and a computed **progress %**.
 
 ## Rules
 
+- **The money source is chosen PER CONTRIBUTION, not on the goal.** Creating a
+  goal never asks for a source wallet. Instead the goals-list quick-add row has a
+  required "Nguồn tiền" `<Select>` **per goal**, listing only cash / bank_account
+  assets (`walletOptions` in `use-goals-page.ts`, same filter the asset-sale
+  wallet picker uses). It defaults to the first wallet;
+  `contributionSources[goalId]` holds the pick. Update is disabled until a wallet
+  is chosen (and `addContribution` blocks + toasts if somehow empty).
+- **Contributing debits the chosen wallet.** `addContribution` sends the
+  `goal_contribution` money event with `fromAssetId = contributionSources[goalId]`;
+  the backend requires it (400 otherwise) and debits that wallet, so the money
+  leaves the spendable pocket. `direction` stays `neutral` — a move between the
+  household's own pockets, NOT counted in the thu/chi summary. See [[money-events]].
 - **currentAmount is derived, NOT stored** (backend PR3 removed the
   `current_amount` column). The backend computes it on read as the sum of the
   goal's `goal_contribution` money events. Create/update goal payloads must NOT

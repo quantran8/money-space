@@ -31,7 +31,8 @@ const EMPTY_TOTALS: AssetTotals = {
 
 export function useAssetsPage() {
   const { t } = useTranslation()
-  const { assets, snapshots, summary, asOf, createAsset, updateAsset, deleteAsset } = useAssets()
+  const { assets, snapshots, summary, asOf, isLoading, createAsset, updateAsset, deleteAsset } =
+    useAssets()
   const sale = useAssetSale()
 
   function openSale(assetId: string) {
@@ -165,6 +166,7 @@ export function useAssetsPage() {
     totals,
     total,
     filteredAssets,
+    isLoading,
     // toolbar state
     query,
     setQuery,

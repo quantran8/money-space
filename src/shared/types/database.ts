@@ -470,7 +470,6 @@ export type Database = {
             deadline: string | null
             priority: GoalPriority
             status: GoalStatus
-            linked_asset_id: string | null
             note: string | null
             created_by: string
             updated_by: string | null

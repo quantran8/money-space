@@ -41,7 +41,8 @@ type UpcomingRecordFormProps = {
   showMoreDetails: boolean
   onToggleMoreDetails: () => void
   memberOptions: Option[]
-  assetOptions: Option[]
+  /** Wallets eligible as the expected money source (cash / bank account). */
+  sourceAssetOptions: Option[]
   isValid: boolean
   isSaving: boolean
   onCancel: () => void
@@ -56,7 +57,7 @@ export function UpcomingRecordForm({
   showMoreDetails,
   onToggleMoreDetails,
   memberOptions,
-  assetOptions,
+  sourceAssetOptions,
   isValid,
   isSaving,
   onCancel,
@@ -95,6 +96,29 @@ export function UpcomingRecordForm({
           name="dueDate"
           render={({ field }) => (
             <DatePicker value={field.value} onChange={field.onChange} className={eventDateTriggerClass} />
+          )}
+        />
+      </EventField>
+
+      {/* Money source stays in the main body (not behind "Thêm chi tiết") so the
+          asset select is always visible, like the income/expense/transfer flows. */}
+      <EventField label="Nguồn tiền dự kiến">
+        <Controller
+          control={control}
+          name="expectedFromAssetId"
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className={eventSelectTriggerClass}>
+                <SelectValue placeholder="Không bắt buộc" />
+              </SelectTrigger>
+              <SelectContent>
+                {sourceAssetOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         />
       </EventField>
@@ -153,26 +177,6 @@ export function UpcomingRecordForm({
               />
             </EventField>
           </div>
-          <EventField label="Nguồn tiền dự kiến">
-            <Controller
-              control={control}
-              name="expectedFromAssetId"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className={eventSelectTriggerClass}>
-                    <SelectValue placeholder="Không bắt buộc" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {assetOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </EventField>
           <div className="flex items-center justify-between rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
             <div>
               <p className="text-[15px] font-medium text-foreground">Cần chú ý</p>

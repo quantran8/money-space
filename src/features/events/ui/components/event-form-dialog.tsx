@@ -42,6 +42,9 @@ type EventFormDialogProps = {
   selectedUpcomingForMarkPaid?: LocalUpcomingPayment
   payments: LocalUpcomingPayment[]
   assetOptions: Option[]
+  /** Wallets eligible as a money source (cash / bank account only). Used for the
+   *  "nguồn tiền" selects; destination selects still use the full assetOptions. */
+  sourceAssetOptions: Option[]
   memberOptions: Option[]
   // upcoming form
   upcomingControl: Control<UpcomingRecordFormValues>
@@ -75,6 +78,7 @@ export function EventFormDialog({
   selectedUpcomingForMarkPaid,
   payments,
   assetOptions,
+  sourceAssetOptions,
   memberOptions,
   upcomingControl,
   registerUpcoming,
@@ -137,7 +141,7 @@ export function EventFormDialog({
               showMoreDetails={showMoreDetails}
               onToggleMoreDetails={onToggleMoreDetails}
               memberOptions={memberOptions}
-              assetOptions={assetOptions}
+              sourceAssetOptions={sourceAssetOptions}
               isValid={isUpcomingValid}
               isSaving={isSavingUpcoming}
               onCancel={() => onOpenChange(false)}
@@ -155,6 +159,7 @@ export function EventFormDialog({
               selectedUpcomingForMarkPaid={selectedUpcomingForMarkPaid}
               payments={payments}
               assetOptions={assetOptions}
+              sourceAssetOptions={sourceAssetOptions}
               showMoreDetails={showMoreDetails}
               onToggleMoreDetails={onToggleMoreDetails}
               isValid={isActualValid}

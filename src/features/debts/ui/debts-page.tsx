@@ -16,7 +16,6 @@ export function DebtsPage() {
     members,
     isLoading,
     summary,
-    assetOptions,
     memberOptions,
     control,
     register,
@@ -25,7 +24,7 @@ export function DebtsPage() {
     setValue,
     submit,
     selectedLenderType,
-    originalAmountValue,
+    receiveAssetOptions,
     isSavingDebt,
     isUpdating,
     repaymentEstimate,
@@ -94,10 +93,9 @@ export function DebtsPage() {
         isSavingDebt={isSavingDebt}
         setValue={setValue}
         selectedLenderType={selectedLenderType}
-        originalAmountValue={originalAmountValue}
         showMoreDetails={showMoreDetails}
         setShowMoreDetails={setShowMoreDetails}
-        assetOptions={assetOptions}
+        receiveAssetOptions={receiveAssetOptions}
         memberOptions={memberOptions}
         repaymentEstimate={repaymentEstimate}
         termMonths={termMonths}

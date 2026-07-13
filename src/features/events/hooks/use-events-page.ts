@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useAssetSale } from '@/features/assets/hooks/use-asset-sale'
 import { useEvents } from '@/features/events/hooks/use-events'
+import { useEventsSummary } from '@/features/events/hooks/use-events-summary'
 import {
   actualDefaults,
   areEventsEqual,
@@ -24,7 +25,6 @@ import {
   isAttentionRecord,
   isEditableEventType,
   isQuickActualAction,
-  isSameMonthAsToday,
   parseAmountInput,
   startOfDay,
   toMoneyEventSeed,
@@ -48,10 +48,16 @@ import { getErrorMessage } from '@/shared/lib/get-error-message'
 export function useEventsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { events: seedEvents, createEvent, updateEvent, deleteEvent: deleteEventMutation } = useEvents()
+  const { events: seedEvents, isLoading: isEventsLoading, createEvent, updateEvent, deleteEvent: deleteEventMutation } = useEvents()
   const { payments: seedPayments, createPayment, updatePayment, deletePayment } = usePayments()
   const { assets } = useAssets()
   const { members } = useMembers()
+  // Thu/chi/net for the current month are the BACKEND's source of truth — read
+  // them from the summary endpoint, never re-derive from the event list.
+  const { data: eventsSummary, isLoading: isSummaryLoading } = useEventsSummary()
+  // Show the timeline skeleton while EITHER the events list or the backend
+  // thu/chi/net summary is still loading — both feed the page's main content.
+  const isLoading = isEventsLoading || isSummaryLoading
   // Reused for editing an existing asset_sale event through its dedicated dialog
   // (the generic form can't express quantity / fee / receiving wallet).
   const sale = useAssetSale()
@@ -78,6 +84,17 @@ export function useEventsPage() {
 
   const assetOptions = useMemo(
     () => assets.map((asset) => ({ value: asset.id, label: asset.name })),
+    [assets],
+  )
+  // Source ("nguồn tiền") of an event can only be a spendable wallet — money
+  // leaves the household from cash or a bank account, never from a valued asset
+  // (gold, stock, savings…). Those non-wallet assets change hands through their
+  // own dedicated flows (sell / revalue), not a generic income/expense record.
+  const sourceAssetOptions = useMemo(
+    () =>
+      assets
+        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .map((asset) => ({ value: asset.id, label: asset.name })),
     [assets],
   )
   const memberOptions = useMemo(
@@ -218,31 +235,21 @@ export function useEventsPage() {
       const days = differenceInDays(TODAY, payment.dueDate)
       return days >= 0 && days <= 7
     })
-    const recordedThisMonth = events.filter((event) => isSameMonthAsToday(event.date))
     const attentionCount = timelineRecords.filter(isAttentionRecord).length
-    const totalIncome = recordedThisMonth.reduce((total, event) => {
-      if (event.direction !== 'inflow') return total
-      return total + Math.abs(event.amount)
-    }, 0)
-    const totalOutcome = recordedThisMonth.reduce((total, event) => {
-      if (event.direction !== 'outflow') return total
-      return total + Math.abs(event.amount)
-    }, 0)
-    const netChange = recordedThisMonth.reduce((total, event) => {
-      if (event.direction === 'inflow') return total + Math.abs(event.amount)
-      if (event.direction === 'outflow') return total - Math.abs(event.amount)
-      return total
-    }, 0)
+    // thu/chi/net + recorded count come from the backend summary (source of
+    // truth); default to 0 while it loads. Upcoming-in-7-days and attention are
+    // payment/attention concerns the backend summary doesn't cover, so they stay
+    // derived from the loaded lists here.
     return {
       upcomingIn7DaysCount: upcomingIn7Days.length,
       upcomingIn7DaysAmount: upcomingIn7Days.reduce((sum, payment) => sum + payment.amount, 0),
-      recordedThisMonth: recordedThisMonth.length,
+      recordedThisMonth: eventsSummary?.recordedCount ?? 0,
       attentionCount,
-      totalIncome,
-      totalOutcome,
-      netChange,
+      totalIncome: eventsSummary?.totalIncome ?? 0,
+      totalOutcome: eventsSummary?.totalOutcome ?? 0,
+      netChange: eventsSummary?.netChange ?? 0,
     }
-  }, [events, payments, timelineRecords])
+  }, [eventsSummary, payments, timelineRecords])
 
   useEffect(() => {
     setEvents((current) => (areEventsEqual(current, sourceEvents) ? current : sourceEvents))
@@ -277,7 +284,7 @@ export function useEventsPage() {
       resetUpcoming({
         ...upcomingDefaults,
         ownerMemberId: memberOptions[0]?.value ?? '',
-        expectedFromAssetId: assetOptions[0]?.value ?? '',
+        expectedFromAssetId: sourceAssetOptions[0]?.value ?? '',
       })
       return
     }
@@ -336,7 +343,7 @@ export function useEventsPage() {
 
     resetActual({
       ...actualDefaults,
-      fromAssetId: assetOptions[0]?.value ?? '',
+      fromAssetId: sourceAssetOptions[0]?.value ?? '',
     })
   }, [
     assetOptions,
@@ -352,6 +359,7 @@ export function useEventsPage() {
     resetActual,
     resetUpcoming,
     seedEvents,
+    sourceAssetOptions,
   ])
 
   function openCreate() {
@@ -682,6 +690,7 @@ export function useEventsPage() {
     // derived data
     summary,
     groupedRecords,
+    isLoading,
     payments,
     // toolbar state
     tab,
@@ -705,6 +714,7 @@ export function useEventsPage() {
     isDeleting: deleteEventMutation.isPending,
     // options
     assetOptions,
+    sourceAssetOptions,
     memberOptions,
     // forms
     upcomingControl,

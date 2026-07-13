@@ -23,6 +23,7 @@ export function AssetsPage() {
     totals,
     total,
     filteredAssets,
+    isLoading,
     query,
     setQuery,
     liquidityFilter,
@@ -69,6 +70,7 @@ export function AssetsPage() {
       <div className="grid gap-4 lg:grid-cols-12">
         <AssetsListSection
           assets={filteredAssets}
+          isLoading={isLoading}
           asOf={asOf || AS_OF}
           query={query}
           onQueryChange={setQuery}

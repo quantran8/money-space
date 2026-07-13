@@ -14,7 +14,7 @@ import {
 
 export function useSettingsPage() {
   const { i18n, t } = useTranslation()
-  const { household } = useMembers()
+  const { household, isLoading } = useMembers()
   const safeHousehold = household ?? {
     name: '',
     currency: 'VND',
@@ -61,6 +61,7 @@ export function useSettingsPage() {
 
   return {
     // data
+    isLoading,
     safeHousehold,
     shareAssets,
     updateFrequency,

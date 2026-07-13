@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { type PaymentStatus, type UpcomingPaymentItem } from '@/features/payments/model/payments'
 import {
   groupDot,
@@ -17,6 +18,7 @@ import { cn } from '@/shared/lib/utils'
 
 type PaymentsListSectionProps = {
   payments: UpcomingPaymentItem[]
+  isLoading?: boolean
   visiblePayments: UpcomingPaymentItem[]
   groups: PaymentGroup[]
   statusLabels: Record<PaymentStatus, string>
@@ -32,6 +34,7 @@ type PaymentsListSectionProps = {
 
 export function PaymentsListSection({
   payments,
+  isLoading = false,
   visiblePayments,
   groups,
   statusLabels,
@@ -87,7 +90,21 @@ export function PaymentsListSection({
         ))}
       </div>
 
-      {payments.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="surface-muted rounded-3xl p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 space-y-2">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+                <Skeleton className="h-7 w-24 shrink-0" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : payments.length === 0 ? (
         <div className="rounded-3xl border border-dashed bg-white p-8 text-center">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {t('payments.list.empty')}

@@ -19,6 +19,9 @@ export type DebtForm = {
   fixedPaymentAmount: string
   /** Whether the user has overridden the auto-computed payment amount. */
   fixedPaymentTouched: boolean
+  /** Whether this loan charges interest. When false, the interest fields are
+   *  hidden and no rate/calc is persisted. */
+  hasInterest: boolean
   /** How the periodic payment is derived (annuity vs. reducing balance). */
   interestCalc: InterestCalc
   /** One or more interest stages (rate %/year + months). */
@@ -47,6 +50,7 @@ export const defaultValues: DebtForm = {
   paymentFrequency: 'none',
   fixedPaymentAmount: '',
   fixedPaymentTouched: false,
+  hasInterest: false,
   interestCalc: 'fixed',
   interestPeriods: [{ ratePct: '', months: '' }],
   note: '',
@@ -139,6 +143,7 @@ export function buildDebtSchema() {
       paymentFrequency: z.enum(['none', 'monthly', 'quarterly', 'yearly']),
       fixedPaymentAmount: z.string(),
       fixedPaymentTouched: z.boolean(),
+      hasInterest: z.boolean(),
       interestCalc: z.enum(['fixed', 'reducing']),
       interestPeriods: z
         .array(

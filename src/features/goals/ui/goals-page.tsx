@@ -28,8 +28,11 @@ export function GoalsPage() {
     priorityLabels,
     contributions,
     setContribution,
+    contributionSources,
+    setContributionSource,
     addContribution,
     isContributing,
+    walletOptions,
     form,
     isEditing,
     isSavingGoal,
@@ -75,9 +78,13 @@ export function GoalsPage() {
 
           <GoalsListSection
             goals={goals}
+            isLoading={isLoading}
             priorityLabels={priorityLabels}
             contributions={contributions}
             onContributionChange={setContribution}
+            contributionSources={contributionSources}
+            onContributionSourceChange={setContributionSource}
+            walletOptions={walletOptions}
             onAddContribution={addContribution}
             isContributing={isContributing}
             onCreate={openCreate}

@@ -20,6 +20,7 @@ export function PaymentsPanel({ embedded = false }: PaymentsPanelProps) {
     strip,
     nearestPayment,
     payments,
+    isLoading,
     visiblePayments,
     groups,
     paymentStatusLabels,
@@ -57,6 +58,7 @@ export function PaymentsPanel({ embedded = false }: PaymentsPanelProps) {
       <div className="grid gap-4 xl:grid-cols-12">
         <PaymentsListSection
           payments={payments}
+          isLoading={isLoading}
           visiblePayments={visiblePayments}
           groups={groups}
           statusLabels={paymentStatusLabels}

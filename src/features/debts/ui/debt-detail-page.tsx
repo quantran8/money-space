@@ -149,7 +149,7 @@ export function DebtDetailPage() {
   // Reuse the debts page's form machinery so editing opens a dialog in place
   // (no navigation back to the list).
   const {
-    assetOptions,
+    receiveAssetOptions,
     memberOptions,
     control,
     register,
@@ -158,7 +158,6 @@ export function DebtDetailPage() {
     setValue,
     submit,
     selectedLenderType,
-    originalAmountValue,
     isSavingDebt,
     repaymentEstimate,
     termMonths,
@@ -361,10 +360,9 @@ export function DebtDetailPage() {
         isSavingDebt={isSavingDebt}
         setValue={setValue}
         selectedLenderType={selectedLenderType}
-        originalAmountValue={originalAmountValue}
         showMoreDetails={showMoreDetails}
         setShowMoreDetails={setShowMoreDetails}
-        assetOptions={assetOptions}
+        receiveAssetOptions={receiveAssetOptions}
         memberOptions={memberOptions}
         repaymentEstimate={repaymentEstimate}
         termMonths={termMonths}

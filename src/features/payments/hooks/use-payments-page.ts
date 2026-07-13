@@ -24,7 +24,7 @@ import { formatVndShort } from '@/shared/lib/format-money'
 
 export function usePaymentsPage() {
   const { t } = useTranslation()
-  const { payments, createPayment, updatePayment, deletePayment } = usePayments()
+  const { payments, isLoading, createPayment, updatePayment, deletePayment } = usePayments()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -185,6 +185,7 @@ export function usePaymentsPage() {
   return {
     // data
     payments,
+    isLoading,
     strip,
     nearestPayment,
     visiblePayments,

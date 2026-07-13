@@ -50,6 +50,9 @@ type ActualRecordFormProps = {
   selectedUpcomingForMarkPaid?: LocalUpcomingPayment
   payments: LocalUpcomingPayment[]
   assetOptions: Option[]
+  /** Wallets eligible as the money source (cash / bank account). Drives the
+   *  "nguồn tiền" select; destination selects still use assetOptions. */
+  sourceAssetOptions: Option[]
   showMoreDetails: boolean
   onToggleMoreDetails: () => void
   isValid: boolean
@@ -69,6 +72,7 @@ export function ActualRecordForm({
   selectedUpcomingForMarkPaid,
   payments,
   assetOptions,
+  sourceAssetOptions,
   showMoreDetails,
   onToggleMoreDetails,
   isValid,
@@ -125,7 +129,7 @@ export function ActualRecordForm({
                     <SelectValue placeholder="Chọn ví thanh toán" />
                   </SelectTrigger>
                   <SelectContent>
-                    {assetOptions.map((option) => (
+                    {sourceAssetOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -151,7 +155,7 @@ export function ActualRecordForm({
                     <SelectValue placeholder="Chọn nơi tiền đi vào" />
                   </SelectTrigger>
                   <SelectContent>
-                    {assetOptions.map((option) => (
+                    {sourceAssetOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>

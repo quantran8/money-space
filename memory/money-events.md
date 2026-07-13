@@ -40,6 +40,58 @@ disbursement instead reuses `debt_update` with explicit `direction: 'inflow'`.
 - `goal_contribution` **must link** to a goal.
 - Amount must be **> 0**.
 
+### goal_contribution requires a wallet source (and debits it)
+
+A `goal_contribution` moves cash from a spendable wallet **into a savings goal**
+([[goals]]). Its `fromAssetId` is **mandatory** and must be a cash / bank_account
+asset — the backend rejects a missing / non-wallet source with a **400** on
+create + update, then **debits** that wallet (money leaves the pocket). The goals
+page sends `fromAssetId = contributionSources[goalId]` from `addContribution`
+(`use-goals-page.ts`) — a wallet chosen **per contribution** in the quick-add
+row's required picker (the goal stores no source wallet). `direction` stays
+`neutral`, so it debits a wallet without counting as thu/chi (like a transfer).
+Fixes the old bug where a contribution raised progress with no money moving.
+
+### Wallet-only link rule (income / expense / transfer)
+
+For **income, expense, transfer** every linked asset (source `fromAssetId` and,
+where present, destination `toAssetId`) must be a spendable **wallet** — `cash`
+or `bank_account` only. Money only flows in/out of a free cash balance; a valued
+asset (gold, stock, saving deposit, …) changes hands through its own flow (sell /
+revalue), never a generic cash move.
+
+- **Frontend**: `useEventsPage` builds `sourceAssetOptions` (assets filtered to
+  cash / bank_account) alongside the full `assetOptions`. The events forms use
+  `sourceAssetOptions` for the "nguồn tiền" source select (`fromAssetId`,
+  `expectedFromAssetId`) **and** the income/transfer destination select
+  (`toAssetId`). Only goal_contribution's destination still lists all assets.
+  Default source/destination selection also seeds from `sourceAssetOptions`.
+- **Backend** enforces the same as a **400** (`assertWalletLinks`, gated by
+  `WALLET_ONLY_EVENT_TYPES = {income, expense, transfer}`) on create + update.
+- **`asset_sale` is the exception**: its `fromAssetId` is the *sold* asset (a
+  non-wallet), so it is excluded. The sold asset is **view-only** — asset_sale
+  edits via the dedicated `AssetSaleDialog`, where the sold asset is fixed
+  context (header only, never a form field), so it can be seen but not changed.
+
+## Monthly summary (thu / chi / net) — backend is source of truth
+
+The events page summary card's **Tổng thu / Tổng chi / Net** come from the
+backend, **not** re-computed on the client. `useEventsSummary` calls
+`GET /api/households/:householdId/money-events/summary?month=YYYY-MM` →
+`{ recordedCount, totalIncome, totalOutcome, netChange }`.
+
+- Only `inflow` / `outflow` events count; `neutral` (asset_update, transfer,
+  goal_contribution, sale bookkeeping) are excluded server-side. A `neutral`
+  event can still move a wallet balance (transfer, and now goal_contribution,
+  debit a wallet) — neutral means it doesn't change the household's total money,
+  so it stays out of thu/chi even when a wallet balance changed.
+- `use-events-page` feeds these into the `summary` object (defaults to 0 while
+  loading). `upcomingIn7Days*` and `attentionCount` stay client-derived from the
+  payments / timeline lists (the summary endpoint doesn't cover them).
+- Query key `['households', id, 'events', 'summary', month]`. Event
+  create/update/delete invalidate the `['households', id, 'events']` prefix so
+  both the list and the summary refetch.
+
 ## Upcoming payments
 
 - `UpcomingPayment`: name, amount, dueDate, frequency, `autoCreateNext` flag, owner member, optional `debtId` link, status, attention level/flag.

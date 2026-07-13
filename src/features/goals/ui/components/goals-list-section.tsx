@@ -12,14 +12,28 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { MoneyInput } from '@/components/ui/number-input'
 import { Progress } from '@/components/ui/progress'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { GoalItem, GoalPriority } from '@/features/goals/model/goals'
 import { formatAmount, goalAmount, priorityTone } from '@/features/goals/model/goals-form'
 
+type WalletOption = { value: string; label: string }
+
 type GoalsListSectionProps = {
   goals: GoalItem[]
+  isLoading?: boolean
   priorityLabels: Record<GoalPriority, string>
   contributions: Record<string, string>
   onContributionChange: (goalId: string, value: string) => void
+  contributionSources: Record<string, string>
+  onContributionSourceChange: (goalId: string, assetId: string) => void
+  walletOptions: WalletOption[]
   onAddContribution: (goalId: string) => void
   isContributing: boolean
   onCreate: () => void
@@ -29,9 +43,13 @@ type GoalsListSectionProps = {
 
 export function GoalsListSection({
   goals,
+  isLoading = false,
   priorityLabels,
   contributions,
   onContributionChange,
+  contributionSources,
+  onContributionSourceChange,
+  walletOptions,
   onAddContribution,
   isContributing,
   onCreate,
@@ -54,7 +72,30 @@ export function GoalsListSection({
       </div>
 
       <div className="space-y-5">
-        {goals.length === 0 ? (
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="surface-muted rounded-3xl p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Skeleton className="h-4 w-32 rounded-full" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <Skeleton className="h-3 w-40 rounded-full" />
+                </div>
+                <Skeleton className="h-4 w-28 rounded-full" />
+              </div>
+              <div className="mt-4 flex items-center gap-3">
+                <Skeleton className="h-2 flex-1 rounded-full" />
+                <Skeleton className="h-4 w-10 rounded-full" />
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <Skeleton className="h-9 flex-1 rounded-[12px]" />
+                <Skeleton className="h-9 w-28 rounded-[12px]" />
+              </div>
+            </div>
+          ))
+        ) : goals.length === 0 ? (
           <div className="rounded-3xl border border-dashed bg-white p-8 text-center">
             <p className="text-sm text-[hsl(var(--muted-foreground))]">
               {t('goals.list.empty')}
@@ -116,7 +157,7 @@ export function GoalsListSection({
                 <span className="money-number text-sm font-semibold">{goal.progress}%</span>
               </div>
               <form
-                className="mt-3 flex items-center gap-2"
+                className="mt-3 flex flex-wrap items-center gap-2"
                 onSubmit={(event) => {
                   event.preventDefault()
                   onAddContribution(goal.id)
@@ -126,10 +167,41 @@ export function GoalsListSection({
                   value={contributions[goal.id] ?? ''}
                   onChange={(raw) => onContributionChange(goal.id, raw)}
                   placeholder={t('goals.actions.contributePlaceholder')}
-                  className="h-9 flex-1"
+                  className="h-9 min-w-[8rem] flex-1"
                   aria-label={t('goals.actions.contribute')}
                 />
-                <Button type="submit" variant="secondary" size="sm" className="shrink-0" disabled={isContributing}>
+                <Select
+                  value={contributionSources[goal.id] ?? ''}
+                  onValueChange={(value) => onContributionSourceChange(goal.id, value)}
+                  disabled={walletOptions.length === 0}
+                >
+                  <SelectTrigger
+                    className="h-9 w-[10rem] shrink-0"
+                    aria-label={t('goals.actions.source')}
+                  >
+                    <SelectValue
+                      placeholder={
+                        walletOptions.length === 0
+                          ? t('goals.actions.sourceEmpty')
+                          : t('goals.actions.sourcePlaceholder')
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {walletOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  size="sm"
+                  className="shrink-0"
+                  disabled={isContributing || !contributionSources[goal.id]}
+                >
                   <Plus className="mr-1 size-4" />
                   {isContributing ? 'Dang cap nhat...' : t('goals.actions.contribute')}
                 </Button>

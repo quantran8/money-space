@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next'
 
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { AssetList } from '@/features/assets/ui/components/asset-list'
 import { FilterChip } from '@/features/assets/ui/components/filter-chip'
 import { liquidityOrder, type Asset, type AssetLiquidity } from '@/features/assets/model/assets'
 
 type AssetsListSectionProps = {
   assets: Asset[]
+  isLoading?: boolean
   asOf: string
   query: string
   onQueryChange: (value: string) => void
@@ -22,6 +24,7 @@ type AssetsListSectionProps = {
 
 export function AssetsListSection({
   assets,
+  isLoading = false,
   asOf,
   query,
   onQueryChange,
@@ -72,7 +75,26 @@ export function AssetsListSection({
         </div>
       </div>
 
-      {assets.length > 0 ? (
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="surface-muted flex items-center justify-between rounded-3xl px-4 py-4"
+            >
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Skeleton className="h-4 w-32 rounded-full" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-40 rounded-full" />
+              </div>
+              <Skeleton className="h-7 w-24 rounded-full" />
+            </div>
+          ))}
+        </div>
+      ) : assets.length > 0 ? (
         <AssetList
           assets={assets}
           asOf={asOf}

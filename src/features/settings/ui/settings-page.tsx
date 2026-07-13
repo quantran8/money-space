@@ -7,12 +7,14 @@ import { useSettingsPage } from '@/features/settings/hooks/use-settings-page'
 import { DataCard } from '@/features/settings/ui/components/data-card'
 import { HouseholdCard } from '@/features/settings/ui/components/household-card'
 import { RemindersCard } from '@/features/settings/ui/components/reminders-card'
+import { SettingsSkeleton } from '@/features/settings/ui/components/settings-skeleton'
 import { SettingsSummaryStrip } from '@/features/settings/ui/components/settings-summary-strip'
 import { SharingCard } from '@/features/settings/ui/components/sharing-card'
 
 export function SettingsPage() {
   const { t } = useTranslation()
-  const { safeHousehold, shareAssets, updateFrequency, form, isValid, submit } = useSettingsPage()
+  const { isLoading, safeHousehold, shareAssets, updateFrequency, form, isValid, submit } =
+    useSettingsPage()
 
   return (
     <div className="space-y-7">
@@ -28,23 +30,34 @@ export function SettingsPage() {
         }
       />
 
-      <SettingsSummaryStrip
-        householdName={safeHousehold.name}
-        updateFrequency={updateFrequency}
-        shareAssets={shareAssets}
-      />
+      {isLoading ? (
+        <SettingsSkeleton />
+      ) : (
+        <>
+          <SettingsSummaryStrip
+            householdName={safeHousehold.name}
+            updateFrequency={updateFrequency}
+            shareAssets={shareAssets}
+          />
 
-      <form id="settings-form" className="grid gap-4 lg:grid-cols-12" onSubmit={submit} noValidate>
-        <div className="space-y-4 lg:col-span-7">
-          <HouseholdCard form={form} createdAt={safeHousehold.createdAt} />
-          <SharingCard form={form} />
-        </div>
+          <form
+            id="settings-form"
+            className="grid gap-4 lg:grid-cols-12"
+            onSubmit={submit}
+            noValidate
+          >
+            <div className="space-y-4 lg:col-span-7">
+              <HouseholdCard form={form} createdAt={safeHousehold.createdAt} />
+              <SharingCard form={form} />
+            </div>
 
-        <div className="space-y-4 lg:col-span-5">
-          <RemindersCard form={form} />
-          <DataCard />
-        </div>
-      </form>
+            <div className="space-y-4 lg:col-span-5">
+              <RemindersCard form={form} />
+              <DataCard />
+            </div>
+          </form>
+        </>
+      )}
     </div>
   )
 }
