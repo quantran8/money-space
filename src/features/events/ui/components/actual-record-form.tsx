@@ -26,7 +26,7 @@ import {
   EventMoneyInput,
   eventDateTriggerClass,
   eventSelectTriggerClass,
-} from '@/features/events/ui/components/event-field'
+} from '@/components/ui/event-field'
 import type {
   ActualRecordForm as ActualRecordFormValues,
   LocalUpcomingPayment,

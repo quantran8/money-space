@@ -3,9 +3,13 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
-import { FormField } from '@/components/ui/form-field'
-import { Input } from '@/components/ui/input'
-import { MoneyInput } from '@/components/ui/number-input'
+import {
+  EventField,
+  EventFieldInput,
+  EventMoneyInput,
+  eventDateTriggerClass,
+  eventSelectTriggerClass,
+} from '@/components/ui/event-field'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -49,42 +53,51 @@ export function PaymentFormDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent>
-        <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>
+      <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[560px]">
+        <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
+          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+            {isEditing ? t('payments.form.editEyebrow') : t('payments.form.eyebrow')}
+          </p>
+          <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
             {isEditing ? t('payments.form.editTitle') : t('payments.form.title')}
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription>
-            {isEditing ? t('payments.form.editEyebrow') : t('payments.form.eyebrow')}
+          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
+            {t('payments.form.help')}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <form className="space-y-4" onSubmit={onSubmit} noValidate>
-          <FormField label={t('payments.form.name')} error={errors.name?.message}>
-            <Input
+        <form className="mt-6 space-y-4 px-6 pb-6 sm:px-8 sm:pb-8" onSubmit={onSubmit} noValidate>
+          {/* Hero amount field */}
+          <EventField
+            label={t('payments.form.amount')}
+            error={errors.amount?.message}
+            trailing={
+              <span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
+            }
+          >
+            <Controller
+              control={control}
+              name="amount"
+              render={({ field }) => (
+                <EventMoneyInput
+                  placeholder="0"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                />
+              )}
+            />
+          </EventField>
+
+          <EventField label={t('payments.form.name')} error={errors.name?.message}>
+            <EventFieldInput
               placeholder={t('payments.form.namePlaceholder')}
-              aria-invalid={!!errors.name}
               {...register('name')}
             />
-          </FormField>
+          </EventField>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label={t('payments.form.amount')} error={errors.amount?.message}>
-              <Controller
-                control={control}
-                name="amount"
-                render={({ field }) => (
-                  <MoneyInput
-                    placeholder={t('payments.form.amountPlaceholder')}
-                    aria-invalid={!!errors.amount}
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                  />
-                )}
-              />
-            </FormField>
-            <FormField label={t('payments.form.due')} error={errors.due?.message}>
+            <EventField label={t('payments.form.due')} error={errors.due?.message}>
               <Controller
                 control={control}
                 name="due"
@@ -92,42 +105,47 @@ export function PaymentFormDialog({
                   <DatePicker
                     value={field.value}
                     onChange={field.onChange}
-                    aria-invalid={!!errors.due}
+                    className={eventDateTriggerClass}
                   />
                 )}
               />
-            </FormField>
+            </EventField>
+
+            <EventField label={t('payments.form.status')} error={errors.status?.message}>
+              <Controller
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className={eventSelectTriggerClass}>
+                      <SelectValue placeholder={t('payments.form.statusPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="important">{t('options.paymentStatus.important')}</SelectItem>
+                      <SelectItem value="normal">{t('options.paymentStatus.normal')}</SelectItem>
+                      <SelectItem value="pending">{t('options.paymentStatus.pending')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </EventField>
           </div>
 
-          <FormField label={t('payments.form.status')} error={errors.status?.message}>
-            <Controller
-              control={control}
-              name="status"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger aria-invalid={!!errors.status}>
-                    <SelectValue placeholder={t('payments.form.statusPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="important">{t('options.paymentStatus.important')}</SelectItem>
-                    <SelectItem value="normal">{t('options.paymentStatus.normal')}</SelectItem>
-                    <SelectItem value="pending">{t('options.paymentStatus.pending')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </FormField>
-
-          <ResponsiveDialogFooter>
+          <ResponsiveDialogFooter className="-mx-6 mt-2 border-t border-black/[0.06] px-6 pt-4 sm:-mx-8 sm:px-8">
             <Button
               type="button"
-              variant="secondary"
+              variant="ghost"
               onClick={() => onOpenChange(false)}
+              className="text-foreground hover:bg-[hsl(var(--muted))]"
             >
               {t('common.cancel')}
             </Button>
-            <Button type="submit" disabled={!isValid || isSaving}>
-              {isSaving ? 'Dang luu...' : isEditing ? t('payments.form.save') : t('payments.form.submit')}
+            <Button
+              type="submit"
+              disabled={!isValid || isSaving}
+              className="bg-[hsl(var(--accent))] px-6 text-white hover:bg-[hsl(var(--accent))]/90"
+            >
+              {isSaving ? 'Đang lưu...' : isEditing ? t('payments.form.save') : t('payments.form.submit')}
             </Button>
           </ResponsiveDialogFooter>
         </form>

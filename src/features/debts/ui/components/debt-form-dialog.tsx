@@ -34,7 +34,7 @@ import {
   EventMoneyInput,
   eventDateTriggerClass,
   eventSelectTriggerClass,
-} from '@/features/events/ui/components/event-field'
+} from '@/components/ui/event-field'
 import { quickLenderTypes, type DebtForm } from '@/features/debts/model/debts-form'
 import type { RepaymentEstimate } from '@/features/debts/model/debts-interest'
 import type { LenderType } from '@/features/debts/model/debts.types'

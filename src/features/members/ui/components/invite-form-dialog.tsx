@@ -1,10 +1,12 @@
-import { Mail } from 'lucide-react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/form-field'
-import { Input } from '@/components/ui/input'
+import {
+  EventField,
+  EventFieldInput,
+  eventSelectTriggerClass,
+} from '@/components/ui/event-field'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -46,31 +48,35 @@ export function InviteFormDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent>
-        <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>{t('members.invite.title')}</ResponsiveDialogTitle>
-          <ResponsiveDialogDescription>
+      <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[560px]">
+        <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
+          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
             {t('members.invite.eyebrow')}
+          </p>
+          <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
+            {t('members.invite.title')}
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
+            {t('members.invite.helper')}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <form className="space-y-4" onSubmit={onSubmit} noValidate>
-          <FormField label={t('members.invite.email')} error={errors.email?.message}>
-            <Input
+        <form className="mt-6 space-y-4 px-6 pb-6 sm:px-8 sm:pb-8" onSubmit={onSubmit} noValidate>
+          <EventField label={t('members.invite.email')} error={errors.email?.message}>
+            <EventFieldInput
               type="email"
               placeholder={t('members.invite.emailPlaceholder')}
-              aria-invalid={!!errors.email}
               {...register('email')}
             />
-          </FormField>
+          </EventField>
 
-          <FormField label={t('members.invite.role')} error={errors.role?.message}>
+          <EventField label={t('members.invite.role')} error={errors.role?.message}>
             <Controller
               control={control}
               name="role"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger aria-invalid={!!errors.role}>
+                  <SelectTrigger className={eventSelectTriggerClass}>
                     <SelectValue placeholder={t('members.invite.rolePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -80,19 +86,23 @@ export function InviteFormDialog({
                 </Select>
               )}
             />
-          </FormField>
+          </EventField>
 
-          <div className="surface-muted rounded-3xl p-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-            {t('members.invite.helper')}
-          </div>
-
-          <ResponsiveDialogFooter>
-            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+          <ResponsiveDialogFooter className="-mx-6 mt-2 border-t border-black/[0.06] px-6 pt-4 sm:-mx-8 sm:px-8">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              className="text-foreground hover:bg-[hsl(var(--muted))]"
+            >
               {t('common.cancel')}
             </Button>
-            <Button type="submit" disabled={!isValid || isSubmitting}>
-              <Mail className="mr-2 size-4" />
-              {isSubmitting ? 'Dang gui...' : t('members.invite.submit')}
+            <Button
+              type="submit"
+              disabled={!isValid || isSubmitting}
+              className="bg-[hsl(var(--accent))] px-6 text-white hover:bg-[hsl(var(--accent))]/90"
+            >
+              {isSubmitting ? 'Đang gửi...' : t('members.invite.submit')}
             </Button>
           </ResponsiveDialogFooter>
         </form>

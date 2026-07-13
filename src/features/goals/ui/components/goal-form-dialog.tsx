@@ -2,9 +2,15 @@ import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/form-field'
-import { Input } from '@/components/ui/input'
-import { MoneyInput } from '@/components/ui/number-input'
+import { DatePicker } from '@/components/ui/date-picker'
+import {
+  EventField,
+  EventFieldInput,
+  EventFieldTextarea,
+  EventMoneyInput,
+  eventDateTriggerClass,
+  eventSelectTriggerClass,
+} from '@/components/ui/event-field'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -48,82 +54,107 @@ export function GoalFormDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent>
-        <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>
+      <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[560px]">
+        <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
+          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+            {isEditing ? t('goals.form.editEyebrow') : t('goals.form.eyebrow')}
+          </p>
+          <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
             {isEditing ? t('goals.form.editTitle') : t('goals.form.title')}
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription>
-            {isEditing ? t('goals.form.editEyebrow') : t('goals.form.eyebrow')}
+          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
+            {t('goals.form.help')}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <form className="space-y-4" onSubmit={onSubmit} noValidate>
-          <FormField label={t('goals.form.name')} error={errors.name?.message}>
-            <Input
-              placeholder={t('goals.form.namePlaceholder')}
-              aria-invalid={!!errors.name}
-              {...register('name')}
-            />
-          </FormField>
-
-          <FormField label={t('goals.form.target')} error={errors.target?.message}>
+        <form className="mt-6 space-y-4 px-6 pb-6 sm:px-8 sm:pb-8" onSubmit={onSubmit} noValidate>
+          {/* Hero target field */}
+          <EventField
+            label={t('goals.form.target')}
+            error={errors.target?.message}
+            trailing={
+              <span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
+            }
+          >
             <Controller
               control={control}
               name="target"
               render={({ field }) => (
-                <MoneyInput
-                  placeholder={t('goals.form.targetPlaceholder')}
-                  aria-invalid={!!errors.target}
+                <EventMoneyInput
+                  placeholder="0"
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                 />
               )}
             />
-          </FormField>
+          </EventField>
 
-          <FormField label="Deadline">
-            <Input type="date" {...register('deadline')} />
-          </FormField>
-
-          <FormField label={t('goals.form.priority')} error={errors.priority?.message}>
-            <Controller
-              control={control}
-              name="priority"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger aria-invalid={!!errors.priority}>
-                    <SelectValue placeholder={t('goals.form.priorityPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high">{t('options.priority.high')}</SelectItem>
-                    <SelectItem value="medium">{t('options.priority.medium')}</SelectItem>
-                    <SelectItem value="low">{t('options.priority.low')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
+          <EventField label={t('goals.form.name')} error={errors.name?.message}>
+            <EventFieldInput
+              placeholder={t('goals.form.namePlaceholder')}
+              {...register('name')}
             />
-          </FormField>
+          </EventField>
 
-          <FormField label={t('goals.form.note')} error={errors.note?.message}>
-            <Input
+          <div className="grid gap-4 sm:grid-cols-2">
+            <EventField label={t('goals.form.deadline')}>
+              <Controller
+                control={control}
+                name="deadline"
+                render={({ field }) => (
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    className={eventDateTriggerClass}
+                  />
+                )}
+              />
+            </EventField>
+
+            <EventField label={t('goals.form.priority')} error={errors.priority?.message}>
+              <Controller
+                control={control}
+                name="priority"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className={eventSelectTriggerClass}>
+                      <SelectValue placeholder={t('goals.form.priorityPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high">{t('options.priority.high')}</SelectItem>
+                      <SelectItem value="medium">{t('options.priority.medium')}</SelectItem>
+                      <SelectItem value="low">{t('options.priority.low')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </EventField>
+          </div>
+
+          <EventField label={t('goals.form.note')} error={errors.note?.message}>
+            <EventFieldTextarea
+              rows={3}
               placeholder={t('goals.form.notePlaceholder')}
-              aria-invalid={!!errors.note}
               {...register('note')}
             />
-          </FormField>
+          </EventField>
 
-          <ResponsiveDialogFooter>
+          <ResponsiveDialogFooter className="-mx-6 mt-2 border-t border-black/[0.06] px-6 pt-4 sm:-mx-8 sm:px-8">
             <Button
               type="button"
-              variant="secondary"
+              variant="ghost"
               onClick={() => onOpenChange(false)}
+              className="text-foreground hover:bg-[hsl(var(--muted))]"
             >
               {t('common.cancel')}
             </Button>
-            <Button type="submit" disabled={!isValid || isSubmitting}>
-              {isSubmitting ? 'Dang luu...' : isEditing ? t('goals.form.save') : t('goals.form.submit')}
+            <Button
+              type="submit"
+              disabled={!isValid || isSubmitting}
+              className="bg-[hsl(var(--accent))] px-6 text-white hover:bg-[hsl(var(--accent))]/90"
+            >
+              {isSubmitting ? 'Đang lưu...' : isEditing ? t('goals.form.save') : t('goals.form.submit')}
             </Button>
           </ResponsiveDialogFooter>
         </form>

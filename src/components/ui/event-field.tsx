@@ -4,11 +4,11 @@ import { formatIntegerDisplay, sanitizeIntegerInput } from '@/shared/lib/number-
 import { cn } from '@/shared/lib/utils'
 
 /**
- * Apple/Gen-Z styled form field for the event create/update modals: a soft
+ * Apple/Gen-Z styled form field used across the app's create/edit modals: a soft
  * filled card (bg-muted) with a small uppercase inset label and a borderless
- * control inside. Deliberately event-form-specific — the app's global `Input`/
- * `FormField`/`Select` primitives keep their bordered look for admin-ish forms
- * (assets, debts); these give the money timeline its calmer, tactile feel.
+ * control inside. Originated in the events (money timeline) flows and is now the
+ * shared look for every form dialog — events, debts, assets, goals, payments,
+ * members — so the whole app feels like one calm, tactile surface.
  *
  * The card lights up a soft accent ring on focus-within, and turns red on error.
  */
@@ -124,6 +124,49 @@ export function EventMoneyInput({
       onBlur={onBlur}
       className={cn(
         'min-w-0 flex-1 bg-transparent text-[36px] font-semibold tracking-[-0.045em] text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]/60 sm:text-[42px]',
+        className,
+      )}
+    />
+  )
+}
+
+/**
+ * Borderless decimal input for use inside an {@link EventField} — for quantities
+ * and rates where the raw string (with an optional decimal separator) is kept
+ * as-is. Unlike {@link EventMoneyInput} it does no grouping.
+ */
+type EventDecimalInputProps = {
+  id?: string
+  value: string
+  onChange: (rawValue: string) => void
+  onBlur?: () => void
+  placeholder?: string
+  disabled?: boolean
+  className?: string
+}
+
+export function EventDecimalInput({
+  id,
+  value,
+  onChange,
+  onBlur,
+  placeholder,
+  disabled,
+  className,
+}: EventDecimalInputProps) {
+  return (
+    <input
+      id={id}
+      type="text"
+      inputMode="decimal"
+      autoComplete="off"
+      placeholder={placeholder}
+      disabled={disabled}
+      value={value}
+      onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
+      onBlur={onBlur}
+      className={cn(
+        'w-full bg-transparent text-[17px] font-medium text-foreground outline-none placeholder:font-normal placeholder:text-[hsl(var(--muted-foreground))] disabled:opacity-50',
         className,
       )}
     />
