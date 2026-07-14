@@ -127,6 +127,7 @@ export function useAssetsPage() {
         liquidity: nextAsset.liquidity,
         currency: nextAsset.currency,
         note: nextAsset.note,
+        areaSqm: nextAsset.areaSqm,
         manualValue: nextAsset.manualValue,
         marketPosition: nextAsset.marketPosition,
         calculationTerm: nextAsset.calculationTerm,

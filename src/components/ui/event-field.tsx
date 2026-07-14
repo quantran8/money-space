@@ -99,6 +99,7 @@ type EventMoneyInputProps = {
   onChange: (rawValue: string) => void
   onBlur?: () => void
   placeholder?: string
+  disabled?: boolean
   className?: string
 }
 
@@ -108,6 +109,7 @@ export function EventMoneyInput({
   onChange,
   onBlur,
   placeholder,
+  disabled,
   className,
 }: EventMoneyInputProps) {
   return (
@@ -118,12 +120,13 @@ export function EventMoneyInput({
       autoComplete="off"
       placeholder={placeholder}
       value={formatIntegerDisplay(value)}
+      disabled={disabled}
       onChange={(event: ChangeEvent<HTMLInputElement>) =>
         onChange(sanitizeIntegerInput(event.target.value))
       }
       onBlur={onBlur}
       className={cn(
-        'min-w-0 flex-1 bg-transparent text-[36px] font-semibold tracking-[-0.045em] text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]/60 sm:text-[42px]',
+        'min-w-0 flex-1 bg-transparent text-[36px] font-semibold tracking-[-0.045em] text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]/60 disabled:cursor-default disabled:opacity-100 sm:text-[42px]',
         className,
       )}
     />

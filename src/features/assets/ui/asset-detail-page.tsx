@@ -1,5 +1,5 @@
-import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Pencil, Sparkles } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft, Pencil, RefreshCw, Sparkles } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -11,7 +11,9 @@ import { useAssetDetail } from '@/features/assets/hooks/use-asset-detail'
 import type { AssetEventEntry } from '@/features/assets/hooks/use-asset-detail'
 import { useAssetsPage } from '@/features/assets/hooks/use-assets-page'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
+import { AssetPriceUpdateDialog } from '@/features/assets/ui/components/asset-price-update-dialog'
 import { AssetValueChart } from '@/features/assets/ui/components/asset-value-chart'
+import { canUpdatePriceManually } from '@/features/assets/model/assets'
 import { SavingWithdrawalPanel } from '@/features/assets/ui/components/saving-withdrawal-panel'
 import { formatDate } from '@/features/debts/model/debts-form'
 import { formatVndShort } from '@/shared/lib/format-money'
@@ -22,6 +24,61 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
       <span className="shrink-0 text-sm text-muted-foreground">{label}</span>
       <span className="text-right text-sm font-medium text-foreground">{value}</span>
     </div>
+  )
+}
+
+function formatVnd(value: number): string {
+  return `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(value)} ₫`
+}
+
+function MarketPerformance({
+  purchasePrice,
+  quantity,
+  currentValue,
+}: {
+  purchasePrice: number
+  quantity: number
+  currentValue: number
+}) {
+  const { t } = useTranslation()
+  const costBasis = purchasePrice * quantity
+  const currentUnitPrice = quantity > 0 ? currentValue / quantity : 0
+  const profitLoss = currentValue - costBasis
+  const profitLossPercent = costBasis > 0 ? (profitLoss / costBasis) * 100 : 0
+  const isProfit = profitLoss >= 0
+
+  return (
+    <>
+      <Separator />
+      <Row
+        label={t('assets.detail.info.averagePurchasePrice')}
+        value={formatVnd(purchasePrice)}
+      />
+      <Separator />
+      <Row label={t('assets.detail.info.currentUnitPrice')} value={formatVnd(currentUnitPrice)} />
+      <Separator />
+      <Row label={t('assets.detail.info.costBasis')} value={formatVnd(costBasis)} />
+      <Separator />
+      <Row
+        label={t('assets.detail.info.unrealizedProfitLoss')}
+        value={
+          <span
+            className={
+              isProfit
+                ? 'money-number text-[hsl(var(--status-green))]'
+                : 'money-number text-[hsl(var(--status-red))]'
+            }
+          >
+            {isProfit ? '+' : '-'}
+            {formatVnd(Math.abs(profitLoss))} ({isProfit ? '+' : '-'}
+            {Math.abs(profitLossPercent).toLocaleString('vi-VN', {
+              maximumFractionDigits: 2,
+            })}
+            %)
+          </span>
+        }
+      />
+    </>
   )
 }
 
@@ -68,6 +125,7 @@ export function AssetDetailPage() {
   const { assetId } = useParams<{ assetId: string }>()
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const [priceDialogOpen, setPriceDialogOpen] = useState(false)
 
   const {
     asset,
@@ -122,6 +180,7 @@ export function AssetDetailPage() {
 
   const isAutoPriced = asset.valuationMode !== 'manual'
   const isSold = asset.status === 'sold'
+  const canUpdatePrice = !isSold && canUpdatePriceManually(asset.type)
 
   return (
     <div className="space-y-6">
@@ -158,10 +217,18 @@ export function AssetDetailPage() {
             </p>
           </div>
 
-          <Button onClick={() => openEdit(asset.id)}>
-            <Pencil className="mr-2 size-4" />
-            {t('common.edit')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {canUpdatePrice ? (
+              <Button variant="outline" onClick={() => setPriceDialogOpen(true)}>
+                <RefreshCw className="mr-2 size-4" />
+                {t('assets.priceUpdate.action')}
+              </Button>
+            ) : null}
+            <Button onClick={() => openEdit(asset.id)}>
+              <Pencil className="mr-2 size-4" />
+              {t('common.edit')}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -200,6 +267,14 @@ export function AssetDetailPage() {
                     label={t('assets.detail.info.holding')}
                     value={`${asset.marketPosition.quantity} ${asset.marketPosition.unit} · ${asset.marketPosition.symbol}`}
                   />
+                  {typeof asset.marketPosition.purchasePrice === 'number' &&
+                  asset.marketPosition.quantity > 0 ? (
+                    <MarketPerformance
+                      purchasePrice={asset.marketPosition.purchasePrice}
+                      quantity={asset.marketPosition.quantity}
+                      currentValue={currentValue}
+                    />
+                  ) : null}
                 </>
               ) : null}
 
@@ -310,6 +385,13 @@ export function AssetDetailPage() {
         isSubmitting={isSubmitting}
         onSubmit={submit}
       />
+      {canUpdatePrice ? (
+        <AssetPriceUpdateDialog
+          open={priceDialogOpen}
+          onOpenChange={setPriceDialogOpen}
+          asset={asset}
+        />
+      ) : null}
     </div>
   )
 }

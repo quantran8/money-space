@@ -77,6 +77,7 @@ export function AssetFormDialog({
     formState: { errors, isValid },
   } = form
   const isSaving = watch('type') === 'saving_deposit'
+  const isRealEstate = watch('type') === 'real_estate'
   const interestDestination = watch('interestDestination')
 
   return (
@@ -97,26 +98,24 @@ export function AssetFormDialog({
         <form className="grid min-h-0 min-w-0 grid-rows-[1fr_auto]" onSubmit={onSubmit} noValidate>
           <div className="min-h-0 space-y-4 overflow-y-auto overflow-x-hidden px-6 pb-2 pt-6 sm:px-8">
             {mode === 'manual' ? (
-              <EventField
-                label={t('assets.form.value')}
-                error={errors.value?.message}
-                trailing={
-                  <span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
-                }
-              >
-                <Controller
-                  control={control}
-                  name="value"
-                  render={({ field }) => (
-                    <EventMoneyInput
-                      placeholder="0"
-                      value={field.value}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                    />
-                  )}
-                />
-              </EventField>
+              <div className={isRealEstate ? 'grid gap-4 sm:grid-cols-2' : undefined}>
+                <EventField
+                  label={t('assets.form.value')}
+                  error={errors.value?.message}
+                  trailing={<span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>}
+                >
+                  <Controller control={control} name="value" render={({ field }) => (
+                    <EventMoneyInput placeholder="0" value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+                  )} />
+                </EventField>
+                {isRealEstate ? (
+                  <EventField label={t('assets.form.areaSqm')} error={errors.areaSqm?.message} trailing={<span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">m²</span>}>
+                    <Controller control={control} name="areaSqm" render={({ field }) => (
+                      <EventDecimalInput placeholder={t('assets.form.areaSqmPlaceholder')} value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+                    )} />
+                  </EventField>
+                ) : null}
+              </div>
             ) : null}
 
             <EventField label={t('assets.form.name')} error={errors.name?.message}>
@@ -220,15 +219,15 @@ export function AssetFormDialog({
                   </EventField>
                 </div>
                 <EventField
-                  label={t('assets.form.unitPrice')}
-                  error={errors.unitPrice?.message}
+                  label={t('assets.form.purchasePrice')}
+                  error={errors.purchasePrice?.message}
                   trailing={
                     <span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
                   }
                 >
                   <Controller
                     control={control}
-                    name="unitPrice"
+                    name="purchasePrice"
                     render={({ field }) => (
                       <EventMoneyInput
                         placeholder="0"

@@ -10,7 +10,7 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
 
 - **Discriminated form**: visible fields switch on the selected type's valuation mode. Per-mode conditional validation via `.superRefine`:
   - `manual` → requires `value`.
-  - `market_priced` → requires `symbol` + `quantity ≥ 0` + `unitPrice` (user-entered price of 1 unit; see [[asset-valuation]]).
+  - `market_priced` → requires `symbol` + `quantity ≥ 0` + `purchasePrice` (original purchase price of 1 unit; see [[asset-valuation]]).
   - `formula_calculated` → requires `principal` + `interestRate ≥ 0` + `startDate`.
 - `toAsset()` converts raw form → typed `Asset`, returning `null` on incomplete inputs. `fromAsset()` does the reverse (seed the form for **edit**).
 - **Edit / create share one form** (frontend-web): the same discriminated `AssetFormDialog`; edit re-seeds via `fromAsset` and PATCHes. Rows have an Edit/Delete actions menu.

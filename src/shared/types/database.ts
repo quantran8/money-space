@@ -272,26 +272,13 @@ export type Database = {
             quantity: number
             unit: string | null
             quote_currency: string
-            unit_price: number | null
+            purchase_price: number | null
             price_source: string | null
             price_source_symbol: string | null
             last_price: number | null
             last_price_at: string | null
             updated_at: string
           }
-      >
-      market_prices: Table<
-        Timestamped & {
-          id: string
-          asset_class: AssetClass
-          symbol: string
-          market: string | null
-          quote_currency: string
-          price: number
-          price_time: string
-          source: string
-          source_payload_hash: string | null
-        }
       >
       fx_rates: Table<
         Timestamped & {
@@ -340,7 +327,6 @@ export type Database = {
             valuation_method: AssetValuationMethod
             source: string | null
             confidence_level: ConfidenceLevel | null
-            market_price_id: string | null
             fx_rate_id: string | null
             calculation_term_id: string | null
             money_event_id: string | null

@@ -51,11 +51,13 @@ export type MarketPosition = {
   unit: string
   quoteCurrency: string
   /**
-   * User-entered price of one `unit` in `quoteCurrency` (e.g. price of 1 BTC,
-   * 1 share). When present, value = quantity × unitPrice × fx; falls back to
-   * the market-data lookup otherwise.
+   * Original purchase price of one unit (cost basis).
    */
-  unitPrice?: number
+  purchasePrice?: number
+  /** Latest manually entered or externally fetched market price. */
+  lastPrice?: number
+  /** ISO timestamp at which `lastPrice` was observed. */
+  lastPriceAt?: string
 }
 
 /** How interest is paid out during the term (kỳ trả lãi). */
@@ -102,6 +104,8 @@ export type Asset = {
   status?: AssetStatus
   /** ISO date the asset was fully sold, when `status === 'sold'`. */
   soldAt?: string
+  /** Remaining floor/land area for real estate, in square metres. */
+  areaSqm?: number
   /** Present for manual assets — the user-entered estimated value (VND). */
   manualValue?: number
   /** Present for market-priced assets. */

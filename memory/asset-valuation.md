@@ -28,11 +28,11 @@ Single dispatch entry point. Returns VND, or `null`/`0` when a price is unknown.
 
 - **`manual`** → `manualValue ?? 0`.
 - **`market_priced`** → `quantity × price × fxRateToVnd(quoteCurrency)`.
-  - **Price source precedence**: user-entered `marketPosition.unitPrice` (if set)
+  - **Price source precedence**: `marketPosition.lastPrice` (if set)
     wins; otherwise fall back to the `latestPrice()` market-data lookup.
   - Quote matched by (assetClass, symbol), case-insensitive.
-  - Frontend returns `null` if no `unitPrice` **and** no known price; backend returns `0`.
-  - `unitPrice` lets the user type the price of 1 unit (1 BTC, 1 share, 1 chỉ gold)
+  - Frontend returns `null` if no current/purchase price **and** no known price; backend returns `0`.
+  - `purchasePrice` stores the original price of 1 unit (1 BTC, 1 share, 1 chỉ gold)
     directly on the asset — the MVP path, since the pricing API is stubbed.
 - **`formula_calculated`** → **simple accrued interest** (non-compounding):
   ```
@@ -113,7 +113,7 @@ appends/updates a history point linked to that event (keyed on
 
 **Every action that changes an asset's value records a money event + a linked
 history point:** money-event effects (credit/debit/`asset_sale`); a **direct
-re-pricing** (user edits value/unitPrice/quantity/term via create/update asset)
+re-pricing** (user edits value/lastPrice/quantity/term via create/update asset)
 logs a neutral **`asset_update`** money event (moves no wallet, excluded from
 income/expense) that the appended point links to; saving-deposit interest writes
 one dated point per period. Editing a money event updates its linked point(s);

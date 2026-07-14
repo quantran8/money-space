@@ -11,6 +11,8 @@ type Translate = (key: string, params?: Record<string, unknown>) => string
 export type AssetSaleForm = {
   /** Quantity sold — market assets only. Raw decimal string ("5,5"). */
   quantity: string
+  /** Agreed sale price for one unit (or one m²), in VND. */
+  unitPrice: string
   /** Gross proceeds in VND (before fee). Raw money string. */
   proceeds: string
   /** Sale fee in VND. Raw money string; empty → 0. */
@@ -32,12 +34,12 @@ const moneyLike = /^\d+$/
  * else sellable (real_estate, investment, bond) is sold by VND value.
  */
 export function isMarketSale(asset: Asset): boolean {
-  return !!asset.marketPosition
+  return !!asset.marketPosition || asset.type === 'real_estate' || asset.type === 'bond'
 }
 
 /** Current held quantity for a market asset, or 0. */
 export function currentQuantity(asset: Asset): number {
-  return asset.marketPosition?.quantity ?? 0
+  return asset.marketPosition?.quantity ?? asset.areaSqm ?? 0
 }
 
 /**
@@ -59,6 +61,7 @@ export function buildAssetSaleSchema(t: Translate, asset: Asset, editingEvent?: 
   return z
     .object({
       quantity: z.string().trim(),
+      unitPrice: z.string().trim(),
       proceeds: z.string().trim(),
       fee: z.string().trim(),
       toAssetId: z.string().trim(),
@@ -78,12 +81,23 @@ export function buildAssetSaleSchema(t: Translate, asset: Asset, editingEvent?: 
           })
         } else if (!Number.isFinite(quantity) || quantity <= 0) {
           ctx.addIssue({ path: ['quantity'], code: 'custom', message: invalidMoney })
-        } else if (quantity > heldQuantity) {
+        } else if (heldQuantity > 0 && quantity > heldQuantity) {
           ctx.addIssue({
             path: ['quantity'],
             code: 'custom',
             message: t('assets.sale.quantityExceeds', { max: heldQuantity }),
           })
+        }
+      }
+      if (market) {
+        if (!values.unitPrice) {
+          ctx.addIssue({
+            path: ['unitPrice'],
+            code: 'custom',
+            message: required(t('assets.sale.unitPrice')),
+          })
+        } else if (!moneyLike.test(values.unitPrice) || parseRawMoney(values.unitPrice) <= 0) {
+          ctx.addIssue({ path: ['unitPrice'], code: 'custom', message: invalidMoney })
         }
       }
 
@@ -136,6 +150,7 @@ export function buildAssetSaleSchema(t: Translate, asset: Asset, editingEvent?: 
 
 export const defaultAssetSaleValues: AssetSaleForm = {
   quantity: '',
+  unitPrice: '',
   proceeds: '',
   fee: '',
   toAssetId: '',
@@ -161,6 +176,10 @@ export function toSaleEditValues(
     : currentQuantity(asset) === 0 && !!event.soldValue
   return {
     quantity: market && !soldAll && soldQuantity ? String(soldQuantity) : '',
+    unitPrice:
+      market && soldQuantity && event.amount
+        ? String(Math.round(Math.abs(event.amount) / soldQuantity))
+        : '',
     proceeds: event.amount ? String(Math.round(Math.abs(event.amount))) : '',
     fee: event.feeAmount ? String(Math.round(event.feeAmount)) : '',
     toAssetId: event.toAssetId ?? '',
@@ -217,12 +236,24 @@ export function toSalePayload(
       ? effectiveHeldQuantity(asset, editingEvent)
       : parseRawDecimal(values.quantity)
     payload.soldQuantity = Number.isFinite(quantity) ? quantity : 0
-  } else {
+  }
+
+  if (!asset.marketPosition) {
     // Manual asset: sold VND value. Full sale → pre-sale value (current value
     // plus what this sale had already taken out, when editing).
     const currentValue = computeCurrentValue(asset, asOf) ?? 0
     const preSaleValue = currentValue + (editingEvent?.soldValue ?? 0)
-    payload.soldValue = values.sellAll ? preSaleValue : amount
+    if (asset.type === 'real_estate') {
+      const preSaleArea = effectiveHeldQuantity(asset, editingEvent)
+      const soldArea = payload.soldQuantity ?? 0
+      payload.soldValue = values.sellAll
+        ? preSaleValue
+        : preSaleArea > 0
+          ? (preSaleValue * soldArea) / preSaleArea
+          : 0
+    } else {
+      payload.soldValue = values.sellAll ? preSaleValue : amount
+    }
   }
 
   return payload

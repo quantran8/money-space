@@ -54,7 +54,7 @@ export function useAssetSale() {
     mode: 'onChange',
   })
 
-  const { reset, watch, handleSubmit } = form
+  const { reset, watch, setValue, handleSubmit } = form
 
   const walletOptions = useMemo(
     () =>
@@ -72,8 +72,21 @@ export function useAssetSale() {
     : 0
 
   const proceeds = watch('proceeds')
+  const quantity = watch('quantity')
+  const unitPrice = watch('unitPrice')
+  const sellAll = watch('sellAll')
   const fee = watch('fee')
   const previewNet = useMemo(() => computeNet(proceeds, fee), [proceeds, fee])
+
+  useEffect(() => {
+    if (!saleOpen || !isMarketAsset) return
+    const parsedQuantity = sellAll ? heldQuantity : Number(quantity.replace(',', '.'))
+    const parsedUnitPrice = Number(unitPrice)
+    const total = parsedQuantity * parsedUnitPrice
+    setValue('proceeds', Number.isFinite(total) && total > 0 ? String(Math.round(total)) : '', {
+      shouldValidate: true,
+    })
+  }, [saleOpen, isMarketAsset, sellAll, heldQuantity, quantity, unitPrice, setValue])
 
   useEffect(() => {
     if (!saleOpen) return
@@ -86,6 +99,18 @@ export function useAssetSale() {
       ...defaultAssetSaleValues,
       date: asOf || AS_OF,
       toAssetId: walletOptions[0]?.value ?? '',
+      unitPrice:
+        (sellingAsset?.marketPosition?.lastPrice ?? sellingAsset?.marketPosition?.purchasePrice) !== undefined
+          ? String(
+              Math.round(
+                sellingAsset?.marketPosition?.lastPrice ??
+                  sellingAsset?.marketPosition?.purchasePrice ??
+                  0,
+              ),
+            )
+          : sellingAsset?.type === 'real_estate' && sellingAsset.areaSqm
+            ? String(Math.round((sellingAsset.manualValue ?? 0) / sellingAsset.areaSqm))
+            : '',
     })
     // walletOptions intentionally omitted: only re-seed on open / asset change.
     // eslint-disable-next-line react-hooks/exhaustive-deps

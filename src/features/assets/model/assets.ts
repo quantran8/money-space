@@ -156,6 +156,20 @@ export function isSellableAssetType(type: AssetType): boolean {
   return SELLABLE_ASSET_TYPES.has(type)
 }
 
+/** Assets whose price/value can be refreshed manually from the detail page. */
+export const MANUAL_PRICE_ASSET_TYPES: ReadonlySet<AssetType> = new Set([
+  'stock',
+  'crypto',
+  'bond',
+  'gold',
+  'fund',
+  'foreign_currency',
+])
+
+export function canUpdatePriceManually(type: AssetType): boolean {
+  return MANUAL_PRICE_ASSET_TYPES.has(type)
+}
+
 // ---------------------------------------------------------------------------
 // Current-value computation (§24, §25)
 // ---------------------------------------------------------------------------
@@ -168,14 +182,23 @@ function daysBetween(from: string, to: string): number {
 }
 
 function computeMarketValue(position: MarketPosition): number | null {
-  // Prefer the user-entered unit price; fall back to the market-data lookup.
-  if (typeof position.unitPrice === 'number' && Number.isFinite(position.unitPrice)) {
-    return position.quantity * position.unitPrice * fxToVnd(position.quoteCurrency)
+  // A manually recorded latest price wins. Otherwise prefer the market cache;
+  // the original purchase price is only the final fallback/cost basis.
+  if (typeof position.lastPrice === 'number' && Number.isFinite(position.lastPrice)) {
+    return position.quantity * position.lastPrice * fxToVnd(position.quoteCurrency)
   }
   const quote = latestPrice(position.assetClass, position.symbol)
-  if (!quote) return null
-  const valueInQuote = position.quantity * quote.price
-  return valueInQuote * fxToVnd(quote.quoteCurrency)
+  if (quote) {
+    const valueInQuote = position.quantity * quote.price
+    return valueInQuote * fxToVnd(quote.quoteCurrency)
+  }
+  if (
+    typeof position.purchasePrice === 'number' &&
+    Number.isFinite(position.purchasePrice)
+  ) {
+    return position.quantity * position.purchasePrice * fxToVnd(position.quoteCurrency)
+  }
+  return null
 }
 
 /**

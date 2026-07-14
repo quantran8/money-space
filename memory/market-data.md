@@ -1,31 +1,10 @@
-# Market data (prices & FX)
+# Market data
 
-Read-only reference data that feeds the asset valuation engine. Related: [[asset-valuation]], [[assets]].
+Current quotes come from the backend's external `PriceProvider` and short-lived
+TTL cache; provider ticks are not persisted in PostgreSQL. Durable user history
+lives in self-contained `asset_value_history` points (value, quantity, price,
+purchase price, FX, source and observed time).
 
-## Overview
-
-Two reference tables, both currently used as stand-ins for a future pricing/FX API.
-
-- **`MarketPrice`** — per `assetClass / symbol / market / quoteCurrency`, with `source` + payload hash. Feeds `market_priced` valuation.
-- **`FxRate`** — `base → quote` rate, timestamped, with `source`. Feeds FX conversion to VND.
-
-## Rules
-
-- Market price matched by `(assetClass, symbol)`, case-insensitive.
-- `fxRateToVnd(base)`: VND→VND = 1; otherwise finds a base→VND rate and returns
-  its value, or **`null` when the rate is unknown** (currency ≠ VND). Callers
-  MUST treat `null` as "value undefined" — `computeCurrentValue` returns `0`
-  rather than mis-pricing. (Was previously `?? 1`, which silently priced 1 USD =
-  1 VND when a rate was missing — a ~25,000× understatement; fixed.)
-- **Latest-per-key lookup**: the backend valuation reads use a
-  `DISTINCT ON (...) ORDER BY ..., <time> DESC` query (one row per instrument,
-  served by `*_latest_idx` indexes), replacing the old "load the whole table + JS
-  `.find()`" pattern so it scales as the price history grows. The rate-board
-  endpoints (`/market-data/prices`, `/fx-rates`) use the same latest-per-key read.
-- **Currently stubbed**: frontend `latestPrice() → null` and `fxToVnd() → 1` (`assets.repository.ts`). When a real pricing API is wired, this is the integration point (a writer for `market_prices` / `fx_rates`).
-
-## Where it lives in code
-
-- **backend**: `src/modules/market-data/` (`market-data.service.ts`, `entities/{market-price,fx-rate}.entity.ts`, `repositories/prisma-market-data.repository.ts`).
-- **frontend-web**: stubs in `src/features/assets/api/assets.repository.ts`.
-- **mobile-app**: to be ported.
+The frontend does not call providers directly. Asset/dashboard endpoints return
+values resolved by the backend. Manual price updates remain available as an
+override/fallback while no real provider adapter is configured.

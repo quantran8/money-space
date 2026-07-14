@@ -29,11 +29,12 @@ export type AssetForm = {
   note: string
   // manual
   value: string
+  areaSqm: string
   // market-priced
   symbol: string
   quantity: string
   unit: string
-  unitPrice: string
+  purchasePrice: string
   // formula-calculated
   principal: string
   interestRate: string
@@ -51,10 +52,11 @@ export const defaultAssetFormValues: AssetForm = {
   liquidity: 'usable_now',
   note: '',
   value: '',
+  areaSqm: '',
   symbol: '',
   quantity: '',
   unit: '',
-  unitPrice: '',
+  purchasePrice: '',
   principal: '',
   interestRate: '',
   startDate: AS_OF,
@@ -84,14 +86,21 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
 
   if (mode === 'manual') {
     const value = parseMoneyToVnd(values.value)
-    return { ...base, valuationMode: 'manual', manualValue: Number.isFinite(value) ? value : 0 }
+    const areaSqm = parseRawDecimal(values.areaSqm)
+    return {
+      ...base,
+      valuationMode: 'manual',
+      manualValue: Number.isFinite(value) ? value : 0,
+      areaSqm:
+        values.type === 'real_estate' && Number.isFinite(areaSqm) ? areaSqm : undefined,
+    }
   }
 
   if (mode === 'market_priced') {
     const assetClass = assetClassForType(values.type)
     const quantity = parseRawDecimal(values.quantity)
     if (!assetClass || !values.symbol.trim() || !Number.isFinite(quantity)) return null
-    const unitPrice = parseMoneyToVnd(values.unitPrice)
+    const purchasePrice = parseMoneyToVnd(values.purchasePrice)
     return {
       ...base,
       valuationMode: 'market_priced',
@@ -101,7 +110,7 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
         quantity,
         unit: values.unit.trim() || 'unit',
         quoteCurrency: 'VND',
-        unitPrice: Number.isFinite(unitPrice) ? unitPrice : undefined,
+        purchasePrice: Number.isFinite(purchasePrice) ? purchasePrice : undefined,
       },
     }
   }
@@ -156,10 +165,11 @@ export function fromAsset(asset: Asset): AssetForm {
     liquidity: asset.liquidity,
     note: asset.note,
     value: moneyToRaw(asset.manualValue),
+    areaSqm: decimalToRaw(asset.areaSqm),
     symbol: asset.marketPosition?.symbol ?? '',
     quantity: decimalToRaw(asset.marketPosition?.quantity),
     unit: asset.marketPosition?.unit ?? '',
-    unitPrice: moneyToRaw(asset.marketPosition?.unitPrice),
+    purchasePrice: moneyToRaw(asset.marketPosition?.purchasePrice),
     principal: moneyToRaw(asset.calculationTerm?.principalAmount),
     interestRate: decimalToRaw(asset.calculationTerm?.interestRate),
     startDate: asset.calculationTerm?.startDate ?? AS_OF,
@@ -181,10 +191,11 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
       liquidity: z.enum(['usable_now', 'not_immediately_usable', 'long_term']),
       note: localizedOptionalText(t, 120),
       value: z.string().trim(),
+      areaSqm: z.string().trim(),
       symbol: z.string().trim(),
       quantity: z.string().trim(),
       unit: z.string().trim(),
-      unitPrice: z.string().trim(),
+      purchasePrice: z.string().trim(),
       principal: z.string().trim(),
       interestRate: z.string().trim(),
       startDate: z.string().trim(),
@@ -204,6 +215,18 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
           ctx.addIssue({ path: ['value'], code: 'custom', message: required(t('assets.form.value')) })
         } else if (!moneyLike.test(values.value)) {
           ctx.addIssue({ path: ['value'], code: 'custom', message: invalidMoney })
+        }
+        if (values.type === 'real_estate') {
+          const areaSqm = parseRawDecimal(values.areaSqm)
+          if (!values.areaSqm) {
+            ctx.addIssue({
+              path: ['areaSqm'],
+              code: 'custom',
+              message: required(t('assets.form.areaSqm')),
+            })
+          } else if (!Number.isFinite(areaSqm) || areaSqm <= 0) {
+            ctx.addIssue({ path: ['areaSqm'], code: 'custom', message: invalidMoney })
+          }
         }
       }
 
@@ -225,14 +248,14 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
         } else if (!Number.isFinite(quantity) || quantity < 0) {
           ctx.addIssue({ path: ['quantity'], code: 'custom', message: invalidMoney })
         }
-        if (!values.unitPrice) {
+        if (!values.purchasePrice) {
           ctx.addIssue({
-            path: ['unitPrice'],
+            path: ['purchasePrice'],
             code: 'custom',
-            message: required(t('assets.form.unitPrice')),
+            message: required(t('assets.form.purchasePrice')),
           })
-        } else if (!moneyLike.test(values.unitPrice)) {
-          ctx.addIssue({ path: ['unitPrice'], code: 'custom', message: invalidMoney })
+        } else if (!moneyLike.test(values.purchasePrice)) {
+          ctx.addIssue({ path: ['purchasePrice'], code: 'custom', message: invalidMoney })
         }
       }
 

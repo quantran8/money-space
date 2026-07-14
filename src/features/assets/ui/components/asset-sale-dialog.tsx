@@ -77,7 +77,7 @@ export function AssetSaleDialog({
     ? isMarketAsset
       ? t('assets.sale.holdingQuantity', {
           quantity: currentQuantity,
-          unit: asset.marketPosition?.unit ?? '',
+          unit: asset.type === 'real_estate' ? 'm²' : (asset.marketPosition?.unit ?? ''),
         })
       : t('assets.sale.holdingValue', {
           value: formatVndShort(computeCurrentValue(asset, asOf || AS_OF) ?? 0),
@@ -115,6 +115,7 @@ export function AssetSaleDialog({
                 render={({ field }) => (
                   <EventMoneyInput
                     placeholder="0"
+                    disabled={isMarketAsset}
                     value={field.value}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
@@ -125,23 +126,20 @@ export function AssetSaleDialog({
 
             {isMarketAsset ? (
               <>
-                <EventField label={t('assets.sale.quantity')} error={errors.quantity?.message}>
-                  <Controller
-                    control={control}
-                    name="quantity"
-                    render={({ field }) => (
-                      <EventDecimalInput
-                        placeholder={t('assets.sale.quantityPlaceholder')}
-                        disabled={sellAll}
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                      />
-                    )}
-                  />
-                </EventField>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <EventField label={asset?.type === 'real_estate' ? t('assets.sale.areaSqm') : t('assets.sale.quantity')} error={errors.quantity?.message} trailing={asset?.type === 'real_estate' ? <span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">m²</span> : undefined}>
+                    <Controller control={control} name="quantity" render={({ field }) => (
+                      <EventDecimalInput placeholder={t('assets.sale.quantityPlaceholder')} disabled={sellAll} value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+                    )} />
+                  </EventField>
+                  <EventField label={asset?.type === 'real_estate' ? t('assets.sale.pricePerSqm') : t('assets.sale.unitPrice')} error={errors.unitPrice?.message} trailing={<span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">₫</span>}>
+                    <Controller control={control} name="unitPrice" render={({ field }) => (
+                      <EventMoneyInput placeholder="0" className="text-[22px] sm:text-[24px]" value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+                    )} />
+                  </EventField>
+                </div>
 
-                <div className="flex items-center justify-between rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
+                {currentQuantity > 0 ? <div className="flex items-center justify-between rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
                   <p className="text-[15px] font-medium text-foreground">
                     {t('assets.sale.sellAll')}
                   </p>
@@ -158,7 +156,7 @@ export function AssetSaleDialog({
                       />
                     )}
                   />
-                </div>
+                </div> : null}
               </>
             ) : null}
 
