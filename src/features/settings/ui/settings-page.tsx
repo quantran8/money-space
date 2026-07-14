@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/app/layout/page-header'
 import { Button } from '@/components/ui/button'
 import { useSettingsPage } from '@/features/settings/hooks/use-settings-page'
+import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
 import { DataCard } from '@/features/settings/ui/components/data-card'
 import { HouseholdCard } from '@/features/settings/ui/components/household-card'
 import { RemindersCard } from '@/features/settings/ui/components/reminders-card'
@@ -53,6 +54,7 @@ export function SettingsPage() {
 
             <div className="space-y-4 lg:col-span-5">
               <RemindersCard form={form} />
+              <CategoriesCard />
               <DataCard />
             </div>
           </form>

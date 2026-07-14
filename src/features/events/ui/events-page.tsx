@@ -40,6 +40,7 @@ export function EventsPage() {
     assetOptions,
     sourceAssetOptions,
     memberOptions,
+    categoryOptions,
     upcomingControl,
     registerUpcoming,
     handleUpcomingSubmit,
@@ -121,6 +122,7 @@ export function EventsPage() {
         assetOptions={assetOptions}
         sourceAssetOptions={sourceAssetOptions}
         memberOptions={memberOptions}
+        categoryOptions={categoryOptions}
         upcomingControl={upcomingControl}
         registerUpcoming={registerUpcoming}
         upcomingErrors={upcomingErrors}
@@ -141,7 +143,7 @@ export function EventsPage() {
         open={deleteEventId !== null}
         onOpenChange={(open) => !open && setDeleteEventId(null)}
         title="Xóa record này?"
-        description={`Bạn có chắc muốn xóa “${deletingEvent?.title ?? ''}”? Hành động này không thể hoàn tác.`}
+        description={`Bạn có chắc muốn xóa “${deletingEvent?.note ?? ''}”? Hành động này không thể hoàn tác.`}
         confirmDisabled={isDeleting}
         confirmLoadingLabel="Dang xoa..."
         onConfirm={() => (deleteEventId ? handleDeleteEvent(deleteEventId) : undefined)}

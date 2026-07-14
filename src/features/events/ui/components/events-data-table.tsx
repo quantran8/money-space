@@ -93,8 +93,12 @@ export function EventsDataTable({
                       {mark.glyph}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-foreground">{event.title}</p>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{event.note}</p>
+                      <p className="font-medium text-foreground">
+                        {event.note?.trim() ||
+                          t(`options.eventCategory.${event.category}`, {
+                            defaultValue: event.category,
+                          })}
+                      </p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Badge>{t(`options.eventType.${event.type}`)}</Badge>
                         <Badge variant="outline">
@@ -123,7 +127,7 @@ export function EventsDataTable({
                           variant="ghost"
                           size="icon"
                           className="size-9 rounded-full text-muted-foreground hover:text-foreground"
-                          aria-label={t('events.table.openActions', { title: event.title })}
+                          aria-label={t('events.table.openActions', { title: event.note })}
                         >
                           <MoreHorizontal />
                         </Button>

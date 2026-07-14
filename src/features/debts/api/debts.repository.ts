@@ -6,7 +6,6 @@ type DebtListResponse = {
   items: Array<{
     id: string
     name: string
-    debtType: DebtItem['debtType']
     lenderType: DebtItem['lenderType']
     lenderName?: string
     originalAmount: number
@@ -30,7 +29,6 @@ type DebtListResponse = {
 
 export type DebtPayload = {
   name: string
-  debtType: DebtItem['debtType']
   lenderType: DebtItem['lenderType']
   lenderName?: string
   originalAmount: number
@@ -81,7 +79,6 @@ function toDebtItem(record: DebtListResponse['items'][number]): DebtItem {
   return {
     id: record.id,
     name: record.name,
-    debtType: record.debtType,
     lenderType: record.lenderType,
     lenderName: record.lenderName ?? '',
     originalAmount: formatCompact(record.originalAmount) ?? '0',

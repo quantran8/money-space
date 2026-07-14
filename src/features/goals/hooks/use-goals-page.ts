@@ -217,11 +217,12 @@ export function useGoalsPage() {
     }
     try {
       await createEvent.mutateAsync({
-        title: t('goals.recent.added', { value: formatAmount(delta), name: goal.name }),
         amount: delta,
         isoDate: new Date().toISOString().slice(0, 10),
         type: 'goal_contribution',
         category: 'saving',
+        // `title` was dropped; the contribution label now lives in the note.
+        note: t('goals.recent.added', { value: formatAmount(delta), name: goal.name }),
         financialGoalId: goalId,
         // Debits the chosen wallet; backend requires a cash/bank fromAssetId for
         // goal_contribution. See memory/goals.md.

@@ -51,19 +51,28 @@ export function useDebtDetail(debtId: string | undefined) {
     if (!debtId) return []
     return events
       .filter((event: MoneyEventItem) => event.debtId === debtId)
-      .map((event) => ({
-        id: event.id ?? `${event.isoDate}-${event.title}`,
-        title: event.title,
-        isoDate: event.isoDate,
-        amount: Math.abs(event.amount),
-        kind:
+      .map((event) => {
+        const kind =
           event.direction === 'inflow'
             ? ('borrow' as const)
             : event.direction === 'outflow'
               ? ('repayment' as const)
-              : ('adjustment' as const),
-        note: event.note || undefined,
-      }))
+              : ('adjustment' as const)
+        // `title` was dropped from money events; the descriptive label now lives
+        // in the note (the backend folds "Vay: …" / "Điều chỉnh dư nợ: …" into
+        // it). Fall back to a kind label when the note is empty.
+        const label =
+          event.note?.trim() ||
+          (kind === 'borrow' ? 'Vay' : kind === 'repayment' ? 'Trả nợ' : 'Điều chỉnh')
+        return {
+          id: event.id ?? `${event.isoDate}-${label}`,
+          title: label,
+          isoDate: event.isoDate,
+          amount: Math.abs(event.amount),
+          kind,
+          note: event.note || undefined,
+        }
+      })
       .sort((a, b) => (a.isoDate < b.isoDate ? 1 : a.isoDate > b.isoDate ? -1 : 0))
   }, [events, debtId])
 

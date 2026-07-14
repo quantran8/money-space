@@ -58,16 +58,7 @@ type ConfidenceLevel = 'low' | 'medium' | 'high'
 type PaymentFrequency = 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
 type PaymentStatus = 'unpaid' | 'paid' | 'pending_confirmation' | 'postponed' | 'overdue'
 type AttentionLevel = 'normal' | 'important' | 'urgent'
-type DebtType =
-  | 'family_loan'
-  | 'friend_loan'
-  | 'bank_loan'
-  | 'consumer_finance'
-  | 'mortgage'
-  | 'credit_card'
-  | 'installment'
-  | 'other'
-type LenderType = 'family' | 'friend' | 'bank' | 'credit_institution' | 'company' | 'other'
+type LenderType = 'relative' | 'bank_institution' | 'other'
 type DebtStatus = 'active' | 'paid_off' | 'paused' | 'overdue' | 'cancelled'
 type DebtRepaymentType =
   | 'flexible'
@@ -382,7 +373,6 @@ export type Database = {
             id: string
             household_id: string
             name: string
-            debt_type: DebtType
             lender_type: LenderType
             lender_name: string | null
             original_amount: number
@@ -569,7 +559,6 @@ export type Database = {
       payment_frequency: PaymentFrequency
       payment_status: PaymentStatus
       attention_level: AttentionLevel
-      debt_type: DebtType
       lender_type: LenderType
       debt_status: DebtStatus
       debt_repayment_type: DebtRepaymentType

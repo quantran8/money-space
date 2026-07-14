@@ -29,7 +29,7 @@ export type DebtUpdateSnapshot = {
   fixedPaymentAmount?: number
   interestRate?: number
   installments?: number
-  debtType: string
+  lenderType: string
   name: string
 }
 
@@ -48,14 +48,9 @@ type DebtUpdateModeDialogProps = {
 
 type ModeKind = 'correction' | 'effective'
 
-const DEBT_TYPE_LABELS: Record<string, string> = {
-  family_loan: 'Vay người thân',
-  friend_loan: 'Vay bạn bè',
-  bank_loan: 'Vay ngân hàng',
-  consumer_finance: 'Vay tiêu dùng',
-  mortgage: 'Vay thế chấp',
-  credit_card: 'Thẻ tín dụng',
-  installment: 'Trả góp',
+const LENDER_TYPE_LABELS: Record<string, string> = {
+  relative: 'Người thân',
+  bank_institution: 'Ngân hàng / Tổ chức',
   other: 'Khác',
 }
 
@@ -171,7 +166,7 @@ export function DebtUpdateModeDialog({
     !!before &&
     !!after &&
     (before.name !== after.name ||
-      before.debtType !== after.debtType ||
+      before.lenderType !== after.lenderType ||
       before.originalAmount !== afterOriginal ||
       (before.outstandingAmount ?? 0) !== (afterOutstanding ?? 0) ||
       (mode === 'correction' &&
@@ -280,8 +275,8 @@ export function DebtUpdateModeDialog({
                 />
                 <PreviewRow
                   label="Loại nợ"
-                  before={DEBT_TYPE_LABELS[before.debtType] ?? before.debtType}
-                  after={DEBT_TYPE_LABELS[after.debtType] ?? after.debtType}
+                  before={LENDER_TYPE_LABELS[before.lenderType] ?? before.lenderType}
+                  after={LENDER_TYPE_LABELS[after.lenderType] ?? after.lenderType}
                 />
                 <PreviewRow
                   label="Số tiền vay"

@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useAssetSale } from '@/features/assets/hooks/use-asset-sale'
+import { useEventCategories } from '@/features/events/hooks/use-event-categories'
 import { useEvents } from '@/features/events/hooks/use-events'
 import { useEventsSummary } from '@/features/events/hooks/use-events-summary'
 import {
@@ -58,6 +59,7 @@ export function useEventsPage() {
   // Show the timeline skeleton while EITHER the events list or the backend
   // thu/chi/net summary is still loading — both feed the page's main content.
   const isLoading = isEventsLoading || isSummaryLoading
+  const { categories } = useEventCategories()
   // Reused for editing an existing asset_sale event through its dedicated dialog
   // (the generic form can't express quantity / fee / receiving wallet).
   const sale = useAssetSale()
@@ -82,8 +84,14 @@ export function useEventsPage() {
   const isSavingUpcoming = createPayment.isPending || updatePayment.isPending
   const isSavingActual = createEvent.isPending || updateEvent.isPending || deletePayment.isPending
 
+  // Money events move money in/out of a WALLET (cash or bank account), never a
+  // non-liquid holding like stock/real-estate. Every asset picker on the events
+  // form is a wallet source/destination, so restrict the options to those types.
   const assetOptions = useMemo(
-    () => assets.map((asset) => ({ value: asset.id, label: asset.name })),
+    () =>
+      assets
+        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .map((asset) => ({ value: asset.id, label: asset.name })),
     [assets],
   )
   // Source ("nguồn tiền") of an event can only be a spendable wallet — money
@@ -103,6 +111,27 @@ export function useEventsPage() {
       label: member.name,
     })),
     [members],
+  )
+  // Category options come from the money_event_categories table (system +
+  // household rows). The value is the stable CODE; the label follows the user's
+  // language via i18n keyed by that code, falling back to the row's DB label for
+  // custom categories that have no translation key.
+  const categoryOptions = useMemo(
+    () =>
+      categories.map((category) => ({
+        value: category.code,
+        label: t(`options.eventCategory.${category.code}`, {
+          defaultValue: category.label,
+        }),
+      })),
+    [categories, t],
+  )
+
+  // The household's default category code (at most one is flagged). Auto-selected
+  // in the create form so a new expense/income starts with a category filled in.
+  const defaultCategoryCode = useMemo(
+    () => categories.find((category) => category.isDefault)?.code ?? '',
+    [categories],
   )
 
   const upcomingSchema = useMemo(() => buildUpcomingSchema(), [])
@@ -158,6 +187,12 @@ export function useEventsPage() {
     const actualRecords = events.map((event) => ({
       id: event.id,
       sourceType: 'money_event' as const,
+      // Display label: the note now stands in for the dropped title; when a
+      // record has no note, fall back to its translated category label so the
+      // row is never blank.
+      title:
+        event.note?.trim() ||
+        t(`options.eventCategory.${event.category}`, { defaultValue: event.category }),
       // Editability is decided on the RAW event type (the local model downgrades
       // asset_update → adjustment). asset_sale edits via its dedicated dialog;
       // asset_update edits via a simplified generic form (value/date/name/note);
@@ -166,7 +201,6 @@ export function useEventsPage() {
         const rawType = seedEvents.find((raw) => raw.id === event.id)?.type ?? event.eventType
         return rawType === 'asset_sale' || rawType === 'asset_update' || isEditableEventType(rawType)
       })(),
-      title: event.title,
       amount: Math.abs(event.amount),
       currency: event.currency,
       date: event.date,
@@ -198,7 +232,7 @@ export function useEventsPage() {
       }
       return right.date.localeCompare(left.date)
     })
-  }, [events, payments, seedEvents])
+  }, [events, payments, seedEvents, t])
 
   const filteredRecords = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -295,17 +329,18 @@ export function useEventsPage() {
       const event = events.find((item) => item.id === editingEventId)
       if (!event) return
       const raw = seedEvents.find((item) => item.id === editingEventId)
-      // A revaluation stores a DELTA in `amount`; the form edits the ABSOLUTE
-      // asset value, so prefill it from the linked asset's current value.
-      const revaluedAsset =
-        raw?.type === 'asset_update'
-          ? assets.find((item) => item.id === raw.toAssetId)
-          : undefined
-      const prefillAmount = revaluedAsset
-        ? (revaluedAsset.currentValue ?? 0)
+      // A revaluation (`asset_update`) stores the DIFF it represents in `amount`
+      // (signed: +raised the asset, −lowered it). The form now edits that diff
+      // directly, so prefill it from the record's own stored diff — NOT the
+      // asset's current balance (a later inflow/outflow could have moved that far
+      // past this record's point in time). The magnitude fills the money field
+      // and the sign drives the tăng/giảm toggle.
+      const isRevaluationEdit = raw?.type === 'asset_update'
+      const revaluationDiff = isRevaluationEdit ? (raw?.amount ?? 0) : 0
+      const prefillAmount = isRevaluationEdit
+        ? Math.abs(revaluationDiff)
         : Math.abs(event.amount)
       resetActual({
-        title: event.title,
         amount: formatAmountInput(prefillAmount),
         eventDate: event.date,
         eventType: event.eventType,
@@ -318,6 +353,7 @@ export function useEventsPage() {
         attentionLevel: event.attentionLevel,
         isAttentionNeeded: event.isAttentionNeeded,
         note: event.note ?? '',
+        revaluationDirection: revaluationDiff < 0 ? 'decrease' : 'increase',
       })
       return
     }
@@ -327,7 +363,6 @@ export function useEventsPage() {
       if (!payment) return
       resetActual({
         ...actualDefaults,
-        title: `Đã trả ${payment.name}`,
         amount: formatAmountInput(payment.amount),
         eventDate: TODAY,
         eventType: 'payment_paid',
@@ -336,18 +371,23 @@ export function useEventsPage() {
         upcomingPaymentId: payment.id,
         attentionLevel: payment.attentionLevel,
         isAttentionNeeded: payment.isAttentionNeeded,
-        note: payment.note ?? '',
+        // The label that used to live in `title` ("Đã trả …") now goes into the
+        // note (title was dropped), preserving the payment's own note after it.
+        note: payment.note ? `Đã trả ${payment.name} — ${payment.note}` : `Đã trả ${payment.name}`,
       })
       return
     }
 
     resetActual({
       ...actualDefaults,
+      // Prefill the household's default category (if any) on create.
+      category: defaultCategoryCode,
       fromAssetId: sourceAssetOptions[0]?.value ?? '',
     })
   }, [
     assetOptions,
     assets,
+    defaultCategoryCode,
     editingEventId,
     editingPaymentId,
     events,
@@ -494,13 +534,17 @@ export function useEventsPage() {
     const isRevaluationEdit = editingRaw?.type === 'asset_update'
     const resolvedAction: Exclude<QuickAction, 'upcoming'> =
       quickAction && quickAction !== 'upcoming' ? quickAction : 'expense'
-    // Revaluation edit: send `asset_update` with amount = the new ABSOLUTE asset
-    // value and the linked asset on `toAssetId`; the backend re-prices the asset
-    // + its value-history point. Short-circuit the generic payload build below.
+    // Revaluation edit: send `asset_update` with amount = the new **signed diff**
+    // (magnitude × tăng/giảm sign) and the linked asset on `toAssetId`. The
+    // backend shifts the asset's running balance by (newDiff − oldDiff) and
+    // re-stamps its value-history point — it does NOT overwrite the balance with
+    // an absolute value. Short-circuit the generic payload build below.
     if (isRevaluationEdit && editingEventId && editingRaw) {
+      const diffMagnitude = Math.abs(parseAmountInput(values.amount))
+      const signedDiff =
+        values.revaluationDirection === 'decrease' ? -diffMagnitude : diffMagnitude
       const revaluationPayload = {
-        title: values.title.trim() || editingRaw.title,
-        amount: Math.abs(parseAmountInput(values.amount)),
+        amount: signedDiff,
         isoDate: values.eventDate,
         type: 'asset_update' as const,
         direction: 'neutral' as const,
@@ -534,18 +578,23 @@ export function useEventsPage() {
     const relatedPayment = markPaidPaymentId
       ? payments.find((item) => item.id === markPaidPaymentId)
       : undefined
-    // When editing, keep the user's title; only auto-generate on create.
-    const autoTitle = editingEvent
-      ? values.title.trim() || editingEvent.title
-      : resolvedAction === 'transfer' && fromAsset && toAsset
-        ? `Chuyển từ ${fromAsset.name} sang ${toAsset.name}`
-        : resolvedAction === 'goal_contribution'
-          ? `Góp vào ${values.financialGoalId.trim() || 'mục tiêu chung'}`
-          : resolvedAction === 'payment_paid'
-            ? `Đã trả ${relatedPayment?.name ?? ''}`.trim()
-            : values.title.trim()
+    // `title` was dropped; the note now carries the event's description. When the
+    // user leaves the note blank, auto-generate a descriptive one for the types
+    // that used to get an auto-title (transfer / goal_contribution /
+    // payment_paid). Expense/income keep the user's note (or the empty-note
+    // placeholder). On edit, the user's note wins; only create auto-generates.
+    const userNote = values.note.trim()
+    const autoNote = editingEvent
+      ? userNote || editingEvent.note || t('common.noAdditionalNote')
+      : userNote ||
+        (resolvedAction === 'transfer' && fromAsset && toAsset
+          ? `Chuyển từ ${fromAsset.name} sang ${toAsset.name}`
+          : resolvedAction === 'goal_contribution'
+            ? `Góp vào ${values.financialGoalId.trim() || 'mục tiêu chung'}`
+            : resolvedAction === 'payment_paid'
+              ? `Đã trả ${relatedPayment?.name ?? ''}`.trim()
+              : t('common.noAdditionalNote'))
     const payload = {
-      title: autoTitle,
       amount,
       isoDate: values.eventDate,
       type: resolvedEventType,
@@ -564,7 +613,7 @@ export function useEventsPage() {
       soldQuantity: editingEvent?.soldQuantity,
       soldValue: editingEvent?.soldValue,
       financialGoalId: values.financialGoalId || undefined,
-      note: values.note.trim() || t('common.noAdditionalNote'),
+      note: autoNote,
     }
 
     try {
@@ -648,7 +697,6 @@ export function useEventsPage() {
     if (!event) return
     void createEvent
       .mutateAsync({
-        title: `${event.title} (copy)`,
         amount: Math.abs(event.amount),
         isoDate: event.date,
         type: event.eventType,
@@ -658,7 +706,7 @@ export function useEventsPage() {
         toAssetId: event.toAssetId,
         upcomingPaymentId: event.upcomingPaymentId,
         financialGoalId: event.financialGoalId,
-        note: event.note,
+        note: event.note ? `${event.note} (copy)` : '(copy)',
       })
       .then(() => toast.success('Da nhan ban record.'))
       .catch((error) => toast.error(getErrorMessage(error, 'Khong the nhan ban record.')))
@@ -716,6 +764,7 @@ export function useEventsPage() {
     assetOptions,
     sourceAssetOptions,
     memberOptions,
+    categoryOptions,
     // forms
     upcomingControl,
     registerUpcoming,

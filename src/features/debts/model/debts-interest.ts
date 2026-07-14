@@ -39,6 +39,25 @@ function toNumber(value: string): number {
 }
 
 /**
+ * Add `months` to an ISO date (yyyy-mm-dd) and return an ISO date. Clamps to the
+ * last day of the target month so e.g. Jan 31 + 1 month → Feb 28/29 rather than
+ * rolling into March. Mirrors the backend `addMonthsIso`. Returns '' for an
+ * empty/invalid input date.
+ */
+export function addMonthsIso(isoDate: string, months: number): string {
+  if (!isoDate) return ''
+  const [year, month, day] = isoDate.split('-').map(Number)
+  if (!year || !month || !day) return ''
+  const base = new Date(year, month - 1 + months, 1)
+  const lastDay = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate()
+  base.setDate(Math.min(day, lastDay))
+  const y = base.getFullYear()
+  const m = String(base.getMonth() + 1).padStart(2, '0')
+  const d = String(base.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/**
  * Whole months between two ISO dates (yyyy-mm-dd), rounded to the nearest
  * month and never below 1. Returns null when either date is missing/invalid.
  */

@@ -119,6 +119,20 @@ income/expense) that the appended point links to; saving-deposit interest writes
 one dated point per period. Editing a money event updates its linked point(s);
 deleting one soft-deletes them.
 
+**Editing an `asset_update` revaluation edits its DIFF, not an absolute value.**
+The record's `amount` **is the signed diff** it represented (a wallet revalued
+5tr → 4,5tr stores `−0,5tr`). The events edit modal shows **"Mức thay đổi"** (the
+diff) — the magnitude in the money field, the sign as a **Tăng / Giảm** toggle
+(`revaluationDirection`) — prefilled from the record's own stored `amount`, NOT
+the asset's current balance. Submit sends `amount = magnitude ×
+(increase ? +1 : −1)` (may be negative). The backend then **adjusts** the asset's
+running balance by `newDiff − oldDiff` (never overwrites it, so later
+inflows/outflows re-base automatically) and re-stamps the record's history point
+at the value it produced *at its date*. Prefill + submit live in
+`use-events-page.ts`; the toggle + label in `actual-record-form.tsx`
+(`isRevaluation` branch). Backend contract mirrored from
+`money-space-backend/memory/asset-valuation.md`.
+
 ## Value history over time (asset detail page)
 
 The asset detail page's "value over time" chart (biến động theo thời gian) reads

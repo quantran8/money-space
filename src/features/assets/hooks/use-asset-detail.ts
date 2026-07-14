@@ -92,15 +92,20 @@ export function useAssetDetail(assetId: string | undefined) {
     if (!assetId) return []
     return events
       .filter((event) => touchesAsset(event, assetId))
-      .map((event) => ({
-        id: event.id ?? `${event.isoDate}-${event.title}`,
-        title: event.title,
-        isoDate: event.isoDate,
-        amount: amountForAsset(event, assetId),
-        type: event.type,
-        direction: event.direction,
-        note: event.note || undefined,
-      }))
+      .map((event) => {
+        // `title` was dropped from money events; the note now labels the entry,
+        // falling back to the category code when empty.
+        const label = event.note?.trim() || event.category
+        return {
+          id: event.id ?? `${event.isoDate}-${label}`,
+          title: label,
+          isoDate: event.isoDate,
+          amount: amountForAsset(event, assetId),
+          type: event.type,
+          direction: event.direction,
+          note: event.note || undefined,
+        }
+      })
       .sort((a, b) => (a.isoDate < b.isoDate ? 1 : a.isoDate > b.isoDate ? -1 : 0))
   }, [events, assetId])
 

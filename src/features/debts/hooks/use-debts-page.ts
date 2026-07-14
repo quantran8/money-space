@@ -55,7 +55,7 @@ export function useDebtsPage() {
       fixedPaymentAmount?: number
       interestRate?: number
       installments?: number
-      debtType: DebtItem['debtType']
+      lenderType: DebtItem['lenderType']
       name: string
     }
     after: {
@@ -63,7 +63,7 @@ export function useDebtsPage() {
       fixedPaymentAmount?: number
       interestRate?: number
       installments?: number
-      debtType: DebtItem['debtType']
+      lenderType: DebtItem['lenderType']
       name: string
     }
     totalRepaid: number
@@ -195,13 +195,18 @@ export function useDebtsPage() {
       // Fall back to a single stage seeded from the averaged rate the backend
       // returns (e.g. "9.2%") for older debts with no per-stage detail.
       const fallbackRate = (editingDebt.interestSummary ?? '').replace(/[^0-9.,]/g, '')
-      const periods =
+      const rawPeriods =
         fromInterestPeriodDtos(editingDebt.interestPeriods) ??
         (fallbackRate ? [{ ratePct: fallbackRate, months: '' }] : defaultValues.interestPeriods)
+      // The last stage always derives its months from the term (shown read-only),
+      // so clear any stored value on it — earlier stages keep their explicit months.
+      const lastRawIndex = rawPeriods.length - 1
+      const periods = rawPeriods.map((period, index) =>
+        index === lastRawIndex ? { ...period, months: '' } : period,
+      )
 
       reset({
         name: editingDebt.name,
-        debtType: editingDebt.debtType,
         lenderType: editingDebt.lenderType,
         lenderName: editingDebt.lenderName,
         originalAmount: amountToRaw(editingDebt.originalAmountValue),
@@ -257,13 +262,19 @@ export function useDebtsPage() {
       // The user's interest switch is the source of truth: when off, we drop any
       // rate/period values so the debt is persisted as interest-free.
       const hasInterest = values.hasInterest && avgRate > 0
+      // The last interest stage always absorbs the remaining term (the form shows
+      // its months as computed, not typed), so persist it with empty months =
+      // "remaining term". Earlier stages keep their explicit months.
+      const lastIndex = values.interestPeriods.length - 1
+      const normalizedPeriods = values.interestPeriods.map((period, index) =>
+        index === lastIndex ? { ...period, months: '' } : period,
+      )
       const interestPeriods = values.hasInterest
-        ? toInterestPeriodDtos(values.interestPeriods)
+        ? toInterestPeriodDtos(normalizedPeriods)
         : []
 
       const payload = {
         name: values.name.trim(),
-        debtType: values.debtType,
         lenderType: values.lenderType,
         lenderName: values.lenderName.trim() || undefined,
         originalAmount: parseAmountInput(values.originalAmount),
@@ -320,7 +331,7 @@ export function useDebtsPage() {
             fixedPaymentAmount: editingDebt?.fixedPaymentAmountValue,
             interestRate: beforeEstimate?.annualRatePct,
             installments: beforeEstimate?.installments,
-            debtType: editingDebt?.debtType ?? payload.debtType,
+            lenderType: editingDebt?.lenderType ?? payload.lenderType,
             name: editingDebt?.name ?? payload.name,
           },
           after: {
@@ -328,7 +339,7 @@ export function useDebtsPage() {
             fixedPaymentAmount: payload.fixedPaymentAmount,
             interestRate: repaymentEstimate?.annualRatePct,
             installments: repaymentEstimate?.installments,
-            debtType: payload.debtType,
+            lenderType: payload.lenderType,
             name: payload.name,
           },
         })

@@ -46,6 +46,7 @@ type EventFormDialogProps = {
    *  "nguồn tiền" selects; destination selects still use the full assetOptions. */
   sourceAssetOptions: Option[]
   memberOptions: Option[]
+  categoryOptions: Option[]
   // upcoming form
   upcomingControl: Control<UpcomingRecordFormValues>
   registerUpcoming: UseFormRegister<UpcomingRecordFormValues>
@@ -80,6 +81,7 @@ export function EventFormDialog({
   assetOptions,
   sourceAssetOptions,
   memberOptions,
+  categoryOptions,
   upcomingControl,
   registerUpcoming,
   upcomingErrors,
@@ -160,6 +162,7 @@ export function EventFormDialog({
               payments={payments}
               assetOptions={assetOptions}
               sourceAssetOptions={sourceAssetOptions}
+              categoryOptions={categoryOptions}
               showMoreDetails={showMoreDetails}
               onToggleMoreDetails={onToggleMoreDetails}
               isValid={isActualValid}

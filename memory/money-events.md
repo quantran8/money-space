@@ -5,22 +5,64 @@ The central ledger. Recorded financial events **and** upcoming payments live in 
 ## Overview
 
 Two record source types unified into `FinancialRecordItem`:
+
 - `upcoming_payment` — planned.
 - `money_event` — actual, the central transaction log.
 
-`MoneyEvent` fields: title, type, category, amount, currency, eventDate, direction, and optional links to fromAsset, toAsset, upcomingPayment, debt, financialGoal, snapshot.
+`MoneyEvent` fields: type, category, amount, currency, eventDate, direction, `note` (description), and optional links to fromAsset, toAsset, upcomingPayment, debt, financialGoal, snapshot.
 
-**`category` is a free-form CODE**, not a fixed enum — backed by the
+**No `title` field.** The free-text `title` was dropped from money events — the
+**note** is now the descriptive label and `category` is the classification. The
+record form no longer has a "Nội dung" field; the note carries the description
+(the form auto-fills a sensible note for transfer / goal_contribution /
+payment_paid when the user leaves it blank, e.g. `Chuyển từ … sang …`, `Đã trả
+…`). Everywhere the UI used to show `title` (events timeline / `record-card` /
+data table, dashboard recents, debt & asset history rows) it now shows the note,
+falling back to the translated category label when the note is empty. The
+timeline's `FinancialRecordItem` keeps a derived `title` (payment name for
+upcoming payments; note-or-category for events) purely as the display label — it
+is not a stored event field.
+
+**`category` is REQUIRED and a free-form CODE**, not a fixed enum — backed by the
 `money_event_categories` table (seeded system rows with `household_id IS NULL` +
 per-household custom rows). Adding a category is a data insert, not a schema
-change. Existence is validated on the backend; `normalizeMoneyEventCategory` keeps
-any non-empty code (falls back to `other` only when blank). The `interest` code
+change. It is mandatory: the record form requires the "Danh mục" picker for
+expense/income (`buildActualSchema` superRefine — the auto-classified types
+derive it), and the backend rejects a blank category with a 400.
+`normalizeMoneyEventCategory` keeps any non-empty code (falls back to `other`
+only for internal auto-classified flows). The `interest` code
 (saving-deposit interest events) is a seeded system category — the old enum
 omitted it, so it was silently rewritten to `other` (fixed).
+
+**Category UI (not free-text).** The record form's "Danh mục" field is a
+`<Select>` bound to the category **code**, sourced from the
+`money_event_categories` table via `useEventCategories` → `categoryOptions` in
+`use-events-page.ts` (system rows + this household's custom rows). The **display
+label always follows the user's language via the code**:
+`t('options.eventCategory.<code>', { defaultValue: dbLabel })` — the DB `label` is
+only a fallback for custom codes with no i18n key. Households manage their own
+categories (add / edit label / delete) from the **Settings page**
+(`settings/ui/components/categories-card.tsx`); system rows are read-only. Backend
+CRUD lives at `/api/households/:id/money-event-categories`
+(GET = any member, POST/PATCH/DELETE = `edit` capability). The **code is
+immutable** on update — renaming would orphan events pointing at it; create a new
+category and re-tag instead.
+
+**Default category (`isDefault`).** A household can mark **one** category as its
+default; the create form auto-selects it (`defaultCategoryCode` memo in
+`use-events-page.ts` prefills `category` on the create reset). Each
+`EventCategoryItem` carries `isDefault` (computed by the backend from the
+household's config pointer — works for system OR custom codes; see backend
+memory). The Settings → Categories card (`categories-card.tsx`) shows a **star
+toggle** per row: clicking sets that code as default (clearing the previous),
+clicking the current default clears it — via `PUT
+/money-event-categories/default` with `{ code }` / `{ code: null }`
+(`setDefaultEventCategory` → `useEventCategories().setDefaultCategory`).
 
 ## Direction derivation (`deriveDirection` / `getDirectionFromEventType`)
 
 Auto-derived from event type unless explicitly overridden (explicit wins):
+
 - income → `inflow`
 - expense, payment_paid, debt_update → `outflow`
 - adjustment → `neutral`
@@ -68,7 +110,7 @@ revalue), never a generic cash move.
   Default source/destination selection also seeds from `sourceAssetOptions`.
 - **Backend** enforces the same as a **400** (`assertWalletLinks`, gated by
   `WALLET_ONLY_EVENT_TYPES = {income, expense, transfer}`) on create + update.
-- **`asset_sale` is the exception**: its `fromAssetId` is the *sold* asset (a
+- **`asset_sale` is the exception**: its `fromAssetId` is the _sold_ asset (a
   non-wallet), so it is excluded. The sold asset is **view-only** — asset_sale
   edits via the dedicated `AssetSaleDialog`, where the sold asset is fixed
   context (header only, never a form field), so it can be seen but not changed.
@@ -98,6 +140,7 @@ backend, **not** re-computed on the client. `useEventsSummary` calls
 - **Payment status state machine** (`PaymentStatus`): unpaid → paid / pending_confirmation / postponed / overdue.
 - **Status derivation** (`getPaymentRecordStatus`): past due date → `overdue`; pending → `pending_confirmation`; else `unpaid`.
 - **Recurring rule** (`buildUpcomingSchema`): `autoCreateNext` can only be enabled when `frequency ≠ once`. Recording a payment captures `paidAt`, `paidBy`, `paidAmount`, `paidFromAssetId`.
+- **Source wallet required** (`buildUpcomingSchema`): `expectedFromAssetId` is required ("Vui lòng chọn ví nguồn"). It's an always-visible field in `upcoming-record-form.tsx` (not inside the "Thêm chi tiết" collapsible) and defaults to the first wallet on open.
 
 ## Recording a repayment reduces the linked debt
 

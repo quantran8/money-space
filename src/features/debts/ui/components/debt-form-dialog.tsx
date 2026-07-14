@@ -36,11 +36,21 @@ import {
   eventSelectTriggerClass,
 } from '@/components/ui/event-field'
 import { quickLenderTypes, type DebtForm } from '@/features/debts/model/debts-form'
-import type { RepaymentEstimate } from '@/features/debts/model/debts-interest'
+import { addMonthsIso, type RepaymentEstimate } from '@/features/debts/model/debts-interest'
+import { isFixedScheduleLender } from '@/features/debts/model/debts.types'
 import type { LenderType } from '@/features/debts/model/debts.types'
 import { cn } from '@/shared/lib/utils'
 
 type Option = { value: string; label: string }
+
+/** Quick loan-term presets for the due date, in months from the borrow date. */
+const DUE_DATE_PRESETS: Array<{ label: string; months: number }> = [
+  { label: '6 tháng', months: 6 },
+  { label: '1 năm', months: 12 },
+  { label: '2 năm', months: 24 },
+  { label: '3 năm', months: 36 },
+  { label: '5 năm', months: 60 },
+]
 
 const CALC_OPTIONS: Array<{ value: DebtForm['interestCalc']; label: string; hint: string }> = [
   { value: 'fixed', label: 'Trả cố định', hint: 'Mỗi kỳ trả bằng nhau (niên kim)' },
@@ -99,6 +109,33 @@ export function DebtFormDialog({
     remove: removeInterest,
   } = useFieldArray({ control, name: 'interestPeriods' })
   const hasInterest = useWatch({ control, name: 'hasInterest' })
+  const borrowedAt = useWatch({ control, name: 'borrowedAt' })
+  const expectedFinalDueDate = useWatch({ control, name: 'expectedFinalDueDate' })
+  const watchedPeriods = useWatch({ control, name: 'interestPeriods' })
+
+  // The LAST interest stage absorbs whatever term the earlier stages don't
+  // cover: lastMonths = term − Σ(months of the earlier stages). It's shown
+  // read-only and recomputed live as the user edits the earlier stages, so a
+  // 12-month loan with earlier stages of 4 + 3 leaves the last stage at 5.
+  // A single stage is simply the whole term. This matches the backend model
+  // where the stage with empty `months` soaks up the remaining term.
+  const earlierStagesMonths = (watchedPeriods ?? [])
+    .slice(0, -1)
+    .reduce((sum, period) => {
+      const months = Number(String(period?.months ?? '').replace(',', '.'))
+      return sum + (Number.isFinite(months) && months > 0 ? months : 0)
+    }, 0)
+  const lastStageMonths =
+    termMonths != null ? Math.max(0, termMonths - earlierStagesMonths) : null
+
+  /** Set the due date to `borrowedAt + months` (needs a borrow date first). */
+  function applyDuePreset(months: number) {
+    if (!borrowedAt) return
+    setValue('expectedFinalDueDate', addMonthsIso(borrowedAt, months), {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
@@ -149,13 +186,10 @@ export function DebtFormDialog({
               </button>
             </div>
 
-            {/* Lender quick-pick */}
+            {/* Lender quick-pick — the three buckets map 1:1 to `lenderType`. */}
             <div className="grid grid-cols-3 gap-2">
               {quickLenderTypes.map((option) => {
-                const active =
-                  option.value === 'other'
-                    ? selectedLenderType !== 'family' && selectedLenderType !== 'bank'
-                    : selectedLenderType === option.value
+                const active = selectedLenderType === option.value
 
                 return (
                   <button
@@ -163,11 +197,6 @@ export function DebtFormDialog({
                     type="button"
                     onClick={() => {
                       setValue('lenderType', option.value, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                        shouldValidate: true,
-                      })
-                      setValue('debtType', option.debtType, {
                         shouldDirty: true,
                         shouldTouch: true,
                         shouldValidate: true,
@@ -291,18 +320,46 @@ export function DebtFormDialog({
                     />
                   </EventField>
 
-                  <EventField label="Dự kiến trả xong">
-                    <Controller
-                      control={control}
-                      name="expectedFinalDueDate"
-                      render={({ field }) => (
-                        <DatePicker
-                          value={field.value}
-                          onChange={field.onChange}
-                          className={eventDateTriggerClass}
-                        />
-                      )}
-                    />
+                  <EventField
+                    label="Dự kiến trả xong"
+                    error={errors.expectedFinalDueDate?.message}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {DUE_DATE_PRESETS.map((preset) => {
+                          const active =
+                            !!borrowedAt &&
+                            expectedFinalDueDate === addMonthsIso(borrowedAt, preset.months)
+                          return (
+                            <button
+                              key={preset.months}
+                              type="button"
+                              disabled={!borrowedAt}
+                              onClick={() => applyDuePreset(preset.months)}
+                              className={cn(
+                                'rounded-full px-3 py-1.5 text-[13px] font-semibold transition disabled:opacity-40',
+                                active
+                                  ? 'bg-[hsl(var(--accent))] text-white'
+                                  : 'bg-[hsl(var(--muted))] text-foreground hover:opacity-80',
+                              )}
+                            >
+                              {preset.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      <Controller
+                        control={control}
+                        name="expectedFinalDueDate"
+                        render={({ field }) => (
+                          <DatePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            className={eventDateTriggerClass}
+                          />
+                        )}
+                      />
+                    </div>
                   </EventField>
 
                   <EventField label="Tần suất trả">
@@ -328,20 +385,15 @@ export function DebtFormDialog({
                   <EventField label="Loại khoản vay">
                     <Controller
                       control={control}
-                      name="debtType"
+                      name="lenderType"
                       render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger className={eventSelectTriggerClass}>
                             <SelectValue placeholder="Chọn loại khoản vay" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="family_loan">Vay người thân</SelectItem>
-                            <SelectItem value="friend_loan">Vay bạn bè</SelectItem>
-                            <SelectItem value="bank_loan">Vay ngân hàng</SelectItem>
-                            <SelectItem value="consumer_finance">Tài chính tiêu dùng</SelectItem>
-                            <SelectItem value="mortgage">Vay mua nhà</SelectItem>
-                            <SelectItem value="credit_card">Thẻ tín dụng</SelectItem>
-                            <SelectItem value="installment">Trả góp</SelectItem>
+                            <SelectItem value="relative">Người thân</SelectItem>
+                            <SelectItem value="bank_institution">Ngân hàng / Tổ chức</SelectItem>
                             <SelectItem value="other">Khác</SelectItem>
                           </SelectContent>
                         </Select>
@@ -349,6 +401,13 @@ export function DebtFormDialog({
                     />
                   </EventField>
                 </div>
+
+                {isFixedScheduleLender(selectedLenderType) ? (
+                  <p className="rounded-[14px] bg-[hsl(var(--muted))] px-4 py-3 text-sm text-[hsl(var(--muted-foreground))]">
+                    Vay ngân hàng/tổ chức cần có lãi suất, kỳ hạn trả và số tiền trả hàng tháng.
+                    Số tiền trả cố định — muốn thay đổi hãy cập nhật khoản vay.
+                  </p>
+                ) : null}
 
                 <div className="flex items-center justify-between rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
                   <div>
@@ -383,17 +442,31 @@ export function DebtFormDialog({
                             %/năm
                           </span>
                         </div>
-                        <div className="flex w-[110px] min-w-0 shrink items-center gap-1 rounded-[14px] bg-white/60 px-2.5 py-2">
-                          <input
-                            inputMode="numeric"
-                            placeholder={index === interestFields.length - 1 ? 'còn lại' : '12'}
-                            className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
-                            {...register(`interestPeriods.${index}.months` as const)}
-                          />
-                          <span className="shrink-0 text-sm font-medium text-[hsl(var(--muted-foreground))]">
-                            tháng
-                          </span>
-                        </div>
+                        {index === interestFields.length - 1 ? (
+                          // The last stage always absorbs the remaining term, so
+                          // its months are computed (term − earlier stages), never
+                          // typed. Stored `months` stays empty = "remaining term",
+                          // which the backend resolves the same way. Single stage →
+                          // this is simply the full term. Earlier stages (below)
+                          // are editable.
+                          <div className="flex w-[110px] min-w-0 shrink items-center justify-center rounded-[14px] bg-[hsl(var(--muted))] px-2.5 py-2">
+                            <span className="text-[15px] font-medium text-foreground">
+                              {lastStageMonths != null ? `${lastStageMonths} tháng` : '— tháng'}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex w-[110px] min-w-0 shrink items-center gap-1 rounded-[14px] bg-white/60 px-2.5 py-2">
+                            <input
+                              inputMode="numeric"
+                              placeholder="12"
+                              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+                              {...register(`interestPeriods.${index}.months` as const)}
+                            />
+                            <span className="shrink-0 text-sm font-medium text-[hsl(var(--muted-foreground))]">
+                              tháng
+                            </span>
+                          </div>
+                        )}
                         {interestFields.length > 1 ? (
                           <button
                             type="button"
@@ -416,7 +489,8 @@ export function DebtFormDialog({
                       Thêm giai đoạn
                     </button>
                     <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                      Để trống ô tháng ở giai đoạn cuối nếu áp dụng cho các kỳ còn lại.
+                      Số tháng tính tự động theo ngày dự kiến trả xong. Giai đoạn cuối tự nhận
+                      phần thời hạn còn lại; nhập số tháng cho các giai đoạn trước.
                     </p>
                   </div>
                 </EventField>

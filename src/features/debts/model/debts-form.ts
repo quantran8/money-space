@@ -2,11 +2,11 @@ import { z } from 'zod'
 
 import { parseRawMoney } from '@/shared/lib/number-format'
 import type { InterestCalc, InterestPeriod } from '@/features/debts/model/debts-interest'
-import type { DebtStatus, DebtType, LenderType } from '@/features/debts/model/debts.types'
+import { isFixedScheduleLender } from '@/features/debts/model/debts.types'
+import type { DebtStatus, LenderType } from '@/features/debts/model/debts.types'
 
 export type DebtForm = {
   name: string
-  debtType: DebtType
   lenderType: LenderType
   lenderName: string
   originalAmount: string
@@ -38,8 +38,7 @@ export type DebtSummary = {
 
 export const defaultValues: DebtForm = {
   name: '',
-  debtType: 'family_loan',
-  lenderType: 'family',
+  lenderType: 'relative',
   lenderName: '',
   originalAmount: '',
   outstandingAmount: '',
@@ -56,14 +55,18 @@ export const defaultValues: DebtForm = {
   note: '',
 }
 
+/**
+ * The three lender buckets, shown as quick-pick chips. Labels are resolved via
+ * i18n at the call site (`options.lenderType.<value>`); the fallback label here
+ * is Vietnamese for any non-translated context.
+ */
 export const quickLenderTypes: Array<{
   value: LenderType
   label: string
-  debtType: DebtType
 }> = [
-  { value: 'family', label: 'Người thân', debtType: 'family_loan' },
-  { value: 'bank', label: 'Ngân hàng', debtType: 'bank_loan' },
-  { value: 'other', label: 'Khác', debtType: 'other' },
+  { value: 'relative', label: 'Người thân' },
+  { value: 'bank_institution', label: 'Ngân hàng / Tổ chức' },
+  { value: 'other', label: 'Khác' },
 ]
 
 /** Parse a raw (separator-free) money string like "84000000" into VND. */
@@ -122,17 +125,7 @@ export function buildDebtSchema() {
   return z
     .object({
       name: z.string().trim().min(1, 'Vui lòng nhập tên khoản nợ.'),
-      debtType: z.enum([
-        'family_loan',
-        'friend_loan',
-        'bank_loan',
-        'consumer_finance',
-        'mortgage',
-        'credit_card',
-        'installment',
-        'other',
-      ]),
-      lenderType: z.enum(['family', 'friend', 'bank', 'credit_institution', 'company', 'other']),
+      lenderType: z.enum(['relative', 'bank_institution', 'other']),
       lenderName: z.string().trim().min(1, 'Vui lòng nhập nơi cho vay.'),
       originalAmount: z.string().trim().min(1, 'Vui lòng nhập số tiền vay.'),
       outstandingAmount: z.string().trim().min(1, 'Vui lòng nhập số còn nợ.'),
@@ -176,6 +169,36 @@ export function buildDebtSchema() {
           path: ['outstandingAmount'],
           message: 'Số còn nợ không nên lớn hơn số vay ban đầu.',
         })
+      }
+      // A bank/institution loan is a fixed-schedule debt: the interest rate, the
+      // final due date (its term) and a fixed monthly payment are all required so
+      // the schedule and its locked repayments are well-defined (see
+      // memory/debts.md). Relative/other loans leave all three optional.
+      if (isFixedScheduleLender(value.lenderType)) {
+        const hasRate =
+          value.hasInterest &&
+          value.interestPeriods.some((p) => p.ratePct.trim() !== '')
+        if (!hasRate) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['interestPeriods'],
+            message: 'Khoản vay ngân hàng/tổ chức cần có lãi suất.',
+          })
+        }
+        if (!value.expectedFinalDueDate.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['expectedFinalDueDate'],
+            message: 'Khoản vay ngân hàng/tổ chức cần có kỳ hạn trả (ngày đáo hạn).',
+          })
+        }
+        if (parseAmountInput(value.fixedPaymentAmount) <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['fixedPaymentAmount'],
+            message: 'Khoản vay ngân hàng/tổ chức cần số tiền trả hàng tháng.',
+          })
+        }
       }
     })
 }

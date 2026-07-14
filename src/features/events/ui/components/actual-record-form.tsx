@@ -53,6 +53,7 @@ type ActualRecordFormProps = {
   /** Wallets eligible as the money source (cash / bank account). Drives the
    *  "nguồn tiền" select; destination selects still use assetOptions. */
   sourceAssetOptions: Option[]
+  categoryOptions: Option[]
   showMoreDetails: boolean
   onToggleMoreDetails: () => void
   isValid: boolean
@@ -73,6 +74,7 @@ export function ActualRecordForm({
   payments,
   assetOptions,
   sourceAssetOptions,
+  categoryOptions,
   showMoreDetails,
   onToggleMoreDetails,
   isValid,
@@ -83,8 +85,49 @@ export function ActualRecordForm({
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+      {/* Revaluation: edit the DIFF (mức thay đổi), with a tăng/giảm toggle for
+          its sign. The money field holds the magnitude; the toggle its direction. */}
+      {isRevaluation ? (
+        <EventField label="Mức thay đổi">
+          <Controller
+            control={control}
+            name="revaluationDirection"
+            render={({ field }) => (
+              <div className="rounded-full bg-[hsl(var(--muted))] p-1">
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('increase')}
+                    className={cn(
+                      'rounded-full px-4 py-2.5 text-sm font-semibold transition-colors',
+                      field.value !== 'decrease'
+                        ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-[0_8px_24px_rgba(0,0,0,0.04)]'
+                        : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
+                    )}
+                  >
+                    Tăng giá trị
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('decrease')}
+                    className={cn(
+                      'rounded-full px-4 py-2.5 text-sm font-semibold transition-colors',
+                      field.value === 'decrease'
+                        ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-[0_8px_24px_rgba(0,0,0,0.04)]'
+                        : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
+                    )}
+                  >
+                    Giảm giá trị
+                  </button>
+                </div>
+              </div>
+            )}
+          />
+        </EventField>
+      ) : null}
+
       {/* Hero amount field */}
-      <EventField label={isRevaluation ? 'Giá trị mới' : 'Số tiền'} error={errors.amount?.message} trailing={<span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>}>
+      <EventField label={isRevaluation ? 'Số tiền thay đổi' : 'Số tiền'} error={errors.amount?.message} trailing={<span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>}>
         <Controller
           control={control}
           name="amount"
@@ -99,11 +142,29 @@ export function ActualRecordForm({
         />
       </EventField>
 
-      {quickAction !== 'transfer' && quickAction !== 'goal_contribution' && quickAction !== 'payment_paid' ? (
-        <EventField label="Nội dung" error={errors.title?.message}>
-          <EventFieldInput
-            placeholder={quickAction === 'income' ? 'Ví dụ: Lương tháng 7' : 'Ví dụ: Tiền nhà tháng 7'}
-            {...register('title')}
+      {/* Category is required for expense/income and now sits directly under the
+          amount (the free-text "Nội dung"/title field was removed). Transfer /
+          goal_contribution / payment_paid derive their classification and don't
+          show it. */}
+      {!isRevaluation && (quickAction === 'expense' || quickAction === 'income') ? (
+        <EventField label="Danh mục" error={errors.category?.message}>
+          <Controller
+            control={control}
+            name="category"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger className={eventSelectTriggerClass}>
+                  <SelectValue placeholder="Chọn danh mục" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           />
         </EventField>
       ) : null}
@@ -211,12 +272,6 @@ export function ActualRecordForm({
 
       {!isRevaluation && showMoreDetails ? (
         <div className="space-y-4">
-          {(quickAction === 'expense' || quickAction === 'income') ? (
-            <EventField label="Danh mục">
-              <EventFieldInput placeholder="Ví dụ: housing, salary, saving" {...register('category')} />
-            </EventField>
-          ) : null}
-
           {(quickAction === 'expense' && !markPaidPaymentId) ? (
             <EventField label="Liên quan đến khoản sắp tới?">
               <Controller

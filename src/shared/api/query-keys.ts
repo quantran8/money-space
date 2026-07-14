@@ -15,6 +15,8 @@ export const queryKeys = {
     ['households', householdId, 'events', month ?? 'all'] as const,
   eventsSummary: (householdId: string, month?: string) =>
     ['households', householdId, 'events', 'summary', month ?? 'current'] as const,
+  eventCategories: (householdId: string) =>
+    ['households', householdId, 'event-categories'] as const,
   dashboard: (householdId: string) => ['households', householdId, 'dashboard'] as const,
   attentionItems: (householdId: string) =>
     ['households', householdId, 'attention-items'] as const,

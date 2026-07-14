@@ -8,7 +8,6 @@ type EventListResponse = {
 }
 
 export type EventPayload = {
-  title: string
   amount: number
   /** Sale/purchase fee in VND. Defaults to 0. See asset-sale. */
   feeAmount?: number

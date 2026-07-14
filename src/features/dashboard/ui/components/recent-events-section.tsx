@@ -50,9 +50,14 @@ export function RecentEventsSection({ moneyEvents, subtitle }: RecentEventsSecti
         <div className="divide-y divide-[hsl(var(--border))]">
           {visible.map((event) => {
             const Icon = event.type?.startsWith('asset') ? TrendingUp : Landmark
+            // `title` was dropped from money events — the note now labels the
+            // event, falling back to its translated category when empty.
+            const label =
+              event.note?.trim() ||
+              t(`options.eventCategory.${event.category}`, { defaultValue: event.category })
             return (
               <Link
-                key={event.id ?? `${event.title}-${event.date}`}
+                key={event.id ?? `${label}-${event.date}`}
                 to="/events"
                 className="group flex min-h-[72px] w-full items-center gap-4 py-3.5 text-left transition hover:opacity-75"
               >
@@ -63,7 +68,7 @@ export function RecentEventsSection({ moneyEvents, subtitle }: RecentEventsSecti
                   />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px] font-semibold">{event.title}</span>
+                  <span className="block truncate text-[15px] font-semibold">{label}</span>
                   <span className="mt-1 block text-sm text-[hsl(var(--muted-foreground))]">
                     {event.date}
                   </span>

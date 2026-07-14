@@ -54,7 +54,6 @@ export type LocalUpcomingPayment = {
 
 export type LocalMoneyEvent = {
   id: string
-  title: string
   amount: number
   currency: string
   date: string
@@ -88,6 +87,10 @@ export type FinancialRecordItem = {
    *  flow money events — see {@link isEditableEventType}). Upcoming payments are
    *  always editable. */
   canEdit?: boolean
+  /** Display label for the timeline row. For an upcoming payment it's the
+   *  payment name; for a money event it's the note (title was dropped), falling
+   *  back to a translated category label when the note is empty. Derived — not a
+   *  stored field on the event. */
   title: string
   amount: number
   currency: string
@@ -127,7 +130,6 @@ export type UpcomingRecordForm = {
 }
 
 export type ActualRecordForm = {
-  title: string
   amount: string
   eventDate: string
   eventType: RecordType
@@ -140,6 +142,11 @@ export type ActualRecordForm = {
   attentionLevel: AttentionLevel
   isAttentionNeeded: boolean
   note: string
+  // Only used when editing an `asset_update` revaluation: the field edits the
+  // *diff* the record represents, and `amount` holds its magnitude — this carries
+  // whether that diff raised (`increase`) or lowered (`decrease`) the asset. The
+  // signed diff sent to the backend is `amount × (increase ? +1 : −1)`.
+  revaluationDirection: 'increase' | 'decrease'
 }
 
 // The real current date (local time) as an ISO `YYYY-MM-DD` string. Used both to
@@ -171,11 +178,12 @@ export const upcomingDefaults: UpcomingRecordForm = {
 }
 
 export const actualDefaults: ActualRecordForm = {
-  title: '',
   amount: '',
   eventDate: TODAY,
   eventType: 'expense',
-  category: 'other',
+  // Empty by default so the required category picker starts unselected and the
+  // user must choose one (validated by `buildActualSchema`).
+  category: '',
   direction: 'outflow',
   fromAssetId: '',
   toAssetId: '',
@@ -184,6 +192,7 @@ export const actualDefaults: ActualRecordForm = {
   attentionLevel: 'normal',
   isAttentionNeeded: false,
   note: '',
+  revaluationDirection: 'increase',
 }
 
 const shortMonthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -271,7 +280,6 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
     // `seedEvents.find(id)` never matched → asset_sale / asset_update edits fell
     // through to the generic form.
     id: event.id ?? createId(),
-    title: event.title,
     amount: event.amount,
     currency: 'VND',
     date: event.isoDate,
@@ -362,7 +370,6 @@ export function areEventsEqual(left: LocalMoneyEvent[], right: LocalMoneyEvent[]
     const other = right[index]
     return (
       item.id === other.id &&
-      item.title === other.title &&
       item.amount === other.amount &&
       item.date === other.date &&
       item.note === other.note &&
@@ -614,6 +621,13 @@ export function buildUpcomingSchema() {
           message: 'Số tiền cần lớn hơn 0.',
         })
       }
+      if (!value.expectedFromAssetId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['expectedFromAssetId'],
+          message: 'Vui lòng chọn ví nguồn.',
+        })
+      }
       if (value.autoCreateNext && value.frequency === 'once') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -627,7 +641,6 @@ export function buildUpcomingSchema() {
 export function buildActualSchema() {
   return z
     .object({
-      title: z.string().trim().min(1, 'Vui lòng nhập tên sự kiện.'),
       amount: z.string().trim().min(1, 'Vui lòng nhập số tiền.'),
       eventDate: z.string().min(1, 'Vui lòng chọn ngày diễn ra.'),
       eventType: z.enum([
@@ -651,6 +664,9 @@ export function buildActualSchema() {
       attentionLevel: z.enum(['normal', 'important', 'urgent']),
       isAttentionNeeded: z.boolean(),
       note: z.string(),
+      // Only meaningful for an `asset_update` revaluation edit (the tăng/giảm
+      // sign of the diff); ignored by every other quick action.
+      revaluationDirection: z.enum(['increase', 'decrease']),
     })
     .superRefine((value, ctx) => {
       if (parseAmountInput(value.amount) <= 0) {
@@ -658,6 +674,19 @@ export function buildActualSchema() {
           code: z.ZodIssueCode.custom,
           path: ['amount'],
           message: 'Số tiền cần lớn hơn 0.',
+        })
+      }
+      // Category is required for the types that expose a category picker
+      // (expense / income). Transfer / goal_contribution / payment_paid derive
+      // their classification and don't show the field, so they're exempt.
+      if (
+        (value.eventType === 'expense' || value.eventType === 'income') &&
+        value.category.trim().length === 0
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['category'],
+          message: 'Vui lòng chọn danh mục.',
         })
       }
       if (eventRequiresFromAsset(value.eventType) && !value.fromAssetId) {

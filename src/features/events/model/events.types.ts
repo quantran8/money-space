@@ -1,6 +1,5 @@
 export type MoneyEventItem = {
   id?: string
-  title: string
   /** Raw signed VND amount (inflow > 0, outflow < 0); format for display. */
   amount: number
   /** Sale/purchase fee in VND. 0 for non-sale events. See asset-sale. */

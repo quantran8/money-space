@@ -102,7 +102,12 @@ export function useDashboardPage() {
   ]
 
   const recentSubtitle = moneyEvents[0]
-    ? `${moneyEvents[0].title} · ${moneyEvents[0].date}`
+    ? `${
+        moneyEvents[0].note?.trim() ||
+        t(`options.eventCategory.${moneyEvents[0].category}`, {
+          defaultValue: moneyEvents[0].category,
+        })
+      } · ${moneyEvents[0].date}`
     : ''
 
   return {

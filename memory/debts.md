@@ -4,7 +4,16 @@ Loans the household still owes, with repayment estimation. Related: [[money-even
 
 ## Overview
 
-CRUD over `Debt` (name, debtType, lenderType, lenderName, original/outstanding amount, borrowedAt, expectedFinalDueDate, status, owner member, optional `receivedToAsset` link).
+CRUD over `Debt` (name, **lenderType**, lenderName, original/outstanding amount, borrowedAt, expectedFinalDueDate, status, owner member, optional `receivedToAsset` link).
+
+## Lender type — the single classification (drives repayment rules)
+
+A debt is classified by **one** field, `lenderType`, with three values (the old dual `debtType` + `lenderType` was collapsed; `debtType` is gone). `isFixedScheduleLender(lenderType)` (`model/debts.types.ts`) is the single predicate the rules key on:
+
+- **`bank_institution`** — a *fixed-schedule* loan. The form (`buildDebtSchema` `superRefine`) **requires** an interest rate (interest switch on + a stage rate), an `expectedFinalDueDate` (its term), and a positive `fixedPaymentAmount`; the backend enforces the same via `assertLenderTerms` (400 otherwise). The fixed monthly payment can't be changed by editing the linked repayment money event — the backend **locks** those events (edit/delete → 400); update the debt record to change the schedule.
+- **`relative`** / **`other`** — interest and a fixed term are **optional**. When the user sets an amount + schedule, editing a repayment money event rebalances the next unpaid installment by the over/under-payment (backend `applyDebtRepaymentEffects`): **overpay → next installment shrinks; underpay → it grows** (total owed & installment count unchanged).
+
+The quick-pick chips (`quickLenderTypes`) and the "Loại khoản vay" select both map 1:1 to these three `lenderType` values. UI labels: Người thân / Ngân hàng · Tổ chức / Khác.
 
 ## Key invariant: borrowing does not inflate net worth
 
@@ -82,4 +91,4 @@ Soft-delete + unlink from upcoming payments and money events.
 
 ## Enums
 
-`DebtType` (8), `LenderType` (6), `DebtStatus = active | paid_off | paused | overdue | cancelled`, `PaymentFrequency = none | monthly | quarterly | yearly`, `InterestCalc = fixed | reducing`.
+`LenderType = relative | bank_institution | other` (the sole debt classification — `DebtType` was dropped), `DebtStatus = active | paid_off | paused | overdue | cancelled`, `PaymentFrequency = none | monthly | quarterly | yearly`, `InterestCalc = fixed | reducing`.

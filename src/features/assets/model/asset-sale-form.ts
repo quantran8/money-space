@@ -199,7 +199,6 @@ export function toSalePayload(
   const feeAmount = Number.isFinite(fee) ? fee : 0
 
   const payload: EventPayload = {
-    title: editingEvent?.title || `Đã bán ${asset.name}`,
     amount,
     feeAmount,
     type: 'asset_sale',
@@ -207,7 +206,9 @@ export function toSalePayload(
     isoDate: values.date,
     fromAssetId: asset.id,
     toAssetId: values.toAssetId,
-    note: values.note.trim() || undefined,
+    // `title` was dropped; the sale label now lives in the note (keep the user's
+    // note if they wrote one, else the default "Đã bán …").
+    note: values.note.trim() || editingEvent?.note || `Đã bán ${asset.name}`,
   }
 
   if (market) {
