@@ -11,12 +11,9 @@ import {
 } from 'recharts'
 
 import {
-  liquidityOrder,
   snapshotTotal,
-  type AssetLiquidity,
   type AssetSnapshotPoint,
 } from '@/features/assets/model/assets'
-import { liquidityColors } from '@/shared/constants/colors'
 import { formatVndShort } from '@/shared/lib/format-money'
 
 type AssetTrendChartProps = {
@@ -25,7 +22,7 @@ type AssetTrendChartProps = {
 
 function formatMonth(date: string, locale: string) {
   const parsed = new Date(date)
-  return parsed.toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', {
+  return parsed.toLocaleDateString(locale.startsWith('vi') ? 'vi-VN' : 'en-US', {
     month: 'short',
   })
 }
@@ -44,41 +41,48 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
     [snapshots, locale],
   )
 
-  const series = liquidityOrder.map((liquidity) => ({
-    key: liquidity,
-    label: t(`options.liquidity.${liquidity}`),
-    color: liquidityColors[liquidity],
-  }))
+  const first = data[0]?.total ?? 0
+  const current = data[data.length - 1]?.total ?? 0
+  const growth = first > 0 ? ((current - first) / first) * 100 : 0
+
+  if (data.length === 0) {
+    return (
+      <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+        {t('assets.charts.emptySnapshots')}
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-3">
-      {/* Legend — always present for ≥2 series */}
-      <ul className="flex flex-wrap gap-x-4 gap-y-1">
-        {series.map((s) => (
-          <li key={s.key} className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-2 w-4 rounded-full" style={{ backgroundColor: s.color }} />
-            {s.label}
-          </li>
-        ))}
-      </ul>
+    <div>
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs text-muted-foreground">{t('assets.charts.current')}</p>
+          <p className="money-number mt-1 text-2xl font-semibold">{formatVndShort(current)}</p>
+        </div>
+        <p
+          className={
+            growth >= 0
+              ? 'text-sm font-medium text-[hsl(var(--status-green))]'
+              : 'text-sm font-medium text-[hsl(var(--status-red))]'
+          }
+        >
+          {growth >= 0 ? '+' : ''}
+          {growth.toLocaleString(locale.startsWith('vi') ? 'vi-VN' : 'en-US', {
+            maximumFractionDigits: 1,
+          })}
+          %
+        </p>
+      </div>
 
       <div className="h-[260px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
             <defs>
-              {series.map((s) => (
-                <linearGradient
-                  key={s.key}
-                  id={`fill-${s.key}`}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="0%" stopColor={s.color} stopOpacity={0.18} />
-                  <stop offset="100%" stopColor={s.color} stopOpacity={0.02} />
-                </linearGradient>
-              ))}
+              <linearGradient id="asset-total-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.18} />
+                <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.01} />
+              </linearGradient>
             </defs>
 
             <CartesianGrid
@@ -116,46 +120,32 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
                         {formatVndShort(point.total)}
                       </span>
                     </div>
-                    {series.map((s) => (
-                      <div key={s.key} className="flex items-center justify-between gap-4">
-                        <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span
-                            className="h-1.5 w-3 rounded-full"
-                            style={{ backgroundColor: s.color }}
-                          />
-                          {s.label}
-                        </span>
-                        <span className="money-number text-xs text-foreground">
-                          {formatVndShort(point[s.key as AssetLiquidity])}
-                        </span>
-                      </div>
-                    ))}
                   </div>
                 )
               }}
             />
 
-            {/* Stacked in liquidity order; 2px surface stroke separates fills */}
-            {series.map((s) => (
-              <Area
-                key={s.key}
-                type="monotone"
-                dataKey={s.key}
-                stackId="assets"
-                stroke={s.color}
-                strokeWidth={2}
-                fill={`url(#fill-${s.key})`}
-                isAnimationActive={false}
-                activeDot={{
-                  r: 4,
-                  stroke: 'hsl(var(--card))',
-                  strokeWidth: 2,
-                  fill: s.color,
-                }}
-              />
-            ))}
+            <Area
+              type="monotone"
+              dataKey="total"
+              stroke="hsl(var(--accent))"
+              strokeWidth={3}
+              fill="url(#asset-total-fill)"
+              isAnimationActive={false}
+              activeDot={{
+                r: 5,
+                stroke: 'hsl(var(--card))',
+                strokeWidth: 3,
+                fill: 'hsl(var(--accent))',
+              }}
+            />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-4 text-xs text-muted-foreground">
+        <span>{t('assets.charts.initialSnapshot', { value: formatVndShort(first) })}</span>
+        <span>{t('assets.charts.snapshotCount', { count: data.length })}</span>
       </div>
     </div>
   )

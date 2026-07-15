@@ -8,14 +8,12 @@ import { useMembersPage } from '@/features/members/hooks/use-members-page'
 import { InviteFormDialog } from '@/features/members/ui/components/invite-form-dialog'
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
 import { MembersSidebar } from '@/features/members/ui/components/members-sidebar'
-import { MembersSummaryStrip } from '@/features/members/ui/components/members-summary-strip'
 
 export function MembersPage() {
   const { t } = useTranslation()
   const {
     members,
     isLoading,
-    activeCount,
     invitedCount,
     roleLabels,
     permissionLabels,
@@ -36,7 +34,7 @@ export function MembersPage() {
   } = useMembersPage()
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-4">
       <PageHeader
         eyebrow={t('members.header.eyebrow')}
         title={t('members.header.title')}
@@ -49,17 +47,10 @@ export function MembersPage() {
         }
       />
 
-      <MembersSummaryStrip
-        members={members}
-        activeCount={activeCount}
-        invitedCount={invitedCount}
-      />
-
-      <div className="grid gap-4 lg:grid-cols-12">
+      <div className="grid gap-4 xl:grid-cols-12">
         <MembersListSection
           members={members}
           isLoading={isLoading}
-          activeCount={activeCount}
           invitedCount={invitedCount}
           roleLabels={roleLabels}
           permissionLabels={permissionLabels}
@@ -69,7 +60,12 @@ export function MembersPage() {
           onRemove={setRemoveId}
         />
 
-        <MembersSidebar permissionLabels={permissionLabels} onInvite={openInvite} />
+        <MembersSidebar
+          permissionLabels={permissionLabels}
+          form={form}
+          isSubmitting={isSubmitting}
+          onSubmit={submit}
+        />
       </div>
 
       <InviteFormDialog

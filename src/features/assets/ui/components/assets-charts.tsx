@@ -14,25 +14,25 @@ type AssetsChartsProps = {
 export function AssetsCharts({ totals, snapshots }: AssetsChartsProps) {
   const { t } = useTranslation()
   return (
-    <div className="grid gap-4 lg:grid-cols-12">
-      <Card className="lg:col-span-5">
+    <div className="grid gap-4 xl:col-span-5">
+      <Card>
         <div className="mb-6">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {t('assets.charts.compositionEyebrow')}
           </p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">
+          <h2 className="section-title mt-1 text-xl font-semibold">
             {t('assets.charts.compositionTitle')}
           </h2>
         </div>
         <AssetCompositionChart totals={totals} />
       </Card>
 
-      <Card className="lg:col-span-7">
+      <Card>
         <div className="mb-6">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {t('assets.charts.trendEyebrow')}
           </p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">
+          <h2 className="section-title mt-1 text-xl font-semibold">
             {t('assets.charts.trendTitle')}
           </h2>
           <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">

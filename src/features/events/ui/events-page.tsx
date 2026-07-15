@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { PageHeader } from '@/app/layout/page-header'
 import { Button } from '@/components/ui/button'
@@ -12,11 +13,13 @@ import { EventsTimelineCard } from '@/features/events/ui/components/events-timel
 import type { QuickAction } from '@/features/events/model/events-form'
 
 export function EventsPage() {
+  const { t } = useTranslation()
   const { asOf } = useAssets()
   const {
     sale,
     summary,
     groupedRecords,
+    recordCounts,
     isLoading,
     payments,
     tab,
@@ -73,15 +76,15 @@ export function EventsPage() {
   }
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-4">
       <PageHeader
-        eyebrow="Money Timeline"
-        title="Financial Records"
-        description="Theo dõi khoản sắp tới và các sự kiện tài chính đáng ghi nhận của nhà mình."
+        eyebrow={t('events.header.eyebrow')}
+        title={t('events.header.title')}
+        description={t('events.header.description')}
         actions={
           <Button onClick={openCreate}>
             <Plus className="mr-2 size-4" />
-            Tạo record
+            {t('events.redesign.create')}
           </Button>
         }
       />
@@ -94,6 +97,7 @@ export function EventsPage() {
         tab={tab}
         onTabChange={setTab}
         groupedRecords={groupedRecords}
+        recordCounts={recordCounts}
         isLoading={isLoading}
         isSavingActual={isSavingActual}
         onMarkPaid={openMarkPaid}

@@ -2,7 +2,10 @@ import { useTranslation } from 'react-i18next'
 
 import { useDashboardOverview } from '@/features/dashboard/hooks/use-dashboard-overview'
 import {
+  buildAssetBuckets,
+  buildResponsibility,
   formatCompactMillions,
+  formatMonths,
   parseCompactMillions,
   shortDate,
   statusVariantFor,
@@ -19,6 +22,7 @@ export function useDashboardPage() {
     payments,
     debts,
     goals,
+    assets,
     assetGroups,
     recentEvents: moneyEvents,
     assetTrend,
@@ -101,6 +105,44 @@ export function useDashboardPage() {
     { label: t('assets.strip.longTerm'), value: formatVndShort(assetGroups[2]?.value ?? 0) },
   ]
 
+  // Where the money sits, folded into the four dashboard buckets (mockup
+  // "Tiền đang ở đâu?"). Only non-empty buckets are shown so the segmented bar
+  // and legend stay honest when a household holds just one or two classes.
+  const { buckets: assetBuckets, total: assetBucketTotal } = buildAssetBuckets(assets)
+  const visibleAssetBuckets = assetBuckets.filter((bucket) => bucket.value > 0)
+
+  // Who is on the hook for the upcoming payments (mockup "Ai đang phụ trách?").
+  const { rows: responsibility, unassigned: unassignedPayments } = buildResponsibility(payments)
+
+  // "Cần cùng xem" topics (mockup): payments still needing a funding source
+  // (status `important`) surface first, then the single most material open item
+  // (largest debt or the main goal) from `discussItem`. Capped at two.
+  const discussTopics = [
+    ...payments
+      .filter((payment) => payment.status === 'important')
+      .map((payment) => ({
+        to: '/payments',
+        title: t('dashboard.sections.discuss.title'),
+        line: t('dashboard.redesign.upcoming.status.important') + ' · ' + payment.name,
+      })),
+    ...(discussItem ? [discussItem] : []),
+  ].slice(0, 2)
+
+  // "Tiền sẵn có" card (mockup): what's usable now, what's due in the window,
+  // and what we expect to be left after those are paid.
+  const availableNow = snapshot.liquid
+  const availableRemaining = Math.max(0, availableNow - upcomingTotalVnd)
+  const availableUsedRatio =
+    availableNow > 0 ? Math.min(100, Math.round((availableRemaining / availableNow) * 100)) : 0
+
+  // Emergency-fund runway: how many months of near-term obligations the reserve
+  // covers. Derived from the reserve vs. the 30-day due total (our best proxy
+  // for monthly essentials, since the MVP has no dedicated spend figure).
+  const monthlyEssentials = upcomingTotalVnd > 0 ? upcomingTotalVnd : 0
+  const reserveMonths = monthlyEssentials > 0 ? snapshot.savings / monthlyEssentials : 0
+  const reserveMonthsLabel = reserveMonths > 0 ? formatMonths(reserveMonths) : null
+  const reserveGood = reserveMonths >= 3
+
   const recentSubtitle = moneyEvents[0]
     ? `${
         moneyEvents[0].note?.trim() ||
@@ -136,5 +178,18 @@ export function useDashboardPage() {
     totalAssets,
     longTermValue,
     debtCount,
+    // Redesign additions
+    assetBuckets: visibleAssetBuckets,
+    assetBucketTotal,
+    responsibility,
+    unassignedPayments,
+    discussTopics,
+    goals,
+    upcomingTotalVnd,
+    availableNow,
+    availableRemaining,
+    availableUsedRatio,
+    reserveMonthsLabel,
+    reserveGood,
   } as const
 }

@@ -30,7 +30,7 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
   const { t } = useTranslation()
 
   return (
-    <div className="space-y-3">
+    <div className="divide-y divide-border">
       {assets.map((asset) => {
         const value = computeCurrentValue(asset, asOf)
         const isAutoPriced = asset.valuationMode !== 'manual'
@@ -41,7 +41,7 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
         return (
           <div
             key={asset.id}
-            className="surface-muted flex items-center justify-between rounded-3xl px-4 py-4"
+            className="grid gap-3 py-5 first:pt-0 last:pb-0 md:grid-cols-[minmax(0,1.35fr)_minmax(100px,.7fr)_minmax(110px,.65fr)_36px] md:items-center"
           >
             <button
               type="button"
@@ -50,9 +50,8 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
               aria-label={asset.name}
             >
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-medium">{asset.name}</p>
+                <p className="text-sm font-semibold">{asset.name}</p>
                 <Badge variant="outline">{t(`options.assetType.${asset.type}`)}</Badge>
-                <Badge>{t(`options.liquidity.${asset.liquidity}`)}</Badge>
                 {isAutoPriced ? (
                   <Badge className="bg-[hsla(var(--accent),0.12)] text-[hsl(var(--accent))]">
                     <Sparkles className="mr-1 size-3" />
@@ -66,7 +65,7 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
                 ) : null}
               </div>
 
-              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+              <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
                 {asset.note || t('common.noNote')}
               </p>
 
@@ -92,17 +91,19 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
               ) : null}
             </button>
 
-            <div className="flex shrink-0 items-center gap-2 pl-3">
-              <p
-                className={
-                  isSold
-                    ? 'money-number text-2xl text-[hsl(var(--muted-foreground))] line-through'
-                    : 'money-number text-2xl'
-                }
-              >
-                {priceMissing ? t('assets.list.priceUnavailable') : formatVndShort(value ?? 0)}
-              </p>
-              <DropdownMenu>
+            <p className="text-xs font-medium text-[hsl(var(--accent))]">
+              {t(`options.liquidity.${asset.liquidity}`)}
+            </p>
+            <p
+              className={
+                isSold
+                  ? 'money-number text-lg font-semibold text-muted-foreground line-through md:text-right'
+                  : 'money-number text-lg font-semibold md:text-right'
+              }
+            >
+              {priceMissing ? t('assets.list.priceUnavailable') : formatVndShort(value ?? 0)}
+            </p>
+            <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
@@ -132,8 +133,7 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
                     {t('common.delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            </DropdownMenu>
           </div>
         )
       })}

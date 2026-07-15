@@ -1,100 +1,99 @@
-import { Lock, Mail, ShieldCheck, UserPlus } from 'lucide-react'
+import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { FormField } from '@/components/ui/form-field'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import type { InviteForm } from '@/features/members/model/members-form'
 import type { PermissionLevel } from '@/features/members/model/members'
 
 type MembersSidebarProps = {
   permissionLabels: Record<PermissionLevel, string>
-  onInvite: () => void
+  form: UseFormReturn<InviteForm>
+  isSubmitting: boolean
+  onSubmit: () => void
 }
 
-export function MembersSidebar({ permissionLabels, onInvite }: MembersSidebarProps) {
+export function MembersSidebar({
+  permissionLabels,
+  form,
+  isSubmitting,
+  onSubmit,
+}: MembersSidebarProps) {
   const { t } = useTranslation()
+  const {
+    control,
+    register,
+    formState: { errors, isValid },
+  } = form
 
   return (
-    <aside className="space-y-4 lg:col-span-5">
+    <aside className="space-y-4 xl:col-span-4">
       <Card>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              {t('members.quickInvite.eyebrow')}
-            </p>
-            <h3 className="section-title mt-1 text-xl font-semibold">
-              {t('members.quickInvite.title')}
-            </h3>
-          </div>
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
-            <UserPlus className="size-5 text-[hsl(var(--accent))]" strokeWidth={1.8} />
-          </div>
-        </div>
-        <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-          {t('members.invite.helper')}
+        <p className="text-sm text-muted-foreground">{t('members.quickInvite.eyebrow')}</p>
+        <h2 className="section-title mt-1 text-xl font-semibold">
+          {t('members.quickInvite.title')}
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {t('members.invite.helperShort')}
         </p>
-        <Button className="mt-4 w-full" onClick={onInvite}>
-          <Mail className="mr-2 size-4" />
-          {t('members.invite.submit')}
-        </Button>
+
+        <div className="mt-5 space-y-4">
+          <FormField label={t('members.invite.email')} error={errors.email?.message}>
+            <Input
+              type="email"
+              className="rounded-xl bg-muted/45"
+              placeholder={t('members.invite.emailPlaceholder')}
+              {...register('email')}
+            />
+          </FormField>
+          <FormField label={t('members.invite.role')} error={errors.role?.message}>
+            <Controller
+              control={control}
+              name="role"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="rounded-xl bg-muted/45">
+                    <SelectValue placeholder={t('members.invite.rolePlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="partner">{t('options.role.partner')}</SelectItem>
+                    <SelectItem value="viewer">{t('options.role.viewer')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </FormField>
+          <Button type="button" className="w-full" disabled={!isValid || isSubmitting} onClick={onSubmit}>
+            {isSubmitting ? t('members.invite.submitting') : t('members.invite.submit')}
+          </Button>
+        </div>
       </Card>
 
       <Card>
-        <div className="mb-4 flex items-center gap-2">
-          <ShieldCheck className="size-5 text-[hsl(var(--accent))]" strokeWidth={1.8} />
-          <h3 className="text-lg font-semibold">{t('members.access.title')}</h3>
-        </div>
-        <div className="space-y-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-          <p>
-            <span className="font-medium text-[hsl(var(--foreground))]">
-              {t('options.role.owner')}
-            </span>{' '}
-            {t('members.access.owner')}
-          </p>
-          <p>
-            <span className="font-medium text-[hsl(var(--foreground))]">
-              {t('options.role.partner')}
-            </span>{' '}
-            {t('members.access.partner')}
-          </p>
-          <p>
-            <span className="font-medium text-[hsl(var(--foreground))]">
-              {t('options.role.viewer')}
-            </span>{' '}
-            {t('members.access.viewer')}
-          </p>
-        </div>
-
-        <p className="mb-3 mt-6 text-sm font-medium text-[hsl(var(--muted-foreground))]">
+        <p className="text-sm text-muted-foreground">{t('members.permissionLevels.eyebrow')}</p>
+        <h2 className="section-title mt-1 text-xl font-semibold">
           {t('members.permissionLevels.title')}
-        </p>
-        <div className="surface-muted rounded-3xl p-2">
+        </h2>
+
+        <div className="mt-5 divide-y divide-border">
           {(Object.keys(permissionLabels) as PermissionLevel[]).map((level) => (
-            <div
-              key={level}
-              className="flex items-start justify-between gap-4 rounded-2xl px-3 py-3"
-            >
-              <p className="shrink-0 text-sm font-semibold text-[hsl(var(--foreground))]">
-                {permissionLabels[level]}
-              </p>
-              <p className="text-right text-sm text-[hsl(var(--muted-foreground))]">
+            <div key={level} className="py-3 first:pt-0 last:pb-0">
+              <p className="text-sm font-medium">{permissionLabels[level]}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t(`members.permissionLevels.${level}`)}
               </p>
             </div>
           ))}
         </div>
-      </Card>
-
-      <Card className="border-transparent bg-[hsl(var(--foreground))] text-white">
-        <div className="flex items-center gap-2">
-          <Lock className="size-4 text-white/60" strokeWidth={1.8} />
-          <p className="text-sm text-white/60">{t('members.privacy.eyebrow')}</p>
-        </div>
-        <h3 className="section-title mt-2 text-2xl font-semibold">
-          {t('members.privacy.title')}
-        </h3>
-        <p className="mt-3 text-sm leading-6 text-white/70">
-          {t('members.privacy.description')}
-        </p>
       </Card>
     </aside>
   )

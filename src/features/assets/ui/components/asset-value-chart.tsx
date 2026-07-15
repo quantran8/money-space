@@ -22,7 +22,7 @@ type AssetValueChartProps = {
 
 function formatDay(date: string, locale: string) {
   const parsed = new Date(date)
-  return parsed.toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', {
+  return parsed.toLocaleDateString(locale.startsWith('vi') ? 'vi-VN' : 'en-US', {
     day: '2-digit',
     month: 'short',
   })

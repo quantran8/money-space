@@ -1,4 +1,4 @@
-import { Check, Pencil, Plus, Star, Tag, Trash2, X } from 'lucide-react'
+import { Check, Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -95,7 +95,7 @@ export function CategoriesCard() {
 
   return (
     <Card>
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-5 flex items-start justify-between gap-4">
         <div>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {t('settings.categories.eyebrow')}
@@ -103,16 +103,10 @@ export function CategoriesCard() {
           <h2 className="section-title mt-1 text-xl font-semibold">
             {t('settings.categories.title')}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-            {t('settings.categories.description')}
-          </p>
-        </div>
-        <div className="flex size-10 items-center justify-center rounded-full bg-[hsla(var(--accent),0.1)]">
-          <Tag className="size-5 text-[hsl(var(--accent))]" />
         </div>
       </div>
 
-      <ul className="space-y-2">
+      <ul className="divide-y divide-border">
         {categories.length === 0 ? (
           <li className="rounded-[18px] bg-[hsl(var(--muted))] px-4 py-3 text-sm text-[hsl(var(--muted-foreground))]">
             {t('settings.categories.empty')}
@@ -124,7 +118,7 @@ export function CategoriesCard() {
           return (
             <li
               key={category.id}
-              className="flex items-center gap-3 rounded-[18px] border border-border bg-card px-4 py-2.5"
+              className="flex items-center gap-2 py-3 first:pt-0"
             >
               {isEditing ? (
                 <Input
@@ -145,9 +139,11 @@ export function CategoriesCard() {
                       </Badge>
                     ) : null}
                   </div>
-                  <p className="truncate text-xs text-[hsl(var(--muted-foreground))]">
-                    {category.code}
-                  </p>
+                  {!category.isSystem ? (
+                    <p className="truncate text-xs text-[hsl(var(--muted-foreground))]">
+                      {category.code}
+                    </p>
+                  ) : null}
                 </div>
               )}
 
@@ -228,7 +224,11 @@ export function CategoriesCard() {
       </ul>
 
       {/* Add a custom category. */}
-      <div className="mt-4 space-y-2 border-t border-black/[0.06] pt-4">
+      <details className="mt-4 border-t border-border pt-4">
+        <summary className="cursor-pointer list-none text-sm font-medium text-muted-foreground">
+          {t('settings.categories.manage')}
+        </summary>
+        <div className="mt-4 space-y-2">
         <p className="text-sm font-medium text-foreground">
           {t('settings.categories.addTitle')}
         </p>
@@ -259,7 +259,8 @@ export function CategoriesCard() {
           <Plus className="mr-2 size-4" />
           {t('settings.categories.addAction')}
         </Button>
-      </div>
+        </div>
+      </details>
 
       <ConfirmDialog
         open={deleteTarget !== null}

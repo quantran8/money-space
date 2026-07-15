@@ -34,6 +34,7 @@ export function useDashboardOverview() {
     payments: payments.payments,
     debts: debts.debts,
     goals: goals.goals,
+    assets: assets.assets,
     assetGroups: assets.summary?.groups ?? [],
     attentionItems: attentionQuery.data?.items ?? [],
     recentEvents: events.events,

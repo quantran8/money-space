@@ -45,16 +45,16 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-      <div className="relative h-[240px] w-full sm:w-[240px]">
+    <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+      <div className="relative mx-auto h-44 w-44 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={slices}
               dataKey="value"
               nameKey="label"
-              innerRadius={70}
-              outerRadius={100}
+              innerRadius={52}
+              outerRadius={76}
               // 2px surface gap between adjacent segments (dataviz spacer rule).
               paddingAngle={2}
               stroke="hsl(var(--card))"
@@ -94,14 +94,14 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
         {/* Hero total in the donut hole */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xs text-muted-foreground">{t('assets.summary.total')}</span>
-          <span className="money-number text-2xl font-semibold text-foreground">
+          <span className="money-number mt-1 text-xl font-semibold text-foreground">
             {formatVndShort(total)}
           </span>
         </div>
       </div>
 
       {/* Legend + direct labels (identity never color-alone) */}
-      <ul className="flex-1 space-y-2">
+      <ul className="min-w-0 flex-1 space-y-4">
         {slices.map((slice) => {
           const share = Math.round((slice.value / total) * 100)
           return (
@@ -113,7 +113,7 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
                 />
                 {slice.label}
               </span>
-              <span className="flex items-center gap-2">
+              <span className="flex shrink-0 items-center gap-2">
                 <span className="money-number text-sm font-medium text-foreground">
                   {formatVndShort(slice.value)}
                 </span>

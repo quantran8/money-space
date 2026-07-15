@@ -1,4 +1,3 @@
-import { Bell } from 'lucide-react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
@@ -16,25 +15,20 @@ export function RemindersCard({ form }: RemindersCardProps) {
 
   return (
     <Card>
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
+      <div className="mb-5">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {t('settings.reminders.eyebrow')}
           </p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">
+          <h2 className="section-title mt-1 text-xl font-semibold">
             {t('settings.reminders.title')}
           </h2>
-        </div>
-        <div className="flex size-10 items-center justify-center rounded-full bg-[hsla(var(--accent),0.1)]">
-          <Bell className="size-5 text-[hsl(var(--accent))]" />
-        </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-4 rounded-3xl surface-muted p-4">
+      <div className="divide-y divide-border">
+        <div className="flex items-center justify-between gap-4 py-4 first:pt-0">
           <div>
-            <p className="font-medium">{t('settings.reminders.upcomingTitle')}</p>
-            <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+            <p className="text-sm font-medium">{t('settings.reminders.upcomingTitle')}</p>
+            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
               {t('settings.reminders.upcomingDescription')}
             </p>
           </div>
@@ -47,16 +41,32 @@ export function RemindersCard({ form }: RemindersCardProps) {
           />
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-3xl surface-muted p-4">
+        <div className="flex items-center justify-between gap-4 py-4">
           <div>
-            <p className="font-medium">{t('settings.reminders.updatesTitle')}</p>
-            <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+            <p className="text-sm font-medium">{t('settings.reminders.updatesTitle')}</p>
+            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
               {t('settings.reminders.updatesDescription')}
             </p>
           </div>
           <Controller
             control={control}
             name="reminderUpdate"
+            render={({ field }) => (
+              <Switch checked={field.value} onCheckedChange={field.onChange} />
+            )}
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-4 py-4 pb-0">
+          <div>
+            <p className="text-sm font-medium">{t('settings.reminders.accessTitle')}</p>
+            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+              {t('settings.reminders.accessDescription')}
+            </p>
+          </div>
+          <Controller
+            control={control}
+            name="reminderAccess"
             render={({ field }) => (
               <Switch checked={field.value} onCheckedChange={field.onChange} />
             )}

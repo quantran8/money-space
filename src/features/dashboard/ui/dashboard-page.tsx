@@ -2,32 +2,37 @@ import { useTranslation } from 'react-i18next'
 
 import { AppearGroup, AppearItem } from '@/components/ui/motion'
 import { useDashboardPage } from '@/features/dashboard/hooks/use-dashboard-page'
-import { AttentionSection } from '@/features/dashboard/ui/components/attention-section'
+import { AssetsBreakdownSection } from '@/features/dashboard/ui/components/assets-breakdown-section'
 import { DashboardSkeleton } from '@/features/dashboard/ui/components/dashboard-skeleton'
+import { DiscussSection } from '@/features/dashboard/ui/components/discuss-section'
 import { LongTermGoalSection } from '@/features/dashboard/ui/components/long-term-goal-section'
-import { MoneySection } from '@/features/dashboard/ui/components/money-section'
 import { NetWorthHero } from '@/features/dashboard/ui/components/net-worth-hero'
 import { RecentEventsSection } from '@/features/dashboard/ui/components/recent-events-section'
+import { ResponsibilitySection } from '@/features/dashboard/ui/components/responsibility-section'
+import { UpcomingPaymentsSection } from '@/features/dashboard/ui/components/upcoming-payments-section'
 
 export function DashboardPage() {
   const { t } = useTranslation()
   const {
     snapshot,
     payments,
-    mainGoal,
+    goals,
     moneyEvents,
-    statusLabel,
-    statusLineKey,
+    statusVariant,
     updatedAtLabel,
     recentSubtitle,
     upcomingCount,
-    upcomingTotalLabel,
-    discussItem,
-    discussCount,
-    mainGoalRemaining,
     totalAssets,
-    longTermValue,
-    debtCount,
+    availableNow,
+    availableRemaining,
+    availableUsedRatio,
+    upcomingTotalVnd,
+    reserveMonthsLabel,
+    reserveGood,
+    assetBuckets,
+    responsibility,
+    unassignedPayments,
+    discussTopics,
   } = useDashboardPage()
 
   if (!snapshot) {
@@ -35,50 +40,62 @@ export function DashboardPage() {
   }
 
   return (
-    <AppearGroup className="space-y-6">
-      {/* 1. Hero — dark focal panel + supporting overview (mockup #overview). */}
+    <AppearGroup className="space-y-5">
+      {/* Page title (mockup page header). */}
+      <AppearItem>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="mb-2 text-sm text-[hsl(var(--muted-foreground))]">
+              {t('dashboard.redesign.eyebrow')}
+            </p>
+            <h1 className="page-title text-3xl font-semibold sm:text-4xl">
+              {t(`dashboard.redesign.pageTitle.${statusVariant}`)}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
+            <span className="size-2 rounded-full bg-[hsl(var(--status-green))]" />
+            {updatedAtLabel}
+          </div>
+        </div>
+      </AppearItem>
+
+      {/* Net worth + Tiền sẵn có (mockup summary). */}
       <AppearItem>
         <NetWorthHero
           snapshot={snapshot}
-          statusLabel={statusLabel}
-          statusLineKey={statusLineKey}
-          updatedAtLabel={updatedAtLabel}
-          upcomingCount={upcomingCount}
-          discussCount={discussCount}
-        />
-      </AppearItem>
-
-      {/* 2. Tiền nhà mình — liquidity + assets/debt (mockup #money). */}
-      <AppearItem>
-        <MoneySection
-          snapshot={snapshot}
+          statusVariant={statusVariant}
           totalAssets={totalAssets}
-          longTermValue={longTermValue}
-          debtCount={debtCount}
+          availableNow={availableNow}
+          availableRemaining={availableRemaining}
+          availableUsedRatio={availableUsedRatio}
+          upcomingTotalVnd={upcomingTotalVnd}
+          reserveMonthsLabel={reserveMonthsLabel}
+          reserveGood={reserveGood}
         />
       </AppearItem>
 
-      {/* 3. Cần chú ý + Cần bàn (mockup #attention). */}
+      {/* Assets breakdown + upcoming payments (mockup content grid). */}
       <AppearItem>
-        <AttentionSection
-          payments={payments}
-          upcomingCount={upcomingCount}
-          upcomingTotalLabel={upcomingTotalLabel}
-          discussItem={discussItem}
-          discussCount={discussCount}
-        />
+        <section className="grid gap-4 xl:grid-cols-12">
+          <AssetsBreakdownSection buckets={assetBuckets} />
+          <UpcomingPaymentsSection payments={payments} upcomingCount={upcomingCount} />
+        </section>
       </AppearItem>
 
-      {/* 4. Kế hoạch dài hạn (mockup #plan). */}
+      {/* Discuss + goals + responsibility (mockup lower grid). */}
       <AppearItem>
-        <LongTermGoalSection mainGoal={mainGoal} remaining={mainGoalRemaining} />
+        <section className="grid gap-4 xl:grid-cols-12">
+          <DiscussSection topics={discussTopics} />
+          <LongTermGoalSection goals={goals} />
+          <ResponsibilitySection rows={responsibility} unassigned={unassignedPayments} />
+        </section>
       </AppearItem>
 
-      {/* 5. Gần đây (mockup #recent). */}
+      {/* Recent money events table (mockup #recent). */}
       <AppearItem>
         <RecentEventsSection
           moneyEvents={moneyEvents}
-          subtitle={recentSubtitle || t('dashboard.sections.recent.subtitle')}
+          subtitle={recentSubtitle || t('dashboard.redesign.events.subtitle')}
         />
       </AppearItem>
 

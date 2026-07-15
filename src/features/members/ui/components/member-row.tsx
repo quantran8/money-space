@@ -39,10 +39,10 @@ export function MemberRow({
   const { t } = useTranslation()
 
   return (
-    <div className="surface-muted rounded-3xl p-4">
+    <div className="py-5 first:pt-0 last:pb-0">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-card text-sm font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold">
             {member.initials}
           </div>
           <div className="min-w-0">
@@ -53,14 +53,14 @@ export function MemberRow({
                 <Badge className="bg-[hsla(var(--status-orange),0.12)] text-[hsl(var(--status-orange))]">
                   {t('members.list.pending')}
                 </Badge>
-              ) : null}
+              ) : (
+                <Badge className="bg-[hsla(var(--status-green),0.1)] text-[hsl(var(--status-green))]">
+                  {t('members.list.active')}
+                </Badge>
+              )}
             </div>
             <p className="mt-1 truncate text-sm text-[hsl(var(--muted-foreground))]">
               {member.email}
-            </p>
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-              {t('common.joined', { date: member.joinedAt })} ·{' '}
-              {t('common.activeAt', { value: member.lastActive })}
             </p>
           </div>
         </div>
@@ -68,17 +68,17 @@ export function MemberRow({
         {member.role !== 'owner' ? (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => onRemove(member.id)}
-            className="shrink-0 text-[hsl(var(--status-red))] hover:bg-[hsla(var(--status-red),0.08)] hover:text-[hsl(var(--status-red))]"
+            className="shrink-0 border-[hsla(var(--status-red),0.25)] text-[hsl(var(--status-red))] hover:bg-[hsla(var(--status-red),0.06)] hover:text-[hsl(var(--status-red))]"
           >
             {t('common.remove')}
           </Button>
         ) : null}
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">{t('members.list.role')}</Label>
           <Select
@@ -86,7 +86,7 @@ export function MemberRow({
             disabled={member.role === 'owner' || isUpdating}
             onValueChange={(value) => onUpdateRole(member.id, value as HouseholdRole)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="rounded-xl bg-muted/45">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -107,7 +107,7 @@ export function MemberRow({
             disabled={member.role === 'owner' || isUpdating}
             onValueChange={(value) => onUpdatePermission(member.id, value as PermissionLevel)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="rounded-xl bg-muted/45">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

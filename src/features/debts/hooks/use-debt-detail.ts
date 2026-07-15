@@ -5,6 +5,7 @@ import { useDebts } from '@/features/debts/hooks/use-debts'
 import { useEvents } from '@/features/events/hooks/use-events'
 import { useMembers } from '@/features/members/hooks/use-members'
 import type { MoneyEventItem } from '@/features/events/model/events.types'
+import { usePayments } from '@/features/payments/hooks/use-payments'
 
 /** One row in a debt's repayment/borrow timeline, derived from money events. */
 export type DebtHistoryEntry = {
@@ -32,6 +33,7 @@ export function useDebtDetail(debtId: string | undefined) {
   const { events, isLoading: isLoadingEvents } = useEvents()
   const { members } = useMembers()
   const { assets } = useAssets()
+  const { payments, isLoading: isLoadingPayments } = usePayments()
 
   const debt = useMemo(
     () => (debtId ? debts.find((item) => item.id === debtId) : undefined),
@@ -100,6 +102,21 @@ export function useDebtDetail(debtId: string | undefined) {
     [repayments],
   )
 
+  const upcomingPayments = useMemo(() => {
+    if (!debtId) return []
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return payments
+      .filter((payment) => payment.debtId === debtId)
+      .filter((payment) => {
+        const due = new Date(`${payment.dueDate ?? payment.due}T00:00:00`)
+        return !Number.isNaN(due.getTime()) && due >= today
+      })
+      .sort((left, right) =>
+        (left.dueDate ?? left.due).localeCompare(right.dueDate ?? right.due),
+      )
+  }, [debtId, payments])
+
   return {
     debt,
     ownerName,
@@ -110,6 +127,7 @@ export function useDebtDetail(debtId: string | undefined) {
     adjustments,
     totalBorrowed,
     totalRepaid,
-    isLoading: isLoadingDebts || isLoadingEvents,
+    upcomingPayments,
+    isLoading: isLoadingDebts || isLoadingEvents || isLoadingPayments,
   }
 }

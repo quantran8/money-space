@@ -1,145 +1,156 @@
-import { RefreshCw, ShieldCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
 import type { DashboardOverview } from '@/features/dashboard/api/dashboard.repository'
+import type { StatusVariant } from '@/features/dashboard/model/dashboard'
+import { formatCompactMillions } from '@/features/dashboard/model/dashboard'
 import { formatVndShort } from '@/shared/lib/format-money'
 
 type NetWorthHeroProps = {
   snapshot: DashboardOverview
-  statusLabel: string
-  statusLineKey: string
-  updatedAtLabel: string
-  upcomingCount: number
-  discussCount: number
+  statusVariant: StatusVariant
+  totalAssets: number
+  availableNow: number
+  availableRemaining: number
+  availableUsedRatio: number
+  upcomingTotalVnd: number
+  reserveMonthsLabel: string | null
+  reserveGood: boolean
+}
+
+/** Whole-million figure, no unit — e.g. 620_000_000 → "620". */
+function millions(value: number) {
+  return String(Math.round(value / 1_000_000))
 }
 
 /**
- * Dashboard hero (mockup `#overview`): a two-column focal surface — a dark
- * signature panel with the headline "money available now", beside a lighter
- * supporting overview with three key metrics and a calm assurance note.
- * Colors are mapped onto the app design-system tokens (hsl var), not raw hex.
+ * Net-worth summary (mockup `#overview`): a dark focal panel with the household
+ * net worth plus total-assets / debt tiles, beside a lighter "Tiền sẵn có" card
+ * with a usage bar and the emergency-fund read. Colors map onto the app's
+ * design-system tokens, not raw hex.
  */
 export function NetWorthHero({
   snapshot,
-  statusLabel,
-  statusLineKey,
-  updatedAtLabel,
-  upcomingCount,
-  discussCount,
+  statusVariant,
+  totalAssets,
+  availableNow,
+  availableRemaining,
+  availableUsedRatio,
+  upcomingTotalVnd,
+  reserveMonthsLabel,
+  reserveGood,
 }: NetWorthHeroProps) {
   const { t } = useTranslation()
 
   return (
-    <section
-      aria-labelledby="overview-title"
-      className="overflow-hidden rounded-[30px] bg-card p-3 shadow-[0_20px_60px_rgba(0,0,0,0.08)] sm:p-4"
-    >
-      <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
-        {/* Signature focal surface */}
-        <div className="relative overflow-hidden rounded-[24px] bg-[hsl(var(--foreground))] p-6 text-[hsl(var(--background))] sm:p-7 lg:min-h-[410px]">
-          <div
-            className="absolute -right-16 -top-20 size-56 rounded-full bg-white/[0.055]"
-            aria-hidden
-          />
-          <div
-            className="absolute -bottom-24 -left-20 size-64 rounded-full border border-white/10"
-            aria-hidden
-          />
-
-          <div className="relative flex h-full flex-col">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="inline-flex min-h-8 items-center gap-2 rounded-full bg-white/10 px-3 text-xs font-semibold">
-                <span
-                  className="size-2 rounded-full"
-                  style={{ backgroundColor: 'hsl(var(--status-green))' }}
-                />
-                {statusLabel}
-              </span>
-              <span className="text-xs text-white/55">{updatedAtLabel}</span>
-            </div>
-
-            <div className="my-auto py-10">
-              <p className="text-sm font-medium text-white/60">{t('dashboard.hero.liquidLabel')}</p>
-              <p className="money-number mt-3 text-[clamp(3.4rem,8vw,6.4rem)] font-semibold leading-[0.9]">
-                {formatVndShort(snapshot.liquid)}
-                <span className="ml-2 text-[0.36em] tracking-normal text-white/55">đ</span>
-              </p>
-              <p className="mt-5 max-w-md text-sm leading-6 text-white/65 sm:text-[15px]">
-                {t('dashboard.hero.liquidCaption')}
-              </p>
-            </div>
-
-            <Link
-              to="/events"
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[hsl(var(--background))] px-5 text-sm font-semibold text-[hsl(var(--foreground))] transition hover:opacity-90 sm:w-fit"
-            >
-              <RefreshCw className="size-4" strokeWidth={1.9} />
-              {t('dashboard.heroButton')}
-            </Link>
-          </div>
-        </div>
-
-        {/* Supporting overview */}
-        <div className="flex flex-col p-2 sm:p-3 lg:p-5">
+    <section aria-labelledby="overview-title" className="grid gap-4 xl:grid-cols-[1.55fr_0.85fr]">
+      {/* Net-worth focal panel */}
+      <div className="rounded-[28px] bg-[hsl(var(--foreground))] p-6 text-[hsl(var(--background))] apple-shadow sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-[hsl(var(--status-green))]">
-              {t('dashboard.hero.overviewEyebrow')}
+            <p className="text-sm font-medium text-white/45">
+              {t('dashboard.redesign.netWorthLabel')}
             </p>
-            <h1
-              id="overview-title"
-              className="page-title mt-3 max-w-xl text-4xl font-semibold leading-[1.04] sm:text-5xl"
-            >
-              {t('dashboard.hero.overviewTitle')}
-            </h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-[hsl(var(--muted-foreground))] sm:text-[15px]">
-              {t('dashboard.hero.overviewSubtitle')}
-            </p>
-          </div>
-
-          <div className="mt-8 overflow-hidden rounded-2xl bg-[hsl(var(--muted))]">
-            <div className="grid sm:grid-cols-3 sm:divide-x sm:divide-[hsl(var(--border))]">
-              <div className="border-b border-border px-4 py-5 sm:border-b-0">
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  {t('dashboard.hero.netWorthMetric')}
-                </p>
-                <p className="money-number mt-2 text-2xl font-semibold">
-                  {formatVndShort(snapshot.netWorth)} đ
-                </p>
-              </div>
-              <div className="border-b border-border px-4 py-5 sm:border-b-0">
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  {t('dashboard.hero.upcomingMetric')}
-                </p>
-                <p className="money-number mt-2 text-2xl font-semibold">
-                  {t('dashboard.metrics.paymentsCount', { count: upcomingCount })}
-                </p>
-              </div>
-              <div className="px-4 py-5">
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  {t('dashboard.hero.discussMetric')}
-                </p>
-                <p className="money-number mt-2 text-2xl font-semibold">
-                  {t('dashboard.metrics.attentionCount', { count: discussCount })}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto pt-7">
-            <div className="flex items-start gap-3 rounded-2xl bg-[hsla(var(--status-green),0.06)] p-4">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-[hsl(var(--status-green))] shadow-sm">
-                <ShieldCheck className="size-[18px]" strokeWidth={1.8} />
+            <div className="mt-3 flex items-end gap-3">
+              <span
+                id="overview-title"
+                className="money-number text-5xl leading-none sm:text-6xl"
+              >
+                {millions(snapshot.netWorth)}
               </span>
-              <div>
-                <p className="text-sm font-semibold">{t(statusLineKey)}</p>
-                <p className="mt-1 text-sm leading-5 text-[hsl(var(--muted-foreground))]">
-                  {t('dashboard.hero.assuranceLine')}
-                </p>
-              </div>
+              <span className="pb-1 text-xl text-white/45">
+                {t('dashboard.redesign.netWorthUnit')}
+              </span>
             </div>
+          </div>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/65">
+            {t(`dashboard.redesign.netWorthStatus.${statusVariant}`)}
+          </span>
+        </div>
+
+        <p className="mt-8 max-w-2xl text-sm leading-6 text-white/50">
+          {t('dashboard.redesign.netWorthNote', {
+            amount: formatVndShort(availableRemaining),
+          })}
+        </p>
+
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-xs text-white/40">{t('dashboard.redesign.totalAssets')}</p>
+            <p className="money-number mt-2 text-xl">{formatVndShort(totalAssets)} đ</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-xs text-white/40">{t('dashboard.redesign.debt')}</p>
+            <p className="money-number mt-2 text-xl">{formatVndShort(snapshot.debt)} đ</p>
           </div>
         </div>
+      </div>
+
+      {/* Tiền sẵn có */}
+      <div className="rounded-[28px] border border-border bg-card p-6 apple-shadow-soft sm:p-7">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">
+              {t('dashboard.redesign.available.label')}
+            </p>
+            <p className="money-number mt-3 text-4xl">{formatVndShort(availableNow)} đ</p>
+          </div>
+          <div className="rounded-xl bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))]">
+            {t('dashboard.redesign.available.thisMonth')}
+          </div>
+        </div>
+
+        <div
+          className="mt-8 h-2 rounded-full bg-[hsl(var(--muted))]"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={availableUsedRatio}
+          aria-label={t('dashboard.redesign.available.label')}
+        >
+          <div
+            className="h-2 rounded-full bg-[hsl(var(--accent))]"
+            style={{ width: `${availableUsedRatio}%` }}
+          />
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <div>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">
+              {t('dashboard.redesign.available.due')}
+            </p>
+            <p className="money-number mt-1 text-base">{formatCompactMillions(upcomingTotalVnd / 1_000_000)} đ</p>
+          </div>
+          <div>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">
+              {t('dashboard.redesign.available.remaining')}
+            </p>
+            <p className="money-number mt-1 text-base">{formatVndShort(availableRemaining)} đ</p>
+          </div>
+        </div>
+
+        {reserveMonthsLabel ? (
+          <div className="mt-6 border-t border-border pt-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">{t('dashboard.redesign.reserve.title')}</p>
+                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                  {t('dashboard.redesign.reserve.months', { months: reserveMonthsLabel })}
+                </p>
+              </div>
+              <span
+                className={
+                  reserveGood
+                    ? 'text-sm font-medium text-[hsl(var(--status-green))]'
+                    : 'text-sm font-medium text-[hsl(var(--status-orange))]'
+                }
+              >
+                {reserveGood
+                  ? t('dashboard.redesign.reserve.good')
+                  : t('dashboard.redesign.reserve.low')}
+              </span>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   )

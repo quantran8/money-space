@@ -13,6 +13,7 @@ export type Settings = {
   language: AppLanguage
   reminderPayments: boolean
   reminderUpdate: boolean
+  reminderAccess: boolean
   shareAssets: SharingLevel
   shareUpcoming: SharingLevel
   hidePrivateNotes: boolean
@@ -36,6 +37,7 @@ export function buildSettingsSchema(t: (key: string, params?: Record<string, unk
     language: z.enum(supportedLanguages),
     reminderPayments: z.boolean(),
     reminderUpdate: z.boolean(),
+    reminderAccess: z.boolean(),
     shareAssets: z.enum(['overview', 'grouped', 'detailed']),
     shareUpcoming: z.enum(['overview', 'grouped', 'detailed']),
     hidePrivateNotes: z.boolean(),

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useDebtsPage } from '@/features/debts/hooks/use-debts-page'
 import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
+import { DebtsInsightsSection } from '@/features/debts/ui/components/debts-insights-section'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
 import { DebtsListSection } from '@/features/debts/ui/components/debts-list-section'
 import { DebtsSummaryStrip } from '@/features/debts/ui/components/debts-summary-strip'
@@ -14,6 +15,9 @@ export function DebtsPage() {
     debts,
     assets,
     members,
+    events,
+    payments,
+    isPaymentsLoading,
     isLoading,
     summary,
     memberOptions,
@@ -55,31 +59,39 @@ export function DebtsPage() {
   } = useDebtsPage()
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-4">
       <PageHeader
-        eyebrow="Đang nợ"
-        title="Khoản vay và khoản phải trả"
-        description="Giữ phần nợ tách khỏi tài sản để nhà mình nhìn đúng bức tranh tài chính, nhưng vẫn cập nhật rất nhanh và dễ hiểu."
+        eyebrow="Khoản nợ gia đình"
+        title="Nhà mình đang nợ gì?"
+        description="Xem số còn phải trả, tiến độ thanh toán và các kỳ hạn sắp tới."
         actions={
           <Button onClick={openCreate}>
             <Plus className="mr-2 size-4" />
-            Vay tiền
+            Thêm khoản nợ
           </Button>
         }
       />
 
-      <DebtsSummaryStrip summary={summary} />
+      <DebtsSummaryStrip summary={summary} debts={debts} payments={payments} />
 
       <DebtsListSection
         debts={debts}
         members={members}
         assets={assets}
+        payments={payments}
         isLoading={isLoading}
         isUpdating={isUpdating}
         onEdit={openEdit}
         onMarkPaidOff={markPaidOff}
         onViewDetail={openDetail}
         onDelete={requestDelete}
+      />
+
+      <DebtsInsightsSection
+        debts={debts}
+        events={events}
+        payments={payments}
+        isLoading={isLoading || isPaymentsLoading}
       />
 
       <DebtFormDialog

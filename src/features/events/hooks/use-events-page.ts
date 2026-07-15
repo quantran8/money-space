@@ -239,7 +239,8 @@ export function useEventsPage() {
     return timelineRecords.filter((record) => {
       if (tab === 'upcoming' && record.sourceType !== 'upcoming_payment') return false
       if (tab === 'actual' && record.sourceType !== 'money_event') return false
-      if (tab === 'attention' && !isAttentionRecord(record)) return false
+      if (tab === 'inflow' && record.direction !== 'inflow') return false
+      if (tab === 'outflow' && record.direction !== 'outflow') return false
       if (!needle) return true
       return (
         record.title.toLowerCase().includes(needle) ||
@@ -263,11 +264,21 @@ export function useEventsPage() {
       .sort((a, b) => getTimelineGroupOrder(a[0]) - getTimelineGroupOrder(b[0]))
   }, [filteredRecords])
 
+  const recordCounts = useMemo(
+    () => ({
+      upcoming: timelineRecords.filter((record) => record.sourceType === 'upcoming_payment').length,
+      actual: timelineRecords.filter((record) => record.sourceType === 'money_event').length,
+      inflow: timelineRecords.filter((record) => record.direction === 'inflow').length,
+      outflow: timelineRecords.filter((record) => record.direction === 'outflow').length,
+    }),
+    [timelineRecords],
+  )
+
   const summary = useMemo(() => {
-    const upcomingIn7Days = payments.filter((payment) => {
+    const upcomingIn30Days = payments.filter((payment) => {
       if (payment.status === 'paid') return false
       const days = differenceInDays(TODAY, payment.dueDate)
-      return days >= 0 && days <= 7
+      return days >= 0 && days <= 30
     })
     const attentionCount = timelineRecords.filter(isAttentionRecord).length
     // thu/chi/net + recorded count come from the backend summary (source of
@@ -275,8 +286,8 @@ export function useEventsPage() {
     // payment/attention concerns the backend summary doesn't cover, so they stay
     // derived from the loaded lists here.
     return {
-      upcomingIn7DaysCount: upcomingIn7Days.length,
-      upcomingIn7DaysAmount: upcomingIn7Days.reduce((sum, payment) => sum + payment.amount, 0),
+      upcomingIn30DaysCount: upcomingIn30Days.length,
+      upcomingIn30DaysAmount: upcomingIn30Days.reduce((sum, payment) => sum + payment.amount, 0),
       recordedThisMonth: eventsSummary?.recordedCount ?? 0,
       attentionCount,
       totalIncome: eventsSummary?.totalIncome ?? 0,
@@ -738,6 +749,7 @@ export function useEventsPage() {
     // derived data
     summary,
     groupedRecords,
+    recordCounts,
     isLoading,
     payments,
     // toolbar state

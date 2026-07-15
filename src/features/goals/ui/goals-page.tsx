@@ -1,30 +1,22 @@
 import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import { PageHeader } from '@/app/layout/page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useGoalsPage } from '@/features/goals/hooks/use-goals-page'
-import { AllocationCard } from '@/features/goals/ui/components/allocation-card'
-import { GentleReminderCard } from '@/features/goals/ui/components/gentle-reminder-card'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
 import { GoalsListSection } from '@/features/goals/ui/components/goals-list-section'
 import { GoalsSummaryStrip } from '@/features/goals/ui/components/goals-summary-strip'
-import { PrimaryGoalCard } from '@/features/goals/ui/components/primary-goal-card'
-import { RecentUpdatesCard } from '@/features/goals/ui/components/recent-updates-card'
-import { ThisMonthCard } from '@/features/goals/ui/components/this-month-card'
 
 export function GoalsPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const {
     goals,
     isLoading,
     stats,
-    allocation,
-    recent,
-    primaryGoal,
-    primaryRemaining,
-    primaryPace,
     priorityLabels,
     contributions,
     setContribution,
@@ -49,7 +41,7 @@ export function GoalsPage() {
   } = useGoalsPage()
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-4">
       <PageHeader
         eyebrow={t('goals.header.eyebrow')}
         title={t('goals.header.title')}
@@ -62,53 +54,24 @@ export function GoalsPage() {
         }
       />
 
-      {!isLoading && goals.length > 0 ? (
-        <GoalsSummaryStrip count={goals.length} stats={stats} />
-      ) : null}
+      <GoalsSummaryStrip count={goals.length} stats={stats} goals={goals} />
 
-      <div className="grid gap-4 xl:grid-cols-12">
-        <div className="space-y-4 xl:col-span-8">
-          {primaryGoal ? (
-            <PrimaryGoalCard
-              goal={primaryGoal}
-              remaining={primaryRemaining}
-              pace={primaryPace}
-            />
-          ) : null}
-
-          <GoalsListSection
-            goals={goals}
-            isLoading={isLoading}
-            priorityLabels={priorityLabels}
-            contributions={contributions}
-            onContributionChange={setContribution}
-            contributionSources={contributionSources}
-            onContributionSourceChange={setContributionSource}
-            walletOptions={walletOptions}
-            onAddContribution={addContribution}
-            isContributing={isContributing}
-            onCreate={openCreate}
-            onEdit={openEdit}
-            onDelete={setDeleteId}
-          />
-        </div>
-
-        <aside className="space-y-4 xl:col-span-4">
-          {primaryGoal ? (
-            <ThisMonthCard
-              goal={primaryGoal}
-              pace={primaryPace}
-              onSuggestContribution={setContribution}
-            />
-          ) : null}
-
-          {allocation.length > 0 ? <AllocationCard allocation={allocation} /> : null}
-
-          <RecentUpdatesCard recent={recent} />
-
-          <GentleReminderCard />
-        </aside>
-      </div>
+      <GoalsListSection
+        goals={goals}
+        isLoading={isLoading}
+        priorityLabels={priorityLabels}
+        contributions={contributions}
+        onContributionChange={setContribution}
+        contributionSources={contributionSources}
+        onContributionSourceChange={setContributionSource}
+        walletOptions={walletOptions}
+        onAddContribution={addContribution}
+        isContributing={isContributing}
+        onCreate={openCreate}
+        onOpen={(goalId) => navigate(`/goals/${goalId}`)}
+        onEdit={openEdit}
+        onDelete={setDeleteId}
+      />
 
       <GoalFormDialog
         open={formOpen}

@@ -1,4 +1,3 @@
-import { Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Card } from '@/components/ui/card'
@@ -13,7 +12,6 @@ import type {
 type MembersListSectionProps = {
   members: MemberItem[]
   isLoading: boolean
-  activeCount: number
   invitedCount: number
   roleLabels: Record<HouseholdRole, string>
   permissionLabels: Record<PermissionLevel, string>
@@ -26,7 +24,6 @@ type MembersListSectionProps = {
 export function MembersListSection({
   members,
   isLoading,
-  activeCount,
   invitedCount,
   roleLabels,
   permissionLabels,
@@ -38,20 +35,24 @@ export function MembersListSection({
   const { t } = useTranslation()
 
   return (
-    <Card className="lg:col-span-7">
-      <div className="mb-6 flex items-center justify-between">
+    <Card className="xl:col-span-8">
+      <div className="mb-6 flex items-end justify-between gap-4">
         <div>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {t('members.list.eyebrow')}
           </p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">
-            {t('members.list.title', { active: activeCount, invited: invitedCount })}
+          <h2 className="section-title mt-1 text-xl font-semibold">
+            {t('members.list.count', { count: members.length })}
           </h2>
         </div>
-        <Users className="size-5 text-[hsl(var(--accent))]" strokeWidth={1.8} />
+        {invitedCount > 0 ? (
+          <p className="text-sm font-medium text-muted-foreground">
+            {t('members.list.invitedCount', { count: invitedCount })}
+          </p>
+        ) : null}
       </div>
 
-      <div className="space-y-3">
+      <div className="divide-y divide-border">
         {isLoading
           ? Array.from({ length: 3 }).map((_, index) => <MemberRowSkeleton key={index} />)
           : null}

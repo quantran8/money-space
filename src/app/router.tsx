@@ -11,6 +11,7 @@ import { DebtsPage } from '@/features/debts/ui/debts-page'
 import { DashboardPage } from '@/features/dashboard/ui/dashboard-page'
 import { EventsPage } from '@/features/events/ui/events-page'
 import { GoalsPage } from '@/features/goals/ui/goals-page'
+import { GoalDetailPage } from '@/features/goals/ui/goal-detail-page'
 import { MembersPage } from '@/features/members/ui/members-page'
 import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
 import { RequireHousehold } from '@/features/onboarding/ui/require-household'
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
       { path: 'debts/:debtId', element: <DebtDetailPage /> },
       { path: 'events', element: <EventsPage /> },
       { path: 'goals', element: <GoalsPage /> },
+      { path: 'goals/:goalId', element: <GoalDetailPage /> },
       { path: 'payments', element: <Navigate to="/events" replace /> },
       { path: 'members', element: <MembersPage /> },
       { path: 'settings', element: <SettingsPage /> },

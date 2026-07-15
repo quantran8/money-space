@@ -28,6 +28,7 @@ import {
 } from '@/features/debts/model/debts-interest'
 import type { DebtItem, DebtStatus } from '@/features/debts/model/debts.types'
 import { useMembers } from '@/features/members/hooks/use-members'
+import { usePayments } from '@/features/payments/hooks/use-payments'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 export function useDebtsPage() {
@@ -35,6 +36,7 @@ export function useDebtsPage() {
   const navigate = useNavigate()
   const { debts, createDebt, updateDebt, deleteDebt, isLoading } = useDebts()
   const { events } = useEvents()
+  const { payments, isLoading: isPaymentsLoading } = usePayments()
   const { assets } = useAssets()
   const { members } = useMembers()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -231,9 +233,11 @@ export function useDebtsPage() {
     reset({
       ...defaultValues,
       ownerMemberId: memberOptions[0]?.value ?? '',
-      receivedToAssetId: receiveAssetOptions[0]?.value ?? '',
+      // Creating a debt must not move money until the user explicitly enables
+      // "Ghi nhận sự kiện nhận tiền" in step 2.
+      receivedToAssetId: '',
     })
-  }, [receiveAssetOptions, dialogOpen, editingDebt, memberOptions, reset])
+  }, [dialogOpen, editingDebt, memberOptions, reset])
 
   function openCreate() {
     setEditingId(null)
@@ -243,7 +247,7 @@ export function useDebtsPage() {
 
   function openEdit(id: string) {
     setEditingId(id)
-    setShowMoreDetails(true)
+    setShowMoreDetails(false)
     setDialogOpen(true)
   }
 
@@ -444,6 +448,9 @@ export function useDebtsPage() {
     debts,
     assets,
     members,
+    events,
+    payments,
+    isPaymentsLoading,
     isLoading,
     summary,
     assetOptions,

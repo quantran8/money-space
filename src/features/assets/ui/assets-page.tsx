@@ -10,7 +10,6 @@ import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dial
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
 import { AssetsCharts } from '@/features/assets/ui/components/assets-charts'
 import { AssetsListSection } from '@/features/assets/ui/components/assets-list-section'
-import { AssetsSummaryCard } from '@/features/assets/ui/components/assets-summary-card'
 import { AssetsSummaryStrip } from '@/features/assets/ui/components/assets-summary-strip'
 import { AS_OF } from '@/features/assets/model/assets-form'
 
@@ -50,7 +49,7 @@ export function AssetsPage() {
   } = useAssetsPage()
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-4">
       <PageHeader
         eyebrow={t('assets.header.eyebrow')}
         title={t('assets.header.title')}
@@ -63,11 +62,9 @@ export function AssetsPage() {
         }
       />
 
-      <AssetsSummaryStrip totals={totals} total={total} />
+      <AssetsSummaryStrip totals={totals} total={total} asOf={asOf || AS_OF} />
 
-      <AssetsCharts totals={totals} snapshots={snapshots} />
-
-      <div className="grid gap-4 lg:grid-cols-12">
+      <div className="grid gap-4 xl:grid-cols-12">
         <AssetsListSection
           assets={filteredAssets}
           isLoading={isLoading}
@@ -82,12 +79,11 @@ export function AssetsPage() {
           onDelete={setDeleteId}
         />
 
-        <div className="space-y-4 lg:col-span-5">
-          <AssetsSummaryCard totals={totals} total={total} />
-        </div>
+        <AssetsCharts totals={totals} snapshots={snapshots} />
       </div>
 
       <AssetFormDialog
+        key={formOpen ? (isEditing ? 'edit-open' : 'create-open') : 'closed'}
         open={formOpen}
         onOpenChange={handleFormOpenChange}
         form={form}

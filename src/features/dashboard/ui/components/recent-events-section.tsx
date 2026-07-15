@@ -1,4 +1,3 @@
-import { ChevronRight, Landmark, TrendingUp } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -11,85 +10,112 @@ type RecentEventsSectionProps = {
   subtitle: string
 }
 
+const GRID = 'md:grid-cols-[110px_1.4fr_0.8fr_0.75fr_90px]'
+
 /**
- * "Gần đây" (mockup `#recent`): an intentionally quiet card listing the latest
- * money activity in the household.
+ * "Biến động gần đây" (mockup `#recent`): a table of the money events that move
+ * the overall picture. Renders as columns on desktop and stacks on mobile.
+ * Events carry no explicit updater, so the trailing avatar is a neutral marker.
  */
 export function RecentEventsSection({ moneyEvents, subtitle }: RecentEventsSectionProps) {
   const { t } = useTranslation()
-  const visible = moneyEvents.slice(0, 3)
+  const visible = moneyEvents.slice(0, 4)
+
+  const relatedLabel = (event: MoneyEventItem) =>
+    event.assetName?.trim() ||
+    t(`options.eventCategory.${event.category}`, { defaultValue: event.category })
 
   return (
     <section
       aria-labelledby="recent-title"
-      className="rounded-[24px] bg-card p-5 shadow-[0_8px_26px_rgba(0,0,0,0.045)] sm:p-6"
+      className="rounded-[28px] border border-border bg-card p-6 apple-shadow-soft"
     >
-      <div className="mb-4 flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 id="recent-title" className="section-title text-xl font-semibold sm:text-2xl">
-            {t('dashboard.sections.recent.title')}
-          </h2>
-          <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-            {subtitle || t('dashboard.sections.recent.subtitle')}
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+            {t('dashboard.redesign.events.eyebrow')}
+          </p>
+          <h3 id="recent-title" className="section-title mt-1 text-xl font-semibold">
+            {t('dashboard.redesign.events.title')}
+          </h3>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+            {subtitle || t('dashboard.redesign.events.subtitle')}
           </p>
         </div>
         <Link
           to="/events"
-          className="inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-sm font-medium text-[hsl(var(--accent))] transition hover:bg-[hsla(var(--accent),0.06)]"
+          className="text-left text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-foreground sm:text-right"
         >
-          {t('common.view')}
-          <ChevronRight className="size-4" strokeWidth={1.8} />
+          {t('dashboard.redesign.events.history')}
         </Link>
       </div>
 
       {visible.length === 0 ? (
-        <p className="py-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
-          {t('dashboard.sections.recent.empty')}
+        <p className="mt-6 py-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+          {t('dashboard.redesign.events.empty')}
         </p>
       ) : (
-        <div className="divide-y divide-[hsl(var(--border))]">
-          {visible.map((event) => {
-            const Icon = event.type?.startsWith('asset') ? TrendingUp : Landmark
-            // `title` was dropped from money events — the note now labels the
-            // event, falling back to its translated category when empty.
-            const label =
-              event.note?.trim() ||
-              t(`options.eventCategory.${event.category}`, { defaultValue: event.category })
-            return (
-              <Link
-                key={event.id ?? `${label}-${event.date}`}
-                to="/events"
-                className="group flex min-h-[72px] w-full items-center gap-4 py-3.5 text-left transition hover:opacity-75"
-              >
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--muted))]">
-                  <Icon
-                    className="size-5 text-[hsl(var(--muted-foreground))]"
-                    strokeWidth={1.8}
-                  />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px] font-semibold">{label}</span>
-                  <span className="mt-1 block text-sm text-[hsl(var(--muted-foreground))]">
-                    {event.date}
-                  </span>
-                </span>
-                <span
-                  className={cn(
-                    'shrink-0 text-sm font-semibold',
-                    event.amount >= 0
-                      ? 'text-[hsl(var(--status-green))]'
-                      : 'text-[hsl(var(--status-orange))]',
-                  )}
+        <div className="mt-6 overflow-hidden rounded-2xl border border-border">
+          <div
+            className={cn(
+              'hidden gap-4 border-b border-border bg-[hsl(var(--muted))] px-4 py-3 text-xs font-medium text-[hsl(var(--muted-foreground))] md:grid',
+              GRID,
+            )}
+          >
+            <span>{t('dashboard.redesign.events.col.time')}</span>
+            <span>{t('dashboard.redesign.events.col.event')}</span>
+            <span>{t('dashboard.redesign.events.col.related')}</span>
+            <span>{t('dashboard.redesign.events.col.change')}</span>
+            <span className="text-right">{t('dashboard.redesign.events.col.by')}</span>
+          </div>
+
+          <div className="divide-y divide-border">
+            {visible.map((event) => {
+              const label =
+                event.note?.trim() ||
+                t(`options.eventCategory.${event.category}`, { defaultValue: event.category })
+              const related = relatedLabel(event)
+              return (
+                <div
+                  key={event.id ?? `${label}-${event.date}`}
+                  className={cn('grid gap-3 px-4 py-4 md:items-center md:gap-4', GRID)}
                 >
-                  {formatVndSigned(event.amount)}
-                </span>
-                <ChevronRight
-                  className="size-4 shrink-0 text-[hsl(var(--muted-foreground))]"
-                  strokeWidth={1.8}
-                />
-              </Link>
-            )
-          })}
+                  <div>
+                    <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+                      {event.date}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{label}</p>
+                    <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))] md:hidden">
+                      {related}
+                    </p>
+                  </div>
+                  <p className="hidden text-sm text-[hsl(var(--muted-foreground))] md:block">
+                    {related}
+                  </p>
+                  <p
+                    className={cn(
+                      'money-number text-sm',
+                      event.direction === 'inflow'
+                        ? 'text-[hsl(var(--status-green))]'
+                        : event.direction === 'outflow'
+                          ? 'text-foreground'
+                          : 'text-[hsl(var(--muted-foreground))]',
+                    )}
+                  >
+                    {event.direction === 'neutral' ? formatVndSigned(event.amount).replace(/^\+/, '') : formatVndSigned(event.amount)} đ
+                  </p>
+                  <div className="flex items-center md:justify-end">
+                    <div
+                      className="size-7 rounded-full bg-[hsl(var(--muted))]"
+                      aria-hidden
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
     </section>

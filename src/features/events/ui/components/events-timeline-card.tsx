@@ -1,16 +1,20 @@
-import { Search } from 'lucide-react'
+import { CalendarDays, Search } from 'lucide-react'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { RecordCard } from '@/features/events/ui/components/record-card'
-import {
-  getTimelineGroupLabel,
-  type FinancialRecordItem,
-  type RecordTab,
-  type TimelineGroupKey,
+import type {
+  FinancialRecordItem,
+  RecordTab,
+  TimelineGroupKey,
 } from '@/features/events/model/events-form'
+import { RecordCard } from '@/features/events/ui/components/record-card'
+import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
+
+type RecordCounts = Record<'upcoming' | 'actual' | 'inflow' | 'outflow', number>
 
 type EventsTimelineCardProps = {
   query: string
@@ -18,6 +22,7 @@ type EventsTimelineCardProps = {
   tab: RecordTab
   onTabChange: (tab: RecordTab) => void
   groupedRecords: [TimelineGroupKey, FinancialRecordItem[]][]
+  recordCounts: RecordCounts
   isLoading?: boolean
   isSavingActual: boolean
   onMarkPaid: (id: string) => void
@@ -30,19 +35,13 @@ type EventsTimelineCardProps = {
   onDeleteEvent: (id: string) => void
 }
 
-const TABS: [RecordTab, string][] = [
-  ['all', 'Tất cả'],
-  ['upcoming', 'Sắp tới'],
-  ['actual', 'Đã diễn ra'],
-  ['attention', 'Cần chú ý'],
-]
-
 export function EventsTimelineCard({
   query,
   onQueryChange,
   tab,
   onTabChange,
   groupedRecords,
+  recordCounts,
   isLoading = false,
   isSavingActual,
   onMarkPaid,
@@ -54,35 +53,82 @@ export function EventsTimelineCard({
   onToggleEventAttention,
   onDeleteEvent,
 }: EventsTimelineCardProps) {
+  const { t, i18n } = useTranslation()
+  const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
+  const monthLabel = new Date().toLocaleDateString(locale, {
+    month: 'long',
+    year: 'numeric',
+  })
+  const records = useMemo(() => groupedRecords.flatMap(([, items]) => items), [groupedRecords])
+  const upcoming = records.filter((record) => record.sourceType === 'upcoming_payment')
+  const actual = records.filter((record) => record.sourceType === 'money_event')
+  const upcomingTotal = upcoming.reduce((sum, record) => sum + Math.abs(record.amount), 0)
+  const actualNet = actual.reduce((sum, record) => {
+    if (record.direction === 'inflow') return sum + Math.abs(record.amount)
+    if (record.direction === 'outflow') return sum - Math.abs(record.amount)
+    return sum
+  }, 0)
+  const tabs: Array<[RecordTab, string]> = [
+    ['all', t('events.redesign.timeline.tabs.all')],
+    [
+      'upcoming',
+      t('events.redesign.timeline.tabs.upcoming', { count: recordCounts.upcoming }),
+    ],
+    ['actual', t('events.redesign.timeline.tabs.actual', { count: recordCounts.actual })],
+    ['inflow', t('events.redesign.timeline.tabs.inflow')],
+    ['outflow', t('events.redesign.timeline.tabs.outflow')],
+  ]
+
+  const recordProps = {
+    isSavingActual,
+    onMarkPaid,
+    onPostponePayment,
+    onEditPayment,
+    onTogglePaymentAttention,
+    onEditEvent,
+    onDuplicateEvent,
+    onToggleEventAttention,
+    onDeleteEvent,
+  }
+
   return (
     <Card className="overflow-hidden">
-      <div className="flex flex-col gap-4 border-b border-border/70 pb-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Timeline chung cho planned và actual records</p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">Financial records</h2>
+          <p className="text-sm text-muted-foreground">{t('events.redesign.timeline.eyebrow')}</p>
+          <h2 className="section-title mt-1 text-xl font-semibold">
+            {t('events.redesign.timeline.title')}
+          </h2>
         </div>
-        <div className="relative w-full sm:w-[280px]">
-          <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Tìm theo tên, ghi chú hoặc asset..."
-            className="pl-11"
-          />
+
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="relative sm:w-72">
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder={t('events.redesign.timeline.search')}
+              className="pl-11"
+            />
+          </div>
+          <div className="flex h-11 items-center justify-start rounded-xl border border-border bg-card px-4 text-sm font-medium">
+            <CalendarDays className="mr-2 size-4" />
+            {monthLabel}
+          </div>
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
-        {TABS.map(([value, label]) => (
+      <div className="mt-5 flex gap-2 overflow-x-auto border-b border-border pb-4">
+        {tabs.map(([value, label]) => (
           <button
             key={value}
             type="button"
             onClick={() => onTabChange(value)}
             className={cn(
-              'rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+              'whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-colors',
               tab === value
-                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
-                : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
+                ? 'bg-[#1d1d1f] text-white'
+                : 'bg-muted text-muted-foreground hover:text-foreground',
             )}
           >
             {label}
@@ -90,57 +136,109 @@ export function EventsTimelineCard({
         ))}
       </div>
 
-      <div className="mt-6 space-y-7">
+      <div className="mt-6 space-y-8">
         {isLoading ? (
-          <div className="divide-y divide-border/70">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
-                <Skeleton className="size-6 shrink-0 rounded-full" />
-                <div className="min-w-0 flex-1 space-y-2">
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-3 w-1/3" />
-                </div>
-                <Skeleton className="h-4 w-20 shrink-0" />
-              </div>
-            ))}
-          </div>
-        ) : groupedRecords.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border/80 bg-[hsl(var(--muted))]/40 px-6 py-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              Chưa có record phù hợp với bộ lọc hiện tại.
-            </p>
+          <TimelineSkeleton />
+        ) : records.length === 0 ? (
+          <div className="rounded-2xl bg-muted px-6 py-12 text-center">
+            <p className="text-sm text-muted-foreground">{t('events.redesign.timeline.empty')}</p>
           </div>
         ) : (
-          groupedRecords.map(([groupKey, records]) => (
-            <section key={groupKey}>
-              <div className="mb-3 flex items-center gap-2">
-                <span className="size-2 rounded-full bg-[hsl(var(--accent))]" />
-                <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  {getTimelineGroupLabel(groupKey)}
-                </h3>
-              </div>
+          <>
+            {upcoming.length > 0 ? (
+              <TimelineGroup
+                label={t('events.redesign.timeline.groups.upcoming')}
+                summary={t('events.redesign.timeline.groups.total', {
+                  value: formatVndShort(upcomingTotal),
+                })}
+                accent
+                records={upcoming}
+                recordProps={recordProps}
+              />
+            ) : null}
 
-              <div className="divide-y divide-border/70">
-                {records.map((record) => (
-                  <RecordCard
-                    key={`${record.sourceType}-${record.id}`}
-                    record={record}
-                    isSavingActual={isSavingActual}
-                    onMarkPaid={onMarkPaid}
-                    onPostponePayment={onPostponePayment}
-                    onEditPayment={onEditPayment}
-                    onTogglePaymentAttention={onTogglePaymentAttention}
-                    onEditEvent={onEditEvent}
-                    onDuplicateEvent={onDuplicateEvent}
-                    onToggleEventAttention={onToggleEventAttention}
-                    onDeleteEvent={onDeleteEvent}
-                  />
-                ))}
-              </div>
-            </section>
-          ))
+            {actual.length > 0 ? (
+              <TimelineGroup
+                label={t('events.redesign.timeline.groups.actual')}
+                summary={t('events.redesign.timeline.groups.net', {
+                  sign: actualNet >= 0 ? '+' : '-',
+                  value: formatVndShort(Math.abs(actualNet)),
+                })}
+                records={actual}
+                recordProps={recordProps}
+              />
+            ) : null}
+          </>
         )}
       </div>
     </Card>
+  )
+}
+
+type RecordCallbacks = Pick<
+  EventsTimelineCardProps,
+  | 'isSavingActual'
+  | 'onMarkPaid'
+  | 'onPostponePayment'
+  | 'onEditPayment'
+  | 'onTogglePaymentAttention'
+  | 'onEditEvent'
+  | 'onDuplicateEvent'
+  | 'onToggleEventAttention'
+  | 'onDeleteEvent'
+>
+
+function TimelineGroup({
+  label,
+  summary,
+  accent = false,
+  records,
+  recordProps,
+}: {
+  label: string
+  summary: string
+  accent?: boolean
+  records: FinancialRecordItem[]
+  recordProps: RecordCallbacks
+}) {
+  return (
+    <section>
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className={cn('size-2 rounded-full', accent ? 'bg-accent' : 'bg-neutral-500')} />
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {label}
+          </h3>
+        </div>
+        <p className="text-xs text-muted-foreground">{summary}</p>
+      </div>
+      <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+        {records.map((record) => (
+          <RecordCard key={`${record.sourceType}-${record.id}`} record={record} {...recordProps} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function TimelineSkeleton() {
+  return (
+    <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={index}
+          className="grid gap-4 px-4 py-5 md:grid-cols-[90px_1fr_150px_130px_42px] md:items-center"
+        >
+          <Skeleton className="h-4 w-14" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-3 w-52" />
+          </div>
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-6 w-24 md:ml-auto" />
+          <Skeleton className="size-8" />
+        </div>
+      ))}
+    </div>
   )
 }

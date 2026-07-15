@@ -1,4 +1,3 @@
-import { Home } from 'lucide-react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
@@ -16,10 +15,9 @@ import type { Settings } from '@/features/settings/model/settings-form'
 
 type HouseholdCardProps = {
   form: UseFormReturn<Settings>
-  createdAt: string
 }
 
-export function HouseholdCard({ form, createdAt }: HouseholdCardProps) {
+export function HouseholdCard({ form }: HouseholdCardProps) {
   const { t } = useTranslation()
   const {
     register,
@@ -29,23 +27,22 @@ export function HouseholdCard({ form, createdAt }: HouseholdCardProps) {
 
   return (
     <Card>
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
+      <div className="mb-6">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {t('settings.household.eyebrow')}
           </p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">
+          <h2 className="section-title mt-1 text-xl font-semibold">
             {t('settings.household.title')}
           </h2>
-        </div>
-        <div className="flex size-10 items-center justify-center rounded-full bg-[hsla(var(--accent),0.1)]">
-          <Home className="size-5 text-[hsl(var(--accent))]" />
-        </div>
       </div>
 
       <div className="space-y-4">
         <FormField label={t('settings.household.name')} error={errors.householdName?.message}>
-          <Input aria-invalid={!!errors.householdName} {...register('householdName')} />
+          <Input
+            className="rounded-xl bg-muted/45"
+            aria-invalid={!!errors.householdName}
+            {...register('householdName')}
+          />
         </FormField>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -55,7 +52,7 @@ export function HouseholdCard({ form, createdAt }: HouseholdCardProps) {
               name="currency"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger aria-invalid={!!errors.currency}>
+                  <SelectTrigger className="rounded-xl bg-muted/45" aria-invalid={!!errors.currency}>
                     <SelectValue placeholder={t('settings.household.currencyPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -76,7 +73,7 @@ export function HouseholdCard({ form, createdAt }: HouseholdCardProps) {
               name="updateFrequency"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger aria-invalid={!!errors.updateFrequency}>
+                  <SelectTrigger className="rounded-xl bg-muted/45" aria-invalid={!!errors.updateFrequency}>
                     <SelectValue placeholder={t('settings.household.frequencyPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -96,7 +93,7 @@ export function HouseholdCard({ form, createdAt }: HouseholdCardProps) {
               name="language"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger aria-invalid={!!errors.language}>
+                  <SelectTrigger className="rounded-xl bg-muted/45" aria-invalid={!!errors.language}>
                     <SelectValue placeholder={t('settings.household.languagePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -107,10 +104,6 @@ export function HouseholdCard({ form, createdAt }: HouseholdCardProps) {
               )}
             />
           </FormField>
-        </div>
-
-        <div className="surface-muted rounded-3xl p-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-          {t('settings.household.createdAt', { date: createdAt })}
         </div>
       </div>
     </Card>

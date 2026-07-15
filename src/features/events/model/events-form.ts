@@ -11,7 +11,7 @@ export type RecordStatus =
   | 'recorded'
   | 'pending_confirmation'
   | 'postponed'
-export type RecordTab = 'all' | 'upcoming' | 'actual' | 'attention'
+export type RecordTab = 'all' | 'upcoming' | 'actual' | 'inflow' | 'outflow'
 export type RecordDirection = 'inflow' | 'outflow' | 'neutral'
 export type QuickAction =
   | 'upcoming'
@@ -337,10 +337,12 @@ export function toUpcomingPaymentSeed(
 ): LocalUpcomingPayment {
   const asset = assets[index % Math.max(assets.length, 1)]
   const owner = members[index % Math.max(members.length, 1)]
+  const isIsoDate = /^\d{4}-\d{2}-\d{2}$/.test(payment.due)
   const dueMonth = shortMonthNames.indexOf(payment.due.split(' ')[1] ?? 'Jul') + 1
-  const dueDate = `2026-${String(dueMonth > 0 ? dueMonth : 7).padStart(2, '0')}-${String(
+  const legacyDueDate = `2026-${String(dueMonth > 0 ? dueMonth : 7).padStart(2, '0')}-${String(
     Number(payment.due.split(' ')[0] ?? '10'),
   ).padStart(2, '0')}`
+  const dueDate = isIsoDate ? payment.due : legacyDueDate
   return {
     id: payment.id,
     name: payment.name,

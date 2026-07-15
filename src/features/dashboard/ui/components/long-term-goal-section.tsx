@@ -1,121 +1,90 @@
-import { ArrowRight, ChevronRight, Target } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import type { GoalItem } from '@/features/goals/model/goals.types'
-import { formatVndShort } from '@/shared/lib/format-money'
 
 type LongTermGoalSectionProps = {
-  mainGoal: GoalItem | undefined
-  remaining: number
+  goals: GoalItem[]
+}
+
+/** Alternating bar color per goal row, from the design-system tokens. */
+const BAR_COLOR = ['hsl(var(--accent))', 'hsl(var(--foreground))']
+
+/** Whole-million figure for the "80 / 120 triệu" caption. */
+function millions(value: number | undefined) {
+  return Math.round((value ?? 0) / 1_000_000)
 }
 
 /**
- * "Kế hoạch dài hạn" (mockup `#plan`): a cool-toned primary-goal card with a
- * progress bar, beside a supporting column showing the remaining amount and the
- * suggested next step.
+ * "Tiến độ hiện tại" (mockup `#goals`): the household's shared goals, each with
+ * a have/target caption and a progress bar.
  */
-export function LongTermGoalSection({ mainGoal, remaining }: LongTermGoalSectionProps) {
+export function LongTermGoalSection({ goals }: LongTermGoalSectionProps) {
   const { t } = useTranslation()
-  const progress = mainGoal?.progress ?? 0
-  const target = mainGoal?.targetAmount ?? 0
-  const current = mainGoal?.currentAmount ?? 0
+  const visible = goals.slice(0, 2)
 
   return (
-    <section aria-labelledby="plan-title">
-      <div className="mb-4 flex items-end justify-between gap-4 px-1">
+    <div className="rounded-[28px] border border-border bg-card p-6 apple-shadow-soft xl:col-span-4">
+      <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[hsl(var(--accent))]">
-            {t('dashboard.sections.longTerm.eyebrow')}
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+            {t('dashboard.redesign.goals.eyebrow')}
           </p>
-          <h2 id="plan-title" className="section-title mt-2 text-2xl font-semibold sm:text-3xl">
-            {t('dashboard.sections.longTerm.title')}
-          </h2>
-          <p className="mt-1.5 text-sm text-[hsl(var(--muted-foreground))]">
-            {t('dashboard.sections.longTerm.subtitle')}
-          </p>
+          <h3 className="section-title mt-1 text-xl font-semibold">
+            {t('dashboard.redesign.goals.title')}
+          </h3>
         </div>
         <Link
           to="/goals"
-          className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-sm font-medium text-[hsl(var(--accent))] transition hover:bg-[hsla(var(--accent),0.06)]"
+          className="text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-foreground"
         >
-          {t('common.view')}
-          <ChevronRight className="size-4" strokeWidth={1.8} />
+          {t('dashboard.redesign.goals.detail')}
         </Link>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
-        {/* Primary goal */}
-        <div className="rounded-[26px] bg-[hsla(var(--accent),0.08)] p-5 shadow-[0_8px_26px_rgba(0,0,0,0.045)] sm:p-6">
-          <div className="flex items-start justify-between gap-5">
-            <div>
-              <div className="flex items-center gap-2 text-sm font-medium text-[hsl(var(--accent))]">
-                <Target className="size-4" strokeWidth={1.8} />
-                {t('dashboard.sections.longTerm.mainGoal')}
+      {visible.length === 0 ? (
+        <p className="mt-6 py-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+          {t('dashboard.redesign.goals.empty')}
+        </p>
+      ) : (
+        <div className="mt-6 space-y-6">
+          {visible.map((goal, index) => {
+            const progress = Math.min(100, Math.max(0, goal.progress ?? 0))
+            return (
+              <div key={goal.id}>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-sm font-medium">{goal.name}</p>
+                    <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                      {t('dashboard.redesign.goals.progress', {
+                        current: millions(goal.currentAmount),
+                        target: millions(goal.targetAmount),
+                      })}
+                    </p>
+                  </div>
+                  <p className="text-sm font-semibold">{progress}%</p>
+                </div>
+                <div
+                  className="mt-3 h-2 rounded-full bg-[hsl(var(--muted))]"
+                  role="progressbar"
+                  aria-label={goal.name}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={progress}
+                >
+                  <div
+                    className="h-2 rounded-full"
+                    style={{
+                      width: `${progress}%`,
+                      backgroundColor: BAR_COLOR[index % BAR_COLOR.length],
+                    }}
+                  />
+                </div>
               </div>
-              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.025em]">
-                {mainGoal?.name ?? t('dashboard.sections.longTerm.noGoal')}
-              </h3>
-            </div>
-            <p
-              className="money-number text-5xl font-semibold text-[hsl(var(--accent))]"
-              aria-label={t('dashboard.sections.longTerm.progressLabel', { value: progress })}
-            >
-              {progress}%
-            </p>
-          </div>
-
-          <div
-            className="mt-10 h-2.5 overflow-hidden rounded-full bg-card"
-            role="progressbar"
-            aria-label={mainGoal?.name ?? t('dashboard.sections.longTerm.noGoal')}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={progress}
-          >
-            <div
-              className="h-full rounded-full bg-[hsl(var(--accent))]"
-              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-            />
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
-            <span className="text-[hsl(var(--muted-foreground))]">
-              {t('dashboard.sections.longTerm.have', { value: formatVndShort(current) })}
-            </span>
-            <span className="font-medium">
-              {t('dashboard.sections.longTerm.target', { value: formatVndShort(target) })}
-            </span>
-          </div>
+            )
+          })}
         </div>
-
-        {/* Supporting column */}
-        <div className="divide-y divide-[hsl(var(--border))] overflow-hidden rounded-[26px] bg-card">
-          <div className="p-5">
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              {t('dashboard.sections.longTerm.remaining')}
-            </p>
-            <p className="money-number mt-2 text-3xl font-semibold">
-              {formatVndShort(remaining)} đ
-            </p>
-          </div>
-          <div className="p-5">
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              {t('dashboard.sections.longTerm.nextStep')}
-            </p>
-            <p className="mt-2 text-[15px] font-semibold">
-              {t('dashboard.sections.longTerm.nextStepValue')}
-            </p>
-            <Link
-              to="/goals"
-              className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-[hsl(var(--foreground))] px-4 text-sm font-semibold text-[hsl(var(--background))] transition hover:opacity-90"
-            >
-              {t('dashboard.sections.longTerm.start')}
-              <ArrowRight className="size-4" strokeWidth={1.8} />
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
+      )}
+    </div>
   )
 }

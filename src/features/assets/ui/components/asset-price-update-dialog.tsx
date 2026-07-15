@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
@@ -37,15 +37,9 @@ export function AssetPriceUpdateDialog({
 }: AssetPriceUpdateDialogProps) {
   const { t } = useTranslation()
   const { updateAsset } = useAssets()
-  const [price, setPrice] = useState('')
+  const [price, setPrice] = useState(() => currentRawPrice(asset))
   const [error, setError] = useState('')
   const isBond = asset.type === 'bond'
-
-  useEffect(() => {
-    if (!open) return
-    setPrice(currentRawPrice(asset))
-    setError('')
-  }, [open, asset])
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -90,7 +84,7 @@ export function AssetPriceUpdateDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="p-0 sm:max-w-[500px]">
+      <ResponsiveDialogContent className="min-w-0 overflow-x-hidden p-0 sm:max-w-[500px]">
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
           <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em]">
             {t('assets.priceUpdate.title')}
@@ -103,8 +97,8 @@ export function AssetPriceUpdateDialog({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <form onSubmit={submit} noValidate>
-          <div className="px-6 py-6 sm:px-8">
+        <form className="min-w-0 overflow-x-hidden" onSubmit={submit} noValidate>
+          <div className="min-w-0 px-6 py-6 sm:px-8">
             <EventField
               label={t(isBond ? 'assets.priceUpdate.bondValue' : 'assets.priceUpdate.unitPrice')}
               error={error}
@@ -115,11 +109,20 @@ export function AssetPriceUpdateDialog({
               <EventMoneyInput value={price} onChange={(value) => { setPrice(value); setError('') }} placeholder="0" />
             </EventField>
           </div>
-          <ResponsiveDialogFooter className="border-t border-black/[0.06] px-6 py-4 sm:px-8">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+          <ResponsiveDialogFooter className="min-w-0 border-t border-black/[0.06] px-6 py-4 sm:flex-wrap sm:px-8">
+            <Button
+              type="button"
+              variant="ghost"
+              className="max-w-full"
+              onClick={() => onOpenChange(false)}
+            >
               {t('common.cancel')}
             </Button>
-            <Button type="submit" disabled={updateAsset.isPending}>
+            <Button
+              type="submit"
+              className="min-w-0 max-w-full whitespace-normal text-center"
+              disabled={updateAsset.isPending}
+            >
               {updateAsset.isPending ? t('assets.priceUpdate.submitting') : t('assets.priceUpdate.submit')}
             </Button>
           </ResponsiveDialogFooter>

@@ -31,6 +31,7 @@ export function useSettingsPage() {
     language: i18n.resolvedLanguage === 'en' ? 'en' : 'vi',
     reminderPayments: true,
     reminderUpdate: true,
+    reminderAccess: false,
     shareAssets: 'grouped',
     shareUpcoming: 'detailed',
     hidePrivateNotes: true,
@@ -45,7 +46,6 @@ export function useSettingsPage() {
   const {
     handleSubmit,
     reset,
-    watch,
     formState: { isValid },
   } = form
 
@@ -56,15 +56,9 @@ export function useSettingsPage() {
     toast.success(t('settings.header.saved'))
   }
 
-  const shareAssets = watch('shareAssets')
-  const updateFrequency = watch('updateFrequency')
-
   return {
     // data
     isLoading,
-    safeHousehold,
-    shareAssets,
-    updateFrequency,
     // form
     form,
     isValid,

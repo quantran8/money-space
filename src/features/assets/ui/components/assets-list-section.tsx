@@ -1,4 +1,4 @@
-import { Search, Wallet } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Card } from '@/components/ui/card'
@@ -38,13 +38,15 @@ export function AssetsListSection({
   const { t } = useTranslation()
 
   return (
-    <Card className="lg:col-span-7">
-      <div className="mb-6 flex items-center justify-between">
+    <Card className="xl:col-span-7">
+      <div className="mb-5 flex items-end justify-between gap-4">
         <div>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('assets.list.eyebrow')}</p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">{t('assets.list.title')}</h2>
+          <h2 className="section-title mt-1 text-xl font-semibold">{t('assets.list.title')}</h2>
         </div>
-        <Wallet className="size-5 text-[hsl(var(--accent))]" />
+        <p className="hidden text-sm font-medium text-muted-foreground sm:block">
+          {t('assets.list.count', { count: assets.length })}
+        </p>
       </div>
 
       <div className="mb-5 space-y-3">
@@ -58,7 +60,7 @@ export function AssetsListSection({
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           <FilterChip
             label={t('assets.toolbar.all')}
             active={liquidityFilter === 'all'}
