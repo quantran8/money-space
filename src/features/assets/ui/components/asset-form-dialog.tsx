@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Controller, type UseFormReturn, type UseFormSetValue } from 'react-hook-form'
+import { Controller, useWatch, type UseFormReturn, type UseFormSetValue } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/responsive-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
+  assetClassForType,
   assetTypeOrder,
   defaultLiquidityForType,
   liquidityOrder,
@@ -30,7 +31,9 @@ import {
   type ValuationMode,
 } from '@/features/assets/model/assets'
 import { type AssetForm } from '@/features/assets/model/assets-form'
+import type { SymbolAssetClass } from '@/features/assets/api/symbols.repository'
 import { ComputedPreview } from '@/features/assets/ui/components/computed-preview'
+import { SymbolCombobox } from '@/features/assets/ui/components/symbol-combobox'
 import { cn } from '@/shared/lib/utils'
 
 type WalletOption = { value: string; label: string }
@@ -185,7 +188,7 @@ export function AssetFormDialog({
                     </div>
                   ) : null}
 
-                  {mode === 'market_priced' ? <MarketFields control={control} register={register} errors={errors} previewValue={previewValue} /> : null}
+                  {mode === 'market_priced' ? <MarketFields control={control} register={register} errors={errors} previewValue={previewValue} assetType={selectedType} setValue={setValue} /> : null}
 
                   {mode === 'formula_calculated' ? (
                     <FormulaFields
@@ -245,8 +248,13 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   return <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"><span className="text-sm text-muted-foreground">{label}</span><span className="max-w-[65%] truncate text-right text-sm font-semibold">{value}</span></div>
 }
 
-function MarketFields({ control, register, errors, previewValue }: { control: UseFormReturn<AssetForm>['control']; register: UseFormReturn<AssetForm>['register']; errors: UseFormReturn<AssetForm>['formState']['errors']; previewValue: number | null }) {
-  return <div className="space-y-4"><div className="grid gap-4 sm:grid-cols-3"><EventField label="Mã / Ký hiệu" error={errors.symbol?.message}><EventFieldInput className="uppercase" placeholder="FPT, BTC, SJC" {...register('symbol')} /></EventField><EventField label="Số lượng" error={errors.quantity?.message}><Controller control={control} name="quantity" render={({ field }) => <EventDecimalInput placeholder="0" value={field.value} onChange={field.onChange} onBlur={field.onBlur} />} /></EventField><EventField label="Đơn vị" error={errors.unit?.message}><EventFieldInput placeholder="cp, coin, lượng" {...register('unit')} /></EventField></div><EventField label="Giá mua mỗi đơn vị" error={errors.purchasePrice?.message} trailing={<span className="text-xs text-muted-foreground">VND</span>}><Controller control={control} name="purchasePrice" render={({ field }) => <EventMoneyInput placeholder="0" className="text-[20px] sm:text-[22px]" value={field.value} onChange={field.onChange} onBlur={field.onBlur} />} /></EventField><ComputedPreview value={previewValue} /></div>
+function MarketFields({ control, register, errors, previewValue, assetType, setValue }: { control: UseFormReturn<AssetForm>['control']; register: UseFormReturn<AssetForm>['register']; errors: UseFormReturn<AssetForm>['formState']['errors']; previewValue: number | null; assetType: AssetType; setValue: UseFormSetValue<AssetForm> }) {
+  const assetClass = assetClassForType(assetType)
+  const currentUnit = useWatch({ control, name: 'unit' })
+  // Stock & crypto get the searchable symbol picker (Twelve Data reference
+  // data); other market classes (e.g. gold) keep a free-text symbol input.
+  const searchableClass: SymbolAssetClass | undefined = assetClass === 'stock' || assetClass === 'crypto' ? assetClass : undefined
+  return <div className="space-y-4"><div className="grid gap-4 sm:grid-cols-3"><EventField label="Mã / Ký hiệu" error={errors.symbol?.message}>{searchableClass ? <Controller control={control} name="symbol" render={({ field }) => <SymbolCombobox assetClass={searchableClass} value={field.value} onChange={field.onChange} onSelectSymbol={(symbol) => { if (!currentUnit?.trim()) setValue('unit', symbol.unit, { shouldDirty: true, shouldValidate: true }) }} />} /> : <EventFieldInput className="uppercase" placeholder="SJC" {...register('symbol')} />}</EventField><EventField label="Số lượng" error={errors.quantity?.message}><Controller control={control} name="quantity" render={({ field }) => <EventDecimalInput placeholder="0" value={field.value} onChange={field.onChange} onBlur={field.onBlur} />} /></EventField><EventField label="Đơn vị" error={errors.unit?.message}><EventFieldInput placeholder="cp, coin, lượng" {...register('unit')} /></EventField></div><EventField label="Giá mua mỗi đơn vị" error={errors.purchasePrice?.message} trailing={<span className="text-xs text-muted-foreground">VND</span>}><Controller control={control} name="purchasePrice" render={({ field }) => <EventMoneyInput placeholder="0" className="text-[20px] sm:text-[22px]" value={field.value} onChange={field.onChange} onBlur={field.onBlur} />} /></EventField><ComputedPreview value={previewValue} /></div>
 }
 
 function FormulaFields({ control, errors, isSaving, interestDestination, walletOptions, previewValue, t }: { control: UseFormReturn<AssetForm>['control']; errors: UseFormReturn<AssetForm>['formState']['errors']; isSaving: boolean; interestDestination: AssetForm['interestDestination']; walletOptions: WalletOption[]; previewValue: number | null; t: (key: string, params?: Record<string, unknown>) => string }) {

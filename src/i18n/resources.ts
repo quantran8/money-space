@@ -3,6 +3,7 @@ export const resources = {
     translation: {
       common: {
         view: 'Xem',
+        loading: 'Đang tải...',
         saveChanges: 'Lưu thay đổi',
         add: 'Thêm',
         remove: 'Gỡ',
@@ -322,6 +323,8 @@ export const resources = {
           save: 'Lưu thay đổi',
           symbol: 'Mã / loại',
           symbolPlaceholder: 'Ví dụ: SJC, BTC, FPT',
+          symbolSearchPlaceholder: 'Tìm mã hoặc tên...',
+          symbolNoResults: 'Không tìm thấy mã phù hợp',
           quantity: 'Số lượng',
           quantityPlaceholder: 'Ví dụ: 5',
           unit: 'Đơn vị',
@@ -1240,6 +1243,7 @@ export const resources = {
     translation: {
       common: {
         view: 'View',
+        loading: 'Loading...',
         saveChanges: 'Save changes',
         add: 'Add',
         remove: 'Remove',
@@ -1559,6 +1563,8 @@ export const resources = {
           save: 'Save changes',
           symbol: 'Symbol / kind',
           symbolPlaceholder: 'Example: SJC, BTC, FPT',
+          symbolSearchPlaceholder: 'Search ticker or name...',
+          symbolNoResults: 'No matching symbol',
           quantity: 'Quantity',
           quantityPlaceholder: 'Example: 5',
           unit: 'Unit',

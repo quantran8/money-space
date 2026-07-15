@@ -7,6 +7,8 @@ export const queryKeys = {
     ['households', householdId, 'assets', 'snapshots'] as const,
   assetValueHistory: (householdId: string, assetId: string) =>
     ['households', householdId, 'assets', assetId, 'value-history'] as const,
+  symbolSearch: (assetClass: string, query: string) =>
+    ['market-data', 'symbols', assetClass, query] as const,
   debts: (householdId: string) => ['households', householdId, 'debts'] as const,
   goals: (householdId: string) => ['households', householdId, 'goals'] as const,
   members: (householdId: string) => ['households', householdId, 'members'] as const,
