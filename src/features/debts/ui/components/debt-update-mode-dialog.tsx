@@ -55,7 +55,7 @@ const LENDER_TYPE_LABELS: Record<string, string> = {
 }
 
 function money(value?: number) {
-  return value === undefined ? '—' : `${formatVndShort(value)} đ`
+  return value === undefined ? '—' : formatVndShort(value)
 }
 
 /** One before → after row; only rendered when the value actually changed. */

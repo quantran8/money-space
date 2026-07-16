@@ -77,7 +77,7 @@ export function AssetsBreakdownSection({ buckets }: AssetsBreakdownSectionProps)
                     </p>
                   </div>
                 </div>
-                <p className="money-number text-sm">{formatVndShort(bucket.value)} đ</p>
+                <p className="money-number text-sm">{formatVndShort(bucket.value)}</p>
               </div>
             ))}
           </div>

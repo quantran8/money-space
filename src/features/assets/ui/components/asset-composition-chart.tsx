@@ -23,14 +23,12 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
 
   const slices = useMemo<Slice[]>(
     () =>
-      liquidityOrder
-        .map((liquidity) => ({
+      liquidityOrder.map((liquidity) => ({
           liquidity,
           label: t(`options.liquidity.${liquidity}`),
           value: totals[liquidity],
           color: liquidityColors[liquidity],
-        }))
-        .filter((slice) => slice.value > 0),
+        })),
     [totals, t],
   )
 

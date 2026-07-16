@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { parseRawMoney } from '@/shared/lib/number-format'
+import { formatMoney } from '@/shared/lib/format-money'
 import type { InterestCalc, InterestPeriod } from '@/features/debts/model/debts-interest'
 import { isFixedScheduleLender } from '@/features/debts/model/debts.types'
 import type { DebtStatus, LenderType } from '@/features/debts/model/debts.types'
@@ -82,10 +83,7 @@ export function amountToRaw(value?: number) {
 }
 
 export function formatVndShortLocal(value: number) {
-  if (value >= 1_000_000_000) return `${Math.round((value / 1_000_000_000) * 10) / 10}B`
-  if (value >= 1_000_000) return `${Math.round((value / 1_000_000) * 10) / 10}M`
-  if (value >= 1_000) return `${Math.round((value / 1_000) * 10) / 10}K`
-  return `${value}`
+  return formatMoney(value)
 }
 
 export function formatDate(isoDate?: string) {

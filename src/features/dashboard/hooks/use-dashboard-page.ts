@@ -4,7 +4,6 @@ import { useDashboardOverview } from '@/features/dashboard/hooks/use-dashboard-o
 import {
   buildAssetBuckets,
   buildResponsibility,
-  formatCompactMillions,
   formatMonths,
   parseCompactMillions,
   shortDate,
@@ -57,7 +56,7 @@ export function useDashboardPage() {
       sum + (payment.amountValue ?? parseCompactMillions(payment.amount) * 1_000_000),
     0,
   )
-  const attentionTotal = formatCompactMillions(upcomingTotalVnd / 1_000_000)
+  const attentionTotal = formatVndShort(upcomingTotalVnd)
   const upcomingCount = payments.length
   const upcomingTotalLabel = formatVndShort(upcomingTotalVnd)
 

@@ -7,7 +7,6 @@ import { toast } from 'sonner'
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useAssetSale } from '@/features/assets/hooks/use-asset-sale'
 import {
-  AS_OF,
   buildAssetSchema,
   defaultAssetFormValues,
   fromAsset,
@@ -15,11 +14,7 @@ import {
   type AssetForm,
   type AssetTotals,
 } from '@/features/assets/model/assets-form'
-import {
-  computeCurrentValue,
-  valuationModeForType,
-  type AssetLiquidity,
-} from '@/features/assets/model/assets'
+import { valuationModeForType, type AssetLiquidity } from '@/features/assets/model/assets'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 const EMPTY_TOTALS: AssetTotals = {
@@ -61,15 +56,6 @@ export function useAssetsPage() {
 
   const selectedType = watch('type')
   const mode = valuationModeForType(selectedType)
-  const watchedValues = watch()
-
-  // Live preview of the computed value for market/formula assets.
-  const previewValue = useMemo(() => {
-    if (mode === 'manual') return null
-    const draft = toAsset('preview', watchedValues)
-    return draft ? computeCurrentValue(draft, AS_OF) : null
-  }, [mode, watchedValues])
-
   // Wallet (cash/bank) assets that can receive auto-credited saving interest.
   const walletOptions = useMemo(
     () =>
@@ -176,7 +162,6 @@ export function useAssetsPage() {
     // form
     form,
     mode,
-    previewValue,
     walletOptions,
     setValue,
     isEditing,

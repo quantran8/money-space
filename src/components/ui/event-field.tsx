@@ -20,14 +20,18 @@ type EventFieldProps = {
   className?: string
   /** Renders the label + control side by side (used for the big amount row). */
   trailing?: ReactNode
+  variant?: 'filled' | 'outline'
 }
 
-export function EventField({ label, htmlFor, error, children, className, trailing }: EventFieldProps) {
+export function EventField({ label, htmlFor, error, children, className, trailing, variant = 'filled' }: EventFieldProps) {
   return (
     <div className={className}>
       <div
         className={cn(
-          'rounded-[20px] bg-[hsl(var(--muted))] px-5 py-4 transition focus-within:ring-4 focus-within:ring-[hsla(var(--accent),0.1)]',
+          'rounded-[20px] px-5 py-4 transition duration-200',
+          variant === 'outline'
+            ? 'border border-border bg-card shadow-[0_1px_2px_rgba(20,20,28,0.02)] focus-within:border-[#0A7AFF]/60 focus-within:shadow-[0_8px_26px_rgba(10,122,255,0.14)] focus-within:ring-4 focus-within:ring-[#0A7AFF]/10'
+            : 'bg-[hsl(var(--muted))] focus-within:ring-4 focus-within:ring-[hsla(var(--accent),0.1)]',
           error && 'ring-2 ring-[hsla(var(--status-red),0.35)]',
         )}
       >

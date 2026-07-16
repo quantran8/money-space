@@ -153,12 +153,12 @@ export function dueParts(
 }
 
 export function parseCompactMillions(value: string) {
-  return Number(value.replace('M', '').replace(',', '.'))
-}
-
-export function formatCompactMillions(value: number) {
-  const normalized = Number.isInteger(value) ? String(value) : value.toFixed(1)
-  return `${normalized.replace('.', ',')}M`
+  const normalized = value.trim().toLowerCase().replace(',', '.')
+  const amount = Number.parseFloat(normalized.replace(/[^\d.-]/g, ''))
+  if (!Number.isFinite(amount)) return 0
+  if (normalized.includes('tỷ') || normalized.includes('b')) return amount * 1_000
+  if (normalized.includes('nghìn') || normalized.includes('k')) return amount / 1_000
+  return amount
 }
 
 /** Vietnamese-style month figure, e.g. "4,5" — comma decimal, one decimal place. */

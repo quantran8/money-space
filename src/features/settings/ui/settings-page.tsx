@@ -13,7 +13,7 @@ import { SharingCard } from '@/features/settings/ui/components/sharing-card'
 
 export function SettingsPage() {
   const { t } = useTranslation()
-  const { isLoading, form, isValid, submit } = useSettingsPage()
+  const { isLoading, form, isValid, isSaving, submit } = useSettingsPage()
 
   return (
     <div className="space-y-4">
@@ -22,7 +22,7 @@ export function SettingsPage() {
         title={t('settings.header.title')}
         description={t('settings.header.description')}
         actions={
-          <Button type="submit" form="settings-form" disabled={!isValid}>
+          <Button type="submit" form="settings-form" disabled={!isValid || isSaving}>
             <Save className="mr-2 size-4" />
             {t('settings.header.save')}
           </Button>

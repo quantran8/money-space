@@ -29,7 +29,6 @@ export function AssetsPage() {
     setLiquidityFilter,
     form,
     mode,
-    previewValue,
     walletOptions,
     setValue,
     isEditing,
@@ -49,38 +48,42 @@ export function AssetsPage() {
   } = useAssetsPage()
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 pb-8">
       <PageHeader
         eyebrow={t('assets.header.eyebrow')}
         title={t('assets.header.title')}
         description={t('assets.header.description')}
+        className="gap-5 [&_h1]:mt-2 [&_h1]:max-w-4xl [&_h1]:text-[34px] [&_h1]:leading-[1.05] sm:[&_h1]:text-[46px] [&_p:last-child]:mt-3 [&_p:last-child]:max-w-3xl [&_p:last-child]:text-[15px] sm:[&_p:last-child]:text-base"
         actions={
-          <Button onClick={openCreate}>
+          <Button className="h-12 rounded-full px-6" onClick={openCreate}>
             <Plus className="mr-2 size-4" />
             {t('assets.form.submit')}
           </Button>
         }
       />
 
-      <AssetsSummaryStrip totals={totals} total={total} asOf={asOf || AS_OF} />
+      <AssetsSummaryStrip
+        totals={totals}
+        total={total}
+        asOf={asOf || AS_OF}
+        snapshots={snapshots}
+      />
 
-      <div className="grid gap-4 xl:grid-cols-12">
-        <AssetsListSection
-          assets={filteredAssets}
-          isLoading={isLoading}
-          asOf={asOf || AS_OF}
-          query={query}
-          onQueryChange={setQuery}
-          liquidityFilter={liquidityFilter}
-          onLiquidityFilterChange={setLiquidityFilter}
-          onOpen={(assetId) => navigate(`/assets/${assetId}`)}
-          onEdit={openEdit}
-          onSell={openSale}
-          onDelete={setDeleteId}
-        />
+      <AssetsCharts totals={totals} snapshots={snapshots} />
 
-        <AssetsCharts totals={totals} snapshots={snapshots} />
-      </div>
+      <AssetsListSection
+        assets={filteredAssets}
+        isLoading={isLoading}
+        asOf={asOf || AS_OF}
+        query={query}
+        onQueryChange={setQuery}
+        liquidityFilter={liquidityFilter}
+        onLiquidityFilterChange={setLiquidityFilter}
+        onOpen={(assetId) => navigate(`/assets/${assetId}`)}
+        onEdit={openEdit}
+        onSell={openSale}
+        onDelete={setDeleteId}
+      />
 
       <AssetFormDialog
         key={formOpen ? (isEditing ? 'edit-open' : 'create-open') : 'closed'}
@@ -89,7 +92,6 @@ export function AssetsPage() {
         form={form}
         setValue={setValue}
         mode={mode}
-        previewValue={previewValue}
         walletOptions={walletOptions}
         isEditing={isEditing}
         isSubmitting={isSubmitting}

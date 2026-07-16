@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next'
 
 import type { DashboardOverview } from '@/features/dashboard/api/dashboard.repository'
 import type { StatusVariant } from '@/features/dashboard/model/dashboard'
-import { formatCompactMillions } from '@/features/dashboard/model/dashboard'
 import { formatVndShort } from '@/shared/lib/format-money'
 
 type NetWorthHeroProps = {
@@ -15,11 +14,6 @@ type NetWorthHeroProps = {
   upcomingTotalVnd: number
   reserveMonthsLabel: string | null
   reserveGood: boolean
-}
-
-/** Whole-million figure, no unit — e.g. 620_000_000 → "620". */
-function millions(value: number) {
-  return String(Math.round(value / 1_000_000))
 }
 
 /**
@@ -55,10 +49,7 @@ export function NetWorthHero({
                 id="overview-title"
                 className="money-number text-5xl leading-none sm:text-6xl"
               >
-                {millions(snapshot.netWorth)}
-              </span>
-              <span className="pb-1 text-xl text-white/45">
-                {t('dashboard.redesign.netWorthUnit')}
+                {formatVndShort(snapshot.netWorth)}
               </span>
             </div>
           </div>
@@ -76,11 +67,11 @@ export function NetWorthHero({
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
             <p className="text-xs text-white/40">{t('dashboard.redesign.totalAssets')}</p>
-            <p className="money-number mt-2 text-xl">{formatVndShort(totalAssets)} đ</p>
+            <p className="money-number mt-2 text-xl">{formatVndShort(totalAssets)}</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
             <p className="text-xs text-white/40">{t('dashboard.redesign.debt')}</p>
-            <p className="money-number mt-2 text-xl">{formatVndShort(snapshot.debt)} đ</p>
+            <p className="money-number mt-2 text-xl">{formatVndShort(snapshot.debt)}</p>
           </div>
         </div>
       </div>
@@ -92,7 +83,7 @@ export function NetWorthHero({
             <p className="text-sm text-[hsl(var(--muted-foreground))]">
               {t('dashboard.redesign.available.label')}
             </p>
-            <p className="money-number mt-3 text-4xl">{formatVndShort(availableNow)} đ</p>
+            <p className="money-number mt-3 text-4xl">{formatVndShort(availableNow)}</p>
           </div>
           <div className="rounded-xl bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))]">
             {t('dashboard.redesign.available.thisMonth')}
@@ -118,13 +109,13 @@ export function NetWorthHero({
             <p className="text-xs text-[hsl(var(--muted-foreground))]">
               {t('dashboard.redesign.available.due')}
             </p>
-            <p className="money-number mt-1 text-base">{formatCompactMillions(upcomingTotalVnd / 1_000_000)} đ</p>
+            <p className="money-number mt-1 text-base">{formatVndShort(upcomingTotalVnd)}</p>
           </div>
           <div>
             <p className="text-xs text-[hsl(var(--muted-foreground))]">
               {t('dashboard.redesign.available.remaining')}
             </p>
-            <p className="money-number mt-1 text-base">{formatVndShort(availableRemaining)} đ</p>
+            <p className="money-number mt-1 text-base">{formatVndShort(availableRemaining)}</p>
           </div>
         </div>
 

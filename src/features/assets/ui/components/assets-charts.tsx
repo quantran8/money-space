@@ -14,30 +14,24 @@ type AssetsChartsProps = {
 export function AssetsCharts({ totals, snapshots }: AssetsChartsProps) {
   const { t } = useTranslation()
   return (
-    <div className="grid gap-4 xl:col-span-5">
-      <Card>
+    <div className="grid gap-5 lg:grid-cols-12">
+      <Card className="p-6 sm:p-7 lg:col-span-4">
         <div className="mb-6">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
             {t('assets.charts.compositionEyebrow')}
           </p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
+          <h2 className="section-title mt-1 text-2xl font-semibold">
             {t('assets.charts.compositionTitle')}
           </h2>
         </div>
         <AssetCompositionChart totals={totals} />
       </Card>
 
-      <Card>
+      <Card className="overflow-hidden p-6 sm:p-7 lg:col-span-8">
         <div className="mb-6">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('assets.charts.trendEyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
-            {t('assets.charts.trendTitle')}
-          </h2>
-          <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-            {t('assets.charts.trendSubtitle')}
-          </p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('assets.charts.trendEyebrow')}</p>
+          <h2 className="section-title mt-1 text-2xl font-semibold">{t('assets.charts.trendTitle')}</h2>
+          <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{t('assets.charts.trendSubtitle')}</p>
         </div>
         <AssetTrendChart snapshots={snapshots} />
       </Card>

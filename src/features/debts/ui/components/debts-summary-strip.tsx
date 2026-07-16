@@ -10,7 +10,7 @@ type DebtsSummaryStripProps = {
 }
 
 function money(value: number) {
-  return `${formatVndShortLocal(value)} đ`
+  return formatVndShortLocal(value)
 }
 
 function daysFromNow(date?: string) {

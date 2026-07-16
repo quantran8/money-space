@@ -1,4 +1,5 @@
 import { apiRequest } from '@/shared/api/http'
+import { formatMoney } from '@/shared/lib/format-money'
 import type { DebtInterestPeriodDto, DebtItem } from '@/features/debts/model/debts.types'
 
 type DebtListResponse = {
@@ -62,10 +63,7 @@ export type DebtPayload = {
 
 function formatCompact(value?: number) {
   if (value === undefined || value === null) return undefined
-  if (value >= 1_000_000_000) return `${Math.round((value / 1_000_000_000) * 10) / 10}B`
-  if (value >= 1_000_000) return `${Math.round((value / 1_000_000) * 10) / 10}M`
-  if (value >= 1_000) return `${Math.round((value / 1_000) * 10) / 10}K`
-  return `${value}`
+  return formatMoney(value)
 }
 
 function toDebtItem(record: DebtListResponse['items'][number]): DebtItem {

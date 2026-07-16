@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import type { GoalItem } from '@/features/goals/model/goals.types'
+import { formatVndShort } from '@/shared/lib/format-money'
 
 type LongTermGoalSectionProps = {
   goals: GoalItem[]
@@ -9,11 +10,6 @@ type LongTermGoalSectionProps = {
 
 /** Alternating bar color per goal row, from the design-system tokens. */
 const BAR_COLOR = ['hsl(var(--accent))', 'hsl(var(--foreground))']
-
-/** Whole-million figure for the "80 / 120 triệu" caption. */
-function millions(value: number | undefined) {
-  return Math.round((value ?? 0) / 1_000_000)
-}
 
 /**
  * "Tiến độ hiện tại" (mockup `#goals`): the household's shared goals, each with
@@ -57,8 +53,8 @@ export function LongTermGoalSection({ goals }: LongTermGoalSectionProps) {
                     <p className="text-sm font-medium">{goal.name}</p>
                     <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
                       {t('dashboard.redesign.goals.progress', {
-                        current: millions(goal.currentAmount),
-                        target: millions(goal.targetAmount),
+                        current: formatVndShort(goal.currentAmount ?? 0),
+                        target: formatVndShort(goal.targetAmount ?? 0),
                       })}
                     </p>
                   </div>

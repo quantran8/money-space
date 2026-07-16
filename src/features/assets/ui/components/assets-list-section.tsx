@@ -38,29 +38,30 @@ export function AssetsListSection({
   const { t } = useTranslation()
 
   return (
-    <Card className="xl:col-span-7">
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('assets.list.eyebrow')}</p>
-          <h2 className="section-title mt-1 text-xl font-semibold">{t('assets.list.title')}</h2>
+    <Card className="overflow-hidden p-0">
+      <div className="border-b border-border p-5 sm:p-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('assets.list.eyebrow')}</p>
+            <h2 className="section-title mt-1 text-2xl font-semibold">{t('assets.list.title')}</h2>
+          </div>
+          <p className="shrink-0 rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-muted-foreground">
+            {t('assets.list.count', { count: assets.length })}
+          </p>
         </div>
-        <p className="hidden text-sm font-medium text-muted-foreground sm:block">
-          {t('assets.list.count', { count: assets.length })}
-        </p>
-      </div>
 
-      <div className="mb-5 space-y-3">
-        <div className="relative">
+        <div className="mt-6 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
           <Input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder={t('assets.toolbar.searchPlaceholder')}
-            className="pl-11"
+            className="h-12 rounded-2xl pl-11"
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex shrink-0 gap-2 overflow-x-auto pb-1 xl:pb-0">
           <FilterChip
             label={t('assets.toolbar.all')}
             active={liquidityFilter === 'all'}
@@ -74,9 +75,11 @@ export function AssetsListSection({
               onClick={() => onLiquidityFilterChange(liquidity)}
             />
           ))}
+          </div>
         </div>
       </div>
 
+      <div className="p-5 sm:p-7">
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -110,6 +113,7 @@ export function AssetsListSection({
           {t('assets.toolbar.empty')}
         </p>
       )}
+      </div>
     </Card>
   )
 }

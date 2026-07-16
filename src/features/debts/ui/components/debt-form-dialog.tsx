@@ -33,6 +33,7 @@ import { type DebtForm } from '@/features/debts/model/debts-form'
 import { addMonthsIso, type RepaymentEstimate } from '@/features/debts/model/debts-interest'
 import { isFixedScheduleLender, type LenderType } from '@/features/debts/model/debts.types'
 import { cn } from '@/shared/lib/utils'
+import { formatMoney } from '@/shared/lib/format-money'
 
 type Option = { value: string; label: string }
 
@@ -59,7 +60,7 @@ const FREQUENCY_LABELS: Record<DebtForm['paymentFrequency'], string> = {
 function formatVnd(value: number | string) {
   const amount = typeof value === 'string' ? Number(value) : value
   if (!amount || !Number.isFinite(amount)) return 'Chưa nhập'
-  return `${new Intl.NumberFormat('vi-VN').format(Math.round(amount))} đ`
+  return formatMoney(amount)
 }
 
 type DebtFormDialogProps = {

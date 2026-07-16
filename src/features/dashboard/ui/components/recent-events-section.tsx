@@ -104,7 +104,7 @@ export function RecentEventsSection({ moneyEvents, subtitle }: RecentEventsSecti
                           : 'text-[hsl(var(--muted-foreground))]',
                     )}
                   >
-                    {event.direction === 'neutral' ? formatVndSigned(event.amount).replace(/^\+/, '') : formatVndSigned(event.amount)} đ
+                    {event.direction === 'neutral' ? formatVndSigned(event.amount).replace(/^\+/, '') : formatVndSigned(event.amount)}
                   </p>
                   <div className="flex items-center md:justify-end">
                     <div

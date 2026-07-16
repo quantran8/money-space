@@ -19,10 +19,6 @@ import { cn } from '@/shared/lib/utils'
 
 type ChartRange = 1 | 6 | 12
 
-function formatVnd(value: number, locale: string): string {
-  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value)} ₫`
-}
-
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0">
@@ -87,7 +83,6 @@ export function AssetDetailPage() {
     form,
     setValue,
     mode,
-    previewValue,
     walletOptions,
     isEditing,
     isSubmitting,
@@ -225,7 +220,7 @@ export function AssetDetailPage() {
             <p className="mt-5 text-sm text-white/45">
               {position && quantity > 0
                 ? t('assets.detail.hero.currentPrice', {
-                    value: formatVnd(currentUnitPrice, locale),
+                    value: formatVndShort(currentUnitPrice),
                     unit: position.unit,
                   })
                 : t('assets.detail.hero.valuationDescription')}
@@ -239,7 +234,7 @@ export function AssetDetailPage() {
               note={
                 position?.purchasePrice
                   ? t('assets.detail.hero.perUnit', {
-                      value: formatVnd(position.purchasePrice, locale),
+                      value: formatVndShort(position.purchasePrice),
                     })
                   : undefined
               }
@@ -332,7 +327,7 @@ export function AssetDetailPage() {
                 {position.purchasePrice ? (
                   <InfoRow
                     label={t('assets.detail.info.averagePurchasePrice')}
-                    value={formatVnd(position.purchasePrice, locale)}
+                    value={formatVndShort(position.purchasePrice)}
                   />
                 ) : null}
               </>
@@ -426,7 +421,6 @@ export function AssetDetailPage() {
         form={form}
         setValue={setValue}
         mode={mode}
-        previewValue={previewValue}
         walletOptions={walletOptions}
         isEditing={isEditing}
         isSubmitting={isSubmitting}

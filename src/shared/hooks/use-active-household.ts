@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { apiRequest } from '@/shared/api/http'
 import { queryKeys } from '@/shared/api/query-keys'
 import { useAppStore } from '@/shared/stores/household-store'
+import { setDisplayCurrency } from '@/shared/lib/format-money'
 
 export type HouseholdSummary = {
   id: string
@@ -36,6 +37,10 @@ export function useActiveHousehold() {
     householdsQuery.data?.items.find((item) => item.id === activeHouseholdId) ??
     householdsQuery.data?.items[0] ??
     null
+
+  useEffect(() => {
+    setDisplayCurrency(activeHousehold?.currency)
+  }, [activeHousehold?.currency])
 
   return {
     activeHousehold,

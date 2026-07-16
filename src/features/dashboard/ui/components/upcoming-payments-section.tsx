@@ -74,7 +74,7 @@ export function UpcomingPaymentsSection({
                       </p>
                     </div>
                     {payment.amount ? (
-                      <p className="money-number shrink-0 text-sm">{payment.amount} đ</p>
+                      <p className="money-number shrink-0 text-sm">{payment.amount}</p>
                     ) : null}
                   </div>
                   <p className={`mt-2 text-xs font-medium ${STATUS_COLOR[payment.status]}`}>
