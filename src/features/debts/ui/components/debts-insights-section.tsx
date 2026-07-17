@@ -91,8 +91,7 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
       <Card className="xl:col-span-5">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">Lịch trả nợ</p>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight">Các kỳ sắp tới</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Các kỳ sắp tới</h2>
           </div>
           <Link to="/events" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             Xem lịch đầy đủ
@@ -124,8 +123,7 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
       <Card className="xl:col-span-7">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">Theo thời gian</p>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight">Dư nợ qua các lần cập nhật</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Dư nợ qua các lần cập nhật</h2>
             <p className="mt-2 text-sm text-muted-foreground">Tổng số còn phải trả, tính từ lịch sử vay và thanh toán.</p>
           </div>
           <div className="inline-flex w-fit rounded-xl bg-muted p-1">

@@ -11,10 +11,7 @@ export function RecentUpdatesCard({ recent }: RecentUpdatesCardProps) {
   const { t } = useTranslation()
   return (
     <Card>
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">
-        {t('goals.recent.eyebrow')}
-      </p>
-      <h3 className="section-title mt-1 text-xl font-semibold">{t('goals.recent.title')}</h3>
+      <h3 className="section-title text-xl font-semibold">{t('goals.recent.title')}</h3>
       {recent.length === 0 ? (
         <p className="mt-4 text-sm text-[hsl(var(--muted-foreground))]">
           {t('goals.recent.empty')}

@@ -97,10 +97,7 @@ export function CategoriesCard() {
     <Card>
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('settings.categories.eyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
+          <h2 className="section-title text-xl font-semibold">
             {t('settings.categories.title')}
           </h2>
         </div>

@@ -11,10 +11,7 @@ export function AllocationCard({ allocation }: AllocationCardProps) {
   const { t } = useTranslation()
   return (
     <Card>
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">
-        {t('goals.allocation.eyebrow')}
-      </p>
-      <h3 className="section-title mt-1 text-xl font-semibold">
+      <h3 className="section-title text-xl font-semibold">
         {t('goals.allocation.title')}
       </h3>
       <div className="mt-5 space-y-4">

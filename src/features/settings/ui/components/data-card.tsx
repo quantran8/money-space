@@ -10,12 +10,9 @@ export function DataCard() {
   return (
     <Card>
       <div className="mb-6">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('settings.data.eyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
-            {t('settings.data.title')}
-          </h2>
+        <h2 className="section-title text-xl font-semibold">
+          {t('settings.data.title')}
+        </h2>
       </div>
 
       <div className="divide-y divide-border">

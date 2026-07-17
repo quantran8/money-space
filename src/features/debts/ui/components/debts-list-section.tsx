@@ -61,8 +61,7 @@ export function DebtsListSection({
     <Card>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Danh sách khoản nợ</p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight">Các khoản đang phải trả</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Các khoản đang phải trả</h2>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <label className="relative sm:w-72">

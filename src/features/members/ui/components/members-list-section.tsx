@@ -38,10 +38,7 @@ export function MembersListSection({
     <Card className="xl:col-span-8">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('members.list.eyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
+          <h2 className="section-title text-xl font-semibold">
             {t('members.list.count', { count: members.length })}
           </h2>
         </div>

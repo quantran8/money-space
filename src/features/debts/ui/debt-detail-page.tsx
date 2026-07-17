@@ -108,8 +108,7 @@ function DebtTrendChart({ debt, history }: { debt: DebtItem; history: DebtHistor
     <Card className="xl:col-span-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Theo thời gian</p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight">Dư nợ còn lại</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Dư nợ còn lại</h2>
           <p className="mt-2 text-sm text-muted-foreground">Số tiền còn phải trả sau mỗi lần ghi nhận thanh toán.</p>
         </div>
         <div className="inline-flex w-fit rounded-xl bg-muted p-1">
@@ -289,8 +288,7 @@ export function DebtDetailPage() {
       <section className="grid gap-4 xl:grid-cols-12">
         <DebtTrendChart debt={debt} history={history} />
         <Card className="xl:col-span-4">
-          <p className="text-sm text-muted-foreground">Thông tin khoản vay</p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight">Điều khoản hiện tại</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Điều khoản hiện tại</h2>
           <div className="mt-5 divide-y divide-border">
             <TermRow label="Bên cho vay" value={debt.lenderName || 'Chưa cập nhật'} />
             <TermRow label="Lãi suất" value={debt.interestSummary || 'Không tính lãi'} />
@@ -307,7 +305,7 @@ export function DebtDetailPage() {
       <section className="grid gap-4 xl:grid-cols-12">
         <Card className="xl:col-span-5">
           <div className="flex items-end justify-between gap-4">
-            <div><p className="text-sm text-muted-foreground">Lịch trả</p><h2 className="mt-1 text-xl font-semibold tracking-tight">Các kỳ sắp tới</h2></div>
+            <h2 className="text-xl font-semibold tracking-tight">Các kỳ sắp tới</h2>
             {upcomingPayments.length > 3 ? <button type="button" onClick={() => setShowAllUpcoming((value) => !value)} className="text-sm font-medium text-muted-foreground hover:text-foreground">{showAllUpcoming ? 'Thu gọn' : 'Xem toàn bộ'}</button> : null}
           </div>
           <div className="mt-5 divide-y divide-border">
@@ -325,7 +323,7 @@ export function DebtDetailPage() {
 
         <Card className="xl:col-span-7">
           <div className="flex items-end justify-between gap-4">
-            <div><p className="text-sm text-muted-foreground">Lịch sử trả nợ</p><h2 className="mt-1 text-xl font-semibold tracking-tight">Các khoản đã thanh toán</h2></div>
+            <h2 className="text-xl font-semibold tracking-tight">Các khoản đã thanh toán</h2>
             {repayments.length > 4 ? <button type="button" onClick={() => setShowAllHistory((value) => !value)} className="text-sm font-medium text-muted-foreground hover:text-foreground">{showAllHistory ? 'Thu gọn' : 'Xem tất cả'}</button> : null}
           </div>
           <div className="mt-5 divide-y divide-border">
@@ -338,8 +336,7 @@ export function DebtDetailPage() {
       <Card>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">Khoản tiền vay ban đầu</p>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight">Đã nhận {formatVndShort(totalBorrowed || debt.originalAmountValue)}</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Đã nhận {formatVndShort(totalBorrowed || debt.originalAmountValue)}</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">Nhận vào {receivedToAssetName || 'nguồn tiền chưa xác định'} ngày {formatDate(debt.borrowedAt)}. Đây là sự kiện nhận tiền, không phải nguồn cố định của khoản nợ.</p>
             {debt.note ? <p className="mt-2 text-sm leading-6 text-muted-foreground">Ghi chú: {debt.note}</p> : null}
           </div>

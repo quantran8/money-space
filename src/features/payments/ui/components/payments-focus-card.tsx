@@ -22,10 +22,7 @@ export function PaymentsFocusCard({
     <Card>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('payments.focus.eyebrow')}
-          </p>
-          <h2 className="section-title mt-1 truncate text-2xl font-semibold">
+          <h2 className="section-title truncate text-2xl font-semibold">
             {nearestPayment ? nearestPayment.payment.name : '—'}
           </h2>
         </div>

@@ -67,10 +67,7 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
     <Card>
       <div className="mb-4 flex items-center justify-between gap-2">
         <div>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('assets.detail.withdrawal.eyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-lg font-semibold">
+          <h2 className="section-title text-lg font-semibold">
             {t('assets.detail.withdrawal.title')}
           </h2>
         </div>

@@ -22,10 +22,7 @@ export function DiscussSection({ topics }: DiscussSectionProps) {
 
   return (
     <div className="rounded-[28px] border border-border bg-card p-6 apple-shadow-soft xl:col-span-4">
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">
-        {t('dashboard.redesign.discuss.eyebrow')}
-      </p>
-      <h3 className="section-title mt-1 text-xl font-semibold">
+      <h3 className="section-title text-xl font-semibold">
         {t('dashboard.redesign.discuss.title', { count: topics.length })}
       </h3>
 

@@ -38,8 +38,7 @@ export function MembersSidebar({
   return (
     <aside className="space-y-4 xl:col-span-4">
       <Card>
-        <p className="text-sm text-muted-foreground">{t('members.quickInvite.eyebrow')}</p>
-        <h2 className="section-title mt-1 text-xl font-semibold">
+        <h2 className="section-title text-xl font-semibold">
           {t('members.quickInvite.title')}
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -79,8 +78,7 @@ export function MembersSidebar({
       </Card>
 
       <Card>
-        <p className="text-sm text-muted-foreground">{t('members.permissionLevels.eyebrow')}</p>
-        <h2 className="section-title mt-1 text-xl font-semibold">
+        <h2 className="section-title text-xl font-semibold">
           {t('members.permissionLevels.title')}
         </h2>
 

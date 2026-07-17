@@ -61,8 +61,7 @@ export function EventsSummaryStrip({ summary }: EventsSummaryStripProps) {
       </div>
 
       <Card className="xl:col-span-4">
-        <p className="text-sm text-muted-foreground">{t('events.redesign.status.eyebrow')}</p>
-        <h2 className="section-title mt-1 text-xl font-semibold">
+        <h2 className="section-title text-xl font-semibold">
           {t('events.redesign.status.title')}
         </h2>
         <div className="mt-5 divide-y divide-border">

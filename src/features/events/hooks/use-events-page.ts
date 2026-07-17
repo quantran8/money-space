@@ -389,11 +389,23 @@ export function useEventsPage() {
       return
     }
 
+    const createEventType: RecordType = quickAction === 'income'
+      ? 'income'
+      : quickAction === 'transfer'
+        ? 'transfer'
+        : quickAction === 'goal_contribution'
+          ? 'goal_contribution'
+          : quickAction === 'payment_paid'
+            ? 'payment_paid'
+            : 'expense'
+
     resetActual({
       ...actualDefaults,
-      // Prefill the household's default category (if any) on create.
+      eventType: createEventType,
+      direction: getDirectionFromEventType(createEventType),
       category: defaultCategoryCode,
-      fromAssetId: sourceAssetOptions[0]?.value ?? '',
+      fromAssetId: createEventType === 'income' ? '' : sourceAssetOptions[0]?.value ?? '',
+      toAssetId: createEventType === 'income' ? sourceAssetOptions[0]?.value ?? '' : '',
     })
   }, [
     assetOptions,

@@ -53,10 +53,7 @@ export function PaymentsListSection({
     <Card className="xl:col-span-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('payments.list.eyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">
+          <h2 className="section-title text-2xl font-semibold">
             {t('payments.list.title')}
           </h2>
         </div>

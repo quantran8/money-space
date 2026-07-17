@@ -23,15 +23,12 @@ export function SharingCard({ form }: SharingCardProps) {
   return (
     <Card>
       <div className="mb-6">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('settings.privacy.eyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
-            {t('settings.privacy.title')}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">
-            {t('settings.privacy.description')}
-          </p>
+        <h2 className="section-title text-xl font-semibold">
+          {t('settings.privacy.title')}
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+          {t('settings.privacy.description')}
+        </p>
       </div>
 
       <div className="divide-y divide-border">

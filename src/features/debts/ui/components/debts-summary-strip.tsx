@@ -72,8 +72,7 @@ export function DebtsSummaryStrip({ summary, debts, payments }: DebtsSummaryStri
       </div>
 
       <Card className="xl:col-span-4">
-        <p className="text-sm text-muted-foreground">Trạng thái khoản nợ</p>
-        <h2 className="mt-1 text-xl font-semibold tracking-tight">Kỳ hạn hiện tại</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Kỳ hạn hiện tại</h2>
         <div className="mt-5 divide-y divide-border">
           <StatusRow
             label="Sắp trả trong 30 ngày"

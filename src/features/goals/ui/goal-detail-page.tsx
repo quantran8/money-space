@@ -287,8 +287,7 @@ export function GoalDetailPage() {
         <Card className="xl:col-span-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">{t('goals.detail.chart.eyebrow')}</p>
-              <h2 className="section-title mt-1 text-xl font-semibold">
+              <h2 className="section-title text-xl font-semibold">
                 {t('goals.detail.chart.title')}
               </h2>
             </div>
@@ -307,8 +306,7 @@ export function GoalDetailPage() {
         </Card>
 
         <Card className="xl:col-span-4">
-          <p className="text-sm text-muted-foreground">{t('goals.detail.info.eyebrow')}</p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
+          <h2 className="section-title text-xl font-semibold">
             {t('goals.detail.info.title')}
           </h2>
           <div className="mt-5 divide-y divide-border">
@@ -324,8 +322,7 @@ export function GoalDetailPage() {
       </section>
 
       <Card>
-        <p className="text-sm text-muted-foreground">{t('goals.detail.history.eyebrow')}</p>
-        <h2 className="section-title mt-1 text-xl font-semibold">
+        <h2 className="section-title text-xl font-semibold">
           {t('goals.detail.history.title')}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">

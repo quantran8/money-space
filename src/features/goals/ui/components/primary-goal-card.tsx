@@ -19,14 +19,11 @@ export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps)
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              {t('goals.primary.eyebrow')}
-            </p>
             <Badge className="bg-[hsla(var(--status-green),0.12)] text-[hsl(var(--status-green))]">
               {t('goals.primary.onTrack')}
             </Badge>
           </div>
-          <h2 className="section-title mt-2 truncate text-2xl font-semibold">
+          <h2 className="section-title mt-3 truncate text-2xl font-semibold">
             {goal.name}
           </h2>
           <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">

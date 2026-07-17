@@ -90,8 +90,7 @@ export function GoalsListSection({
     <Card>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">{t('goals.list.eyebrow')}</p>
-          <h2 className="section-title mt-1 text-xl font-semibold">{t('goals.list.title')}</h2>
+          <h2 className="section-title text-xl font-semibold">{t('goals.list.title')}</h2>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">

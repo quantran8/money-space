@@ -95,8 +95,7 @@ export function EventsTimelineCard({
     <Card className="overflow-hidden">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">{t('events.redesign.timeline.eyebrow')}</p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
+          <h2 className="section-title text-xl font-semibold">
             {t('events.redesign.timeline.title')}
           </h2>
         </div>

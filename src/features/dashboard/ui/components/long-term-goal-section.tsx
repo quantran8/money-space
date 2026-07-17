@@ -23,10 +23,7 @@ export function LongTermGoalSection({ goals }: LongTermGoalSectionProps) {
     <div className="rounded-[28px] border border-border bg-card p-6 apple-shadow-soft xl:col-span-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('dashboard.redesign.goals.eyebrow')}
-          </p>
-          <h3 className="section-title mt-1 text-xl font-semibold">
+          <h3 className="section-title text-xl font-semibold">
             {t('dashboard.redesign.goals.title')}
           </h3>
         </div>

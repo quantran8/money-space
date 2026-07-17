@@ -42,8 +42,7 @@ export function AssetsListSection({
       <div className="border-b border-border p-5 sm:p-7">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('assets.list.eyebrow')}</p>
-            <h2 className="section-title mt-1 text-2xl font-semibold">{t('assets.list.title')}</h2>
+            <h2 className="section-title text-2xl font-semibold">{t('assets.list.title')}</h2>
           </div>
           <p className="shrink-0 rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-muted-foreground">
             {t('assets.list.count', { count: assets.length })}

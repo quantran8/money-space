@@ -16,12 +16,9 @@ export function RemindersCard({ form }: RemindersCardProps) {
   return (
     <Card>
       <div className="mb-5">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('settings.reminders.eyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
-            {t('settings.reminders.title')}
-          </h2>
+        <h2 className="section-title text-xl font-semibold">
+          {t('settings.reminders.title')}
+        </h2>
       </div>
 
       <div className="divide-y divide-border">

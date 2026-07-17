@@ -259,8 +259,7 @@ export function AssetDetailPage() {
         <Card className="xl:col-span-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">{t('assets.detail.chart.eyebrow')}</p>
-              <h2 className="section-title mt-1 text-xl font-semibold">
+              <h2 className="section-title text-xl font-semibold">
                 {t('assets.detail.chart.title')}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -308,8 +307,7 @@ export function AssetDetailPage() {
         </Card>
 
         <Card className="xl:col-span-4">
-          <p className="text-sm text-muted-foreground">{t('assets.detail.info.eyebrow')}</p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
+          <h2 className="section-title text-xl font-semibold">
             {t('assets.detail.info.title')}
           </h2>
           <div className="mt-5 divide-y divide-border">
@@ -376,8 +374,7 @@ export function AssetDetailPage() {
 
       <section className="grid gap-4 xl:grid-cols-12">
         <Card className="xl:col-span-8">
-          <p className="text-sm text-muted-foreground">{t('assets.detail.events.eyebrow')}</p>
-          <h2 className="section-title mt-1 text-xl font-semibold">
+          <h2 className="section-title text-xl font-semibold">
             {t('assets.detail.events.title')}
           </h2>
 
@@ -397,8 +394,7 @@ export function AssetDetailPage() {
         <Card className="xl:col-span-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm text-muted-foreground">{t('assets.detail.notes.eyebrow')}</p>
-              <h2 className="section-title mt-1 text-xl font-semibold">
+              <h2 className="section-title text-xl font-semibold">
                 {t('assets.detail.notes.title')}
               </h2>
             </div>

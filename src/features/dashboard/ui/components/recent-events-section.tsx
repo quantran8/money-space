@@ -32,10 +32,7 @@ export function RecentEventsSection({ moneyEvents, subtitle }: RecentEventsSecti
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('dashboard.redesign.events.eyebrow')}
-          </p>
-          <h3 id="recent-title" className="section-title mt-1 text-xl font-semibold">
+          <h3 id="recent-title" className="section-title text-xl font-semibold">
             {t('dashboard.redesign.events.title')}
           </h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">

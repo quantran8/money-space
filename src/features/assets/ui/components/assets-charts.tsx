@@ -17,10 +17,7 @@ export function AssetsCharts({ totals, snapshots }: AssetsChartsProps) {
     <div className="grid gap-5 lg:grid-cols-12">
       <Card className="p-6 sm:p-7 lg:col-span-4">
         <div className="mb-6">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {t('assets.charts.compositionEyebrow')}
-          </p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">
+          <h2 className="section-title text-2xl font-semibold">
             {t('assets.charts.compositionTitle')}
           </h2>
         </div>
@@ -29,9 +26,8 @@ export function AssetsCharts({ totals, snapshots }: AssetsChartsProps) {
 
       <Card className="overflow-hidden p-6 sm:p-7 lg:col-span-8">
         <div className="mb-6">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('assets.charts.trendEyebrow')}</p>
-          <h2 className="section-title mt-1 text-2xl font-semibold">{t('assets.charts.trendTitle')}</h2>
-          <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{t('assets.charts.trendSubtitle')}</p>
+          <h2 className="section-title text-2xl font-semibold">{t('assets.charts.trendTitle')}</h2>
+          <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{t('assets.charts.trendSubtitle')}</p>
         </div>
         <AssetTrendChart snapshots={snapshots} />
       </Card>

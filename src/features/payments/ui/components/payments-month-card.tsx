@@ -12,10 +12,7 @@ export function PaymentsMonthCard({ next30Amount, discuss }: PaymentsMonthCardPr
 
   return (
     <Card>
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">
-        {t('payments.month.eyebrow')}
-      </p>
-      <h2 className="section-title mt-1 text-xl font-semibold">
+      <h2 className="section-title text-xl font-semibold">
         {t('payments.month.title')}
       </h2>
       <div className="mt-5 space-y-3">

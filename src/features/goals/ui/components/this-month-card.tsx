@@ -15,10 +15,7 @@ export function ThisMonthCard({ goal, pace, onSuggestContribution }: ThisMonthCa
   const { t } = useTranslation()
   return (
     <Card>
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">
-        {t('goals.thisMonth.eyebrow')}
-      </p>
-      <h3 className="section-title mt-1 text-xl font-semibold">
+      <h3 className="section-title text-xl font-semibold">
         {t('goals.thisMonth.title', { name: goal.name })}
       </h3>
       <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
