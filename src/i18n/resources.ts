@@ -986,6 +986,75 @@ export const resources = {
         },
       },
       options: {
+        // --- v3.1 foresight vocabulary ------------------------------------
+        // Tone rules: never a verdict, never surveillance, never judgement.
+        // See family-finance-v3.1/08-brand-copy-wireframes.md §2-§3.
+        financialState: {
+          on_track: 'Đang ổn',
+          watch: 'Cần chú ý',
+          tight: 'Đang căng',
+          incomplete: 'Chưa đủ dữ liệu',
+        },
+        financialMode: {
+          one_person_primary: 'Tôi đang giữ phần lớn',
+          partner_primary: 'Người kia giữ phần lớn',
+          split_responsibility: 'Mỗi người giữ một phần',
+          joint: 'Cả hai cùng quản lý',
+          unsure: 'Chưa rõ',
+        },
+        // Backend stores 4 visibility levels; MVP UI exposes only 3 (§30).
+        // `grouped` stays here so an existing record still renders a label.
+        sharingLevel: {
+          detail: 'Hiện chi tiết',
+          grouped: 'Theo nhóm',
+          summary_only: 'Chỉ tính vào tổng',
+          private: 'Riêng tư',
+        },
+        sharingLevelDescription: {
+          detail: 'Người kia thấy tên và số tiền.',
+          grouped: 'Người kia thấy theo nhóm, không thấy từng khoản.',
+          summary_only:
+            'Khoản này được tính vào bức tranh chung nhưng không hiện chi tiết.',
+          private: 'Người kia không thấy và khoản này không tham gia tính toán chung.',
+        },
+        financialNature: {
+          household: 'Của nhà mình',
+          personal_included: 'Riêng nhưng tính vào chung',
+          managed_for_household: 'Giữ giùm nhà mình',
+          personal_private: 'Riêng, không tính vào chung',
+        },
+        direction: {
+          incoming: 'Tiền vào',
+          outgoing: 'Tiền ra',
+        },
+        requirement: {
+          required: 'Bắt buộc',
+          planned: 'Dự định',
+        },
+        certainty: {
+          confirmed: 'Đã chắc',
+          estimated: 'Dự kiến',
+        },
+        recurrence: {
+          once: 'Một lần',
+          weekly: 'Hằng tuần',
+          quarterly: 'Hằng quý',
+          monthly: 'Hằng tháng',
+          yearly: 'Hằng năm',
+        },
+        cashflowStatus: {
+          expected: 'Sắp tới',
+          completed: 'Đã xong',
+          pending_confirmation: 'Chờ xác nhận',
+          postponed: 'Đã dời',
+          overdue: 'Đã quá hạn',
+          cancelled: 'Đã hủy',
+        },
+        horizon: {
+          '7': '7 ngày',
+          '30': '30 ngày',
+          '60': '60 ngày',
+        },
         currency: {
           VND: 'VND - Việt Nam Đồng',
           USD: 'USD - Đô la Mỹ',
@@ -2228,6 +2297,71 @@ export const resources = {
         },
       },
       options: {
+        // --- v3.1 foresight vocabulary ------------------------------------
+        financialState: {
+          on_track: 'On track',
+          watch: 'Worth a look',
+          tight: 'Tight',
+          incomplete: 'Not enough data yet',
+        },
+        financialMode: {
+          one_person_primary: 'I hold most of it',
+          partner_primary: 'My partner holds most of it',
+          split_responsibility: 'We each hold a part',
+          joint: 'We manage it together',
+          unsure: 'Not sure yet',
+        },
+        sharingLevel: {
+          detail: 'Show details',
+          grouped: 'Grouped',
+          summary_only: 'Count in the total only',
+          private: 'Private',
+        },
+        sharingLevelDescription: {
+          detail: 'Your partner sees the name and the amount.',
+          grouped: 'Your partner sees it by group, not item by item.',
+          summary_only:
+            'This counts toward the shared picture but the details stay hidden.',
+          private: 'Your partner does not see this and it stays out of shared calculations.',
+        },
+        financialNature: {
+          household: 'Ours',
+          personal_included: 'Personal, counted in the shared picture',
+          managed_for_household: 'Held on behalf of the household',
+          personal_private: 'Personal, not counted',
+        },
+        direction: {
+          incoming: 'Money in',
+          outgoing: 'Money out',
+        },
+        requirement: {
+          required: 'Required',
+          planned: 'Planned',
+        },
+        certainty: {
+          confirmed: 'Confirmed',
+          estimated: 'Estimated',
+        },
+        recurrence: {
+          once: 'One time',
+          weekly: 'Weekly',
+          quarterly: 'Quarterly',
+          monthly: 'Monthly',
+          yearly: 'Yearly',
+        },
+        cashflowStatus: {
+          expected: 'Coming up',
+          completed: 'Done',
+          pending_confirmation: 'Awaiting confirmation',
+          postponed: 'Postponed',
+          overdue: 'Past due',
+          cancelled: 'Cancelled',
+        },
+        horizon: {
+          '7': '7 days',
+          '30': '30 days',
+          '60': '60 days',
+        },
         currency: {
           VND: 'VND - Vietnamese dong',
           USD: 'USD - US dollar',

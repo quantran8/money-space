@@ -47,3 +47,18 @@ export function formatVndSigned(value: number): string {
   const sign = value >= 0 ? '+' : '-'
   return `${sign}${formatMoney(Math.abs(value))}`
 }
+
+/**
+ * A goal/projection date as "Th10 2029" (vi) or "Oct 2029" (en). Goal
+ * projections are month-precision by nature — showing an exact day would imply
+ * an accuracy the projection does not have.
+ */
+export function formatMonthYear(isoDate: string, locale = 'vi-VN'): string {
+  const date = new Date(`${isoDate}T00:00:00Z`)
+  if (Number.isNaN(date.getTime())) return ''
+  return new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date)
+}
