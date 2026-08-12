@@ -1,637 +1,1072 @@
-# Product Spec v1
-
-# App Tình Hình Tài Chính Gia Đình
+# Product Spec v3 — App Tình Hình & Quyết Định Tài Chính Gia Đình
 
 ## 1. Tóm tắt sản phẩm
 
-Sản phẩm là một app giúp vợ chồng/gia đình cùng nắm được tình hình tài chính hiện tại: nhà đang có bao nhiêu tiền, tiền đang nằm ở đâu, ai đang giữ hoặc phụ trách khoản nào, đang nợ gì, có khoản gì sắp phải trả, mục tiêu tài chính đang tiến triển ra sao, và có điểm nào cần trao đổi.
+Sản phẩm là một app giúp vợ chồng/cặp đôi cùng hiểu:
 
-Sản phẩm phục vụ hai tình huống phổ biến trong gia đình:
+1. **Tình hình tài chính gia đình hiện tại**
+2. **Tiền đang nằm ở đâu và ai đang giữ/phụ trách**
+3. **Những gì sẽ xảy ra với dòng tiền trong thời gian tới**
+4. **Một quyết định chi tiêu hôm nay sẽ ảnh hưởng tới tài chính tương lai như thế nào**
 
-1. Một người đang giữ hoặc quản lý phần lớn tài chính gia đình.
-2. Mỗi người đang giữ hoặc phụ trách một phần tài chính khác nhau.
+App phục vụ được cả hai mô hình phổ biến:
 
-Trong cả hai trường hợp, vấn đề chung là gia đình thiếu một bức tranh tài chính tổng thể, rõ ràng và được cập nhật.
+- Một người đang giữ hoặc quản lý phần lớn tài chính gia đình.
+- Mỗi người đang giữ hoặc phụ trách một phần tài chính khác nhau.
 
-Sản phẩm không tập trung vào việc ghi từng khoản thu chi nhỏ hằng ngày. Thay vào đó, app tập trung vào “bức tranh tài chính gia đình” ở cấp độ tổng quan, dễ hiểu, dễ cập nhật, có quyền riêng tư linh hoạt và giúp giảm việc phải hỏi nhau liên tục.
+Sản phẩm không tập trung vào ghi từng khoản thu chi nhỏ hằng ngày.
 
-## 2. Định vị sản phẩm
+Thay vào đó, app tập trung vào:
+
+**Shared financial snapshot + cash-flow foresight + decision support**
+
+Core loop:
+
+**Money today → Money location/ownership → Upcoming cash-flow → Protected money → Flexible money → What-if decision → Goal impact → Shared understanding**
+
+---
+
+## 2. Câu hỏi sản phẩm phải trả lời
+
+App cần trả lời được 5 câu hỏi theo thứ tự:
+
+### 1. Nhà mình đang ổn không?
+
+Tình hình tổng thể hiện tại như thế nào?
+
+### 2. Tiền đang nằm ở đâu?
+
+Tiền mặt, ngân hàng, tiết kiệm, quỹ dự phòng hoặc các khoản khác hiện đang do ai giữ/phụ trách?
+
+### 3. Sắp tới có chuyện gì?
+
+Trong 7–90 ngày tới có income hoặc obligation nào sẽ làm thay đổi dòng tiền?
+
+### 4. Nhà mình thực sự có thể linh hoạt bao nhiêu?
+
+Sau khi tính các nghĩa vụ đã biết và quỹ cần bảo vệ, còn bao nhiêu tiền có thể cân nhắc sử dụng?
+
+### 5. Nếu chi khoản này thì sao?
+
+Khoản chi có:
+
+- Làm thiếu tiền cho nghĩa vụ gần không?
+- Chạm quỹ an toàn không?
+- Làm flexible money giảm bao nhiêu?
+- Làm mục tiêu chung chậm bao lâu?
+
+---
+
+## 3. Định vị sản phẩm
 
 ### Một câu định vị
 
-App giúp vợ chồng biết tình hình tài chính gia đình: nhà còn bao nhiêu, tiền đang ở đâu, ai đang phụ trách khoản nào, có gì cần chú ý — mà không phải hỏi đi hỏi lại.
+**Giúp hai người cùng biết nhà mình đang có gì, sắp cần gì và hôm nay có thể chi bao nhiêu mà không vô tình làm hỏng những gì đang chờ phía trước.**
+
+### Phiên bản ngắn
+
+**Biết tình hình. Nhìn trước. Rồi quyết định cùng nhau.**
+
+### Product thesis
+
+Ngân hàng thường trả lời:
+
+> “Bạn đang có bao nhiêu tiền?”
+
+Spreadsheet có thể trả lời:
+
+> “Tổng tài sản của hai người là bao nhiêu?”
+
+App này cần trả lời thêm:
+
+> “Tiền đang nằm ở đâu và ai đang phụ trách?”
+
+> “Sau những khoản sắp tới, nhà mình thực sự còn bao nhiêu tiền linh hoạt?”
+
+> “Nếu chi X hôm nay, tương lai tài chính của hai người thay đổi thế nào?”
+
+---
+
+## 4. Không phải / Là gì
 
 ### Không phải
 
 - Không phải app ghi thu chi cá nhân.
-- Không phải app kế toán gia đình phức tạp.
-- Không phải app kiểm soát người giữ tiền.
-- Không phải app bắt nhập từng giao dịch nhỏ.
-- Không phải app ép hai người phải gộp toàn bộ tiền.
-- Không phải app soi từng khoản riêng tư của nhau.
+- Không phải app kế toán gia đình.
+- Không bắt nhập từng giao dịch nhỏ.
+- Không phải công cụ kiểm soát người giữ tiền.
+- Không bắt hai người phải gộp toàn bộ tài chính.
+- Không soi các khoản riêng tư của nhau.
+- Không phải app đầu tư/chứng khoán.
+- Không phải AI advisor quyết định thay người dùng.
 
 ### Là gì
 
-- Là dashboard tài chính gia đình.
-- Là nơi hai người cùng nhìn một bức tranh chung.
-- Là công cụ minh bạch tài chính nhẹ nhàng.
-- Là app giúp gia đình biết “nhà mình đang ổn không?”.
-- Là nơi tổng hợp tài chính dù tiền đang do một người giữ chính hoặc được chia ra cho nhiều người phụ trách.
+- Là shared financial picture của household.
+- Là nơi biết tiền đang nằm ở đâu.
+- Là nơi biết ai đang giữ hoặc phụ trách khoản nào.
+- Là cash-flow forecast cho những gì sắp tới.
+- Là nơi tính flexible money.
+- Là tool mô phỏng quyết định tài chính.
+- Là nơi thể hiện opportunity cost của một khoản chi.
+- Là shared source of truth cho hai người.
 
-## 3. Vấn đề cần giải quyết
+---
 
-Trong nhiều gia đình, tài chính không phải lúc nào cũng được nhìn thấy rõ bởi cả hai người.
+# 5. Vấn đề cần giải quyết
 
-Có gia đình theo mô hình một người giữ phần lớn hoặc toàn bộ tiền, tài sản, sổ tiết kiệm, vàng, tài khoản ngân hàng hoặc các khoản chi tiêu chính. Người còn lại vẫn có nhu cầu biết tình hình tài chính chung, nhưng việc hỏi liên tục như “còn bao nhiêu?”, “tiền đang ở đâu?”, “sắp tới có đủ không?” dễ tạo cảm giác bị kiểm soát, thiếu tin tưởng hoặc dẫn đến căng thẳng.
+## 5.1. Gia đình không có một bức tranh tài chính chung
 
-Cũng có gia đình mà mỗi người giữ hoặc phụ trách một phần tài chính khác nhau. Một người giữ tiền sinh hoạt, người kia giữ tiết kiệm; một người trả tiền nhà, người kia trả bảo hiểm; một người quản lý vàng hoặc tiền mặt, người kia phụ trách khoản vay, học phí hoặc chi phí gia đình hai bên. Trong trường hợp này, không ai nắm toàn bộ bức tranh, vì tiền và trách nhiệm tài chính bị phân tán ở nhiều nơi.
+Có hai tình huống phổ biến.
 
-Hai tình huống này khác nhau, nhưng có cùng một vấn đề cốt lõi: gia đình thiếu một nơi chung để cùng xem tình hình tài chính tổng thể.
+### Case A — Một người giữ phần lớn tiền
 
-Vấn đề cốt lõi không chỉ là ghi nhận dòng tiền, mà là:
+Một người quản lý phần lớn:
 
-- Thiếu một nơi chung để cả hai cùng xem tình hình.
-- Một người có thể bị mù mờ về tài chính gia đình nếu người kia giữ phần lớn tiền.
-- Cả hai có thể cùng thiếu tổng quan nếu mỗi người giữ một phần.
-- Người giữ tiền hoặc phụ trách khoản tiền có thể cảm thấy bị chất vấn khi bị hỏi liên tục.
-- Các khoản lớn, khoản sắp đến hạn, khoản bất thường hoặc khoản chưa cập nhật không được nhìn thấy rõ.
-- Hai người không có cùng một “bức tranh tài chính” để ra quyết định.
+- Tiền mặt
+- Tài khoản
+- Tiết kiệm
+- Vàng
+- Khoản vay
+- Chi phí gia đình
 
-Sản phẩm cần giúp gia đình có một financial snapshot chung: đủ rõ để cùng ra quyết định, đủ nhẹ để cập nhật định kỳ, và đủ tôn trọng để không tạo cảm giác kiểm soát lẫn nhau.
+Người kia vẫn có trách nhiệm và quyền lợi trong tài chính gia đình nhưng không có đủ thông tin.
 
-## 4. Mục tiêu sản phẩm
+Kết quả:
 
-### Mục tiêu chính
+- Phải hỏi “còn bao nhiêu?”
+- Người giữ tiền cảm thấy bị chất vấn.
+- Người không giữ tiền cảm thấy bị đứng ngoài.
 
-Giúp gia đình có một cái nhìn chung, rõ ràng và cập nhật về tình hình tài chính, dù tiền đang do một người giữ chính hay đang được chia ra cho nhiều người phụ trách.
+### Case B — Mỗi người giữ một phần
 
-### Mục tiêu phụ
+Ví dụ:
 
-- Giúp người không trực tiếp giữ tiền có cảm giác an tâm.
-- Giúp người giữ tiền không phải giải thích lặp lại nhiều lần.
-- Giúp các cặp đôi có tài chính phân tán gom lại thành một bức tranh chung.
-- Giúp hai người biết ai đang giữ hoặc phụ trách khoản nào.
-- Giúp hai người trao đổi về khoản lớn hoặc khoản bất thường một cách nhẹ nhàng.
-- Giúp gia đình theo dõi mục tiêu tài chính dài hạn.
-- Giúp phát hiện sớm tình trạng “căng tiền” trong tháng.
-- Giúp giảm việc hỏi nhau về tiền theo kiểu gây áp lực.
+- Một người giữ tiền sinh hoạt.
+- Một người giữ tiết kiệm.
+- Một người trả tiền nhà.
+- Người kia trả bảo hiểm.
+- Một người giữ vàng.
+- Người kia quản lý khoản vay.
 
-## 5. Người dùng mục tiêu
+Trong trường hợp này:
 
-### Persona 1: Người giữ tiền chính
+**Cả hai đều biết phần của mình, nhưng không ai biết toàn bộ.**
 
-Thường là vợ hoặc chồng, đang quản lý phần lớn tiền mặt, tài khoản ngân hàng, khoản tiết kiệm, vàng hoặc chi phí sinh hoạt.
+---
+
+## 5.2. Account balance tạo cảm giác giàu hơn thực tế
+
+Một household có thể thấy:
+
+**128 triệu tiền thanh khoản**
+
+nhưng trong vài tuần tới đã có:
+
+- 15 triệu tiền nhà
+- 12 triệu thẻ tín dụng
+- 8 triệu bảo hiểm
+- 40 triệu quỹ dự phòng cần giữ
+
+Vì vậy:
+
+**Balance ≠ Available to spend**
+
+App cần chuyển mental model từ:
+
+> “Nhà mình có bao nhiêu?”
+
+sang:
+
+> “Bao nhiêu trong số đó thực sự linh hoạt?”
+
+---
+
+## 5.3. Upcoming payment mới chỉ là reminder nếu không có forecast
+
+Biết:
+
+> “Ngày 18 phải trả 15 triệu”
+
+chưa đủ.
+
+User cần thấy:
+
+> “Sau khoản đó còn bao nhiêu?”
+
+và quan trọng hơn:
+
+> “Có thời điểm nào tiền bị thiếu trước khi lương tiếp theo về không?”
+
+Vì vậy forecast phải tính theo **thứ tự thời gian**, không chỉ tổng thu trừ tổng chi của tháng.
+
+---
+
+## 5.4. Goal dài hạn không ảnh hưởng đủ mạnh tới quyết định hôm nay
+
+Một progress bar:
+
+> 420m / 1.2B
+
+không làm user cảm nhận rõ consequence của việc chi thêm 30m.
+
+App cần dịch opportunity cost thành:
+
+> “Mục tiêu mua nhà dự kiến từ Oct 2029 → Jan 2030.”
+
+**Khoản chi = khoảng 3 tháng tiến độ.**
+
+---
+
+## 5.5. Privacy và minh bạch thường bị coi là hai lựa chọn đối lập
+
+Người dùng không nhất thiết muốn:
+
+> “Hoặc chia sẻ hết, hoặc không chia sẻ.”
+
+Một khoản có thể:
+
+- Là tài sản gia đình và chia sẻ đầy đủ.
+- Được tính vào tổng household nhưng không hiện chi tiết.
+- Hoàn toàn riêng tư.
+
+App phải cho phép **shared picture mà không yêu cầu mất toàn bộ privacy**.
+
+---
+
+# 6. Jobs To Be Done
+
+## Job 1 — Shared awareness
+
+> Khi mở app, tôi muốn biết tình hình tổng thể của nhà mình mà không phải hỏi từng người hoặc mở nhiều tài khoản.
+
+## Job 2 — Money location
+
+> Khi tài chính được chia giữa hai người, tôi muốn biết tiền đang nằm ở đâu và ai đang phụ trách phần nào.
+
+## Job 3 — Near-term foresight
+
+> Khi có nhiều khoản sắp tới, tôi muốn biết liệu tiền hiện tại có cover đủ hay không.
+
+## Job 4 — Spending decision
+
+> Khi cân nhắc một khoản chi đáng kể, tôi muốn biết nó có thực sự affordable nếu tính cả nghĩa vụ gần và mục tiêu dài hạn.
+
+## Job 5 — Shared decision
+
+> Khi hai người cần quyết định một khoản tiền, tôi muốn cả hai nhìn cùng một consequence thay vì mỗi người tự tính theo một cách.
+
+---
+
+# 7. Người dùng mục tiêu
+
+## Persona 1 — Người giữ phần lớn tiền
 
 Nhu cầu:
 
-- Muốn quản lý tiền gọn hơn.
-- Muốn người kia hiểu tình hình mà không phải hỏi liên tục.
-- Không muốn bị soi từng khoản nhỏ.
-- Muốn có quyền kiểm soát mức thông tin được chia sẻ.
-- Muốn giảm cảm giác đang gánh trách nhiệm tài chính một mình.
+- Chia sẻ tình hình mà không phải giải thích liên tục.
+- Không muốn bị soi giao dịch nhỏ.
+- Muốn plan nghĩa vụ sắp tới.
+- Muốn kiểm soát mức chia sẻ.
+- Muốn giảm cảm giác gánh toàn bộ tài chính một mình.
 
-Nỗi đau:
+---
 
-- Bị hỏi nhiều dễ mệt.
-- Cảm thấy đang bị chất vấn.
-- Có nhiều khoản phải nhớ: học phí, tiền nhà, bảo hiểm, tiền gia đình hai bên, quỹ dự phòng.
-- Muốn minh bạch nhưng không muốn mất quyền riêng tư hoàn toàn.
-
-### Persona 2: Người không giữ tiền chính
-
-Là người không trực tiếp nắm toàn bộ tiền, nhưng vẫn có trách nhiệm và quyền lợi trong tài chính gia đình.
+## Persona 2 — Người không giữ phần lớn tiền
 
 Nhu cầu:
 
-- Muốn biết nhà còn bao nhiêu tiền.
-- Muốn biết có khoản lớn nào sắp tới.
-- Muốn biết tài sản gia đình đang ở đâu.
-- Muốn có cảm giác được tôn trọng và được biết.
-- Muốn có căn cứ để cùng bàn kế hoạch tài chính.
+- Biết nhà còn bao nhiêu.
+- Biết tiền đang ở đâu.
+- Biết sắp có khoản lớn nào.
+- Biết mục tiêu chung đang thế nào.
+- Có context trước khi đưa ra quyết định.
 
-Nỗi đau:
+---
 
-- Không biết tình hình thật.
-- Hỏi nhiều thì sợ bị hiểu là nghi ngờ.
-- Không có căn cứ để cùng ra quyết định.
-- Cảm thấy bị đứng ngoài các quyết định tài chính.
-
-### Persona 3: Người phụ trách một phần tài chính
-
-Là người không giữ toàn bộ tiền, nhưng đang phụ trách một số khoản cụ thể trong gia đình.
+## Persona 3 — Người phụ trách một phần tài chính
 
 Ví dụ:
 
 - Trả tiền nhà.
-- Trả bảo hiểm.
-- Giữ quỹ tiết kiệm.
+- Giữ quỹ dự phòng.
 - Quản lý vàng.
+- Trả bảo hiểm.
 - Trả học phí.
-- Phụ trách khoản vay.
-- Gửi tiền cho gia đình hai bên.
-- Giữ tài khoản dự phòng.
+- Giữ tiết kiệm.
 
 Nhu cầu:
 
-- Muốn cập nhật phần mình phụ trách một cách đơn giản.
-- Muốn phần mình đóng góp được nhìn thấy trong bức tranh chung.
-- Muốn biết người kia đang phụ trách phần nào.
-- Muốn hai người cùng nắm tổng thể, không chỉ biết phần riêng của mỗi người.
+- Cập nhật phần mình phụ trách nhanh.
+- Biết phần của người kia.
+- Có bức tranh tổng thể thay vì hai bảng riêng biệt.
 
-Nỗi đau:
+---
 
-- Mỗi người biết một phần, nhưng không ai nắm tổng thể.
-- Khi cần ra quyết định lớn phải hỏi lại từng khoản.
-- Dễ thiếu sót khoản sắp đến hạn.
-- Tài chính gia đình bị rải rác trong tài khoản, ghi chú, tin nhắn hoặc trí nhớ.
+## Persona 4 — Cặp đôi mới cưới / đang xây hệ thống tài chính chung
 
-### Persona 4: Cặp đôi mới cưới hoặc sắp cưới
+Đặc điểm:
 
-Nhu cầu:
-
-- Tập thói quen minh bạch tài chính sớm.
-- Chia mục tiêu chung: mua nhà, sinh con, du lịch, quỹ dự phòng.
-- Biết nên giữ riêng khoản nào, chia sẻ khoản nào.
-- Tránh xung đột về tiền bạc sau này.
-
-Nỗi đau:
-
-- Chưa có hệ thống tài chính chung.
+- Có tài khoản riêng.
+- Có một số mục tiêu chung.
 - Chưa muốn gộp toàn bộ tiền.
-- Không rõ ai nên phụ trách khoản nào.
-- Dễ phát sinh hiểu lầm nếu không có nguyên tắc cập nhật rõ ràng.
+- Đang hình thành cách chia trách nhiệm tài chính.
 
-## 6. Insight chính
+Nhu cầu:
 
-Người dùng không nhất thiết muốn biết từng giao dịch nhỏ. Họ muốn biết:
+- Minh bạch vừa đủ.
+- Biết ai phụ trách gì.
+- Có một shared financial model.
+- Hiểu tác động trước các quyết định lớn.
 
-- Nhà mình đang còn bao nhiêu?
-- Tiền đang nằm ở đâu?
-- Đang nợ gì?
-- Tháng này có ổn không?
-- Có khoản gì sắp phải trả không?
-- Có gì bất thường cần nói với nhau không?
-- Mục tiêu tài chính chung đang tiến triển thế nào?
+---
 
-Vì vậy, sản phẩm nên xoay quanh khái niệm **financial snapshot**, không phải **transaction tracking**.
+# 8. Insight chính
 
-## 7. Nguyên tắc sản phẩm
+Người dùng không nhất thiết muốn biết:
 
-### 7.1. Tổng quan trước, chi tiết sau
+> “Hôm qua ai mua cà phê 65.000đ?”
 
-Màn hình đầu tiên phải trả lời được câu hỏi: “Nhà mình đang ổn không?”
+Họ muốn biết:
 
-Không bắt người dùng xem bảng dài hoặc nhập nhiều số liệu mới hiểu được tình hình.
+- Nhà mình đang có bao nhiêu?
+- Tiền đang ở đâu?
+- Ai đang giữ/phụ trách?
+- Khoản nào đã được dành cho việc khác?
+- 30 ngày tới có gì?
+- Thời điểm căng nhất là lúc nào?
+- Thực sự còn bao nhiêu tiền linh hoạt?
+- Nếu chi X thì sao?
+- Goal sẽ thay đổi thế nào?
 
-### 7.2. Không tạo cảm giác bị kiểm soát
+### Core mental model
 
-Ngôn ngữ sản phẩm cần tránh kiểu chất vấn.
+**Money exists → Money has location → Money has responsibility → Money is committed → Money is flexible → Decision → Future consequence**
 
-Không nên dùng:
+---
 
-- “Ai tiêu khoản này?”
-- “Chi vượt mức”
-- “Cảnh báo nghiêm trọng”
-- “Khoản đáng ngờ”
+# 9. Nguyên tắc sản phẩm
 
-Nên dùng:
+## 9.1. Decision trước, bookkeeping sau
 
-- “Khoản cần chú ý”
-- “Khoản nên trao đổi”
-- “Tháng này cao hơn bình thường”
-- “Cần cập nhật thêm”
+Không yêu cầu user làm kế toán để nhận value.
 
-### 7.3. Cập nhật định kỳ, không ép dùng hằng ngày
+Một input chỉ đáng nhập nếu nó giúp tạo ra một output như:
 
-Người dùng có thể cập nhật theo tuần hoặc theo tháng. App không nên phụ thuộc vào việc nhập từng giao dịch mỗi ngày.
+- Financial snapshot
+- Forecast
+- Flexible money
+- Goal projection
+- What-if consequence
 
-### 7.4. Quyền xem linh hoạt
+---
 
-Không phải mọi thông tin đều cần chia sẻ chi tiết ngay từ đầu. App cần cho phép chia sẻ theo nhiều mức:
+## 9.2. Shared household, không phải surveillance
 
-- Chỉ xem tổng quan.
-- Xem theo nhóm.
-- Xem chi tiết.
-- Ẩn khoản riêng tư.
-- Chỉ hiện số tổng.
+Không thiết kế quanh câu hỏi:
 
-### 7.5. Tập trung vào gia đình, không phải cá nhân
+> “Ai tiêu khoản này?”
 
-Các nhãn, câu chữ và flow nên dùng ngôn ngữ “nhà mình”, “gia đình mình”, “mục tiêu chung”, “khoản cần trao đổi”.
+Ưu tiên:
 
-## 8. MVP Scope
+- Nhà mình
+- Tiền đang ở đâu
+- Người phụ trách
+- Khoản cần cập nhật
+- Mục tiêu chung
+- Cùng xem
 
-MVP cần đủ để kiểm chứng giả thuyết:
+---
 
-“Các cặp đôi/gia đình có muốn dùng một dashboard tài chính chung thay vì app ghi thu chi truyền thống không?”
+## 9.3. Privacy by design
 
-### MVP gồm 5 module chính
+Minh bạch không đồng nghĩa chia sẻ toàn bộ.
 
-1. Dashboard tổng quan
-2. Tài sản & nguồn tiền
-3. Khoản sắp tới
-4. Mục tiêu tài chính
-5. Trao đổi tài chính
+User cần biết rõ trước khi lưu một khoản:
 
-Không build bank-linking ở MVP. Không build AI phức tạp ở MVP. Không build quản lý thu chi chi tiết như app kế toán ở MVP.
+- Người kia thấy gì?
+- Khoản có được tính vào household total không?
+- Chi tiết nào được ẩn?
 
-## 9. Tính năng MVP chi tiết
+---
 
-## 9.1. Onboarding
+## 9.4. Tổng quan trước, chi tiết sau
 
-### Mục tiêu
+Home phải trả lời được trong vài giây:
 
-Giúp người dùng hiểu app này không phải app ghi thu chi, mà là nơi xem tình hình tài chính gia đình.
+1. Nhà mình đang ổn không?
+2. Flexible money là bao nhiêu?
+3. 30 ngày tới có gì?
+4. Tiền đang nằm ở đâu?
+5. Goal chính đang đi đâu?
 
-### Flow
+---
 
-1. Người dùng tạo tài khoản.
-2. Tạo “Gia đình” hoặc “Nhà”.
-3. Chọn vai trò:
-   - Tôi đang giữ phần lớn tiền.
-   - Người kia đang giữ phần lớn tiền.
-   - Cả hai cùng quản lý.
-4. Chọn mục tiêu sử dụng:
-   - Cùng biết tình hình tài chính.
-   - Theo dõi tài sản.
-   - Theo dõi khoản sắp phải trả.
-   - Theo dõi mục tiêu chung.
-   - Giảm việc hỏi nhau về tiền.
-5. Mời người kia tham gia bằng link hoặc email/số điện thoại.
-6. Tạo snapshot đầu tiên.
+## 9.5. Không phán xét
 
-### Copy gợi ý
+Không dùng:
 
-“App này giúp hai người cùng nhìn một bức tranh tài chính chung. Bạn không cần nhập từng khoản nhỏ hằng ngày.”
+- Không được mua
+- Quyết định xấu
+- Hoang phí
+- Tiêu quá nhiều
 
-## 9.2. Dashboard tổng quan
+Ưu tiên:
 
-### Mục tiêu
+> “Các khoản đã biết vẫn được cover.”
 
-Trả lời nhanh câu hỏi: “Nhà mình đang ổn không?”
+> “Quỹ an toàn sẽ thấp hơn mức bạn đặt.”
 
-### Các chỉ số chính
+> “Mục tiêu dự kiến chậm khoảng 2 tháng.”
 
-- Tiền có thể dùng ngay
-- Tiền dự phòng/tiết kiệm
-- Tài sản dài hạn
-- Tổng nợ/khoản phải trả
-- Khoản cần chú ý
-- Lần cập nhật gần nhất
+> “Bạn quyết định.”
 
-### Trạng thái tài chính
+---
 
-App hiển thị một trạng thái đơn giản:
+## 9.6. Manual-first nhưng không manual-heavy
 
-- Ổn
-- Cần chú ý
-- Căng
-- Chưa đủ dữ liệu
+Không bắt nhập:
 
-### Logic MVP đơn giản
+- Coffee
+- Grab
+- Ăn trưa
+- Mọi transaction
 
-Trạng thái “Ổn” khi:
+Ưu tiên dữ liệu có ảnh hưởng tới financial model:
 
-- Có tiền khả dụng.
-- Không có khoản quá hạn.
-- Không có khoản cần trao đổi đang mở.
+- Money source
+- Current balance
+- Income
+- Upcoming obligation
+- Reserve
+- Goal
+- Planned meaningful purchase
 
-Trạng thái “Cần chú ý” khi:
+---
 
-- Có khoản sắp đến hạn trong 7 ngày.
-- Có khoản lớn được đánh dấu cần trao đổi.
-- Dữ liệu chưa cập nhật quá lâu.
+# 10. Core Concepts
 
-Trạng thái “Căng” khi:
+## 10.1. Money Source
 
-- Tiền khả dụng thấp hơn khoản sắp phải trả.
-- Có khoản quá hạn.
-- Nợ/khoản phải trả vượt ngưỡng người dùng tự đặt.
+Một nơi đang giữ giá trị tài chính.
 
-### Dashboard card
-
-Card 1: Nhà mình đang thế nào?
-Hiển thị trạng thái: Ổn / Cần chú ý / Căng
-
-Card 2: Tiền có thể dùng ngay
-Tổng tiền mặt + tài khoản có thể dùng
-
-Card 3: Khoản sắp tới
-Các khoản phải trả trong 7–30 ngày
-
-Card 4: Tài sản
-Tiết kiệm, vàng, đất, đầu tư, bảo hiểm
-
-Card 5: Cần trao đổi
-Danh sách khoản đang cần thống nhất
-
-## 9.3. Tài sản & nguồn tiền
-
-### Mục tiêu
-
-Cho biết tiền và tài sản gia đình đang nằm ở đâu.
-
-### Object: Asset
-
-Các trường dữ liệu:
-
-- Tên tài sản/nguồn tiền
-- Loại
-- Giá trị hiện tại
-- Người đang giữ
-- Có thể dùng ngay không
-- Mục đích
-- Mức chia sẻ
-- Ngày cập nhật
-- Ghi chú
-
-### Loại tài sản
+Ví dụ:
 
 - Tiền mặt
 - Tài khoản ngân hàng
+- Ví điện tử
 - Tiết kiệm
-- Vàng
-- Bất động sản
-- Đầu tư
-- Bảo hiểm
-- Khoản cho vay
-- Khác
-
-### Mức chia sẻ
-
-- Hiện đầy đủ
-- Chỉ hiện số tổng
-- Chỉ hiện loại tài sản
-- Ẩn khỏi người kia
-
-Lưu ý: Với MVP, có thể chưa cần mức “ẩn khỏi người kia” nếu muốn giữ sản phẩm đơn giản. Tuy nhiên cần có định hướng privacy từ đầu.
-
-## 9.4. Khoản sắp tới
-
-### Mục tiêu
-
-Giúp gia đình biết sắp phải trả gì, tránh bị động.
-
-### Object: Upcoming Payment
-
-Các trường dữ liệu:
-
-- Tên khoản
-- Số tiền dự kiến
-- Hạn trả
-- Tần suất
-- Người phụ trách
-- Trạng thái
-- Ghi chú
-- Có cần trao đổi không
-
-### Tần suất
-
-- Một lần
-- Hằng tuần
-- Hằng tháng
-- Hằng quý
-- Hằng năm
-
-### Trạng thái
-
-- Chưa trả
-- Đã trả
-- Chờ xác nhận
-- Tạm hoãn
-- Quá hạn
-
-### Ví dụ khoản sắp tới
-
-- Tiền nhà
-- Điện nước
-- Internet
-- Học phí
-- Bảo hiểm
-- Khoản vay
-- Tiền gửi gia đình hai bên
-- Khám sức khỏe
-- Sửa nhà/sửa xe
-
-## 9.5. Mục tiêu tài chính
-
-### Mục tiêu
-
-Giúp gia đình thấy tiền đang được giữ vì mục tiêu gì.
-
-### Object: Financial Goal
-
-Các trường dữ liệu:
-
-- Tên mục tiêu
-- Loại mục tiêu
-- Số tiền mục tiêu
-- Đã có
-- Còn thiếu
-- Hạn mục tiêu
-- Ưu tiên
-- Trạng thái
-- Ghi chú
-
-### Loại mục tiêu
-
 - Quỹ dự phòng
-- Mua nhà
-- Sửa nhà
-- Con cái
-- Du lịch
-- Trả nợ
-- Đầu tư
-- Học tập
-- Khác
+- Vàng có thể thanh khoản
+- Khoản tiền khác user muốn tính vào snapshot
 
-### Trạng thái
+Fields:
 
-- Đang làm
-- Tạm dừng
-- Hoàn thành
-- Hủy
+- Name
+- Type
+- Current value
+- Holder/member
+- Liquidity
+- Financial nature
+- Sharing level
+- Updated at
+- Note
 
-### Progress
+### Financial nature
 
-App hiển thị tiến độ phần trăm:
+- Household/shared
+- Personal but included in household overview
+- Holding/managing on behalf of household
+- Personal/private
 
-Đã có / Số tiền mục tiêu
+---
 
-## 9.6. Trao đổi tài chính ( optional, Later phase)
+## 10.2. Sharing Level
 
-### Mục tiêu
+MVP dùng 3 mức:
 
-Biến việc hỏi về tiền thành một cuộc trao đổi nhẹ nhàng, có ngữ cảnh.
+### Shared details
 
-### Object: Discussion
+Partner thấy:
 
-Các trường dữ liệu:
-
-- Chủ đề
+- Tên
 - Loại
-- Người tạo
-- Liên quan đến khoản nào
-- Mức độ
-- Trạng thái
-- Bình luận
-- Kết luận
+- Giá trị
+- Người phụ trách
+- Ghi chú nếu được chia sẻ
 
-### Loại trao đổi
+### Count in total only
 
-- Cần giải thích
-- Cần quyết định
-- Cần góp ý
-- Ghi nhận
-- Theo dõi thêm
+Khoản được tính vào household model nhưng partner chỉ thấy:
 
-### Mức độ
+- Giá trị đóng góp vào tổng
+- Hoặc nhóm tài sản
 
-- Bình thường
-- Quan trọng
-- Gấp
+Không thấy chi tiết nhạy cảm.
 
-### Trạng thái
+### Private
 
-- Mới
-- Đang trao đổi
-- Đã thống nhất
-- Đã đóng
+Không hiển thị cho partner và không tham gia shared calculation.
 
-### Copy gợi ý
+App phải nói rõ:
 
-Thay vì hỏi:
-“Tiền đâu hết rồi?”
+> “Khoản riêng tư sẽ không được tính vào flexible money chung.”
 
-App gợi ý:
-“Anh/em thấy khoản này hơi cao hơn bình thường. Mình xem lại cùng nhau nhé?”
+---
 
-Thay vì hỏi:
-“Sao lại chi khoản này?”
+## 10.3. Upcoming Income
 
-App gợi ý:
-“Khoản này có cần ghi chú thêm để cả hai cùng hiểu không?”
+Fields:
 
-## 10. User Flow chính
+- Name
+- Amount
+- Expected date
+- Recurring / one-time
+- Owner/member
+- Confirmed / estimated
 
-## Flow 1: Một người giữ tiền chính tạo dashboard
+Ví dụ:
 
-1. User mở app.
-2. App hỏi: “Hiện tại nhà mình có những khoản nào?”
-3. User nhập:
-   - Tiền có thể dùng ngay
-   - Tiền tiết kiệm/dự phòng
-   - Tài sản dài hạn
-   - Nợ/khoản phải trả
-4. User chọn mức chia sẻ:
-   - Hiện đầy đủ
-   - Chỉ hiện số tổng
-   - Riêng tư
-5. App tạo dashboard đầu tiên.
-6. App gợi ý mời người kia vào xem.
+- Salary
+- Bonus
+- Freelance payment
+- Refund
 
-## Flow 2: Người kia vào xem dashboard
+---
 
-1. Nhận lời mời.
-2. Tạo tài khoản.
-3. Xem dashboard tổng quan theo mức quyền được chia sẻ.
-4. Có thể bấm vào:
-   - Tài sản
-   - Khoản sắp tới
-   - Mục tiêu
-   - Cần trao đổi
-5. Nếu có câu hỏi, dùng nút “Cần trao đổi”.
+## 10.4. Upcoming Obligation
 
-## Flow 3: Hai người cùng cập nhật phần mình phụ trách
+Fields:
 
-1. User tạo household.
-2. App hỏi: “Mỗi người đang giữ hoặc phụ trách khoản nào?”
-3. User thêm phần mình:
-   - Tiền/tài sản đang giữ
-   - Khoản sắp phải trả
-   - Mục tiêu đang đóng góp
-4. User mời người kia.
-5. Người kia thêm phần họ đang giữ hoặc phụ trách.
-6. App tổng hợp thành dashboard chung.
-7. Cả hai cùng thấy tình hình tổng thể theo quyền xem đã chọn.
+- Name
+- Amount
+- Due date
+- Recurring / one-time
+- Required / planned
+- Owner/member
+- Confirmed / estimated
+- Status
 
-## Flow 4: Cập nhật hằng tuần
+Ví dụ:
 
-1. App nhắc: “Cập nhật nhanh tình hình tuần này?”
-2. User nhập:
-   - Tiền dùng được hiện tại
-   - Có khoản lớn nào vừa chi không
-   - Có khoản nào sắp phải trả không
-   - Có khoản nào mình đang phụ trách cần cập nhật không
-   - Có gì cần trao đổi không
-3. App cập nhật dashboard.
-4. Người kia nhận thông báo: “Tình hình tài chính gia đình đã được cập nhật.”
+- Rent
+- Loan
+- Credit card
+- Insurance
+- Tuition
+- Family support
+- Planned trip payment
 
-## Flow 5: Tạo khoản cần trao đổi
+---
 
-1. User thấy một khoản cần hỏi hoặc cần thống nhất.
-2. Bấm “Cần trao đổi”.
-3. Chọn template câu hỏi.
-4. Người kia nhận thông báo.
-5. Hai người comment.
-6. Một người ghi kết luận.
-7. Đóng trao đổi.
+## 10.5. Protected Reserve
 
-## 11. Cấu trúc màn hình MVP
+Số tiền household muốn bảo vệ và không coi là discretionary money.
 
-## 11.1. Home / Dashboard
+Ví dụ:
 
-Các phần:
+> Emergency reserve tối thiểu 100m
 
-- Header: “Tình hình nhà mình”
-- Trạng thái: Ổn / Cần chú ý / Căng
-- Lần cập nhật gần nhất
-- Tiền có thể dùng ngay
-- Tiết kiệm & dự phòng
-- Tài sản dài hạn
-- Khoản sắp tới
-- Cần trao đổi
-- Nút “Cập nhật tình hình”
+Đây là một **constraint**, không nhất thiết là một bank account.
 
-## 11.2. Tài sản
+---
 
-Các view:
+## 10.6. Financial Goal
 
-- Tất cả
-- Có thể dùng ngay
-- Dài hạn
-- Theo người đang giữ
-- Theo mục đích
+Fields:
 
-## 11.3. Khoản sắp tới
+- Name
+- Target amount
+- Current amount
+- Target date
+- Planned monthly contribution
+- Priority
+- Owner/shared
+- Status
 
-Các view:
+---
 
-- 7 ngày tới
-- 30 ngày tới
-- Quá hạn
-- Đã trả
-- Lặp lại
+## 10.7. Financial Snapshot
 
-## 11.4. Mục tiêu
+Snapshot là trạng thái được tính từ dữ liệu household tại một thời điểm.
 
-Các view:
+Output:
 
-- Đang làm
-- Ưu tiên cao
-- Hoàn thành
-- Tạm dừng
+- Total liquid
+- Upcoming income
+- Upcoming obligations
+- Protected reserve
+- Flexible money
+- Lowest projected balance
+- Goal projection
+- Data freshness
 
-## 11.5. Trao đổi
+---
 
-Các view:
+## 10.8. Flexible Money
 
-- Đang mở
-- Cần quyết định
-- Đã thống nhất
-- Liên quan đến khoản lớn
+Concept trung tâm:
 
-## 12. Data Model MVP
+> **Số tiền household có thể cân nhắc sử dụng sau khi bảo vệ các nghĩa vụ và constraint đã khai báo.**
+
+Không phải:
+
+> “Tiền app khuyên bạn nên tiêu.”
+
+Mà là:
+
+> “Theo dữ liệu hiện có, đây là phần tiền chưa được các nghĩa vụ đã biết hoặc reserve chiếm dụng.”
+
+---
+
+## 10.9. What-if Scenario
+
+Một simulation giả định, không phải transaction thật.
+
+Input:
+
+- Amount
+- Planned date
+- Label optional
+- Goal muốn xem impact
+
+Output:
+
+- Obligations covered?
+- Lowest balance after scenario
+- Reserve protected?
+- Flexible money before/after
+- Goal date before/after
+- Goal delay
+- Assumptions used
+
+---
+
+# 11. Calculation Model MVP
+
+## 11.1. Forecast
+
+Forecast phải chạy theo event theo ngày:
+
+```text
+Starting balance
++ incoming event
+- outgoing event
+= running projected balance
+```
+
+Không chỉ cộng tổng cả tháng.
+
+### Key metric
+
+**Lowest projected balance trong horizon**
+
+Ví dụ:
+
+```text
+Today                 20m
+15 Aug Rent          -25m → -5m
+20 Aug Salary        +30m → 25m
+```
+
+Tổng tháng cuối cùng vẫn dương nhưng ngày 15 household gặp vấn đề.
+
+---
+
+## 11.2. Flexible Money
+
+Simple MVP model:
+
+```text
+Projected available money
+= Current shared liquid money
++ sufficiently-certain incoming cash
+- required upcoming outflows
+- explicitly committed amounts
+
+Flexible money
+= Projected available money
+- Protected reserve
+```
+
+Home có thể ưu tiên phiên bản conservative:
+
+```text
+Flexible money today
+= Current liquid money
+- Protected reserve
+- Required outflows occurring before next sufficiently-certain inflow
+```
+
+App phải cho user xem assumptions.
+
+---
+
+## 11.3. Goal Projection
+
+```text
+Remaining amount
+= Target amount - Current amount
+
+Estimated months
+≈ Remaining amount / Planned monthly contribution
+```
+
+MVP chưa cần investment-return model.
+
+---
+
+## 11.4. Goal Impact
+
+Nếu user simulate khoản chi `X`:
+
+```text
+Approximate goal delay
+≈ X / Planned monthly contribution
+```
+
+Nếu tiền chi được lấy trực tiếp từ amount đã dành cho goal thì:
+
+1. Trừ vào current goal amount.
+2. Recalculate projected completion date.
+
+---
+
+# 12. MVP Scope
+
+MVP cần validate hai giả thuyết đồng thời:
+
+### Shared-picture hypothesis
+
+> Các cặp đôi muốn có một bức tranh tài chính chung dù tiền được giữ bởi một người hay phân tán giữa hai người.
+
+### Decision-value hypothesis
+
+> Các cặp đôi sẽ quay lại app trước các quyết định tài chính có ý nghĩa để kiểm tra consequence.
+
+## MVP gồm 7 capability chính
+
+1. Household + partner
+2. Money sources / financial snapshot
+3. Simple privacy/sharing
+4. Upcoming income & obligations
+5. Protected reserve + flexible money
+6. Financial goal + projection
+7. **Can We Spend This? / What-if simulator**
+
+### Không thuộc MVP core
+
+- Expense tracking chi tiết
+- Bank linking
+- AI advisor
+- Complex investment model
+- Full discussion/comment threads
+- Complex permission matrix
+- Approval workflow
+- Multiple household
+- Advanced budgeting
+
+---
+
+# 13. Onboarding
+
+## Mục tiêu
+
+Đưa user tới consequence insight nhanh nhất có thể mà vẫn hiểu household context.
+
+### Flow
+
+1. Tạo account.
+2. Tạo household.
+3. Chọn cách tài chính hiện đang được quản lý:
+   - Tôi giữ phần lớn tiền.
+   - Người kia giữ phần lớn tiền.
+   - Mỗi người giữ/phụ trách một phần.
+   - Cả hai cùng quản lý.
+
+4. Invite partner hoặc skip.
+5. Nhập money sources hiện tại.
+6. Chọn holder và sharing level.
+7. Đặt protected reserve.
+8. Nhập recurring income chính.
+9. Nhập 1–3 upcoming obligation.
+10. Tạo một goal.
+11. App tạo snapshot + 30-day forecast.
+12. Prompt:
+
+> “Có khoản nào hai người đang cân nhắc chi không?”
+
+13. Chạy first what-if.
+
+### Activation moment
+
+Không phải:
+
+> “Bạn đã tạo household.”
+
+Cũng không chỉ là:
+
+> “Dashboard đã hoàn tất.”
+
+Activation mạnh nhất:
+
+> **User lần đầu hiểu consequence của một decision bằng dữ liệu household của mình.**
+
+---
+
+# 14. Home / Financial Snapshot
+
+Priority:
+
+## 1. Financial state
+
+- On track
+- Watch
+- Tight
+- Incomplete
+
+## 2. Flexible Money
+
+Hiển thị prominent:
+
+> **Có thể linh hoạt: 54.000.000đ**
+
+Supporting copy:
+
+> Sau các khoản sắp tới và quỹ an toàn đã đặt.
+
+## 3. Next 30 Days
+
+- Incoming
+- Required outgoing
+- Lowest projected balance
+- Next important event
+
+## 4. Primary CTA
+
+**Can we spend this?**
+
+hoặc copy tiếng Việt:
+
+**Thử một khoản chi**
+
+## 5. Money Location
+
+> Tiền đang nằm ở đâu?
+
+Có thể xem theo:
+
+- Nhóm
+- Người phụ trách
+
+## 6. Main Goal
+
+- Progress
+- Projected date
+- Contribution rate
+
+## 7. Needs Update
+
+Các khoản:
+
+- Lâu chưa cập nhật
+- Expected income chưa confirm
+- Payment chưa confirm
+
+---
+
+# 15. Upcoming Timeline
+
+Không chỉ là bill reminder.
+
+Ví dụ:
+
+```text
+Today                       128m
+15 Aug Salary       +45m → 173m
+18 Aug Rent         -15m → 158m
+22 Aug Credit card  -12m → 146m
+28 Aug Insurance     -8m → 138m
+01 Sep Goal          -20m → 118m
+```
+
+Hiển thị thêm:
+
+> Lowest projected balance: 118m
+
+Views:
+
+- 7 days
+- 30 days
+- 60 days
+- 90 days later/Pro
+
+---
+
+# 16. Can We Spend This?
+
+## Core differentiator
+
+### Input
+
+```text
+Khoản bạn đang cân nhắc
+
+[ 30.000.000đ ]
+
+Khi nào?
+[ Hôm nay ]
+
+Xem ảnh hưởng tới
+[ Mua nhà ]
+
+[ Kiểm tra ảnh hưởng ]
+```
+
+### Result hierarchy
+
+## 1. Near-term coverage
+
+> Các khoản đã biết trong 30 ngày vẫn được cover.
+
+hoặc:
+
+> Có một payment xảy ra trước kỳ lương tiếp theo có thể làm cash-flow bị thiếu.
+
+## 2. Reserve
+
+> Quỹ an toàn 40m vẫn được bảo vệ.
+
+hoặc:
+
+> Sau khoản này, số dư dự kiến thấp hơn reserve threshold khoảng 8m.
+
+## 3. Flexible Money
+
+```text
+Before  54m
+After   24m
+```
+
+## 4. Goal Impact
+
+```text
+Home goal
+
+Before  Oct 2029
+After   Jan 2030
+
+Impact: khoảng 3 tháng
+```
+
+## 5. Assumptions
+
+> Kết quả dựa trên current balance, income, upcoming payments, reserve và contribution bạn đã nhập.
+
+### Actions
+
+- Share with partner
+- Save scenario
+- Try another amount
+
+Không cần ngay:
+
+- Mark approved
+- Voting
+- Comment thread
+- Full decision workflow
+
+---
+
+# 17. Household Sharing
+
+## Case A — Một người giữ tiền chính
+
+Một người:
+
+1. Tạo household.
+2. Nhập phần lớn money source.
+3. Chọn sharing level.
+4. Invite partner.
+5. Partner thấy snapshot theo quyền chia sẻ.
+6. Cả hai cùng xem forecast và what-if consequence.
+
+---
+
+## Case B — Mỗi người giữ một phần
+
+1. User A tạo household.
+2. A nhập các khoản mình giữ/phụ trách.
+3. Invite B.
+4. B nhập phần của mình.
+5. App aggregate các khoản shared.
+6. Dashboard tạo household view chung.
+7. Hai người cùng sử dụng model cho forecast/decision.
+
+Điểm quan trọng:
+
+**App không yêu cầu chuyển tiền về một chỗ.**
+
+Nó chỉ tạo một shared financial model.
+
+---
+
+# 18. Financial Goals
+
+Goal không chỉ là progress bar.
+
+Hiển thị:
+
+```text
+Home deposit
+
+420m / 1.2B
+35%
+
+At current pace:
+Oct 2029
+
+Target:
+Jun 2029
+
+Để đạt target hiện tại:
+cần thêm ~4.5m/tháng
+```
+
+Primary action:
+
+**Thử một khoản chi với goal này**
+
+Later:
+
+- Goal impact history
+- Scenario comparison
+- Multiple contributions/member
+- Prioritization
+
+---
+
+# 19. Data Freshness
+
+Vì app manual-first, trust phụ thuộc vào freshness.
+
+Mỗi financial input cần `updated_at`.
+
+Home có thể hiển thị:
+
+> 5/7 nguồn tiền đã được cập nhật trong 30 ngày gần đây.
+
+Không dùng tone:
+
+> “Dữ liệu của bạn quá cũ!”
+
+Ưu tiên:
+
+> “Có 2 khoản nên cập nhật để forecast chính xác hơn.”
+
+---
+
+# 20. Data Model MVP
 
 ## User
 
@@ -645,9 +1080,9 @@ Các view:
 
 - id
 - name
+- currency
 - created_by
 - created_at
-- currency
 - update_frequency
 
 ## HouseholdMember
@@ -656,24 +1091,16 @@ Các view:
 - household_id
 - user_id
 - role
-- permission_level
 - joined_at
 
 Role:
 
 - Owner
 - Partner
-- Viewer
 
-Permission level:
+---
 
-- View summary
-- View grouped
-- View detail
-- Edit content
-- Admin
-
-## Asset
+## MoneySource
 
 - id
 - household_id
@@ -682,619 +1109,682 @@ Permission level:
 - current_value
 - holder_member_id
 - liquidity
-- purpose
-- visibility_level
+- financial_nature
+- sharing_level
+- included_in_household_calculation
 - updated_at
 - note
 
-Liquidity:
+---
 
-- Usable now
-- Not immediately usable
-- Long-term
+## CashflowEvent
 
-## UpcomingPayment
+- id
+- household_id
+- name
+- direction: incoming / outgoing
+- amount
+- expected_date
+- recurrence
+- requirement: required / planned
+- certainty: confirmed / estimated
+- owner_member_id
+- status
+- related_goal_id
+- note
+
+---
+
+## ProtectedReserve
 
 - id
 - household_id
 - name
 - amount
-- due_date
-- frequency
-- owner_member_id
-- debt_id
-- status
-- need_discussion
+- updated_at
 - note
 
-## Debt
+MVP có thể chỉ support 1 reserve.
 
-- id
-- household_id
-- name
-- debt_type
-- lender_type
-- lender_name
-- original_amount
-- outstanding_amount
-- currency
-- borrowed_at
-- expected_final_due_date
-- owner_member_id
-- received_to_asset_id
-- status
-- note
-
-Ý nghĩa:
-
-- `asset` trả lời tiền đang nằm ở đâu.
-- `debt` trả lời household còn phải trả lại gì.
-
-Khi vay tiền:
-
-- asset nhận tiền tăng
-- debt tăng tương ứng
-- net worth không tăng ảo
-
-## MoneyEvent
-
-- id
-- household_id
-- title
-- event_type
-- category
-- amount
-- event_date
-- direction
-- from_asset_id
-- to_asset_id
-- upcoming_payment_id
-- debt_id
-- financial_goal_id
-- status
-- note
+---
 
 ## FinancialGoal
 
 - id
 - household_id
 - name
-- category
 - target_amount
 - current_amount
-- deadline
+- target_date
+- planned_monthly_contribution
 - priority
 - status
-- note
+- updated_at
 
-## Discussion
-
-- id
-- household_id
-- title
-- type
-- created_by
-- related_object_type
-- related_object_id
-- priority
-- status
-- conclusion
-- created_at
-- closed_at
-
-## Comment
-
-- id
-- discussion_id
-- user_id
-- content
-- created_at
+---
 
 ## Snapshot
 
 - id
 - household_id
 - total_liquid
-- total_savings
-- total_long_term_assets
-- total_debt
-- status
+- upcoming_income_horizon
+- upcoming_outgoing_horizon
+- protected_reserve
+- flexible_money
+- lowest_projected_balance
+- financial_state
+- calculated_at
+
+---
+
+## WhatIfScenario
+
+- id
+- household_id
 - created_by
+- amount
+- planned_date
+- label
+- related_goal_id
+- before_flexible_money
+- after_flexible_money
+- before_goal_date
+- after_goal_date
+- goal_delay_days
+- lowest_projected_balance
+- obligations_covered
+- reserve_protected
 - created_at
-- note
 
-## 13. Permission & Privacy
+---
 
-### Nguyên tắc
+# 21. Navigation MVP
 
-Tài chính gia đình là dữ liệu nhạy cảm. Sản phẩm phải xây dựng niềm tin ngay từ MVP.
+Bottom navigation / main navigation nên tránh “Transactions”.
 
-### Các mức quyền
+Đề xuất:
 
-## View Summary
+### Home
 
-Người dùng chỉ thấy:
+Snapshot + flexible money + CTA
 
-- Tổng tiền có thể dùng
-- Tổng tài sản
-- Tổng nợ
-- Trạng thái
-- Khoản cần chú ý
+### Upcoming
 
-Không thấy chi tiết từng tài sản/khoản.
+Forecast timeline
 
-## View Grouped
+### Goals
 
-Người dùng thấy theo nhóm:
+Goal projection
 
-- Tiền mặt
-- Ngân hàng
-- Tiết kiệm
-- Vàng
-- Bất động sản
-- Nợ
+### Household
 
-Không thấy ghi chú nhạy cảm.
+Money sources + members + setup
 
-## View Detail
+What-if nên là:
 
-Người dùng thấy chi tiết các khoản được chia sẻ.
+- Primary CTA trên Home
+- Entry point từ Goal
+- Entry point từ Upcoming
 
-## Edit Content
+không nhất thiết cần tab riêng.
 
-Người dùng có thể thêm/sửa số liệu, nhưng không đổi quyền hoặc cấu trúc household.
+---
 
-## Admin
+# 22. Notifications
 
-Người dùng có toàn quyền quản lý thành viên, quyền truy cập và dữ liệu.
+MVP:
 
-### Không nên lưu trong app
+- Upcoming required payment.
+- Expected income cần confirm.
+- Forecast có thời điểm tight.
+- Monthly check-in.
+- Partner shared scenario.
+- Money source lâu chưa update.
 
-- Mật khẩu ngân hàng
-- OTP
-- Mã PIN
-- Số thẻ đầy đủ
-- Ảnh giấy tờ quan trọng
-- Private key/ví crypto
-- Thông tin đăng nhập tài khoản tài chính
+### Tone
 
-## 14. Notification
+Không:
 
-### Loại thông báo MVP
-
-- Đã cập nhật tình hình tài chính
-- Có khoản sắp đến hạn
-- Có khoản cần trao đổi
-- Có bình luận mới
-- Đến lịch cập nhật tuần/tháng
-
-### Tone thông báo
-
-Không dùng tone gây áp lực.
-
-Không nên:
-
-“Bạn có khoản quá hạn!”
+> “Bạn sắp hết tiền!”
 
 Nên:
 
-“Có một khoản cần xem lại hôm nay.”
+> “Có một thời điểm trong 14 ngày tới số dư dự kiến xuống thấp.”
 
-Không nên:
+Không:
 
-“Đối phương đã thay đổi số tiền.”
+> “Người kia thay đổi số tiền.”
 
 Nên:
 
-“Tình hình tài chính gia đình vừa được cập nhật.”
+> “Tình hình tài chính nhà mình vừa được cập nhật.”
 
-## 15. Metrics đo lường
+---
+
+# 23. Metrics
 
 ## Activation
 
-- Tỷ lệ user tạo household
-- Tỷ lệ user nhập snapshot đầu tiên
-- Tỷ lệ user mời partner
-- Tỷ lệ partner accept invite
-- Tỷ lệ household có ít nhất một tài sản/khoản được tạo
-- Tỷ lệ household có dữ liệu từ cả hai người
+- % tạo household
+- % thêm money source đầu tiên
+- % thêm upcoming event
+- % đặt reserve
+- % tạo goal
+- % invite partner
+- % có data từ cả hai người
+- **% chạy first what-if**
+
+North-star activation:
+
+> **User thấy first consequence insight trong session đầu hoặc onboarding period.**
+
+---
 
 ## Engagement
 
-- Số lần dashboard được xem mỗi tuần
-- Số snapshot được cập nhật mỗi tháng
-- Số khoản sắp tới được tạo
-- Số mục tiêu tài chính được tạo
-- Số discussion được tạo và đóng
-- Số khoản được cập nhật bởi từng thành viên
-- Số lần user xem “tiền đang nằm ở đâu”
+- What-if simulations / household / month
+- What-if repeat usage
+- Upcoming timeline views
+- Snapshot updates
+- Goal projection views
+- Partner scenario shares
+- % household có dữ liệu do cả hai thành viên cập nhật
+
+---
+
+## Retention
+
+- D7
+- D30
+- % household cập nhật snapshot lần 2
+- % household chạy what-if ở ít nhất 2 tuần/tháng khác nhau
+- % household có 2 members active
+
+---
 
 ## Value metrics
 
-- Tỷ lệ user trả lời “Tôi thấy yên tâm hơn về tài chính gia đình”
-- Tỷ lệ user trả lời “Tôi ít phải hỏi người kia hơn”
-- Tỷ lệ user trả lời “Tôi hiểu rõ hơn tiền đang nằm ở đâu”
-- Tỷ lệ user trả lời “Tôi hiểu ai đang phụ trách khoản nào”
-- Tỷ lệ user trả lời “App không tạo cảm giác bị kiểm soát”
+- “Tôi hiểu nhà mình thực sự có thể chi bao nhiêu.”
+- “Tôi hiểu tiền đang nằm ở đâu.”
+- “Tôi biết ai đang phụ trách khoản nào.”
+- “Tôi ít phải hỏi người kia hơn.”
+- “App không tạo cảm giác bị kiểm soát.”
+- “Tôi hiểu một khoản chi ảnh hưởng mục tiêu thế nào.”
+- % user mở app trước một purchase meaningful
 
-## 16. MVP Success Criteria
+---
 
-MVP được xem là có tín hiệu tốt nếu sau 30 ngày:
+# 24. North Star
 
-- Tối thiểu 40% household mời partner.
-- Tối thiểu 25% partner accept invite.
-- Tối thiểu 30% household cập nhật snapshot lần 2.
-- Tối thiểu 20% household tạo ít nhất một khoản sắp tới.
-- Tối thiểu 15% household tạo ít nhất một mục tiêu tài chính.
-- Người dùng mô tả app là “giúp biết tình hình”, không phải “app ghi chi tiêu”.
+Không phải:
 
-## 17. Những thứ không làm ở MVP
+- Số transaction
+- Dashboard views
+- Số asset được nhập
 
-- Không liên kết ngân hàng.
-- Không tự động đọc SMS banking.
-- Không scan hóa đơn.
-- Không phân tích chi tiêu chi tiết.
-- Không budgeting phức tạp.
-- Không đầu tư/chứng khoán nâng cao.
-- Không tư vấn tài chính cá nhân.
-- Không social sharing.
-- Không public profile.
-- Không marketplace sản phẩm tài chính.
+Candidate:
 
-## 18. Roadmap
+> **% active households sử dụng foresight/what-if cho ít nhất một quyết định tài chính thực mỗi tháng.**
 
-## Phase 1: Manual MVP
+Supporting metric:
 
-Mục tiêu: kiểm chứng nhu cầu.
+> **% active household duy trì shared financial picture đủ mới để decision engine sử dụng được.**
 
-Tính năng:
+Hai metric này đại diện cho hai layer:
+
+**Trust/data layer + decision layer**
+
+---
+
+# 25. MVP Success Criteria
+
+Sau 30–45 ngày:
+
+- ≥40% activated household chạy ít nhất 1 what-if.
+- ≥25% chạy what-if lần 2 ở ngày khác.
+- ≥30% cập nhật snapshot lần 2.
+- ≥30% có ít nhất 3 cash-flow events.
+- ≥25% invite partner.
+- ≥15% household có data từ cả hai người.
+- ≥20% có meaningful interaction từ partner.
+
+Qualitative signal mạnh nếu user tự mô tả:
+
+- “Biết mình thực sự có thể tiêu bao nhiêu.”
+- “Biết tháng tới có thiếu không.”
+- “Biết tiền đang nằm ở đâu.”
+- “Biết mua cái này thì goal chậm bao lâu.”
+- “Đỡ phải hỏi nhau.”
+
+Signal mạnh nhất:
+
+> **User chủ động mở app trước một quyết định tài chính có ý nghĩa mà không cần reminder.**
+
+---
+
+# 26. Những thứ không làm ở MVP
+
+- Bank linking
+- SMS banking parsing
+- Receipt scanning
+- Tracking mọi transaction
+- Expense category budgeting
+- Investment analytics
+- AI advisor
+- Credit score
+- Full chat/discussion
+- Voting/approval flow
+- Complex field-level permissions
+- Advanced investment projection
+- Social feed
+- Financial marketplace
+
+---
+
+# 27. Roadmap
+
+## Phase 0 — Model & Dogfood
+
+- Spreadsheet calculation model
+- Test forecast formulas
+- Test what-if
+- Founder household dogfood
+- Interview couple thật
+
+Câu hỏi cần chứng minh:
+
+> “Có moment lặp lại check impact trước khi chi không?”
+
+---
+
+## Phase 1 — Shared Foresight MVP
 
 - Household
-- Invite partner
-- Dashboard
-- Asset
-- Upcoming payment
-- Goal
-- Discussion
-- Weekly/monthly update reminder
+- Partner invite
+- Money source
+- 3-level sharing
+- Upcoming income/outgoing
+- Reserve
+- 30-day forecast
+- Flexible money
+- Main goal
+- Goal projection
+- What-if spend
+- Share scenario
 
-## Phase 2: Better Dashboard
+---
 
-Mục tiêu: giúp người dùng hiểu tình hình nhanh hơn.
+## Phase 2 — Better Forecast
 
-Tính năng:
+- 60/90 days
+- Better recurring event
+- Running balance visualization
+- Lowest balance explanation
+- Multiple goals
+- Required contribution to target
 
-- Biểu đồ tài sản theo nhóm
-- Timeline cập nhật
-- So sánh snapshot tháng trước/tháng này
-- Trạng thái tài chính thông minh hơn
-- Gợi ý khoản cần chú ý
+---
 
-## Phase 3: Shared Decision
+## Phase 3 — Decision Collaboration
 
-Mục tiêu: biến app thành nơi thống nhất quyết định tài chính gia đình.
+- Save scenarios
+- Compare scenarios
+- Decision history
+- Partner reaction/comment nhẹ
+- Agreement status
+- Household decision rule
 
-Tính năng:
+Ví dụ:
 
-- Poll/decision cho khoản lớn
-- Lịch sử thống nhất
-- Quy tắc gia đình: khoản trên X triệu cần trao đổi
-- Kế hoạch tháng tới
+> Khoản trên 20m → gợi ý share với partner.
 
-## Phase 4: Automation
+Không biến thành permission/control system.
 
-Mục tiêu: giảm công nhập liệu.
+---
 
-Tính năng có thể cân nhắc:
+## Phase 4 — Automation
 
-- Import CSV từ ngân hàng
-- Nhập nhanh qua ảnh/screenshot
-- Nhập bằng chat
-- Kết nối ngân hàng nếu có điều kiện pháp lý/kỹ thuật phù hợp
+- CSV import
+- Screenshot-assisted update
+- Faster balance update
+- Recurring-event detection
+- Bank integration nếu phù hợp
 
-## Phase 5: Paid Product
+Automation chỉ nhằm giảm input.
 
-Mục tiêu: kiếm tiền từ nhóm user có nhu cầu thật.
+Core mental model vẫn là:
 
-Tính năng trả phí:
+**Know → Forecast → Decide**
 
-- Nhiều household
-- Lịch sử snapshot dài hạn
-- Báo cáo tháng
-- Mục tiêu nâng cao
-- Quyền chia sẻ nâng cao
-- Export PDF
-- Backup dữ liệu
-- Template tài chính gia đình
+---
 
-## 19. Pricing giả định
+## Phase 5 — Intelligent Planning
+
+- If income changes
+- One income pauses
+- Goal trade-off
+- Scenario comparison
+- Required adjustment
+- Multiple goals prioritization
+
+Không mặc định đưa ra recommendation cá nhân hóa mạnh nếu model hoặc safeguards chưa đủ.
+
+---
+
+# 28. Pricing
+
+Pricing phải nằm ở **decision value**, không phải database limits.
 
 ## Free
 
 - 1 household
-- 2 thành viên
-- Dashboard cơ bản
-- Tài sản cơ bản
-- Khoản sắp tới
-- 3 mục tiêu tài chính
-- Lịch sử snapshot giới hạn
+- 2 members
+- Shared snapshot
+- Money sources
+- Upcoming 30 days
+- Basic reserve
+- 1 main goal
+- Basic flexible money
+- Limited what-if
 
 ## Pro
 
-Giá thử nghiệm:
+Potential:
 
-- 29.000–79.000 VND/tháng
-- Hoặc 299.000–599.000 VND lifetime cho giai đoạn đầu
+- Unlimited what-if
+- Full goal impact
+- Multiple goals
+- 60/90-day forecast
+- Scenario comparison
+- Scenario history
+- Advanced recurring cash-flow
+- Decision history
+- Monthly foresight report
+- Enhanced privacy/sharing
+- Export/history
 
-Tính năng:
+### Pricing principle
 
-- Không giới hạn mục tiêu
-- Lịch sử snapshot đầy đủ
-- Báo cáo tháng
-- Quyền chia sẻ nâng cao
-- Export
-- Nhắc lịch nâng cao
-- Nhiều loại tài sản hơn
+Không paywall kiểu:
 
-## 20. Rủi ro sản phẩm
+> “Bạn đã nhập quá 3 assets.”
 
-## Rủi ro 1: Bị hiểu nhầm là app thu chi
+Ưu tiên paywall:
 
-Cách xử lý:
+> **“Bạn muốn hiểu consequence sâu hơn và so sánh nhiều phương án hơn.”**
 
-- Không đặt tab “Thu chi” ở trung tâm.
-- Không dùng thông điệp “ghi chép chi tiêu”.
-- Màn hình đầu tiên phải là dashboard tình hình.
+---
 
-## Rủi ro 2: Người giữ tiền sợ bị kiểm soát
+# 29. Brand & Tone
 
-Cách xử lý:
-
-- Cho phép chia sẻ theo mức.
-- Dùng ngôn ngữ nhẹ nhàng.
-- Không mặc định show tất cả chi tiết.
-- Tập trung vào tổng quan và khoản cần trao đổi.
-
-## Rủi ro 3: Người dùng lười nhập liệu
-
-Cách xử lý:
-
-- Chỉ yêu cầu cập nhật snapshot định kỳ.
-- Cho phép nhập nhanh 3–5 số chính.
-- Không bắt nhập từng giao dịch.
-- Có reminder nhẹ.
-
-## Rủi ro 4: Dữ liệu nhạy cảm
-
-Cách xử lý:
-
-- Không yêu cầu mật khẩu/ngân hàng ở MVP.
-- Có hướng dẫn không lưu thông tin nhạy cảm.
-- Có phân quyền rõ.
-- Có export/delete data.
-
-## Rủi ro 5: Không đủ khác biệt với Notion/Google Sheet
-
-Cách xử lý:
-
-- Tập trung vào flow vợ chồng.
-- Có trạng thái “nhà mình đang ổn không”.
-- Có khoản cần trao đổi.
-- Có quyền xem linh hoạt.
-- Có reminder và snapshot history.
-
-## 21. Brand & Tone
-
-### Tính cách sản phẩm
+### Tính cách
 
 - Bình tĩnh
 - Minh bạch
-- Tôn trọng
 - Không phán xét
-- Gia đình
-- Dễ hiểu
+- Tôn trọng privacy
+- Future-oriented
+- Dành cho “nhà mình”
+- Không kiểm soát đối phương
 
-### Những từ nên dùng
+### Từ nên dùng
 
-- Tình hình
 - Nhà mình
-- Cùng xem
-- Cần chú ý
-- Cần trao đổi
-- Đã thống nhất
-- Cập nhật
+- Tình hình
+- Đang ở đâu
+- Người phụ trách
+- Sắp tới
+- Dự kiến
+- Có thể linh hoạt
+- Quỹ an toàn
+- Ảnh hưởng
 - Mục tiêu chung
+- Cùng xem
+- Theo thông tin hiện có
 
-### Những từ nên tránh
+### Từ tránh
 
 - Kiểm soát
 - Theo dõi đối phương
-- Truy vết
 - Phát hiện
-- Vượt chi
-- Cảnh báo nghiêm trọng
 - Đáng ngờ
+- Hoang phí
+- Sai lầm
+- Không được mua
+- Cảnh báo nghiêm trọng
 
-## 22. Ví dụ copy trong app
+---
 
-### Empty state dashboard
+# 30. Home Wireframe
 
-“Chưa có dữ liệu tài chính. Cập nhật vài con số chính để cả hai cùng biết nhà mình đang thế nào.”
+```text
+NHÀ MÌNH
 
-### Reminder cập nhật
+[ On track ]
+30 ngày tới các khoản đã biết đều được cover
 
-“Đến lúc cập nhật nhanh tình hình tuần này. Chỉ cần vài con số chính.”
+CÓ THỂ LINH HOẠT
+54.000.000đ
 
-### Partner invited
+Current liquid          128m
+Needed before income    -34m
+Protected reserve       -40m
 
-“Bạn đã được mời vào dashboard tài chính gia đình. Đây là nơi hai người cùng xem tình hình chung, không phải nơi soi từng khoản nhỏ.”
+[ Thử một khoản chi ]
 
-### Discussion prompt
+──────────────
 
-“Khoản này có cần hai người trao đổi thêm không?”
+30 NGÀY TỚI
 
-### Monthly summary
+15 Aug   Salary       +45m
+18 Aug   Rent         -15m
+22 Aug   Credit card  -12m
 
-“Tháng này nhà mình có 2 khoản cần chú ý và 1 mục tiêu đang tiến triển tốt.”
+Lowest projected balance
+82m
 
-## 23. Wireframe mô tả bằng chữ
+[ Xem timeline ]
 
-## Home
+──────────────
 
-```
-Tình hình nhà mình
+TIỀN ĐANG Ở ĐÂU
 
-[Ổn / Cần chú ý / Căng]
-Cập nhật gần nhất: 05/07/2026
+An               72m
+Bình             46m
+Shared/other     10m
 
-Tiền có thể dùng ngay
-xx.xxx.xxx đ
+[ Xem nguồn tiền ]
 
-Tiết kiệm & dự phòng
-xx.xxx.xxx đ
+──────────────
 
-Tài sản dài hạn
-xx.xxx.xxx đ
+MỤC TIÊU CHÍNH
 
-Đang nợ
-xx.xxx.xxx đ
+Mua nhà
+420m / 1.2B
 
-- Vay mua xe: còn 84.000.000 đ
-- Mượn mẹ sửa nhà: còn 18.000.000 đ
+At current pace
+Oct 2029
 
-Khoản sắp tới
-- Học phí: 12.000.000 đ, hạn 10/07
-- Tiền nhà: 8.000.000 đ, hạn 15/07
+[ Xem goal ]
 
-Cần trao đổi
-- Sửa xe phát sinh 4.000.000 đ
+──────────────
 
-[ Cập nhật tình hình ]
-```
+2 khoản nên cập nhật
 
-## Update Snapshot
-
-```
-Cập nhật tình hình
-
-Tiền có thể dùng ngay:
-[________]
-
-Tiền tiết kiệm/dự phòng:
-[________]
-
-Tài sản dài hạn:
-[________]
-
-Nợ/khoản phải trả:
-[________]
-
-Có khoản nào cần chú ý không?
-[________]
-
-[ Lưu cập nhật ]
+[ Cập nhật nhanh ]
 ```
 
-## Discussion
+---
 
-```
-Trao đổi tài chính
+# 31. What-if Wireframe
 
-Chủ đề:
-Sửa xe phát sinh 4.000.000 đ
+```text
+THỬ MỘT KHOẢN CHI
 
-Liên quan:
-Khoản phát sinh tháng 7
+Bạn đang cân nhắc bao nhiêu?
 
-Tin nhắn gợi ý:
-“Khoản này mình ghi chú thêm để cả hai cùng nắm nhé?”
+[ 30.000.000đ ]
 
-[ Bình luận ]
+Khi nào?
+[ Hôm nay ]
 
-Kết luận:
-[________]
+Xem ảnh hưởng tới:
+[ Mua nhà ]
 
-[ Đánh dấu đã thống nhất ]
+[ Kiểm tra ảnh hưởng ]
 ```
 
-## 24. Phiên bản MVP đề xuất để build đầu tiên
+Result:
 
-Nền tảng: Web app responsive
+```text
+30.000.000đ
 
-Lý do:
+30 NGÀY TỚI
 
-- Build nhanh hơn mobile native.
-- Dễ test với người dùng thật.
-- Dễ chia sẻ link mời partner.
-- Dễ chỉnh sửa dashboard và flow.
+✓ Các khoản đã biết vẫn được cover
 
-Tech requirement ở mức sản phẩm:
+QUỸ AN TOÀN
 
-- Đăng ký/đăng nhập
-- Tạo household
-- Mời thành viên
-- CRUD tài sản
-- CRUD khoản nợ / khoản vay
-- CRUD khoản sắp tới
-- CRUD money events nhẹ để giải thích biến động snapshot
-- CRUD mục tiêu
-- CRUD trao đổi
-- Dashboard tổng hợp
-- Reminder qua email hoặc notification đơn giản
-- Phân quyền cơ bản
-- Export/delete data
+✓ Reserve 40m vẫn được giữ
 
-## 25. Giả thuyết cần validate
+TIỀN LINH HOẠT
 
-### Giả thuyết 1
+54m → 24m
 
-Người dùng muốn xem tình hình tài chính gia đình hơn là ghi từng khoản thu chi.
+MỤC TIÊU MUA NHÀ
 
-Cách test:
+Oct 2029 → Jan 2030
 
-- Landing page
-- Prototype Figma
-- Notion template
-- Phỏng vấn 10–20 cặp đôi
+Khoảng 3 tháng chậm hơn
 
-### Giả thuyết 2
+Theo dữ liệu hiện có.
 
-Người giữ tiền sẵn sàng chia sẻ dashboard nếu có quyền kiểm soát mức chia sẻ.
+[ Xem cách tính ]
+[ Chia sẻ với partner ]
+[ Thử số khác ]
+```
 
-Cách test:
+---
 
-- Cho chọn 3 mức sharing trong prototype.
-- Hỏi mức nào họ thấy thoải mái.
+# 32. Điểm khác biệt cạnh tranh
 
-### Giả thuyết 3
+Nếu chỉ build:
 
-Người không giữ tiền chỉ cần tổng quan trong phần lớn trường hợp.
+- Asset list
+- Upcoming payment
+- Goal progress
+- Household sharing
 
-Cách test:
+thì Google Sheets/Notion có thể đủ tốt.
 
-- Cho xem dashboard tổng.
-- Hỏi có cần xem chi tiết từng khoản không.
-- Đo xem họ click vào chi tiết bao nhiêu lần.
+Moat sản phẩm phải đến từ sự kết hợp:
 
-### Giả thuyết 4
+### 1. Shared financial model
 
-“Khoản cần trao đổi” giúp giảm căng thẳng hơn hỏi trực tiếp.
+Tiền dù nằm ở nhiều người vẫn được tổng hợp đúng context.
 
-Cách test:
+### 2. Privacy-aware aggregation
 
-- Cho user dùng template câu hỏi.
-- Hỏi cảm giác: dễ nói chuyện hơn hay không.
+Không cần reveal tất cả để vẫn có shared picture.
 
-## 26. Kết luận
+### 3. Time-aware cash-flow forecast
 
-Sản phẩm nên được xây dựng như một “family finance dashboard”, không phải app thu chi.
+Hiểu sequence của income/outgoing.
 
-Core value là:
+### 4. Flexible money
 
-- Cả hai cùng biết tình hình.
-- Người giữ tiền không bị kiểm soát.
-- Người không giữ tiền không bị mù mờ.
-- Gia đình có một nơi chung để xem, cập nhật và trao đổi về tiền.
-- App giúp trả lời câu hỏi quan trọng nhất: “Nhà mình đang ổn không?”
+Dịch balance thành actionable context.
 
-MVP nên đơn giản, manual-first, tập trung vào dashboard, snapshot định kỳ, tài sản, khoản nợ phải trả, khoản sắp tới, money events nhẹ, mục tiêu và trao đổi tài chính.
+### 5. What-if engine
+
+Cho user thử quyết định trước khi thực hiện.
+
+### 6. Goal consequence
+
+Dịch tiền thành thời gian/opportunity cost.
+
+### 7. Couple context
+
+Hai người nhìn cùng một model và cùng consequence.
+
+---
+
+# 33. Strategic Product Architecture
+
+Sản phẩm có 3 layer:
+
+## Layer 1 — Financial Truth
+
+> “Nhà mình đang có gì?”
+
+- Money sources
+- Ownership
+- Sharing
+- Current balances
+- Goals
+- Reserve
+
+## Layer 2 — Financial Foresight
+
+> “Sắp tới chuyện gì xảy ra?”
+
+- Incoming
+- Obligations
+- Timeline
+- Lowest balance
+- Flexible money
+
+## Layer 3 — Financial Decision
+
+> “Nếu làm X thì sao?”
+
+- What-if
+- Reserve impact
+- Flexible money impact
+- Goal delay
+- Shared scenario
+
+### Product principle
+
+**Layer 1 tạo trust.
+Layer 2 tạo awareness.
+Layer 3 tạo repeat usage và willingness to pay.**
+
+---
+
+# 34. Kết luận
+
+Sản phẩm không nên chỉ là:
+
+> **Family finance dashboard**
+
+và cũng không nên chỉ là:
+
+> **Can I afford this calculator**
+
+Phiên bản mạnh hơn là:
+
+> **Shared financial foresight for couples.**
+
+App giúp hai người:
+
+- Cùng biết tình hình.
+- Biết tiền đang nằm ở đâu.
+- Biết ai đang phụ trách khoản nào.
+- Không cần gộp toàn bộ tiền.
+- Không cần soi giao dịch nhỏ.
+- Biết những gì sắp xảy ra.
+- Biết số tiền nào thực sự linh hoạt.
+- Hiểu consequence trước một quyết định.
+- Thấy mục tiêu chung thay đổi thế nào.
+
+Dashboard là **trust layer**.
+
+Forecast là **context layer**.
+
+What-if là **decision layer**.
+
+Core value cuối cùng:
+
+> **Trước khi chi một khoản đáng kể, hai người có thể cùng nhìn vào một bức tranh tài chính đáng tin cậy và hiểu quyết định đó sẽ thay đổi tương lai như thế nào.**
