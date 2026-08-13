@@ -7,9 +7,7 @@ import { useSettingsPage } from '@/features/settings/hooks/use-settings-page'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
 import { DataCard } from '@/features/settings/ui/components/data-card'
 import { HouseholdCard } from '@/features/settings/ui/components/household-card'
-import { RemindersCard } from '@/features/settings/ui/components/reminders-card'
 import { SettingsSkeleton } from '@/features/settings/ui/components/settings-skeleton'
-import { SharingCard } from '@/features/settings/ui/components/sharing-card'
 
 export function SettingsPage() {
   const { t } = useTranslation()
@@ -38,14 +36,17 @@ export function SettingsPage() {
           onSubmit={submit}
           noValidate
         >
+          {/*
+            Phase 10 trimmed /settings to account / data / danger-zone.
+            Sharing defaults, reminders and the reserve moved to /household,
+            where the household's shared setup now lives together.
+          */}
           <div className="space-y-4 xl:col-span-8">
             <HouseholdCard form={form} />
-            <SharingCard form={form} />
             <DataCard />
           </div>
 
           <div className="space-y-4 xl:col-span-4">
-            <RemindersCard form={form} />
             <CategoriesCard />
           </div>
         </form>

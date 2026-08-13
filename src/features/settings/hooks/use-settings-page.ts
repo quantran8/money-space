@@ -42,7 +42,7 @@ export function useSettingsPage() {
     reminderUpdate: true,
     reminderAccess: false,
     shareAssets: 'grouped',
-    shareUpcoming: 'detailed',
+    shareUpcoming: 'detail',
     hidePrivateNotes: true,
   }
 

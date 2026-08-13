@@ -4,7 +4,20 @@ Single-glance household financial status — answers *"Nhà mình đang ổn kh�
 
 ## Overview
 
-Fans out to every other feature's data (snapshot + assets summary + market prices + FX + attention items + upcoming payments + goals + money events + snapshots) and composes one view.
+**v3.1 (Phase 9): Home is now seven sections in a mandated order** — Financial
+State → Flexible Money → What-if CTA → 30 Days Ahead → Money Location → Main
+Goal → Freshness. See [[forecast-and-flexible-money]], [[what-if]],
+[[data-freshness]].
+
+Two absences are deliberate product decisions, not omissions:
+
+- **Total Assets is not the hero** (§19). Net worth is a vanity number; what a
+  household can act on is its state and its flexible money.
+- **Small transactions are banned from Home** (§12). Recent-events and discuss
+  lists belong on `/events`.
+
+Home composes slices that own their own data rather than fanning out to
+everything — it no longer pulls debts, events or cashflow.
 
 ## Composed cards
 

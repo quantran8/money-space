@@ -2,6 +2,7 @@ import { useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { motion } from 'motion/react'
 import {
+  CalendarClock,
   ChartNoAxesCombined,
   Home,
   Landmark,
@@ -16,11 +17,16 @@ import {
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 
+import { MobileBottomNav } from '@/app/layout/mobile-bottom-nav'
+import { WhatIfFab } from '@/features/whatif/ui/components/whatif-trigger'
+import { WhatIfSheet } from '@/features/whatif/ui/whatif-sheet'
+
 import type { ComponentType } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { pageTransition, pageVariants } from '@/components/ui/motion'
+import { Separator } from '@/components/ui/separator'
 import { useMembers } from '@/features/members/hooks/use-members'
 import { useActiveHousehold } from '@/shared/hooks/use-active-household'
 import { cn } from '@/shared/lib/utils'
@@ -32,39 +38,69 @@ type NavItem = {
   disabled?: boolean
 }
 
-const navItems: NavItem[] = [
+/**
+ * 5 primary + 3 secondary (approved v3.1 decision). The split is deliberate:
+ * the five things a household acts on daily stay first-class; history, debts
+ * and settings are references you visit occasionally, so they sit under a
+ * separator rather than competing for the same attention.
+ */
+const primaryNavItems: NavItem[] = [
   { to: '/', labelKey: 'nav.dashboard', icon: Home },
-  { to: '/assets', labelKey: 'nav.assets', icon: Wallet },
-  { to: '/debts', labelKey: 'nav.debts', icon: Landmark },
+  { to: '/upcoming', labelKey: 'nav.upcoming', icon: CalendarClock },
   { to: '/goals', labelKey: 'nav.goals', icon: Target },
+  { to: '/assets', labelKey: 'nav.assets', icon: Wallet },
+  { to: '/household', labelKey: 'nav.household', icon: Users },
+]
+
+const secondaryNavItems: NavItem[] = [
   { to: '/events', labelKey: 'nav.events', icon: ReceiptText },
-  { to: '/members', labelKey: 'nav.members', icon: Users },
+  { to: '/debts', labelKey: 'nav.debts', icon: Landmark },
   { to: '/settings', labelKey: 'nav.settings', icon: Settings },
 ]
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavItemLink({
+  item,
+  onNavigate,
+}: {
+  item: NavItem
+  onNavigate?: () => void
+}) {
   const { t } = useTranslation()
+  const { to, labelKey, icon: Icon, disabled } = item
 
   return (
+    <NavLink
+      to={disabled ? '#' : to}
+      onClick={onNavigate}
+      // `end` keeps "/" from matching every nested route.
+      end={to === '/'}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors',
+          isActive
+            ? 'apple-shadow-soft bg-card text-foreground'
+            : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+          disabled && 'pointer-events-none opacity-55',
+        )
+      }
+    >
+      <Icon className="size-4" strokeWidth={1.8} />
+      <span>{t(labelKey)}</span>
+    </NavLink>
+  )
+}
+
+function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  return (
     <nav className="space-y-1">
-      {navItems.map(({ to, labelKey, icon: Icon, disabled }) => (
-        <NavLink
-          key={to}
-          to={disabled ? '#' : to}
-          onClick={onNavigate}
-          className={({ isActive }) =>
-            cn(
-              'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors',
-              isActive
-                ? 'apple-shadow-soft bg-card text-foreground'
-                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-              disabled && 'pointer-events-none opacity-55',
-            )
-          }
-        >
-          <Icon className="size-4" strokeWidth={1.8} />
-          <span>{t(labelKey)}</span>
-        </NavLink>
+      {primaryNavItems.map((item) => (
+        <NavItemLink key={item.to} item={item} onNavigate={onNavigate} />
+      ))}
+
+      <Separator className="my-3" />
+
+      {secondaryNavItems.map((item) => (
+        <NavItemLink key={item.to} item={item} onNavigate={onNavigate} />
       ))}
     </nav>
   )
@@ -192,11 +228,17 @@ export function AppShell() {
           animate="animate"
           variants={pageVariants}
           transition={pageTransition}
-          className="mx-auto max-w-screen-2xl px-5 py-6 lg:px-8"
+          className="mx-auto max-w-screen-2xl px-5 py-6 pb-24 lg:px-8 lg:pb-6"
         >
           <Outlet />
         </motion.div>
       </main>
+
+      {/* Mounted once, globally. What-if is a contextual action available from
+          anywhere — deliberately not a route (§26D). */}
+      <MobileBottomNav />
+      <WhatIfFab />
+      <WhatIfSheet />
     </div>
   )
 }

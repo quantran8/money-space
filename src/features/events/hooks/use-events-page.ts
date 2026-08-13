@@ -43,14 +43,14 @@ import {
   type UpcomingRecordForm,
 } from '@/features/events/model/events-form'
 import { useMembers } from '@/features/members/hooks/use-members'
-import { usePayments } from '@/features/payments/hooks/use-payments'
+import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 export function useEventsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { events: seedEvents, isLoading: isEventsLoading, createEvent, updateEvent, deleteEvent: deleteEventMutation } = useEvents()
-  const { payments: seedPayments, createPayment, updatePayment, deletePayment } = usePayments()
+  const { payments: seedPayments, createPayment, updatePayment, deletePayment } = usePaymentsCompat()
   const { assets } = useAssets()
   const { members } = useMembers()
   // Thu/chi/net for the current month are the BACKEND's source of truth — read

@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import type { GoalItem } from '@/features/goals/model/goals'
+import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
 import { formatAmount, goalAmount } from '@/features/goals/model/goals-form'
+import { formatVndShort } from '@/shared/lib/format-money'
 
 type PrimaryGoalCardProps = {
   goal: GoalItem
@@ -14,6 +16,7 @@ type PrimaryGoalCardProps = {
 
 export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps) {
   const { t } = useTranslation()
+  const projection = goal.projection
   return (
     <Card className="apple-shadow">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -42,29 +45,43 @@ export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps)
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <div className="surface-muted rounded-3xl p-4">
           <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
-            {t('goals.primary.saved')}
+            {t('goals.primary.targetDate')}
           </p>
           <p className="money-number mt-2 text-2xl font-semibold">
-            {formatAmount(goalAmount(goal.currentAmount))}
+            {goal.targetDate && goal.targetDate !== 'No deadline'
+              ? goal.targetDate
+              : t('goals.list.noDeadline')}
           </p>
         </div>
+
         <div className="surface-muted rounded-3xl p-4">
           <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
-            {t('goals.primary.remainingLabel')}
+            {t('goals.primary.atCurrentPace')}
           </p>
           <p className="money-number mt-2 text-2xl font-semibold">
-            {formatAmount(remaining)}
+            {/* No declared contribution -> no honest projected date (26C). */}
+            {projection && hasProjectedDate(projection)
+              ? projection.projectedCompletionDate
+              : t('goals.projection.noPace')}
           </p>
         </div>
+
         <div className="surface-muted rounded-3xl p-4">
           <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
-            {t('goals.primary.pace')}
+            {t('goals.primary.needPerMonth')}
           </p>
           <p className="money-number mt-2 text-2xl font-semibold">
-            {t('goals.primary.paceValue', { value: formatAmount(pace) })}
+            {projection?.requiredMonthlyContributionForTargetDate != null
+              ? t('goals.projection.perMonth', {
+                  amount: formatVndShort(
+                    projection.requiredMonthlyContributionForTargetDate,
+                  ),
+                })
+              : t('goals.primary.paceValue', { value: formatAmount(pace) })}
           </p>
         </div>
       </div>
+
     </Card>
   )
 }

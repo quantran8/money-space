@@ -101,7 +101,7 @@ export function GoalFormDialog({
             <EventField label={t('goals.form.deadline')}>
               <Controller
                 control={control}
-                name="deadline"
+                name="targetDate"
                 render={({ field }) => (
                   <DatePicker
                     value={field.value}

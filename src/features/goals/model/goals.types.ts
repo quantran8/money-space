@@ -13,5 +13,8 @@ export type GoalItem = {
   progress: number
   priority: GoalPriority
   note: string
-  deadline?: string
+  plannedMonthlyContribution?: number | null
+  /** Canonical since Phase 8; the `deadline` alias is gone. */
+  targetDate?: string
+  projection?: import('@/features/goals/model/goal-projection.types').GoalProjection
 }

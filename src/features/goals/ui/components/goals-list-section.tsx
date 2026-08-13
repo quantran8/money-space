@@ -134,8 +134,8 @@ export function GoalsListSection({
           visibleGoals.map((goal) => {
             const current = goalAmount(goal.currentAmount)
             const target = goalAmount(goal.targetAmount)
-            const deadline = goal.deadline && goal.deadline !== 'No deadline'
-              ? new Date(goal.deadline).toLocaleDateString(locale, {
+            const deadline = goal.targetDate && goal.targetDate !== 'No deadline'
+              ? new Date(goal.targetDate).toLocaleDateString(locale, {
                   month: '2-digit',
                   year: 'numeric',
                 })

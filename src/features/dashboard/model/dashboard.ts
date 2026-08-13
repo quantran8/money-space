@@ -2,10 +2,6 @@ import type { Asset, AssetType } from '@/features/assets/model/assets.types'
 
 export type StatusVariant = 'stable' | 'attention' | 'tense'
 
-export type NetWorthBreakdownItem = {
-  label: string
-  value: string
-}
 
 /**
  * Coarse asset buckets used only for the dashboard "Tiền đang ở đâu?" breakdown
@@ -63,44 +59,6 @@ export function buildAssetBuckets(assets: Asset[]): { buckets: AssetBucket[]; to
   return { buckets, total }
 }
 
-export type ResponsibilityRow = {
-  name: string
-  initials: string
-  count: number
-  /** Comma-joined names of the payments this member owns, for the row subtitle. */
-  items: string
-}
-
-/**
- * Group upcoming payments by the member who owns them (`payment.owner`). Members
- * with at least one payment are sorted by count desc; the count of ownerless
- * payments is returned separately so the caller can show a "chưa phân công" row.
- */
-export function buildResponsibility(
-  payments: { owner?: string; name: string }[],
-): { rows: ResponsibilityRow[]; unassigned: number } {
-  const byOwner = new Map<string, string[]>()
-  let unassigned = 0
-  for (const payment of payments) {
-    const owner = payment.owner?.trim()
-    if (!owner) {
-      unassigned += 1
-      continue
-    }
-    const names = byOwner.get(owner) ?? []
-    names.push(payment.name)
-    byOwner.set(owner, names)
-  }
-  const rows: ResponsibilityRow[] = [...byOwner.entries()]
-    .sort((a, b) => b[1].length - a[1].length)
-    .map(([name, names]) => ({
-      name,
-      initials: name.slice(0, 1).toUpperCase(),
-      count: names.length,
-      items: names.join(', '),
-    }))
-  return { rows, unassigned }
-}
 
 export function shortDate(value: string | null | undefined) {
   return (value ?? '').replace('/2026', '')
@@ -152,25 +110,3 @@ export function dueParts(
   return { month: '—', day: '·' }
 }
 
-export function parseCompactMillions(value: string) {
-  const normalized = value.trim().toLowerCase().replace(',', '.')
-  const amount = Number.parseFloat(normalized.replace(/[^\d.-]/g, ''))
-  if (!Number.isFinite(amount)) return 0
-  if (normalized.includes('tỷ') || normalized.includes('b')) return amount * 1_000
-  if (normalized.includes('nghìn') || normalized.includes('k')) return amount / 1_000
-  return amount
-}
-
-/** Vietnamese-style month figure, e.g. "4,5" — comma decimal, one decimal place. */
-export function formatMonths(value: number) {
-  const rounded = Math.round(value * 10) / 10
-  const normalized = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)
-  return normalized.replace('.', ',')
-}
-
-/** Map the attention count into a calm/attention/tense status bucket. */
-export function statusVariantFor(attentionCount: number): StatusVariant {
-  if (attentionCount > 2) return 'tense'
-  if (attentionCount > 0) return 'attention'
-  return 'stable'
-}

@@ -9,7 +9,7 @@ import { DebtListItem } from '@/features/debts/ui/components/debt-list-item'
 import type { Asset } from '@/features/assets/model/assets.types'
 import type { DebtItem, DebtStatus } from '@/features/debts/model/debts.types'
 import type { MemberItem } from '@/features/members/model/members.types'
-import type { UpcomingPaymentItem } from '@/features/payments/model/payments.types'
+import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
 
 type DebtsListSectionProps = {
   debts: DebtItem[]

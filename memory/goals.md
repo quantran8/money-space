@@ -4,7 +4,7 @@ Shared savings goals with progress. Related: [[money-events]] (goal_contribution
 
 ## Overview
 
-CRUD over `FinancialGoal` (name, category, targetAmount, deadline, priority, status). The goal form has **no** source-wallet field. Every response is a card including a derived **currentAmount** and a computed **progress %**.
+CRUD over `FinancialGoal` (name, category, targetAmount, **targetDate**, priority, status). The goal form has **no** source-wallet field. Every response is a card including a derived **currentAmount** and a computed **progress %**.
 
 ## Rules
 
@@ -36,7 +36,30 @@ CRUD over `FinancialGoal` (name, category, targetAmount, deadline, priority, sta
   column); there is no `current ≤ target` invariant on the form.
 - **Suggested pace** (`suggestedPace`): remaining amount spread over ~4 months, floored at 1,000,000 VND when short.
 - **Priority ordering** (`priorityRank`): high = 0 < medium = 1 < low = 2 (used to sort/allocate).
-- Deadline defaults to "No deadline" when absent.
+- `targetDate` defaults to the sentinel string `"No deadline"` when absent — the
+  client must treat that value as "no date", not render it.
+
+## v3.1: `deadline` → `targetDate` (Phase 8)
+
+The API field is **`targetDate`**, on both read and write. The old `deadline`
+alias that `toGoalCard` emitted has been removed.
+
+This was a real bug, not just a rename: the web client used to *send*
+`deadline` in create/update payloads, but `CreateFinancialGoalDto` only ever
+accepted `targetDate` — so goal dates the user typed were silently dropped.
+Any client still sending `deadline` has that bug.
+
+## Projection (§26C)
+
+`GET /financial-goals?include=projection` (and the per-goal
+`/projection` route) attach a `GoalProjection`. The web client always requests
+it, since every v3.1 goal surface shows one.
+
+**When `plannedMonthlyContribution` is undeclared** the projection comes back
+with `reason: 'no_contribution'` and there is no honest projected date. The UI
+must then show **progress only** — inventing a date from past behaviour would
+be a guess presented as a fact. `hasProjectedDate()` in
+`model/goal-projection.types.ts` is the single check for this.
 - **Delete**: soft-delete + unlink from money events.
 
 ## Where it lives in code

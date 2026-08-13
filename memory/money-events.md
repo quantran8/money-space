@@ -1,6 +1,14 @@
 # Money events & upcoming payments (Events feature)
 
-The central ledger. Recorded financial events **and** upcoming payments live in one unified timeline. The old standalone Payments page now **redirects to `/events`**. Related: [[assets]], [[debts]], [[goals]], [[dashboard]].
+The central ledger. Recorded financial events **and** upcoming money movements live in one unified timeline. The old standalone Payments page now **redirects to `/events`**. Related: [[assets]], [[debts]], [[goals]], [[dashboard]], [[cashflow-events]].
+
+> **v3.1 status.** "Upcoming payments" are now **cashflow events** — see
+> [[cashflow-events]]. The `upcoming_payments` model and its API are gone;
+> `money_events.upcomingPaymentId` is now `cashflowEventId`. As of Phase 5 the
+> `/events` page still reads them through a transitional compat shim
+> (`features/cashflow/hooks/use-payments-compat.ts`), so the `upcoming_payment`
+> source type described below is **legacy framing kept alive on purpose** until
+> Phases 6/9 rebuild these screens.
 
 ## Overview
 

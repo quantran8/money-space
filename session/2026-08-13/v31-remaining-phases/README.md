@@ -1,6 +1,8 @@
 # Money Space v3.1 — remaining phases (5–11)
 
-**Status: backend complete and green. Frontend not started beyond Phase 0.**
+**Status: backend complete and green. Frontend phases 0–11 complete
+(2026-08-13) — but never run against a live database; see the migration note
+below, which is now the only thing standing between this and a working app.**
 
 Approved plan: `~/.claude/plans/family-finance-v3-1-implement-recursive-lollipop.md`
 Spec: `money-space/family-finance-v3.1/` — `design.md` there is canonical.
@@ -16,7 +18,13 @@ Spec: `money-space/family-finance-v3.1/` — `design.md` there is canonical.
 | 2 | BE `cashflow_events` rename + module; `payments` deleted; auto-snapshot hooks retired | ✅ |
 | 3 | BE forecast core: forecast / flexible money / financial state / what-if / goal projection | ✅ |
 | 4 | BE protected-reserves, attention, invites, `POST /snapshots`, freshness, goal projection routes | ✅ |
-| **5–11** | **Frontend** | **not started** |
+| 5 | FE `features/cashflow/` slice; `features/payments/` deleted; consumers re-pointed via compat shim | ✅ |
+| 6 | FE forecast slice + `/upcoming` | ✅ |
+| 7 | FE reserves + what-if slices, `WhatIfSheet` in `AppShell` | ✅ |
+| 8 | FE goal projection; `deadline` → `targetDate` | ✅ |
+| 9 | FE Home rework — 7 sections in the mandated order | ✅ |
+| 10 | FE household slice, `/settings` trim, nav 5+3, mobile bottom nav | ✅ |
+| 11 | FE asset classification fields + onboarding wizard | ✅ |
 
 **Backend gate as of 2026-08-13:** `prisma validate` clean · `nest build` clean ·
 **248 unit + 4 e2e passing** · zero index-mirroring drift.
@@ -122,6 +130,12 @@ Harvest `payments-gentle-card.tsx`'s calm-list markup into `features/freshness/`
 **before** deleting.
 
 **Gate:** `/`, `/debts`, `/events` still render live data.
+
+> **✅ Done 2026-08-13** — `session/2026-08-13/phase-5-cashflow-slice/`.
+> Build + copy-check clean, eslint unchanged at the pre-existing 6 errors.
+> The consumers were re-pointed through `use-payments-compat.ts` rather than
+> rewritten, since Phases 6/9 replace those screens outright. The live-data
+> half of the gate is unproven — the migrations are still unapplied.
 
 ## Phase 6 — forecast slice + `/upcoming`
 

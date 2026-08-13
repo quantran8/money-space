@@ -42,3 +42,29 @@ The active household id is kept in a zustand `household-store`; `use-my-househol
 ## Enums
 
 `currency` = ISO-4217 code (FK to `currencies`), `InviteStatus = pending | accepted | expired | cancelled`, `updateFrequency = weekly | monthly | manual`.
+
+
+## v3.1 onboarding wizard (Phase 11)
+
+12 spec steps folded into **10 screens**, resumable via `{onboardingStep,
+householdId}` persisted in `shared/stores/household-store.ts`.
+
+Order: household → financial mode → invite → money sources → reserve →
+recurring income → obligations → main goal → **first financial picture (Clarity
+Moment)** → **first what-if (Consequence Moment)**.
+
+Rules that matter:
+
+- **Steps write immediately, not batched at the end.** A user who abandons
+  halfway keeps what they entered.
+- **Every step writes through the normal slice hooks.** Onboarding is a
+  different sequence over existing features, never a second implementation of
+  them.
+- **Only step 1 is mandatory.** Everything after the household is skippable — a
+  user who wants to look around first must not be trapped in setup.
+- **`RequireHousehold` gates on the step, not just household count.** After step
+  1 the user has a household, so a count-only check would wave a half-finished
+  wizard through into the app.
+- The wizard ends on the two moments deliberately: the setup earns its length by
+  paying off in clarity and consequence rather than dumping the user on an empty
+  Home.

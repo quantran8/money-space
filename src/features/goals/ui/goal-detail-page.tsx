@@ -35,6 +35,8 @@ import {
   suggestedPace,
 } from '@/features/goals/model/goals-form'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
+import { GoalProjectionPanel } from '@/features/goals/ui/components/goal-projection-panel'
+import { WhatIfTrigger } from '@/features/whatif/ui/components/whatif-trigger'
 
 type ChartPoint = {
   date: string
@@ -66,7 +68,7 @@ function buildChartData(goal: GoalItem, events: MoneyEventItem[], locale: string
   const defaultStart = new Date(now)
   defaultStart.setMonth(defaultStart.getMonth() - 6)
   const start = sorted[0] ? new Date(sorted[0].isoDate) : defaultStart
-  const configuredDeadline = validDate(goal.deadline)
+  const configuredDeadline = validDate(goal.targetDate)
   const fallbackDeadline = new Date(now)
   fallbackDeadline.setMonth(fallbackDeadline.getMonth() + 4)
   const end = configuredDeadline && configuredDeadline > now ? configuredDeadline : fallbackDeadline
@@ -177,7 +179,7 @@ export function GoalDetailPage() {
   const target = goalAmount(goal.targetAmount)
   const remaining = Math.max(target - current, 0)
   const pace = suggestedPace(goal)
-  const deadline = formatGoalDate(goal.deadline, locale, t('goals.list.noDeadline'))
+  const deadline = formatGoalDate(goal.targetDate, locale, t('goals.list.noDeadline'))
 
   return (
     <div className="space-y-4">
@@ -320,6 +322,15 @@ export function GoalDetailPage() {
           </div>
         </Card>
       </section>
+
+      {goal.projection ? (
+        <div className="space-y-3">
+          <GoalProjectionPanel projection={goal.projection} />
+          {/* Prefilled with this goal, so the result shows the time cost
+              against it (§26D goal-consequence block). */}
+          <WhatIfTrigger prefill={{ source: 'goal-detail', goalId: goal.id }} />
+        </div>
+      ) : null}
 
       <Card>
         <h2 className="section-title text-xl font-semibold">

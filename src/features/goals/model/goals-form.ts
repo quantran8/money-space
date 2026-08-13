@@ -12,7 +12,7 @@ export type GoalForm = {
   name: string
   target: string
   priority: GoalPriority
-  deadline: string
+  targetDate: string
   note: string
 }
 
@@ -38,7 +38,7 @@ export const defaultGoalFormValues: GoalForm = {
   name: '',
   target: '',
   priority: 'medium',
-  deadline: '',
+  targetDate: '',
   note: '',
 }
 
@@ -91,7 +91,7 @@ export function buildGoalSchema(t: (key: string, params?: Record<string, unknown
     name: localizedRequiredText(t, t('goals.form.name')),
     target: localizedMoneyAmount(t),
     priority: z.enum(['high', 'medium', 'low']),
-    deadline: z.string(),
+    targetDate: z.string(),
     note: localizedOptionalText(t, 120),
   })
 }

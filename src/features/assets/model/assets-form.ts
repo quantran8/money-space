@@ -1,3 +1,9 @@
+import {
+  DEFAULT_FINANCIAL_NATURE,
+  DEFAULT_VISIBILITY_LEVEL,
+  type FinancialNature,
+  type VisibilityLevel,
+} from '@/features/assets/model/asset-classification'
 import { z } from 'zod'
 
 import {
@@ -44,6 +50,15 @@ export type AssetForm = {
   nonTermRate: string
   interestDestination: 'wallet' | 'principal'
   receivingWalletId: string
+  // --- classification (§11, §30) — Phase 11 -------------------------------
+  /** Whose money this fundamentally IS. */
+  financialNature: FinancialNature
+  /** How much of it other members SEE. Independent of `financialNature`. */
+  visibilityLevel: VisibilityLevel
+  /** Who holds it — distinct from who entered it and who owns its privacy. */
+  holderMemberId: string
+  /** Required when `visibilityLevel` is `private` (§30). */
+  privacyOwnerMemberId: string
 }
 
 export const defaultAssetFormValues: AssetForm = {
@@ -65,6 +80,10 @@ export const defaultAssetFormValues: AssetForm = {
   nonTermRate: '',
   interestDestination: 'principal',
   receivingWalletId: '',
+  financialNature: DEFAULT_FINANCIAL_NATURE,
+  visibilityLevel: DEFAULT_VISIBILITY_LEVEL,
+  holderMemberId: '',
+  privacyOwnerMemberId: '',
 }
 
 /** Parse a raw (separator-free) money string like "20000000" into VND. */
@@ -204,8 +223,30 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
       nonTermRate: z.string().trim(),
       interestDestination: z.enum(['wallet', 'principal']),
       receivingWalletId: z.string().trim(),
+      // Classification (§11, §30). All FOUR visibility levels are accepted:
+      // the MVP picker offers three, but a record already stored as `grouped`
+      // must still validate when edited.
+      financialNature: z.enum([
+        'household',
+        'personal_included',
+        'managed_for_household',
+        'personal_private',
+      ]),
+      visibilityLevel: z.enum(['summary_only', 'grouped', 'detail', 'private']),
+      holderMemberId: z.string().trim(),
+      privacyOwnerMemberId: z.string().trim(),
     })
     .superRefine((values, ctx) => {
+      // A `private` record must name whose privacy it is — `created_by` is not
+      // a valid substitute (§30).
+      if (values.visibilityLevel === 'private' && !values.privacyOwnerMemberId) {
+        ctx.addIssue({
+          path: ['privacyOwnerMemberId'],
+          code: 'custom',
+          message: t('validation.required', { label: t('assets.form.privacyOwner') }),
+        })
+      }
+
       const mode = valuationModeForType(values.type)
       const invalidMoney = t('validation.invalidMoney')
       const required = (label: string) => t('validation.required', { label })

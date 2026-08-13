@@ -117,6 +117,12 @@ export function useAssetsPage() {
         manualValue: nextAsset.manualValue,
         marketPosition: nextAsset.marketPosition,
         calculationTerm: nextAsset.calculationTerm,
+        // Classification (§11, §30). `holderMemberId` / `privacyOwnerMemberId`
+        // send null rather than '' so the backend stores an absent value.
+        financialNature: values.financialNature,
+        visibilityLevel: values.visibilityLevel,
+        holderMemberId: values.holderMemberId || null,
+        privacyOwnerMemberId: values.privacyOwnerMemberId || null,
       }
 
       if (editingId) {

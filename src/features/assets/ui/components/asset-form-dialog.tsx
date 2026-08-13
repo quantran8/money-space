@@ -30,6 +30,7 @@ import {
   type AssetType,
   type ValuationMode,
 } from '@/features/assets/model/assets'
+import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
 import { type AssetForm } from '@/features/assets/model/assets-form'
 import type { SymbolAssetClass } from '@/features/assets/api/symbols.repository'
 import { SymbolCombobox } from '@/features/assets/ui/components/symbol-combobox'
@@ -213,6 +214,8 @@ export function AssetFormDialog({
                   <EventField label="Ghi chú · Không bắt buộc" error={errors.note?.message}>
                     <EventFieldTextarea className="pt-1 text-[15px]" rows={3} placeholder="Ví dụ: Tiền dùng cho sinh hoạt hằng tháng..." {...register('note')} />
                   </EventField>
+
+                  <AssetClassificationFields form={form} />
               </div>
             )}
           </div>

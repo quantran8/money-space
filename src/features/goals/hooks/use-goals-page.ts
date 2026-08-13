@@ -113,7 +113,7 @@ export function useGoalsPage() {
         name: editingGoal.name,
         target: amountToRaw(goalAmount(editingGoal.targetAmount)),
         priority: editingGoal.priority,
-        deadline: editingGoal.deadline === 'No deadline' ? '' : (editingGoal.deadline ?? ''),
+        targetDate: editingGoal.targetDate === 'No deadline' ? '' : (editingGoal.targetDate ?? ''),
         note: editingGoal.note,
       })
     } else {
@@ -164,7 +164,7 @@ export function useGoalsPage() {
         name: values.name.trim(),
         targetAmount: parseAmount(values.target.trim()),
         priority: values.priority,
-        deadline: values.deadline || undefined,
+        targetDate: values.targetDate || undefined,
         note: values.note.trim() || priorityLabels[values.priority],
       }
 

@@ -28,7 +28,7 @@ import {
 } from '@/features/debts/model/debts-interest'
 import type { DebtItem, DebtStatus } from '@/features/debts/model/debts.types'
 import { useMembers } from '@/features/members/hooks/use-members'
-import { usePayments } from '@/features/payments/hooks/use-payments'
+import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 export function useDebtsPage() {
@@ -36,7 +36,7 @@ export function useDebtsPage() {
   const navigate = useNavigate()
   const { debts, createDebt, updateDebt, deleteDebt, isLoading } = useDebts()
   const { events } = useEvents()
-  const { payments, isLoading: isPaymentsLoading } = usePayments()
+  const { payments, isLoading: isPaymentsLoading } = usePaymentsCompat()
   const { assets } = useAssets()
   const { members } = useMembers()
   const [dialogOpen, setDialogOpen] = useState(false)

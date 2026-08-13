@@ -1,4 +1,5 @@
 import { apiRequest } from '@/shared/api/http'
+import type { GoalProjection } from '@/features/goals/model/goal-projection.types'
 
 export type GoalRecord = {
   id: string
@@ -8,7 +9,11 @@ export type GoalRecord = {
   progress: number
   priority: 'high' | 'medium' | 'low'
   note: string
-  deadline?: string
+  plannedMonthlyContribution?: number | null
+  /** The canonical field. The pre-v3.1 `deadline` alias is gone (Phase 8). */
+  targetDate?: string
+  /** Attached when the request asks for `?include=projection` (§26C). */
+  projection?: GoalProjection
 }
 
 type GoalListResponse = {
@@ -25,11 +30,21 @@ export type GoalPayload = {
   targetAmount: number
   priority: 'high' | 'medium' | 'low'
   note?: string
-  deadline?: string
+  plannedMonthlyContribution?: number
+  targetDate?: string
 }
 
+/** Always asks for projections — every goal surface in v3.1 shows one. */
 export function listGoals(householdId: string) {
-  return apiRequest<GoalListResponse>(`/api/households/${householdId}/financial-goals`)
+  return apiRequest<GoalListResponse>(
+    `/api/households/${householdId}/financial-goals?include=projection`,
+  )
+}
+
+export function getGoalProjection(householdId: string, goalId: string) {
+  return apiRequest<GoalProjection>(
+    `/api/households/${householdId}/financial-goals/${goalId}/projection`,
+  )
 }
 
 export function createGoal(householdId: string, payload: GoalPayload) {

@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card'
 import { formatVndShortLocal, type DebtSummary } from '@/features/debts/model/debts-form'
 import type { DebtItem } from '@/features/debts/model/debts.types'
-import type { UpcomingPaymentItem } from '@/features/payments/model/payments.types'
+import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
 
 type DebtsSummaryStripProps = {
   summary: DebtSummary

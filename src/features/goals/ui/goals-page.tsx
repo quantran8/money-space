@@ -9,6 +9,7 @@ import { useGoalsPage } from '@/features/goals/hooks/use-goals-page'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
 import { GoalsListSection } from '@/features/goals/ui/components/goals-list-section'
 import { GoalsSummaryStrip } from '@/features/goals/ui/components/goals-summary-strip'
+import { WhatIfTrigger } from '@/features/whatif/ui/components/whatif-trigger'
 
 export function GoalsPage() {
   const { t } = useTranslation()
@@ -47,10 +48,13 @@ export function GoalsPage() {
         title={t('goals.header.title')}
         description={t('goals.header.description')}
         actions={
-          <Button onClick={openCreate}>
+          <>
+            <WhatIfTrigger prefill={{ source: 'goal' }} />
+            <Button onClick={openCreate}>
             <Plus className="mr-2 size-4" />
-            {t('goals.form.submit')}
-          </Button>
+              {t('goals.form.submit')}
+            </Button>
+          </>
         }
       />
 

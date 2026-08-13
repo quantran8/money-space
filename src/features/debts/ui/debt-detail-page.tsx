@@ -21,7 +21,7 @@ import { calcFromBackendEnum } from '@/features/debts/model/debts-interest'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
-import type { UpcomingPaymentItem } from '@/features/payments/model/payments.types'
+import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 

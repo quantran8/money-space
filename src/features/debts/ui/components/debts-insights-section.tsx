@@ -13,7 +13,7 @@ import {
 import { Card } from '@/components/ui/card'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 import type { MoneyEventItem } from '@/features/events/model/events.types'
-import type { UpcomingPaymentItem } from '@/features/payments/model/payments.types'
+import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 

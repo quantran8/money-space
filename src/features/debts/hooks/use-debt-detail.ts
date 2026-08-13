@@ -5,7 +5,7 @@ import { useDebts } from '@/features/debts/hooks/use-debts'
 import { useEvents } from '@/features/events/hooks/use-events'
 import { useMembers } from '@/features/members/hooks/use-members'
 import type { MoneyEventItem } from '@/features/events/model/events.types'
-import { usePayments } from '@/features/payments/hooks/use-payments'
+import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat'
 
 /** One row in a debt's repayment/borrow timeline, derived from money events. */
 export type DebtHistoryEntry = {
@@ -33,7 +33,7 @@ export function useDebtDetail(debtId: string | undefined) {
   const { events, isLoading: isLoadingEvents } = useEvents()
   const { members } = useMembers()
   const { assets } = useAssets()
-  const { payments, isLoading: isLoadingPayments } = usePayments()
+  const { payments, isLoading: isLoadingPayments } = usePaymentsCompat()
 
   const debt = useMemo(
     () => (debtId ? debts.find((item) => item.id === debtId) : undefined),

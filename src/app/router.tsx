@@ -10,9 +10,10 @@ import { DebtDetailPage } from '@/features/debts/ui/debt-detail-page'
 import { DebtsPage } from '@/features/debts/ui/debts-page'
 import { DashboardPage } from '@/features/dashboard/ui/dashboard-page'
 import { EventsPage } from '@/features/events/ui/events-page'
+import { UpcomingPage } from '@/features/forecast/ui/upcoming-page'
 import { GoalsPage } from '@/features/goals/ui/goals-page'
+import { HouseholdPage } from '@/features/household/ui/household-page'
 import { GoalDetailPage } from '@/features/goals/ui/goal-detail-page'
-import { MembersPage } from '@/features/members/ui/members-page'
 import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
 import { RequireHousehold } from '@/features/onboarding/ui/require-household'
 import { SettingsPage } from '@/features/settings/ui/settings-page'
@@ -50,10 +51,13 @@ export const router = createBrowserRouter([
       { path: 'debts', element: <DebtsPage /> },
       { path: 'debts/:debtId', element: <DebtDetailPage /> },
       { path: 'events', element: <EventsPage /> },
+      { path: 'upcoming', element: <UpcomingPage /> },
       { path: 'goals', element: <GoalsPage /> },
       { path: 'goals/:goalId', element: <GoalDetailPage /> },
-      { path: 'payments', element: <Navigate to="/events" replace /> },
-      { path: 'members', element: <MembersPage /> },
+      { path: 'household', element: <HouseholdPage /> },
+      // v3.1 redirects (Phase 10): the old routes are gone, not aliased.
+      { path: 'payments', element: <Navigate to="/upcoming" replace /> },
+      { path: 'members', element: <Navigate to="/household" replace /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },

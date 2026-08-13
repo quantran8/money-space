@@ -37,10 +37,10 @@ export const resources = {
         dashboard: 'Tổng quan',
         assets: 'Tài sản',
         debts: 'Đang nợ',
-        payments: 'Khoản sắp tới',
+        upcoming: 'Sắp tới',
         goals: 'Mục tiêu',
         events: 'Sự kiện tài chính',
-        members: 'Thành viên',
+        household: 'Nhà mình',
         settings: 'Cài đặt',
       },
       shell: {
@@ -117,7 +117,7 @@ export const resources = {
             title: '{{count}} điều cần trao đổi',
             empty: 'Chưa có điều gì cần trao đổi.',
           },
-          goals: {
+      goals: {
             eyebrow: 'Mục tiêu chung',
             title: 'Tiến độ hiện tại',
             detail: 'Chi tiết',
@@ -303,6 +303,13 @@ export const resources = {
           snapshotCount: '{{count}} lần cập nhật',
         },
         form: {
+          financialNature: 'Đây là tiền của ai?',
+          holder: 'Ai đang giữ?',
+          holderPlaceholder: 'Chọn thành viên',
+          holderNone: 'Chưa xác định',
+          sharing: 'Chia sẻ với nhà',
+          privacyOwner: 'Riêng tư của ai?',
+          privacyOwnerPlaceholder: 'Chọn thành viên',
           eyebrow: 'Thêm tài sản',
           title: 'Ghi một khoản mới',
           editEyebrow: 'Chỉnh sửa tài sản',
@@ -471,88 +478,267 @@ export const resources = {
           },
         },
       },
-      payments: {
-        header: {
-          eyebrow: 'Khoản sắp tới',
-          title: 'Tránh bị động với các khoản sắp phải trả',
-          description:
-            'Nhìn trước 7 đến 30 ngày để biết khoản nào cần chuẩn bị, khoản nào cần cùng trao đổi.',
-        },
-        strip: {
-          next7: '7 ngày tới',
-          next30: '30 ngày tới',
-          discuss: 'Cần trao đổi',
-          total: 'Tổng sắp tới',
-          nearest: 'Gần nhất',
-          daysLeft: '{{count}} ngày',
-          shouldReview: 'nên xem',
-        },
-        tabs: {
-          all: 'Tất cả',
-          important: 'Cần chú ý',
-          pending: 'Chờ xác nhận',
-        },
-        toolbar: {
-          search: 'Tìm khoản',
-          searchPlaceholder: 'Tìm khoản...',
-        },
-        groups: {
-          next7: '7 ngày tới',
-          next30: '30 ngày tới',
-          later: 'Sau đó',
-          overdue: 'Quá hạn',
-          needPrepare: 'Cần chuẩn bị {{value}}',
-          countAmount: '{{count}} khoản · {{value}}',
-        },
-        due: {
-          inDays: 'Còn {{count}} ngày',
-          today: 'Đến hạn hôm nay',
-          overdue: 'Quá hạn {{count}} ngày',
-          needConfirm: 'Cần xác nhận',
-        },
-        focus: {
-          eyebrow: 'Chuẩn bị gần nhất',
-          need: 'Cần có trước {{date}}',
-          markPrepared: 'Đánh dấu đã chuẩn bị',
-          empty: 'Không có khoản nào sắp tới. Cả nhà đang thong thả.',
-        },
-        month: {
-          eyebrow: 'Tóm tắt tháng này',
-          title: 'Dòng tiền cần lưu ý',
-          totalNeed: 'Tổng cần chuẩn bị',
-          totalNeedHint: 'Trong 30 ngày tới',
-          discuss: 'Cần trao đổi',
-          discussHint: 'Có ghi chú mở',
-        },
-        gentle: {
-          title: 'Nhắc nhẹ, không gây áp lực',
-          description: 'Thông báo nên dùng giọng "cần xem lại" thay vì "cảnh báo".',
-        },
-        list: {
-          eyebrow: 'Danh sách khoản',
-          title: 'Lịch thanh toán sắp tới',
-          empty: 'Chưa có khoản nào. Hãy thêm khoản sắp tới đầu tiên.',
-          emptyFiltered: 'Không có khoản nào trong mục này.',
-          countLabel: '{{count}} khoản',
-        },
+      whatif: {
+        cta: 'Thử một khoản chi',
+        title: 'Nếu chi khoản này thì sao?',
+        description:
+          'Xem điều gì thay đổi sau khi chi. Không lưu lại, không phải lời khuyên nên hay không nên.',
+        arrow: '→',
+        error: 'Chưa tính được lúc này. Thử lại giúp mình nhé.',
         form: {
-          eyebrow: 'Thêm khoản',
-          title: 'Ghi một khoản sắp tới',
-          editEyebrow: 'Chỉnh sửa khoản',
-          editTitle: 'Cập nhật khoản',
-          help: 'Ghi lại khoản sắp phải trả để nhà mình chuẩn bị trước.',
-          name: 'Tên khoản',
-          namePlaceholder: 'Ví dụ: Học phí tháng 8',
           amount: 'Số tiền',
-          amountPlaceholder: 'Ví dụ: 12.000.000',
-          due: 'Đến hạn',
-          status: 'Trạng thái',
-          statusPlaceholder: 'Chọn trạng thái',
-          submit: 'Thêm khoản',
-          save: 'Lưu thay đổi',
+          plannedDate: 'Dự kiến chi ngày',
+          label: 'Ghi chú',
+          labelPlaceholder: 'Ví dụ: đổi laptop',
+        },
+        blocks: {
+          upcomingSafety: 'Dòng tiền sắp tới',
+          reserveImpact: 'Khoản dự phòng',
+          flexible: 'Tiền linh hoạt trước và sau',
+          goal: 'Ảnh hưởng tới mục tiêu',
+        },
+        lowestBalance: 'Số dư thấp nhất',
+        lowestBalanceOn: 'Rơi vào ngày {{date}}',
+        flexibleHorizon: 'Tiền linh hoạt trong kỳ',
+        flexibleDelta: 'Thay đổi khoảng {{amount}}.',
+        reserve: {
+          intact: 'Khoản dự phòng vẫn còn nguyên.',
+          breached: 'Khoản này chạm vào phần dự phòng nhà mình đã để riêng.',
+        },
+        obligations: {
+          notCovered: 'Sau khoản này, một số khoản cố định chưa có đủ nguồn.',
+        },
+        goal: {
+          delay: 'Mục tiêu sẽ tới chậm hơn khoảng {{count}} tháng.',
+          noChange: 'Mục tiêu gần như không đổi.',
+          projectedDate: 'Dự kiến hoàn thành {{date}}.',
+        },
+        actions: {
+          run: 'Xem thử',
+          running: 'Đang tính...',
+          tryAnother: 'Thử số khác',
+          share: 'Chia sẻ',
+          shareCopied: 'Đã sao chép tóm tắt.',
+          shareFailed: 'Chưa sao chép được.',
+        },
+        share: {
+          heading: 'Nếu chi {{amount}} vào {{date}}:',
+          lowest: '- Số dư thấp nhất: {{before}} → {{after}}',
+          flexible: '- Tiền linh hoạt: {{before}} → {{after}}',
+          footer: 'Theo dữ liệu hiện có.',
         },
       },
+      reserve: {
+        addFailed: 'Chưa thêm được khoản để riêng.',
+        form: {
+          name: 'Tên khoản',
+          namePlaceholder: 'Ví dụ: quỹ dự phòng',
+          amount: 'Số tiền',
+          add: 'Thêm',
+        },
+        title: 'Khoản để riêng',
+        description:
+          'Phần tiền nhà mình quyết định không đụng tới. Không chuyển đi đâu cả, chỉ là một giới hạn khi tính tiền linh hoạt.',
+        status: {
+          active: 'Đang giữ',
+          archived: 'Đã lưu trữ',
+        },
+        empty: 'Nhà mình chưa đặt khoản để riêng nào.',
+      },
+      upcoming: {
+        rowActions: {
+          label: 'Tuỳ chọn',
+          complete: 'Đã xong',
+          edit: 'Sửa',
+          delete: 'Xoá',
+        },
+        form: {
+          eyebrow: 'Khoản sắp tới',
+          editEyebrow: 'Sửa khoản sắp tới',
+          title: 'Thêm khoản sắp tới',
+          editTitle: 'Sửa khoản sắp tới',
+          help: 'Những khoản này là căn cứ để tính trước dòng tiền của nhà mình.',
+          submit: 'Thêm khoản',
+          saveEdit: 'Lưu thay đổi',
+          direction: {
+            outgoing: 'Tiền ra',
+            incoming: 'Tiền vào',
+          },
+          amount: 'Số tiền',
+          name: 'Tên khoản',
+          namePlaceholderOutgoing: 'Ví dụ: tiền nhà',
+          namePlaceholderIncoming: 'Ví dụ: lương',
+          expectedDate: 'Ngày dự kiến',
+          recurrence: 'Lặp lại',
+          recurrenceOption: {
+            once: 'Một lần',
+            weekly: 'Hằng tuần',
+            monthly: 'Hằng tháng',
+            quarterly: 'Ba tháng một lần',
+            yearly: 'Hằng năm',
+          },
+          requirement: 'Tính chất',
+          certainty: 'Mức chắc chắn',
+          estimatedIncomingHint:
+            'Khoản tiền vào còn ước tính vẫn hiện trên dòng thời gian, nhưng chưa được cộng vào số dư — để con số giữ ở mức thận trọng.',
+          note: 'Ghi chú · Không bắt buộc',
+          notePlaceholder: 'Ví dụ: đóng trước ngày 5 hằng tháng',
+          created: 'Đã thêm khoản sắp tới.',
+          updated: 'Đã cập nhật khoản sắp tới.',
+          deleted: 'Đã xoá khoản sắp tới.',
+          createFailed: 'Chưa thêm được khoản này.',
+          updateFailed: 'Chưa cập nhật được khoản này.',
+          deleteFailed: 'Chưa xoá được khoản này.',
+        },
+        eyebrow: 'Nhìn về phía trước',
+        title: 'Sắp tới',
+        description:
+          'Tiền vào và tiền ra theo từng ngày, kèm số dư dự kiến sau mỗi khoản. Theo dữ liệu hiện có.',
+        horizon: {
+          days: '{{count}} ngày',
+        },
+        summary: {
+          incoming: 'Tiền vào',
+          incomingNote: 'Các khoản đã xác nhận trong kỳ',
+          outgoing: 'Tiền ra',
+          outgoingNote: 'Trong đó {{required}} là khoản cố định',
+          lowest: 'Số dư thấp nhất',
+          lowestNote: 'Dự kiến vào {{date}}',
+          today: 'Có thể dùng hôm nay',
+          todayNote: '{{count}} nguồn tiền dùng được ngay',
+        },
+        timeline: {
+          title: 'Dòng tiền theo ngày',
+          closing: 'Cuối ngày',
+          empty: 'Chưa có khoản nào trong kỳ này. Thêm một khoản để thấy trước dòng tiền.',
+        },
+        markers: {
+          confirmed: 'Đã chắc chắn',
+          estimated: 'Ước tính',
+          required: 'Cố định',
+          planned: 'Dự định',
+          overdue: 'Quá hạn, tính vào hôm nay',
+          estimated_incoming: 'Chưa tính vào số dư',
+          planned_outgoing: 'Khoản dự định',
+          postponed: 'Đã dời ngày',
+        },
+        privateExcluded: '{{count}} khoản riêng tư không nằm trong tính toán này.',
+        assumptions: {
+          title: 'Cách tính con số này',
+          codes: {
+            horizon_days: 'Tính cho {{count}} ngày tới.',
+            estimated_incoming_excluded:
+              'Tiền vào còn ước tính chưa được cộng vào số dư, để con số giữ ở mức thận trọng.',
+            planned_outflows_included:
+              'Các khoản dự định vẫn được trừ, vì tiền vẫn rời tài khoản.',
+            private_records_excluded: 'Các khoản riêng tư không nằm trong tính toán.',
+            no_confirmed_inflow_in_horizon:
+              'Chưa có khoản tiền vào nào đủ chắc chắn trong kỳ này.',
+            reserve_applied: 'Đã giữ lại khoản dự phòng {{value}}.',
+            no_reserve_declared: 'Nhà mình chưa đặt khoản dự phòng.',
+            overdue_events_clamped_to_today:
+              'Khoản quá hạn được tính vào hôm nay, mỗi khoản một lần.',
+            stale_asset_values:
+              '{{count}} nguồn tiền lâu chưa cập nhật, số dư có thể chưa sát.',
+            same_day_outflows_ordered_first:
+              'Trong cùng một ngày, tiền ra được tính trước tiền vào.',
+          },
+        },
+      },
+      household: {
+        header: {
+          eyebrow: 'Nhà mình',
+          title: 'Nhà mình',
+          description:
+            'Thành viên, cách chia sẻ, khoản để riêng và nguồn tiền của cả nhà — ở cùng một chỗ.',
+        },
+        assets: {
+          title: 'Nguồn tiền',
+          viewAll: 'Xem tất cả',
+          count: '{{count}} nguồn tiền',
+        },
+      },
+      home: {
+        eyebrow: 'Nhà mình',
+        title: 'Tình hình hiện tại',
+        financialState: {
+          eyebrow: 'Tình hình tài chính',
+          state: {
+            on_track: 'Đang ổn',
+            watch: 'Nên để ý một chút',
+            tight: 'Đang hơi chật',
+            incomplete: 'Chưa đủ dữ liệu',
+          },
+          reason: {
+            no_liquid_sources: 'Chưa có nguồn tiền nào dùng được ngay.',
+            no_cashflow_events: 'Chưa có khoản thu chi nào sắp tới.',
+            no_reserve_declared: 'Nhà mình chưa đặt khoản để riêng.',
+            required_payment_not_covered: 'Một số khoản cố định chưa có đủ nguồn.',
+            lowest_projected_balance_negative: 'Số dư dự kiến có lúc xuống dưới 0.',
+            reserve_significantly_breached: 'Khoản để riêng bị chạm vào khá nhiều.',
+            flexible_money_low: 'Tiền linh hoạt còn lại khá mỏng.',
+            large_payment_upcoming: 'Sắp có một khoản chi lớn.',
+            forecast_near_reserve: 'Số dư dự kiến có lúc sát khoản để riêng.',
+            unconfirmed_critical_data: 'Vài khoản quan trọng chưa được xác nhận.',
+            stale_data: 'Một số nguồn tiền lâu chưa cập nhật.',
+          },
+        },
+        flexible: {
+          title: 'Tiền linh hoạt',
+          note: 'Phần còn lại sau các khoản cố định và khoản để riêng, trong {{horizon}} ngày tới.',
+          negativeNote:
+            'Các khoản cố định và khoản để riêng đang vượt phần tiền dùng được. Xem {{count}} chi tiết ở mục Sắp tới.',
+        },
+        whatifCta: {
+          title: 'Đang cân nhắc một khoản chi?',
+          description: 'Xem trước điều gì thay đổi, trước khi quyết định.',
+        },
+        daysAhead: {
+          title: '{{count}} ngày tới',
+          viewAll: 'Xem chi tiết',
+          incoming: 'Tiền vào',
+          outgoing: 'Tiền ra',
+          lowest: 'Số dư thấp nhất',
+        },
+        moneyLocation: {
+          title: 'Tiền đang ở đâu?',
+          viewAll: 'Xem tất cả',
+          empty: 'Chưa có nguồn tiền nào.',
+          share: '{{percent}}% tổng nguồn tiền',
+        },
+      },
+      freshness: {
+        upToDate: {
+          title: 'Số liệu đang khớp',
+          description: '{{count}} nguồn tiền đều còn mới.',
+        },
+        needsCheck: {
+          title: 'Vài nguồn tiền lâu chưa cập nhật',
+          description:
+            '{{count}} nguồn đã {{days}} ngày chưa xem lại. Nếu không có gì thay đổi, xác nhận giúp mình nhé.',
+        },
+        confirmUnchanged: 'Vẫn như cũ',
+      },
       goals: {
+        projection: {
+          title: 'Theo tốc độ hiện tại',
+          progress: 'Đã có',
+          remaining: 'Còn thiếu {{amount}}.',
+          atCurrentPace: 'Theo tốc độ hiện tại',
+          toHitTargetDate: 'Để kịp ngày mong muốn',
+          months: 'Khoảng {{count}} tháng nữa.',
+          perMonth: '~{{amount}}/tháng',
+          noPace: 'Chưa đặt mức góp',
+          reason: {
+            ok: 'Theo dữ liệu hiện có.',
+            already_complete: 'Mục tiêu đã hoàn thành.',
+            no_contribution:
+              'Nhà mình chưa đặt mức góp hàng tháng, nên chưa thể nói trước ngày hoàn thành. Đặt một mức góp để thấy dự kiến.',
+            no_target_date: 'Mục tiêu chưa có ngày mong muốn.',
+            target_date_passed: 'Ngày mong muốn đã qua.',
+            goal_inactive: 'Mục tiêu đang tạm dừng.',
+          },
+        },
         header: {
           eyebrow: 'Mục tiêu chung',
           title: 'Nhà mình đang tiến tới đâu?',
@@ -572,6 +758,9 @@ export const resources = {
           monthlyPaceNote: 'Theo tiến độ hiện tại',
         },
         primary: {
+          targetDate: 'Ngày mong muốn',
+          atCurrentPace: 'Theo tốc độ hiện tại',
+          needPerMonth: 'Cần thêm',
           eyebrow: 'Mục tiêu chính',
           remaining: 'Còn thiếu {{value}}',
           onTrack: 'Đang tiến triển tốt',
@@ -1066,9 +1255,12 @@ export const resources = {
           monthly: 'Hằng tháng',
         },
         sharing: {
-          overview: 'Chỉ tổng quan',
+          detail: 'Hiện chi tiết',
+          summary_only: 'Chỉ tính vào tổng',
+          private: 'Riêng tư',
+          // Stored but not offered in the MVP picker — kept so a record already
+          // saved as `grouped` renders its label instead of an empty Select.
           grouped: 'Theo nhóm',
-          detailed: 'Chi tiết',
         },
         language: {
           vi: 'Tiếng Việt',
@@ -1256,6 +1448,88 @@ export const resources = {
         },
       },
       onboarding: {
+        wizard: {
+          stepCounter: 'Bước {{current}} / {{total}}',
+          back: 'Quay lại',
+          next: 'Tiếp tục',
+          skip: 'Để sau',
+          finish: 'Xong',
+          add: 'Thêm',
+          saving: 'Đang lưu...',
+          saved: 'Đã lưu',
+          saveFailed: 'Chưa lưu được.',
+        },
+        steps: {
+          household: {
+            title: 'Nhà mình tên gì?',
+            description: 'Bắt đầu bằng một cái tên và đơn vị tiền nhà mình dùng.',
+          },
+          financial_mode: {
+            title: 'Nhà mình quản lý tiền thế nào?',
+            description: 'Chọn cách phù hợp nhất — có thể đổi lại bất cứ lúc nào.',
+            hint: 'Phần này sẽ mở ở màn hình Nhà mình.',
+          },
+          invite: {
+            title: 'Mời người cùng nhà',
+            description: 'Cùng xem một bức tranh thì dễ bàn hơn.',
+            hint: 'Có thể mời sau ở màn hình Nhà mình.',
+          },
+          money_sources: {
+            title: 'Tiền nhà mình đang ở đâu?',
+            description: 'Thêm 2–3 nguồn chính là đủ để bắt đầu.',
+            hint: 'Mỗi nguồn có thể ghi ai đang giữ và chia sẻ tới đâu.',
+            add: 'Thêm nguồn tiền',
+          },
+          reserve: {
+            title: 'Có khoản nào để riêng không?',
+            description: 'Phần nhà mình quyết định không đụng tới.',
+            defaultName: 'Khoản để riêng',
+          },
+          recurring_income: {
+            title: 'Tiền vào đều đặn',
+            description: 'Ví dụ lương hằng tháng.',
+          },
+          obligations: {
+            title: 'Khoản phải trả đều đặn',
+            description: 'Tiền nhà, điện nước, khoản vay...',
+          },
+          main_goal: {
+            title: 'Nhà mình đang hướng tới điều gì?',
+            description: 'Một mục tiêu chính là đủ để bắt đầu.',
+          },
+          first_picture: {
+            title: 'Bức tranh đầu tiên',
+            description: 'Đây là tình hình nhà mình, theo những gì vừa nhập.',
+            intro: 'Theo dữ liệu hiện có:',
+          },
+          first_whatif: {
+            title: 'Thử một quyết định',
+            description: 'Xem trước điều gì thay đổi, trước khi quyết định.',
+          },
+          cashflow: {
+            name: 'Tên khoản',
+            amount: 'Số tiền',
+            date: 'Ngày dự kiến',
+            recurrence: 'Lặp lại',
+            monthly: 'Hằng tháng',
+            once: 'Một lần',
+            incomePlaceholder: 'Ví dụ: lương',
+            obligationPlaceholder: 'Ví dụ: tiền nhà',
+          },
+          goal: {
+            name: 'Tên mục tiêu',
+            namePlaceholder: 'Ví dụ: mua nhà',
+            target: 'Cần bao nhiêu',
+          },
+          firstPicture: {
+            intro: 'Theo dữ liệu hiện có:',
+          },
+          firstWhatIf: {
+            title: 'Thử một khoản chi',
+            description:
+              'Ví dụ: nếu tháng sau chi 30 triệu thì dòng tiền nhà mình thay đổi thế nào?',
+          },
+        },
         appName: 'Money Space',
         signedIn: 'Đã đăng nhập',
         sidebar: {
@@ -1347,10 +1621,10 @@ export const resources = {
         dashboard: 'Overview',
         assets: 'Assets',
         debts: 'Debts',
-        payments: 'Upcoming',
+        upcoming: 'Upcoming',
         goals: 'Goals',
         events: 'Money events',
-        members: 'Members',
+        household: 'Household',
         settings: 'Settings',
       },
       shell: {
@@ -1613,6 +1887,13 @@ export const resources = {
           snapshotCount: '{{count}} updates',
         },
         form: {
+          financialNature: 'Whose money is this?',
+          holder: 'Who holds it?',
+          holderPlaceholder: 'Choose a member',
+          holderNone: 'Not specified',
+          sharing: 'Share with the household',
+          privacyOwner: 'Whose privacy?',
+          privacyOwnerPlaceholder: 'Choose a member',
           eyebrow: 'Add asset',
           title: 'Log a new asset',
           editEyebrow: 'Edit asset',
@@ -1781,88 +2062,266 @@ export const resources = {
           },
         },
       },
-      payments: {
-        header: {
-          eyebrow: 'Upcoming payments',
-          title: 'Stay ahead of bills coming due',
-          description:
-            'Look 7 to 30 days ahead to see what needs cash ready and what needs a conversation first.',
-        },
-        strip: {
-          next7: 'Next 7 days',
-          next30: 'Next 30 days',
-          discuss: 'Needs discussion',
-          total: 'Total upcoming',
-          nearest: 'Nearest',
-          daysLeft: '{{count}} days',
-          shouldReview: 'to review',
-        },
-        tabs: {
-          all: 'All',
-          important: 'Needs attention',
-          pending: 'Awaiting confirmation',
-        },
-        toolbar: {
-          search: 'Search payments',
-          searchPlaceholder: 'Search payments...',
-        },
-        groups: {
-          next7: 'Next 7 days',
-          next30: 'Next 30 days',
-          later: 'Later',
-          overdue: 'Overdue',
-          needPrepare: 'Prepare {{value}}',
-          countAmount: '{{count}} payments · {{value}}',
-        },
-        due: {
-          inDays: '{{count}} days left',
-          today: 'Due today',
-          overdue: '{{count}} days overdue',
-          needConfirm: 'Needs confirmation',
-        },
-        focus: {
-          eyebrow: 'Nearest to prepare',
-          need: 'Ready by {{date}}',
-          markPrepared: 'Mark as prepared',
-          empty: 'Nothing coming up. You are all clear.',
-        },
-        month: {
-          eyebrow: 'This month',
-          title: 'Cash flow to watch',
-          totalNeed: 'Total to prepare',
-          totalNeedHint: 'In the next 30 days',
-          discuss: 'Needs discussion',
-          discussHint: 'Has open notes',
-        },
-        gentle: {
-          title: 'A gentle nudge, no pressure',
-          description: 'Notifications should say "worth a look" rather than "alert".',
-        },
-        list: {
-          eyebrow: 'Payment list',
-          title: 'Upcoming payment schedule',
-          empty: 'No payments yet. Add your first upcoming payment.',
-          emptyFiltered: 'No payments in this view.',
-          countLabel: '{{count}} payments',
-        },
+      whatif: {
+        cta: 'Try a purchase',
+        title: 'What if we spend this?',
+        description:
+          'See what changes afterwards. Nothing is saved, and this is not advice about whether to buy.',
+        arrow: '→',
+        error: 'Could not work that out just now. Please try again.',
         form: {
-          eyebrow: 'Add payment',
-          title: 'Log an upcoming payment',
-          editEyebrow: 'Edit payment',
-          editTitle: 'Update payment',
-          help: 'Log an upcoming payment so your household can prepare ahead.',
-          name: 'Payment name',
-          namePlaceholder: 'Example: August tuition',
           amount: 'Amount',
-          amountPlaceholder: 'Example: 12.000.000',
-          due: 'Due date',
-          status: 'Status',
-          statusPlaceholder: 'Choose a status',
-          submit: 'Add payment',
-          save: 'Save changes',
+          plannedDate: 'Planned for',
+          label: 'Note',
+          labelPlaceholder: 'e.g. new laptop',
+        },
+        blocks: {
+          upcomingSafety: 'Cashflow ahead',
+          reserveImpact: 'Reserve',
+          flexible: 'Flexible money before and after',
+          goal: 'Effect on the goal',
+        },
+        lowestBalance: 'Lowest balance',
+        lowestBalanceOn: 'Falls on {{date}}',
+        flexibleHorizon: 'Flexible money in this window',
+        flexibleDelta: 'Changes by about {{amount}}.',
+        reserve: {
+          intact: 'The reserve stays untouched.',
+          breached: 'This reaches into the money set aside as a reserve.',
+        },
+        obligations: {
+          notCovered: 'Afterwards, some fixed items would not be fully covered.',
+        },
+        goal: {
+          delay: 'The goal would arrive about {{count}} months later.',
+          noChange: 'The goal barely changes.',
+          projectedDate: 'Projected to complete {{date}}.',
+        },
+        actions: {
+          run: 'See what happens',
+          running: 'Working it out...',
+          tryAnother: 'Try another number',
+          share: 'Share',
+          shareCopied: 'Summary copied.',
+          shareFailed: 'Could not copy.',
+        },
+        share: {
+          heading: 'If we spend {{amount}} on {{date}}:',
+          lowest: '- Lowest balance: {{before}} → {{after}}',
+          flexible: '- Flexible money: {{before}} → {{after}}',
+          footer: 'Based on the data we have.',
         },
       },
+      reserve: {
+        addFailed: 'Could not add that.',
+        form: {
+          name: 'Name',
+          namePlaceholder: 'e.g. emergency fund',
+          amount: 'Amount',
+          add: 'Add',
+        },
+        title: 'Money set aside',
+        description:
+          'Money this household decided not to touch. Nothing is moved anywhere — it is a limit applied when working out flexible money.',
+        status: {
+          active: 'Held',
+          archived: 'Archived',
+        },
+        empty: 'This household has not set anything aside yet.',
+      },
+      upcoming: {
+        rowActions: {
+          label: 'Options',
+          complete: 'Mark as done',
+          edit: 'Edit',
+          delete: 'Remove',
+        },
+        form: {
+          eyebrow: 'Upcoming item',
+          editEyebrow: 'Edit upcoming item',
+          title: 'Add an upcoming item',
+          editTitle: 'Edit upcoming item',
+          help: 'These are what your household cashflow ahead is calculated from.',
+          submit: 'Add item',
+          saveEdit: 'Save changes',
+          direction: {
+            outgoing: 'Money out',
+            incoming: 'Money in',
+          },
+          amount: 'Amount',
+          name: 'Name',
+          namePlaceholderOutgoing: 'e.g. rent',
+          namePlaceholderIncoming: 'e.g. salary',
+          expectedDate: 'Expected date',
+          recurrence: 'Repeats',
+          recurrenceOption: {
+            once: 'One-off',
+            weekly: 'Weekly',
+            monthly: 'Monthly',
+            quarterly: 'Quarterly',
+            yearly: 'Yearly',
+          },
+          requirement: 'Kind',
+          certainty: 'How sure',
+          estimatedIncomingHint:
+            'Estimated money in still appears on the timeline, but is not added to the balance — that keeps the figure conservative.',
+          note: 'Note · Optional',
+          notePlaceholder: 'e.g. due before the 5th each month',
+          created: 'Upcoming item added.',
+          updated: 'Upcoming item updated.',
+          deleted: 'Upcoming item removed.',
+          createFailed: 'Could not add that item.',
+          updateFailed: 'Could not update that item.',
+          deleteFailed: 'Could not remove that item.',
+        },
+        eyebrow: 'Looking ahead',
+        title: 'Upcoming',
+        description:
+          'Money in and out day by day, with the projected balance after each one. Based on the data we have.',
+        horizon: {
+          days: '{{count}} days',
+        },
+        summary: {
+          incoming: 'Money in',
+          incomingNote: 'Confirmed amounts in this window',
+          outgoing: 'Money out',
+          outgoingNote: '{{required}} of it is fixed',
+          lowest: 'Lowest balance',
+          lowestNote: 'Expected on {{date}}',
+          today: 'Usable today',
+          todayNote: '{{count}} sources usable right now',
+        },
+        timeline: {
+          title: 'Day by day',
+          closing: 'End of day',
+          empty: 'Nothing in this window yet. Add an item to see your cashflow ahead.',
+        },
+        markers: {
+          confirmed: 'Confirmed',
+          estimated: 'Estimated',
+          required: 'Fixed',
+          planned: 'Planned',
+          overdue: 'Overdue, counted today',
+          estimated_incoming: 'Not counted in the balance',
+          planned_outgoing: 'Planned item',
+          postponed: 'Date moved',
+        },
+        privateExcluded: '{{count}} private records are not part of this calculation.',
+        assumptions: {
+          title: 'How this was calculated',
+          codes: {
+            horizon_days: 'Calculated for the next {{count}} days.',
+            estimated_incoming_excluded:
+              'Estimated money in is not added to the balance, keeping the figure conservative.',
+            planned_outflows_included:
+              'Planned items are still subtracted, because the money still leaves the account.',
+            private_records_excluded: 'Private records are not part of this calculation.',
+            no_confirmed_inflow_in_horizon:
+              'No sufficiently certain money in during this window.',
+            reserve_applied: 'A reserve of {{value}} is kept aside.',
+            no_reserve_declared: 'This household has not set a reserve.',
+            overdue_events_clamped_to_today: 'Overdue items are counted on today, once each.',
+            stale_asset_values:
+              '{{count}} sources have not been updated in a while, so the balance may not be exact.',
+            same_day_outflows_ordered_first:
+              'Within a single day, money out is counted before money in.',
+          },
+        },
+      },
+      household: {
+        header: {
+          eyebrow: 'Our household',
+          title: 'Our household',
+          description:
+            'Members, sharing, money set aside and where the money sits — all in one place.',
+        },
+        assets: {
+          title: 'Money sources',
+          viewAll: 'View all',
+          count: '{{count}} sources',
+        },
+      },
+      home: {
+        eyebrow: 'Our household',
+        title: 'Where things stand',
+        financialState: {
+          eyebrow: 'Financial state',
+          state: {
+            on_track: 'On track',
+            watch: 'Worth a look',
+            tight: 'A bit tight',
+            incomplete: 'Not enough data yet',
+          },
+          reason: {
+            no_liquid_sources: 'No money sources usable right now.',
+            no_cashflow_events: 'Nothing coming in or out yet.',
+            no_reserve_declared: 'No money has been set aside yet.',
+            required_payment_not_covered: 'Some fixed items are not fully covered.',
+            lowest_projected_balance_negative: 'The projected balance dips below zero.',
+            reserve_significantly_breached: 'The money set aside is well into.',
+            flexible_money_low: 'Not much flexible money left.',
+            large_payment_upcoming: 'A large payment is coming up.',
+            forecast_near_reserve: 'The projected balance comes close to the reserve.',
+            unconfirmed_critical_data: 'Some important items are unconfirmed.',
+            stale_data: 'Some sources have not been updated in a while.',
+          },
+        },
+        flexible: {
+          title: 'Flexible money',
+          note: 'What is left after fixed items and money set aside, over the next {{horizon}} days.',
+          negativeNote:
+            'Fixed items and money set aside currently exceed what is usable. See {{count}} details under Upcoming.',
+        },
+        whatifCta: {
+          title: 'Thinking about a purchase?',
+          description: 'See what changes before you decide.',
+        },
+        daysAhead: {
+          title: 'Next {{count}} days',
+          viewAll: 'See details',
+          incoming: 'Money in',
+          outgoing: 'Money out',
+          lowest: 'Lowest balance',
+        },
+        moneyLocation: {
+          title: 'Where the money is',
+          viewAll: 'View all',
+          empty: 'No money sources yet.',
+          share: '{{percent}}% of all sources',
+        },
+      },
+      freshness: {
+        upToDate: {
+          title: 'Everything is current',
+          description: 'All {{count}} sources are up to date.',
+        },
+        needsCheck: {
+          title: 'Some sources need a look',
+          description:
+            '{{count}} sources have not been reviewed for {{days}} days. If nothing changed, just confirm.',
+        },
+        confirmUnchanged: 'Still the same',
+      },
       goals: {
+        projection: {
+          title: 'At the current pace',
+          progress: 'Saved so far',
+          remaining: '{{amount}} to go.',
+          atCurrentPace: 'At the current pace',
+          toHitTargetDate: 'To reach the target date',
+          months: 'About {{count}} months to go.',
+          perMonth: '~{{amount}}/month',
+          noPace: 'No contribution set',
+          reason: {
+            ok: 'Based on the data we have.',
+            already_complete: 'This goal is complete.',
+            no_contribution:
+              'No monthly contribution has been set, so there is no projected date yet. Set one to see a projection.',
+            no_target_date: 'This goal has no target date.',
+            target_date_passed: 'The target date has passed.',
+            goal_inactive: 'This goal is paused.',
+          },
+        },
         header: {
           eyebrow: 'Shared goals',
           title: 'Where is your household heading?',
@@ -1882,6 +2341,9 @@ export const resources = {
           monthlyPaceNote: 'Based on current progress',
         },
         primary: {
+          targetDate: 'Target date',
+          atCurrentPace: 'At the current pace',
+          needPerMonth: 'Need to add',
           eyebrow: 'Primary goal',
           remaining: '{{value}} to go',
           onTrack: 'On track',
@@ -2373,9 +2835,12 @@ export const resources = {
           monthly: 'Monthly',
         },
         sharing: {
-          overview: 'Overview only',
+          detail: 'Show details',
+          summary_only: 'Count in the total only',
+          private: 'Private',
+          // Stored but not offered in the MVP picker — kept so a record already
+          // saved as `grouped` renders its label instead of an empty Select.
           grouped: 'Grouped',
-          detailed: 'Detailed',
         },
         language: {
           vi: 'Tieng Viet',
@@ -2562,6 +3027,88 @@ export const resources = {
         },
       },
       onboarding: {
+        wizard: {
+          stepCounter: 'Step {{current}} of {{total}}',
+          back: 'Back',
+          next: 'Continue',
+          skip: 'Later',
+          finish: 'Done',
+          add: 'Add',
+          saving: 'Saving...',
+          saved: 'Saved',
+          saveFailed: 'Could not save.',
+        },
+        steps: {
+          household: {
+            title: 'What should we call your household?',
+            description: 'Start with a name and the currency you use.',
+          },
+          financial_mode: {
+            title: 'How does your household manage money?',
+            description: 'Pick what fits best — you can change it any time.',
+            hint: 'This opens up on the Household screen.',
+          },
+          invite: {
+            title: 'Invite the people you live with',
+            description: 'Sharing one picture makes it easier to talk about.',
+            hint: 'You can invite people later from the Household screen.',
+          },
+          money_sources: {
+            title: 'Where is your money?',
+            description: 'Two or three main sources is enough to start.',
+            hint: 'Each source can record who holds it and how much is shared.',
+            add: 'Add a money source',
+          },
+          reserve: {
+            title: 'Anything set aside?',
+            description: 'Money your household decided not to touch.',
+            defaultName: 'Money set aside',
+          },
+          recurring_income: {
+            title: 'Money coming in regularly',
+            description: 'A monthly salary, for example.',
+          },
+          obligations: {
+            title: 'Regular payments',
+            description: 'Rent, utilities, loan repayments...',
+          },
+          main_goal: {
+            title: 'What are you working toward?',
+            description: 'One main goal is enough to start.',
+          },
+          first_picture: {
+            title: 'Your first picture',
+            description: 'Here is where things stand, from what you just entered.',
+            intro: 'Based on the data we have:',
+          },
+          first_whatif: {
+            title: 'Try a decision',
+            description: 'See what changes before you decide.',
+          },
+          cashflow: {
+            name: 'Name',
+            amount: 'Amount',
+            date: 'Expected date',
+            recurrence: 'Repeats',
+            monthly: 'Monthly',
+            once: 'One-off',
+            incomePlaceholder: 'e.g. salary',
+            obligationPlaceholder: 'e.g. rent',
+          },
+          goal: {
+            name: 'Goal name',
+            namePlaceholder: 'e.g. buy a home',
+            target: 'How much is needed',
+          },
+          firstPicture: {
+            intro: 'Based on the data we have:',
+          },
+          firstWhatIf: {
+            title: 'Try a purchase',
+            description:
+              'For example: if we spend 30M next month, how does our cashflow change?',
+          },
+        },
         appName: 'Money Space',
         signedIn: 'Signed in',
         sidebar: {

@@ -46,6 +46,12 @@ Each file is a focused Markdown doc. Link related files with `[[name]]` (the fil
 - [asset-sale.md](asset-sale.md) — selling an asset (asset_sale money event, position reduction, status)
 - [debts.md](debts.md) — debts / liabilities & interest maths
 - [money-events.md](money-events.md) — money events + upcoming payments (unified events)
+- [cashflow-events.md](cashflow-events.md) — expected future money movements (v3.1; replaces upcoming payments)
+- [forecast-and-flexible-money.md](forecast-and-flexible-money.md) — running balance, flexible money, financial state (§26)
+- [what-if.md](what-if.md) — spend simulation: consequence, never a verdict (§26D)
+- [protected-reserves.md](protected-reserves.md) — money set aside as a forecast constraint (§19C)
+- [data-freshness.md](data-freshness.md) — how much the numbers can be trusted (04 §12)
+- [asset-classification.md](asset-classification.md) — financial nature, holder, sharing levels (§11, §30)
 - [goals.md](goals.md) — financial goals & progress
 - [members-and-permissions.md](members-and-permissions.md) — roles, permissions, invites
 - [households-and-onboarding.md](households-and-onboarding.md) — household creation & onboarding

@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { createHousehold } from '@/features/onboarding/api/onboarding.repository'
@@ -19,9 +18,9 @@ import { useAuthStore } from '@/shared/stores/auth-store'
 
 export function useOnboardingPage() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const setActiveHouseholdId = useAppStore((state) => state.setActiveHouseholdId)
+  const setOnboardingStep = useAppStore((state) => state.setOnboardingStep)
   const user = useAuthStore((state) => state.user)
 
   const schema = useMemo(() => buildOnboardingSchema(t), [t])
@@ -48,7 +47,9 @@ export function useOnboardingPage() {
         inviteEmail: values.inviteEmail.trim() || undefined,
       })
       toast.success(t('onboarding.toast.created'))
-      navigate('/', { replace: true })
+      // Creating the household completes step 1 — hand off to the wizard's
+      // second screen rather than dropping the user on an empty Home.
+      setOnboardingStep('financial_mode')
     } catch (error) {
       toast.error(getErrorMessage(error, t('onboarding.toast.failed')))
     }
