@@ -3,6 +3,11 @@ import * as React from 'react'
 
 import { cn } from '@/shared/lib/utils'
 
+/**
+ * Track is a sunk fill, range and thumb are accent (design.md §2.1, §5.2). The
+ * thumb is a solid accent disc rather than a bordered white one — with shadows
+ * and strokes gone (§2.2–2.3) the handle has to read by its own fill.
+ */
 function Slider({
   className,
   ...props
@@ -18,7 +23,7 @@ function Slider({
     >
       <SliderPrimitive.Track
         data-slot="slider-track"
-        className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-muted"
+        className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-sunk"
       >
         <SliderPrimitive.Range
           data-slot="slider-range"
@@ -27,7 +32,7 @@ function Slider({
       </SliderPrimitive.Track>
       <SliderPrimitive.Thumb
         data-slot="slider-thumb"
-        className="block size-4 rounded-full border border-accent bg-background shadow-soft ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+        className="block size-4 rounded-full bg-accent transition-colors focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50"
       />
     </SliderPrimitive.Root>
   )

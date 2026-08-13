@@ -25,9 +25,9 @@ export function balanceTone(balance: number, protectedReserveAmount: number): Ba
 }
 
 export const BALANCE_TONE_CLASS: Record<BalanceTone, string> = {
-  shortfall: 'text-[hsl(var(--status-red))]',
-  'near-reserve': 'text-[hsl(var(--status-orange))]',
-  normal: 'text-[hsl(var(--muted-foreground))]',
+  shortfall: 'text-alert',
+  'near-reserve': 'text-attention',
+  normal: 'text-ink2',
 }
 
 /** Only days that actually have occurrences belong on the timeline. */

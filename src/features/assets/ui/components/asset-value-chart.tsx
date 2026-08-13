@@ -44,7 +44,7 @@ export function AssetValueChart({ points, liquidity }: AssetValueChartProps) {
 
   if (data.length < 2) {
     return (
-      <div className="flex h-[240px] items-center justify-center rounded-3xl bg-[hsl(var(--muted))] text-sm text-[hsl(var(--muted-foreground))]">
+      <div className="flex h-[240px] items-center justify-center rounded-3xl bg-sunk text-sm text-ink2">
         {t('assets.detail.chart.empty')}
       </div>
     )

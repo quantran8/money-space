@@ -16,7 +16,7 @@ export function FormField({ label, error, children, className }: FormFieldProps)
       <Label>{label}</Label>
       {children}
       {error ? (
-        <p className="text-xs font-medium text-[hsl(var(--status-red))]">{error}</p>
+        <p className="text-xs font-medium text-alert">{error}</p>
       ) : null}
     </div>
   )

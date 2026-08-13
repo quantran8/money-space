@@ -46,7 +46,7 @@ export function FreshnessSection() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="font-semibold">{t('freshness.needsCheck.title')}</p>
-          <p className="mt-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+          <p className="mt-1 text-sm leading-6 text-ink2">
             {t('freshness.needsCheck.description', {
               count: freshness.counts.stale,
               days: freshness.oldestDaysSinceUpdate ?? 0,

@@ -356,7 +356,7 @@ export function GoalDetailPage() {
                     ? assetNames.get(event.fromAssetId) ?? t('goals.detail.history.unknownSource')
                     : t('goals.detail.history.unknownSource')}
                 </p>
-                <p className="money-number text-sm font-semibold text-[hsl(var(--status-green))] md:text-right">
+                <p className="money-number text-sm font-semibold text-accent md:text-right">
                   +{formatAmount(Math.abs(event.amount))}
                 </p>
               </div>

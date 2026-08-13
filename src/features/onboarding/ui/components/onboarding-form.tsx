@@ -33,13 +33,13 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
   return (
     <div className="mx-auto max-w-2xl">
       <div>
-        <p className="text-sm font-medium text-[hsl(var(--accent))]">
+        <p className="text-sm font-medium text-accent">
           {t('onboarding.form.eyebrow')}
         </p>
         <h2 className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">
           {t('onboarding.form.title')}
         </h2>
-        <p className="mt-3 text-[15px] leading-6 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-3 text-[15px] leading-6 text-ink2">
           {t('onboarding.form.description')}
         </p>
       </div>
@@ -54,11 +54,11 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
             {...register('name')}
           />
           {errors.name?.message ? (
-            <p className="text-xs font-medium text-[hsl(var(--status-red))]">
+            <p className="text-xs font-medium text-alert">
               {errors.name.message}
             </p>
           ) : (
-            <p className="text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="text-xs text-ink2">
               {t('onboarding.form.nameHint')}
             </p>
           )}
@@ -84,7 +84,7 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
               </Select>
             )}
           />
-          <p className="text-xs leading-5 text-[hsl(var(--muted-foreground))]">
+          <p className="text-xs leading-5 text-ink2">
             {t('onboarding.form.currencyHint')}
           </p>
         </div>
@@ -98,7 +98,7 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
         <OwnerNote />
 
         <div className="flex flex-col-reverse gap-3 border-t border-[hsl(var(--border))] pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-5 text-[hsl(var(--muted-foreground))]">
+          <p className="text-xs leading-5 text-ink2">
             {t('onboarding.form.footerNote')}
           </p>
           <Button type="submit" size="lg" className="shrink-0" disabled={!isValid || isCreating}>

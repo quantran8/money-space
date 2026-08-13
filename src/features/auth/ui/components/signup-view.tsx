@@ -33,9 +33,9 @@ export function SignupView({
   return (
     <div className="mt-8">
       <div>
-        <p className="text-sm font-medium text-[hsl(var(--accent))]">{t('auth.signup.eyebrow')}</p>
+        <p className="text-sm font-medium text-accent">{t('auth.signup.eyebrow')}</p>
         <h2 className="mt-2 text-4xl font-semibold tracking-[-0.05em]">{t('auth.signup.title')}</h2>
-        <p className="mt-3 text-[15px] leading-6 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-3 text-[15px] leading-6 text-ink2">
           {t('auth.signup.description')}
         </p>
       </div>
@@ -88,20 +88,20 @@ export function SignupView({
         </FormField>
 
         <div>
-          <label className="flex cursor-pointer items-start gap-3 text-sm leading-5 text-[hsl(var(--muted-foreground))]">
+          <label className="flex cursor-pointer items-start gap-3 text-sm leading-5 text-ink2">
             <Checkbox className="mt-0.5" {...register('agreeTerms')} />
             <span>
               <Trans
                 i18nKey="auth.signup.agree"
                 components={{
-                  terms: <a href="#" className="font-medium text-[hsl(var(--accent))] hover:underline" />,
-                  privacy: <a href="#" className="font-medium text-[hsl(var(--accent))] hover:underline" />,
+                  terms: <a href="#" className="font-medium text-accent hover:underline" />,
+                  privacy: <a href="#" className="font-medium text-accent hover:underline" />,
                 }}
               />
             </span>
           </label>
           {errors.agreeTerms?.message ? (
-            <p className="mt-1.5 text-xs font-medium text-[hsl(var(--status-red))]">
+            <p className="mt-1.5 text-xs font-medium text-alert">
               {errors.agreeTerms.message}
             </p>
           ) : null}
@@ -112,12 +112,12 @@ export function SignupView({
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="mt-6 text-center text-sm text-ink2">
         {t('auth.signup.haveAccount')}{' '}
         <button
           type="button"
           onClick={onSwitchToLogin}
-          className="font-semibold text-[hsl(var(--accent))] hover:underline"
+          className="font-semibold text-accent hover:underline"
         >
           {t('auth.tabs.login')}
         </button>

@@ -66,12 +66,12 @@ export function UpcomingRecordForm({
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div className="rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4 text-sm text-[hsl(var(--muted-foreground))]">
+      <div className="rounded-[18px] bg-sunk px-5 py-4 text-sm text-ink2">
         Khoản sắp tới chưa làm thay đổi số dư. Số dư chỉ thay đổi khi bạn đánh dấu đã trả.
       </div>
 
       {/* Hero amount field */}
-      <EventField label="Số tiền dự kiến" error={errors.amount?.message} trailing={<span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>}>
+      <EventField label="Số tiền dự kiến" error={errors.amount?.message} trailing={<span className="text-lg font-semibold text-ink2">₫</span>}>
         <Controller
           control={control}
           name="amount"
@@ -126,7 +126,7 @@ export function UpcomingRecordForm({
       <button
         type="button"
         onClick={onToggleMoreDetails}
-        className="flex w-full items-center justify-between px-1 py-2 text-left text-[16px] font-semibold text-[hsl(var(--accent))] transition hover:opacity-80"
+        className="flex w-full items-center justify-between px-1 py-2 text-left text-[16px] font-semibold text-accent transition hover:opacity-80"
         aria-expanded={showMoreDetails}
       >
         <span>{showMoreDetails ? 'Ẩn bớt chi tiết' : 'Thêm chi tiết'}</span>
@@ -177,10 +177,10 @@ export function UpcomingRecordForm({
               />
             </EventField>
           </div>
-          <div className="flex items-center justify-between rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
+          <div className="flex items-center justify-between rounded-[18px] bg-sunk px-5 py-4">
             <div>
               <p className="text-[15px] font-medium text-foreground">Cần chú ý</p>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Đánh dấu để cùng xem lại</p>
+              <p className="text-sm text-ink2">Đánh dấu để cùng xem lại</p>
             </div>
             <Controller
               control={control}
@@ -197,7 +197,7 @@ export function UpcomingRecordForm({
       ) : null}
 
       <ResponsiveDialogFooter className="-mx-6 mt-2 border-t border-black/[0.06] px-6 pt-4 sm:-mx-8 sm:px-8">
-        <Button type="button" variant="ghost" onClick={onCancel} className="text-foreground hover:bg-[hsl(var(--muted))]">
+        <Button type="button" variant="ghost" onClick={onCancel} className="text-foreground hover:bg-sunk">
           {t('common.cancel')}
         </Button>
         <Button

@@ -5,6 +5,9 @@ import { cn } from '@/shared/lib/utils'
 /**
  * Lightweight checkbox styled to the design system. Uses the native input with
  * `accent-*` coloring to stay dependency-free while matching the app palette.
+ *
+ * No border: the control sits on the ink ramp via the native accent colour
+ * (design.md §2.2). Radius is `rounded-control` (8px), the smallest token.
  */
 const Checkbox = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
   ({ className, ...props }, ref) => {
@@ -14,7 +17,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'
         type="checkbox"
         data-slot="checkbox"
         className={cn(
-          'size-4 shrink-0 rounded-[6px] border border-input accent-[hsl(var(--primary))] outline-none transition focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+          'size-4 shrink-0 rounded-control accent-accent outline-none transition focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
           className,
         )}
         {...props}

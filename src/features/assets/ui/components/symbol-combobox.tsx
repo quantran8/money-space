@@ -60,7 +60,7 @@ export function SymbolCombobox({
           aria-expanded={open}
           className="flex w-full items-center justify-between gap-2 text-[17px] font-medium text-foreground outline-none"
         >
-          <span className={cn(!value && 'text-[hsl(var(--muted-foreground))]')}>
+          <span className={cn(!value && 'text-ink2')}>
             {value || t('assets.form.symbolPlaceholder')}
           </span>
           <ChevronDown className="size-4 shrink-0 opacity-50" />

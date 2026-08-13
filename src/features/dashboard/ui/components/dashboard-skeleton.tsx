@@ -1,26 +1,31 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
 /**
- * Loading placeholder mirroring the v2 Home layout (§9.4): the hero snapshot,
- * then the Tiền nhà mình / Cần chú ý / Kế hoạch dài hạn / Gần đây section cards.
+ * Loading placeholder mirroring the v4.0 Home (design.md §9.1, §12).
+ *
+ * Panel radius (14px) and the section rhythm (16px) match the real page, so the
+ * layout does not shift when data lands. Heights track each section's actual
+ * shape: a tall picture panel, then the thirty-day view, goal, sources, log.
  */
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-5">
-      {/* 1. Hero snapshot */}
-      <Skeleton className="h-60 rounded-[28px]" />
+    <div className="max-w-[1220px] space-y-4">
+      <Skeleton className="h-10 w-48 rounded-[8px]" />
 
-      {/* 2. Tiền nhà mình — two grouped surfaces */}
-      <Skeleton className="h-52 rounded-[26px]" />
+      {/* 1 — Bức tranh hôm nay */}
+      <Skeleton className="h-[420px] rounded-[14px]" />
 
-      {/* 3. Cần chú ý — list + discuss */}
-      <Skeleton className="h-64 rounded-[26px]" />
+      {/* 2 — Ba mươi ngày tới */}
+      <Skeleton className="h-[360px] rounded-[14px]" />
 
-      {/* 4. Kế hoạch dài hạn */}
-      <Skeleton className="h-52 rounded-[26px]" />
+      {/* 3 — Mục tiêu chính */}
+      <Skeleton className="h-[220px] rounded-[14px]" />
 
-      {/* 5. Gần đây */}
-      <Skeleton className="h-40 rounded-[26px]" />
+      {/* 4 — Tiền đang ở đâu */}
+      <Skeleton className="h-[320px] rounded-[14px]" />
+
+      {/* 5 — Nhật ký */}
+      <Skeleton className="h-[200px] rounded-[14px]" />
     </div>
   )
 }

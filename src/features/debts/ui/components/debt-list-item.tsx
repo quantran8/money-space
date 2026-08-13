@@ -54,7 +54,7 @@ export function DebtListItem({
             <button
               type="button"
               onClick={() => onViewDetail(debt.id)}
-              className="truncate text-left text-base font-semibold transition-colors hover:text-[hsl(var(--accent))]"
+              className="truncate text-left text-base font-semibold transition-colors hover:text-accent"
             >
               {debt.name}
             </button>
@@ -103,7 +103,7 @@ export function DebtListItem({
           <button
             type="button"
             onClick={() => onViewDetail(debt.id)}
-            className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[hsl(var(--accent))]"
+            className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-accent"
           >
             Chi tiết
             <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -128,7 +128,7 @@ export function DebtListItem({
               ) : null}
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
+                className="text-alert focus:text-alert"
                 onClick={() => onDelete(debt.id)}
               >
                 <Trash2 className="mr-2 size-4" /> Xóa khoản nợ

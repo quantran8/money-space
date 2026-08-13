@@ -19,8 +19,8 @@ export const defaultInviteFormValues: InviteForm = {
 
 export const roleTone: Record<HouseholdRole, string> = {
   owner: 'bg-[#1d1d1f] text-white',
-  partner: 'bg-[hsl(var(--secondary))] text-[hsl(var(--muted-foreground))]',
-  viewer: 'bg-[hsl(var(--secondary))] text-[hsl(var(--muted-foreground))]',
+  partner: 'bg-[hsl(var(--secondary))] text-ink2',
+  viewer: 'bg-[hsl(var(--secondary))] text-ink2',
 }
 
 export const defaultPermissionForRole: Record<HouseholdRole, PermissionLevel> = {

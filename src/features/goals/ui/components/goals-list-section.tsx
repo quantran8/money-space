@@ -284,7 +284,7 @@ function GoalMenu({
           {editLabel}
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
+          className="text-alert focus:text-alert"
           onSelect={() => onDelete(goalId)}
         >
           <Trash2 className="size-4" />

@@ -51,7 +51,7 @@ export function ReserveStep() {
           placeholder="0"
         />
       </EventField>
-      <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+      <p className="text-sm leading-6 text-ink2">
         {t('reserve.description')}
       </p>
       <SaveHint
@@ -202,7 +202,7 @@ export function FirstPictureStep() {
 
   return (
     <>
-      <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+      <p className="text-sm leading-6 text-ink2">
         {t('onboarding.steps.firstPicture.intro')}
       </p>
       <FinancialStateSection financialState={financialState} isLoading={stateLoading} />
@@ -221,7 +221,7 @@ export function FirstWhatIfStep() {
   return (
     <Card>
       <p className="font-semibold">{t('onboarding.steps.firstWhatIf.title')}</p>
-      <p className="mt-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+      <p className="mt-1 text-sm leading-6 text-ink2">
         {t('onboarding.steps.firstWhatIf.description')}
       </p>
       <div className="mt-4">
@@ -263,12 +263,12 @@ function SaveHint({
         type="button"
         onClick={handleSave}
         disabled={!canSave || isSaving}
-        className="rounded-full bg-[hsl(var(--muted))] px-4 py-2 text-sm font-semibold transition-colors hover:bg-[hsl(var(--secondary))] disabled:opacity-50"
+        className="rounded-full bg-sunk px-4 py-2 text-sm font-semibold transition-colors hover:bg-[hsl(var(--secondary))] disabled:opacity-50"
       >
         {isSaving ? t('onboarding.wizard.saving') : t('onboarding.wizard.add')}
       </button>
       {saved ? (
-        <span className="text-sm text-[hsl(var(--status-green))]">
+        <span className="text-sm text-accent">
           {t('onboarding.wizard.saved')}
         </span>
       ) : null}

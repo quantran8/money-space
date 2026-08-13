@@ -88,7 +88,7 @@ export function AssetSaleDialog({
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="grid max-h-[90dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[560px]">
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
-          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm font-medium text-ink2">
             {t('assets.sale.action')}
           </p>
           <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
@@ -106,7 +106,7 @@ export function AssetSaleDialog({
               label={t('assets.sale.proceeds')}
               error={errors.proceeds?.message}
               trailing={
-                <span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
+                <span className="text-lg font-semibold text-ink2">₫</span>
               }
             >
               <Controller
@@ -127,19 +127,19 @@ export function AssetSaleDialog({
             {isMarketAsset ? (
               <>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <EventField label={asset?.type === 'real_estate' ? t('assets.sale.areaSqm') : t('assets.sale.quantity')} error={errors.quantity?.message} trailing={asset?.type === 'real_estate' ? <span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">m²</span> : undefined}>
+                  <EventField label={asset?.type === 'real_estate' ? t('assets.sale.areaSqm') : t('assets.sale.quantity')} error={errors.quantity?.message} trailing={asset?.type === 'real_estate' ? <span className="text-base font-semibold text-ink2">m²</span> : undefined}>
                     <Controller control={control} name="quantity" render={({ field }) => (
                       <EventDecimalInput placeholder={t('assets.sale.quantityPlaceholder')} disabled={sellAll} value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
                     )} />
                   </EventField>
-                  <EventField label={asset?.type === 'real_estate' ? t('assets.sale.pricePerSqm') : t('assets.sale.unitPrice')} error={errors.unitPrice?.message} trailing={<span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">₫</span>}>
+                  <EventField label={asset?.type === 'real_estate' ? t('assets.sale.pricePerSqm') : t('assets.sale.unitPrice')} error={errors.unitPrice?.message} trailing={<span className="text-base font-semibold text-ink2">₫</span>}>
                     <Controller control={control} name="unitPrice" render={({ field }) => (
                       <EventMoneyInput placeholder="0" className="text-[22px] sm:text-[24px]" value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
                     )} />
                   </EventField>
                 </div>
 
-                {currentQuantity > 0 ? <div className="flex items-center justify-between rounded-[18px] bg-[hsl(var(--muted))] px-5 py-4">
+                {currentQuantity > 0 ? <div className="flex items-center justify-between rounded-[18px] bg-sunk px-5 py-4">
                   <p className="text-[15px] font-medium text-foreground">
                     {t('assets.sale.sellAll')}
                   </p>
@@ -165,7 +165,7 @@ export function AssetSaleDialog({
                 label={t('assets.sale.fee')}
                 error={errors.fee?.message}
                 trailing={
-                  <span className="text-base font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
+                  <span className="text-base font-semibold text-ink2">₫</span>
                 }
               >
                 <Controller
@@ -198,11 +198,11 @@ export function AssetSaleDialog({
               </EventField>
             </div>
 
-            <div className="flex items-center justify-between rounded-[18px] bg-[hsla(var(--accent),0.08)] px-5 py-4 text-sm">
-              <span className="text-[hsl(var(--muted-foreground))]">
+            <div className="flex items-center justify-between rounded-[18px] bg-accent-tint px-5 py-4 text-sm">
+              <span className="text-ink2">
                 {t('assets.sale.receivedNet')}
               </span>
-              <span className="money-number text-lg font-semibold text-[hsl(var(--accent))]">
+              <span className="money-number text-lg font-semibold text-accent">
                 {formatVndShort(previewNet)}
               </span>
             </div>
@@ -242,7 +242,7 @@ export function AssetSaleDialog({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-foreground hover:bg-[hsl(var(--muted))]"
+              className="text-foreground hover:bg-sunk"
             >
               {t('common.cancel')}
             </Button>

@@ -19,7 +19,7 @@ export function HouseholdAssetsCard() {
         <h2 className="section-title text-xl font-semibold">{t('household.assets.title')}</h2>
         <Link
           to="/assets"
-          className="flex items-center gap-1 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-foreground"
+          className="flex items-center gap-1 text-sm font-medium text-ink2 transition hover:text-foreground"
         >
           {t('household.assets.viewAll')}
           <ArrowRight className="size-4" />
@@ -30,7 +30,7 @@ export function HouseholdAssetsCard() {
         <div className="mt-5 h-12 animate-pulse rounded-2xl bg-muted" />
       ) : (
         <div className="mt-5 flex items-baseline justify-between gap-4">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm text-ink2">
             {t('household.assets.count', { count: assets.length })}
           </p>
           <p className="money-number text-2xl font-semibold">{formatVndShort(total)}</p>

@@ -21,12 +21,12 @@ export function CalmNoteCard({
   return (
     <Card>
       <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[hsla(var(--accent),0.1)]">
-          <Icon className="size-5 text-[hsl(var(--accent))]" strokeWidth={1.8} />
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-tint">
+          <Icon className="size-5 text-accent" strokeWidth={1.8} />
         </div>
         <div>
           <p className="font-semibold">{title}</p>
-          <p className="mt-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+          <p className="mt-1 text-sm leading-6 text-ink2">
             {description}
           </p>
         </div>

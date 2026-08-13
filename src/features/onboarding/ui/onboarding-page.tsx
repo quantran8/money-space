@@ -86,7 +86,7 @@ export function OnboardingPage() {
 
               {wizard.step === 'invite' ? (
                 <Card>
-                  <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+                  <p className="text-sm leading-6 text-ink2">
                     {t('onboarding.steps.invite.hint')}
                   </p>
                 </Card>
@@ -94,7 +94,7 @@ export function OnboardingPage() {
 
               {wizard.step === 'money_sources' ? (
                 <div className="space-y-3">
-                  <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+                  <p className="text-sm leading-6 text-ink2">
                     {t('onboarding.steps.money_sources.hint')}
                   </p>
                   {/* Reuses the real asset dialog, so holder + sharing are the
@@ -138,7 +138,7 @@ function FinancialModePlaceholder() {
   const { t } = useTranslation()
   return (
     <Card>
-      <p className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+      <p className="text-sm leading-6 text-ink2">
         {t('onboarding.steps.financial_mode.hint')}
       </p>
     </Card>

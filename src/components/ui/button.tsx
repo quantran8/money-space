@@ -4,20 +4,22 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/shared/lib/utils'
 
+/**
+ * Buttons are `rounded-control` (8px) and carry NO shadow — nothing in the page
+ * floats in v4.0 (design.md §2.3, §3). `outline` and `secondary` are the same
+ * borderless sunk fill: a stroke is no longer how a control is distinguished
+ * (§2.2), the lightness step is.
+ */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-control text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default:
-          'bg-primary text-primary-foreground shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:bg-primary/90',
-        destructive:
-          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
-        outline:
-          'border border-input bg-card shadow-none hover:bg-secondary hover:text-foreground',
-        secondary:
-          'bg-secondary text-secondary-foreground shadow-none hover:bg-secondary/80',
-        ghost: 'text-accent hover:bg-[hsla(var(--status-blue),0.08)] hover:text-accent',
+        default: 'bg-accent text-white hover:bg-accent/90',
+        destructive: 'bg-alert text-white hover:bg-alert/90',
+        outline: 'bg-sunk text-ink hover:bg-hair',
+        secondary: 'bg-sunk text-ink hover:bg-hair',
+        ghost: 'text-accent hover:bg-accent-soft',
         link: 'text-accent underline-offset-4 hover:underline',
       },
       size: {

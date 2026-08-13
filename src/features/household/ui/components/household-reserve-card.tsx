@@ -45,7 +45,7 @@ export function HouseholdReserveCard() {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="section-title text-xl font-semibold">{t('reserve.title')}</h2>
-          <p className="mt-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+          <p className="mt-1 text-sm leading-6 text-ink2">
             {t('reserve.description')}
           </p>
         </div>
@@ -57,7 +57,7 @@ export function HouseholdReserveCard() {
       {isLoading ? (
         <div className="mt-5 h-16 animate-pulse rounded-2xl bg-muted" />
       ) : reserves.length === 0 ? (
-        <p className="mt-5 text-sm text-[hsl(var(--muted-foreground))]">
+        <p className="mt-5 text-sm text-ink2">
           {t('reserve.empty')}
         </p>
       ) : (
@@ -69,7 +69,7 @@ export function HouseholdReserveCard() {
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{reserve.name}</p>
-                <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))]">
+                <p className="mt-0.5 text-xs text-ink2">
                   {t(`reserve.status.${reserve.status}`)}
                 </p>
               </div>

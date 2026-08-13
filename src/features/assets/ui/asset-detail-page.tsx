@@ -58,7 +58,7 @@ function ActivityRow({ entry, locale }: { entry: AssetEventEntry; locale: string
       <p
         className={cn(
           'money-number text-sm font-semibold md:text-right',
-          isPositive && 'text-[hsl(var(--status-green))]',
+          isPositive && 'text-accent',
         )}
       >
         {isPositive ? '+' : '-'}
@@ -293,8 +293,8 @@ export function AssetDetailPage() {
               className={cn(
                 'text-sm font-medium',
                 periodChange >= 0
-                  ? 'text-[hsl(var(--status-green))]'
-                  : 'text-[hsl(var(--status-red))]',
+                  ? 'text-accent'
+                  : 'text-alert',
               )}
             >
               {periodChange >= 0 ? '+' : ''}

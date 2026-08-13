@@ -34,9 +34,9 @@ export function LoginView({
   return (
     <div className="mt-8">
       <div>
-        <p className="text-sm font-medium text-[hsl(var(--accent))]">{t('auth.login.eyebrow')}</p>
+        <p className="text-sm font-medium text-accent">{t('auth.login.eyebrow')}</p>
         <h2 className="mt-2 text-4xl font-semibold tracking-[-0.05em]">{t('auth.login.title')}</h2>
-        <p className="mt-3 text-[15px] leading-6 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-3 text-[15px] leading-6 text-ink2">
           {t('auth.login.description')}
         </p>
       </div>
@@ -63,7 +63,7 @@ export function LoginView({
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-4">
             <Label>{t('auth.fields.password')}</Label>
-            <button type="button" className="text-sm font-medium text-[hsl(var(--accent))] hover:underline">
+            <button type="button" className="text-sm font-medium text-accent hover:underline">
               {t('auth.login.forgotPassword')}
             </button>
           </div>
@@ -74,13 +74,13 @@ export function LoginView({
             {...register('password')}
           />
           {errors.password?.message ? (
-            <p className="text-xs font-medium text-[hsl(var(--status-red))]">
+            <p className="text-xs font-medium text-alert">
               {errors.password.message}
             </p>
           ) : null}
         </div>
 
-        <label className="flex cursor-pointer items-center gap-3 text-sm text-[hsl(var(--muted-foreground))]">
+        <label className="flex cursor-pointer items-center gap-3 text-sm text-ink2">
           <Checkbox {...register('remember')} />
           {t('auth.login.remember')}
         </label>
@@ -90,12 +90,12 @@ export function LoginView({
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="mt-6 text-center text-sm text-ink2">
         {t('auth.login.noAccount')}{' '}
         <button
           type="button"
           onClick={onSwitchToSignup}
-          className="font-semibold text-[hsl(var(--accent))] hover:underline"
+          className="font-semibold text-accent hover:underline"
         >
           {t('auth.tabs.signup')}
         </button>

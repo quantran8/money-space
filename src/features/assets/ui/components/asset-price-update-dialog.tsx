@@ -103,7 +103,7 @@ export function AssetPriceUpdateDialog({
               label={t(isBond ? 'assets.priceUpdate.bondValue' : 'assets.priceUpdate.unitPrice')}
               error={error}
               trailing={
-                <span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
+                <span className="text-lg font-semibold text-ink2">₫</span>
               }
             >
               <EventMoneyInput value={price} onChange={(value) => { setPrice(value); setError('') }} placeholder="0" />

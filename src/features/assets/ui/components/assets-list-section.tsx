@@ -51,7 +51,7 @@ export function AssetsListSection({
 
         <div className="mt-6 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink2" />
           <Input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
@@ -108,7 +108,7 @@ export function AssetsListSection({
           onDelete={onDelete}
         />
       ) : (
-        <p className="rounded-3xl bg-[hsl(var(--muted))] px-4 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">
+        <p className="rounded-3xl bg-sunk px-4 py-8 text-center text-sm text-ink2">
           {t('assets.toolbar.empty')}
         </p>
       )}

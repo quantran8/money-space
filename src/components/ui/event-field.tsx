@@ -4,13 +4,15 @@ import { formatIntegerDisplay, sanitizeIntegerInput } from '@/shared/lib/number-
 import { cn } from '@/shared/lib/utils'
 
 /**
- * Apple/Gen-Z styled form field used across the app's create/edit modals: a soft
- * filled card (bg-muted) with a small uppercase inset label and a borderless
- * control inside. Originated in the events (money timeline) flows and is now the
- * shared look for every form dialog — events, debts, assets, goals, payments,
- * members — so the whole app feels like one calm, tactile surface.
+ * The shared form field used across the app's create/edit modals: a sunk block
+ * with a small `.label` inset above a borderless control. Originated in the
+ * events (money timeline) flows and is now the look for every form dialog —
+ * events, debts, assets, goals, payments, members.
  *
- * The card lights up a soft accent ring on focus-within, and turns red on error.
+ * Both variants are the same `--sunk` fill (design.md §2.2, §3): an input has no
+ * border in v4.0, so `outline` no longer means "add a stroke" — it is kept only
+ * because callers pass it, and it now differs only in radius. The field takes an
+ * `--alert` ring on error, the one case where an outline carries state (§5.2).
  */
 type EventFieldProps = {
   label: string
@@ -28,16 +30,14 @@ export function EventField({ label, htmlFor, error, children, className, trailin
     <div className={className}>
       <div
         className={cn(
-          'rounded-[20px] px-5 py-4 transition duration-200',
-          variant === 'outline'
-            ? 'border border-border bg-card shadow-[0_1px_2px_rgba(20,20,28,0.02)] focus-within:border-[#0A7AFF]/60 focus-within:shadow-[0_8px_26px_rgba(10,122,255,0.14)] focus-within:ring-4 focus-within:ring-[#0A7AFF]/10'
-            : 'bg-[hsl(var(--muted))] focus-within:ring-4 focus-within:ring-[hsla(var(--accent),0.1)]',
-          error && 'ring-2 ring-[hsla(var(--status-red),0.35)]',
+          'bg-sunk px-5 py-4 transition duration-200',
+          variant === 'outline' ? 'rounded-panel' : 'rounded-sunk',
+          error && 'outline-2 outline-alert',
         )}
       >
         <label
           htmlFor={htmlFor}
-          className="block text-xs font-semibold uppercase tracking-[0.12em] text-[hsl(var(--muted-foreground))]"
+          className="label block"
         >
           {label}
         </label>
@@ -48,15 +48,15 @@ export function EventField({ label, htmlFor, error, children, className, trailin
         )}
       </div>
       {error ? (
-        <p className="mt-2 px-1 text-sm font-medium text-[hsl(var(--status-red))]">{error}</p>
+        <p className="mt-2 px-1 text-[13px] font-medium text-alert">{error}</p>
       ) : null}
     </div>
   )
 }
 
 /**
- * Borderless text input for use inside an {@link EventField}. Fills the card,
- * no border/background of its own.
+ * Borderless text input for use inside an {@link EventField}. Fills the sunk
+ * block, no background of its own.
  */
 export function EventFieldInput({
   className,
@@ -66,7 +66,7 @@ export function EventFieldInput({
     <input
       {...props}
       className={cn(
-        'w-full bg-transparent text-[17px] font-medium text-foreground outline-none placeholder:font-normal placeholder:text-[hsl(var(--muted-foreground))]',
+        'w-full bg-transparent text-[17px] font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink3',
         className,
       )}
     />
@@ -84,7 +84,7 @@ export function EventFieldTextarea({
     <textarea
       {...props}
       className={cn(
-        'w-full resize-none bg-transparent text-[16px] leading-6 text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]',
+        'w-full resize-none bg-transparent text-[16px] leading-6 text-ink outline-none placeholder:text-ink3',
         className,
       )}
     />
@@ -95,7 +95,9 @@ export function EventFieldTextarea({
  * Large, borderless money input for the hero "Số tiền" field. Types digits only,
  * displays grouped ("8.000.000"); pushes the raw digit string up via onChange.
  * Mirrors the global {@link import('@/components/ui/number-input').MoneyInput}
- * formatting but styled for the filled card (big, transparent, no border).
+ * formatting but styled for the sunk block (big and transparent). Carries
+ * `.money-number` — negative tracking is safe here because the field only ever
+ * holds digits (§10.3).
  */
 type EventMoneyInputProps = {
   id?: string
@@ -130,7 +132,7 @@ export function EventMoneyInput({
       }
       onBlur={onBlur}
       className={cn(
-        'min-w-0 flex-1 bg-transparent text-[36px] font-semibold tracking-[-0.045em] text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]/60 disabled:cursor-default disabled:opacity-100 sm:text-[42px]',
+        'money-number min-w-0 flex-1 bg-transparent text-[36px] text-ink outline-none placeholder:text-ink3 disabled:cursor-default disabled:opacity-100 sm:text-[42px]',
         className,
       )}
     />
@@ -173,7 +175,7 @@ export function EventDecimalInput({
       onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
       onBlur={onBlur}
       className={cn(
-        'w-full bg-transparent text-[17px] font-medium text-foreground outline-none placeholder:font-normal placeholder:text-[hsl(var(--muted-foreground))] disabled:opacity-50',
+        'num w-full bg-transparent text-[17px] font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink3 disabled:opacity-50',
         className,
       )}
     />
@@ -181,15 +183,15 @@ export function EventDecimalInput({
 }
 
 /**
- * Trigger className to drop the global Select's border/background so it sits
- * flush inside an {@link EventField}'s filled card. Pass to `SelectTrigger`.
+ * Trigger className to drop the global Select's own background so it sits flush
+ * inside an {@link EventField}'s sunk block. Pass to `SelectTrigger`.
  */
 export const eventSelectTriggerClass =
-  'h-auto rounded-none border-0 bg-transparent p-0 text-[17px] font-medium text-foreground shadow-none focus-visible:ring-0 data-[placeholder]:text-[hsl(var(--muted-foreground))]'
+  'h-auto rounded-none bg-transparent p-0 text-[17px] font-medium text-ink data-[placeholder]:text-ink3'
 
 /**
- * Trigger className to drop the global DatePicker button's border/background so
- * it sits flush inside an {@link EventField}'s filled card.
+ * Trigger className to drop the global DatePicker button's own background so it
+ * sits flush inside an {@link EventField}'s sunk block.
  */
 export const eventDateTriggerClass =
-  'h-auto justify-start rounded-none border-0 bg-transparent p-0 text-[17px] font-medium text-foreground shadow-none hover:bg-transparent [&_svg]:hidden'
+  'h-auto justify-start rounded-none bg-transparent p-0 text-[17px] font-medium text-ink hover:bg-transparent [&_svg]:hidden'

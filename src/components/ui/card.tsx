@@ -2,14 +2,21 @@ import * as React from 'react'
 
 import { cn } from '@/shared/lib/utils'
 
+/**
+ * A panel surface (design.md §2.1–2.3).
+ *
+ * No border and no shadow: sections are separated by the lightness step from
+ * `--app` to `--panel`, which is the only mechanism left once strokes were
+ * removed (§2.2). Radius is 14px, not the v3.x 28px.
+ *
+ * New screens should prefer `Panel` from `@/components/ui/panel`, which also
+ * carries the §7.1 padding rhythm. This stays for the many existing callers.
+ */
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card"
-      className={cn(
-        'rounded-[28px] border border-border bg-card p-6 text-card-foreground shadow-[0_8px_24px_rgba(0,0,0,0.04)]',
-        className,
-      )}
+      className={cn('rounded-panel bg-panel p-5 text-ink sm:p-8', className)}
       {...props}
     />
   )

@@ -27,15 +27,15 @@ type EventsDataTableProps = {
 }
 
 function getAmountTone(direction: MoneyEventItem['direction']) {
-  if (direction === 'inflow') return 'text-[hsl(var(--status-green))]'
-  if (direction === 'outflow') return 'text-[hsl(var(--status-red))]'
-  return 'text-[hsl(var(--accent))]'
+  if (direction === 'inflow') return 'text-accent'
+  if (direction === 'outflow') return 'text-alert'
+  return 'text-accent'
 }
 
 function getDirectionMark(direction: MoneyEventItem['direction']) {
-  if (direction === 'inflow') return { glyph: '+', className: 'bg-[hsla(var(--status-green),0.12)] text-[hsl(var(--status-green))]' }
-  if (direction === 'outflow') return { glyph: '−', className: 'bg-[hsla(var(--status-red),0.1)] text-[hsl(var(--status-red))]' }
-  return { glyph: '↗', className: 'bg-[hsla(var(--status-blue),0.1)] text-[hsl(var(--status-blue))]' }
+  if (direction === 'inflow') return { glyph: '+', className: 'bg-accent-tint text-accent' }
+  if (direction === 'outflow') return { glyph: '−', className: 'bg-alert-tint text-alert' }
+  return { glyph: '↗', className: 'bg-accent-tint text-accent' }
 }
 
 type MonthGroup = {
@@ -75,7 +75,7 @@ export function EventsDataTable({
       {groups.length ? (
         groups.map((group) => (
           <div key={group.key}>
-            <div className="border-b border-border bg-[hsl(var(--muted))]/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="border-b border-border bg-sunk/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {group.label}
             </div>
             {group.events.map((event) => {
@@ -107,7 +107,7 @@ export function EventsDataTable({
                           })}
                         </Badge>
                         {event.assetName && (
-                          <Badge variant="secondary" className="bg-[hsla(var(--accent),0.08)] text-[hsl(var(--accent))] border-none">
+                          <Badge variant="secondary" className="bg-accent-tint text-accent border-none">
                             {event.assetName}
                           </Badge>
                         )}
@@ -141,7 +141,7 @@ export function EventsDataTable({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onDelete(event.id)}
-                          className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
+                          className="text-alert focus:text-alert"
                         >
                           <Trash2 />
                           {t('events.table.delete')}

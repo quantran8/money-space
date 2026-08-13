@@ -45,9 +45,9 @@ export const defaultGoalFormValues: GoalForm = {
 export const priorityRank: Record<GoalPriority, number> = { high: 0, medium: 1, low: 2 }
 
 export const priorityTone: Record<GoalPriority, string> = {
-  high: 'bg-[hsla(var(--status-red),0.1)] text-[hsl(var(--status-red))]',
-  medium: 'bg-[hsl(var(--secondary))] text-[hsl(var(--muted-foreground))]',
-  low: 'bg-[hsl(var(--secondary))] text-[hsl(var(--muted-foreground))]',
+  high: 'bg-alert-tint text-alert',
+  medium: 'bg-[hsl(var(--secondary))] text-ink2',
+  low: 'bg-[hsl(var(--secondary))] text-ink2',
 }
 
 // One hue per allocation slice, cycled by goal order (validated status palette).

@@ -25,7 +25,7 @@ export function RemindersCard({ form }: RemindersCardProps) {
         <div className="flex items-center justify-between gap-4 py-4 first:pt-0">
           <div>
             <p className="text-sm font-medium">{t('settings.reminders.upcomingTitle')}</p>
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="mt-1 text-xs text-ink2">
               {t('settings.reminders.upcomingDescription')}
             </p>
           </div>
@@ -41,7 +41,7 @@ export function RemindersCard({ form }: RemindersCardProps) {
         <div className="flex items-center justify-between gap-4 py-4">
           <div>
             <p className="text-sm font-medium">{t('settings.reminders.updatesTitle')}</p>
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="mt-1 text-xs text-ink2">
               {t('settings.reminders.updatesDescription')}
             </p>
           </div>
@@ -57,7 +57,7 @@ export function RemindersCard({ form }: RemindersCardProps) {
         <div className="flex items-center justify-between gap-4 py-4 pb-0">
           <div>
             <p className="text-sm font-medium">{t('settings.reminders.accessTitle')}</p>
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="mt-1 text-xs text-ink2">
               {t('settings.reminders.accessDescription')}
             </p>
           </div>

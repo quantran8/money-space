@@ -71,7 +71,7 @@ export function CashflowEventFormDialog({
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[560px]">
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
-          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm font-medium text-ink2">
             {isEditing ? t('upcoming.form.editEyebrow') : t('upcoming.form.eyebrow')}
           </p>
           <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
@@ -92,7 +92,7 @@ export function CashflowEventFormDialog({
             control={control}
             name="direction"
             render={({ field }) => (
-              <div className="grid grid-cols-2 gap-2 rounded-[20px] bg-[hsl(var(--muted))] p-1.5">
+              <div className="grid grid-cols-2 gap-2 rounded-[20px] bg-sunk p-1.5">
                 {(['outgoing', 'incoming'] as const).map((value) => (
                   <button
                     key={value}
@@ -102,7 +102,7 @@ export function CashflowEventFormDialog({
                       'rounded-[14px] px-4 py-2.5 text-sm font-semibold transition-colors',
                       field.value === value
                         ? 'bg-[hsl(var(--card))] text-foreground shadow-[0_1px_3px_rgba(20,20,28,0.08)]'
-                        : 'text-[hsl(var(--muted-foreground))]',
+                        : 'text-ink2',
                     )}
                   >
                     {t(`upcoming.form.direction.${value}`)}
@@ -117,7 +117,7 @@ export function CashflowEventFormDialog({
             label={t('upcoming.form.amount')}
             error={errors.amount?.message}
             trailing={
-              <span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
+              <span className="text-lg font-semibold text-ink2">₫</span>
             }
           >
             <Controller
@@ -240,7 +240,7 @@ export function CashflowEventFormDialog({
           {/* Estimated incoming is shown on the timeline but never banked — say
               so here, so the choice is understood before it is made. */}
           {!isOutgoing && watch('certainty') === 'estimated' ? (
-            <p className="px-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+            <p className="px-1 text-sm leading-6 text-ink2">
               {t('upcoming.form.estimatedIncomingHint')}
             </p>
           ) : null}

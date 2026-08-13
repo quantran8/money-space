@@ -1,14 +1,32 @@
-# Web Design System — Money Space v3.2
+# Web Design System — Money Space v4.0
 
 > **Spec alignment:** Shared Financial Clarity → Financial Foresight → Decision Support for couples 25–37.
 >
-> **v3.2 direction:** consumer-first, scan-first, white-first.
+> **v4.0 là bản đổi hướng thị giác.** Nội dung sản phẩm, IA, copy và nguyên tắc hành vi từ v3.x được giữ nguyên. Toàn bộ hệ thị giác — surface, màu, typography, spacing, component — được thay bằng hệ đã hội tụ qua vòng thiết kế: **panel trắng trên nền có sắc, phân tầng bằng độ sáng, không divider, không viền, không shadow, sidebar, lục ngân hàng bão hoà, mật độ bảng thật.**
 >
-> Home phải cho user hiểu tình hình household trong vài giây, không tạo cảm giác đang đọc một SaaS dashboard hoặc finance terminal.
->
-> Screenshot/dashboard references chỉ được dùng để tham khảo **layout rhythm, compactness, sidebar separation, section framing**. Không mặc định kế thừa màu lime + xanh đậm, chart-heavy composition, hoặc density kiểu fintech dashboard.
+> Bản v3.x đi theo hướng white-first với section frame viền alpha và accent xanh dương hệ Apple. Hướng đó đã bị loại: xem §25.
 
 ---
+
+## Changelog v3.4 → v4.0
+
+```txt
+§2.1   Nền trang KHÔNG còn là trắng. Nền app có sắc, panel mới là trắng.
+§2.2   Ba tầng surface: app → panel → sunk. Không dùng viền để phân tầng.
+§2.3   Bỏ .section-surface với border 2px alpha. Panel không có viền.
+§2.4   Divider bị loại gần như hoàn toàn, kể cả trong bảng.
+§4     Visual language viết lại: register “sổ cái hiện đại”, không phải “consumer minimal”.
+§5     Palette thay hoàn toàn. Ledger (lục ngân hàng) và Archive (đỏ rượu).
+§5.4   Attention amber tách khỏi protected reserve. Protected reserve về neutral.
+§6     Token viết lại theo CSS variable + hai theme class.
+§7     Spacing/radius viết lại: section p-8, radius 14, gap 16.
+§10    Typography: Be Vietnam Pro + IBM Plex Mono thay system font stack.
+§11    Component pattern viết lại: panel, sunk block, dense table, coverage strip.
+§12    Home component cập nhật theo hệ mới, giữ nguyên nội dung và thứ tự.
+§13    Layout example viết lại: sidebar + single column, không phải grid 7fr/5fr.
+§21    Cheatsheet viết lại.
+§25    Hướng white-first/Apple-blue chuyển vào deprecated.
+```
 
 ## 0. Product Overview
 
@@ -119,198 +137,183 @@ Và trước một khoản chi lớn:
 
 > “Mình thử xem khoản này ảnh hưởng gì trước đã.”
 
+### 0.6. Feature domain map — MỚI
+
+Sản phẩm có 8 domain. Không phải domain nào cũng có mặt trên Home.
+
+| Domain                  | Trên Home                          | Nơi ở chính               | Vai trò                |
+| ----------------------- | ---------------------------------- | ------------------------- | ---------------------- |
+| Financial Picture       | Có, section 1                      | Home                      | Primary answer         |
+| Cash-flow / Sắp tới     | Có, section 2                      | Trang `Sắp tới`           | Foresight              |
+| Goals                   | Có, section 3 — chỉ main goal      | Trang `Mục tiêu`          | Decision anchor        |
+| Assets & money sources  | Có, section 4 — compact            | Trang `Tài sản`           | Context                |
+| **Debt**                | **Không** — chỉ qua hệ quả         | Trang `Tài sản`, tab `Nợ` | Obligation input       |
+| **Financial event log** | **Không** — chỉ qua `Cần cập nhật` | `Lịch sử cập nhật`        | Shared source of truth |
+| Household & privacy     | Không                              | Trang `Nhà mình`          | Trust                  |
+| What-if                 | Là action, không phải section      | Dialog / Sheet            | Decision support       |
+
+Nguyên tắc: **thêm feature không có nghĩa là thêm Home section.** Home giữ tối đa 5 section. Domain mới phải chứng minh nó thuộc Priority A hoặc B ở §1.1 trước khi được lên Home.
+
 ---
 
 ## 1. Product Design Direction
 
-Money Space là **consumer finance product cho household**, không phải dashboard quản trị.
+Money Space là **consumer finance product cho household**, không phải dashboard quản trị — nhưng nó cũng không được nhẹ tới mức mất cảm giác đáng tin.
 
 Design direction:
 
 ```txt
-Consumer-first
-White-first
-Calm finance
-Glanceable
-Compact but not dense
+Calm nhưng có trọng lượng
+Phân tầng bằng độ sáng, không bằng nét
+Compact, mật độ thật
 Few meaningful sections
 Strong scan hierarchy
 Future-oriented
 Private, not controlling
+Sidebar-first trên desktop
 Mobile-primary key flows
-Clean management tools underneath
 ```
 
 ### 1.1. Home phải là scan surface
 
 User mở Home và trong khoảng **3–5 giây** phải quét được những thông tin quan trọng nhất.
 
-Priority hierarchy:
-
 ```txt
 Priority A
 1. Nhà mình đang ổn không?
-2. Có bao nhiêu tiền linh hoạt?
-3. Balance thấp nhất trong 30 ngày tới là bao nhiêu?
+2. Bức tranh này có đang dựa trên dữ liệu mới không?
+3. Có bao nhiêu tiền linh hoạt?
+4. Thấp nhất trong 30 ngày tới là bao nhiêu?
 
 Priority B
-4. Mục tiêu chính đang đi tới đâu?
-5. Có dữ liệu nào cần cập nhật để forecast đáng tin hơn?
+5. Mục tiêu chính đang đi tới đâu?
 
 Priority C
-6. Tổng tiền vào / ra trong 30 ngày.
-7. Tiền đang ở đâu / ai đang phụ trách.
+6. Tiền đang ở đâu / ai đang phụ trách.
+7. Gần đây có gì thay đổi và do ai.
 ```
 
-Không cho mọi metric cùng một visual weight.
+**Vì sao freshness đứng thứ 2.** Ba câu còn lại của Priority A đều là output của cùng một tập input. Nếu input cũ thì cả ba đều sai, và user không có cách nào biết. Đặt freshness ở cuối trang có nghĩa là user đã đọc, đã tin và có thể đã quyết định xong trước khi cuộn tới chỗ nói rằng con số đó chưa đầy đủ.
+
+Đây là ràng buộc riêng của sản phẩm này: dữ liệu do người nhập tay, hai người nhập ở hai thời điểm khác nhau, không có bank sync. Freshness không phải chi tiết kỹ thuật — nó là một phần của câu trả lời.
 
 ### 1.2. Visual emphasis trên Home
 
 ```txt
-Flexible Money       → money number lớn nhất.
-Financial State      → status rõ ngay phía trên / cạnh primary number.
-Lowest balance       → callout mạnh nhất trong section 30 ngày tới.
-Incoming / Outgoing  → supporting metrics.
-Goal projection      → projected date và gap-to-target quan trọng hơn progress bar.
-Money location       → supporting context, không cạnh tranh với forecast.
-Freshness            → chỉ nổi khi có action cần làm.
+Flexible Money       → money number lớn nhất, weight 500.
+Financial State      → chip trái ở đầu section 1.
+Data coverage        → chip phải ở đầu section 1 + coverage strip dưới money number.
+Thấp nhất dự kiến    → metric lớn thứ hai, mở đầu section 2.
+Money composition    → thanh 3 đoạn + legend có phần trăm.
+Goal projection      → ngày dự kiến quan trọng hơn progress bar.
+Money location       → bảng, kèm cột Cập nhật.
+Nhật ký              → list gọn, ba dòng gần nhất.
+Debt                 → không có visual riêng trên Home.
 ```
 
-### 1.3. Home không phải landing page hoặc BI dashboard
+Hai chip trạng thái ở đầu section 1 là hai trục độc lập:
+
+```txt
+● Nhà mình đang ổn              ● 2 nguồn cần cập nhật
+  ↑ tình trạng tài chính          ↑ tình trạng dữ liệu
+```
+
+Không gộp. Nhà có thể đang ổn với dữ liệu cũ, hoặc có vấn đề với dữ liệu mới.
+
+### 1.3. Home không phải BI dashboard
 
 Không thiết kế như:
 
 ```txt
 SaaS analytics dashboard
 Fintech trading dashboard
-Banking admin portal
 Card grid với 8–12 metric ngang cấp
 Chart gallery
-Marketing landing page trá hình
 Expense tracker
+App thiền / wellness product
 ```
 
-Premium đến từ:
+Cảm giác đúng đến từ:
 
 ```txt
-nền trắng sạch
-section framing mềm
-spacing có nhịp
-natural card height
-typography rõ
-ít màu
-ít divider
+panel trắng trên nền có sắc
+phân tầng bằng độ sáng
+bảng có mật độ thật, có header, có dòng tổng
+số dùng tabular, weight 500
+mono cho ngày tháng, đơn vị, nhãn nhỏ
+một accent duy nhất, dùng rất ít
+không viền, không shadow, gần như không divider
 copy có lý do tồn tại
-hierarchy mạnh
-privacy rõ
-calculation dễ hiểu
 ```
 
 ---
 
-## 2. Consumer Product Principles
+## 2. Surface & Structure Principles
 
-## 2.1. White-first, not gray-dashboard-first
+## 2.1. Ba tầng surface, phân biệt bằng độ sáng
 
-Page background mặc định là **white**.
-
-```txt
-Page background     #FFFFFF
-Section surface     #FFFFFF
-Soft grouped area   #FAFAFA / #F7F7F8
-Interactive muted   #F2F2F7
-```
-
-Không dùng nền xám lớn chỉ để làm card trắng nổi lên.
-
-Section được phân biệt bằng **soft frame + spacing**, không bằng contrast nền mạnh.
-
-## 2.2. Surface hierarchy phải nông
-
-Recommended:
+Nền trang **không phải màu trắng**. Trắng dành cho panel.
 
 ```txt
-Page
-→ Top-level section frame
-→ optional soft group
-→ row / content
+--app      #EEF1F3   nền trang, sidebar nằm trực tiếp trên nền này
+--panel    #FFFFFF   top-level section
+--sunk     #F5F7F8   khối tổng, biểu đồ, ô input, kết quả
 ```
 
-Không nên:
-
-```txt
-Page
-→ Card
-→ Sub-card
-→ Mini-card
-→ Inner card
-→ bordered row
-```
-
-Rule:
-
-```txt
-Tối đa 2 tầng surface trong một section.
-Nếu đã có section frame, bên trong ưu tiên spacing, typography và soft background.
-Không thêm border cho mọi child item.
-Không dùng divider để bù cho hierarchy yếu.
-```
-
-## 2.3. Section frame: dày hơn nhưng nhạt hơn
-
-Top-level section cần có ranh giới đủ rõ để scan, nhưng không được tạo cảm giác viền sắc.
-
-Canonical treatment:
-
-```css
-.section-surface {
-  background: #fff;
-  border: 2px solid rgba(29, 29, 31, 0.045);
-  border-radius: 20px;
-}
-```
-
-Optional depth nếu thật sự cần:
-
-```css
-.section-surface {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.012);
-}
-```
+Đây là đảo ngược có chủ đích so với v3.x. Lý do: khi đã loại bỏ divider và viền (§2.3, §2.4), chênh lệch độ sáng là cơ chế phân tách duy nhất còn lại. Nó cũng giải quyết vấn đề khó quét — ranh giới section hiện ra mà không cần một nét nào.
 
 Rules:
 
 ```txt
-Border width có thể 2px nhưng opacity thấp.
-Không dùng border xám 1px sắc quanh mọi card.
-Không dùng shadow để giả border thứ hai.
-Không dùng shadow-xl / shadow-2xl.
-Section frame chỉ áp ở top-level section.
+Tối đa 3 tầng. Không có tầng thứ tư.
+Panel KHÔNG có viền và KHÔNG có shadow.
+Sunk block dùng cho: dòng tổng, khối biểu đồ, input, ô kết quả mô phỏng, badge.
+Sidebar không có nền riêng và không có viền phải — nó nằm trên --app.
+Không dùng --sunk làm nền cho cả một section.
 ```
 
-## 2.4. Divider là ngoại lệ, không phải default
-
-Không dùng divider giữa mọi heading, metric, row hoặc section.
-
-Ưu tiên:
+## 2.2. Không dùng viền để phân tầng
 
 ```txt
-spacing
-font weight
-soft background
-alignment
-section frame
+Panel:        không viền
+List row:     không viền
+Table row:    không viền
+Sidebar:      không viền
+Input:        không viền, dùng nền --sunk
 ```
 
-Divider chỉ nên xuất hiện khi có chức năng rõ:
+Ngoại lệ duy nhất trong toàn sản phẩm: **viền đứt** của khối mô phỏng, và nó tồn tại vì mang nghĩa — đánh dấu vùng “chưa phải số thật”.
+
+## 2.3. Radius và shadow
 
 ```txt
-app chrome
-sidebar separation
-bottom navigation
-form grouping khó hiểu nếu thiếu separator
-bảng / management view thực sự cần column/row separation
+Panel                14px
+Sunk block           10px
+Input / button       8–10px
+Badge / chip         rounded-full
+Modal                14px
 ```
+
+```txt
+Shadow: không dùng ở bất kỳ surface nào trong trang.
+Modal được dùng shadow rõ vì nó nổi thật.
+```
+
+## 2.4. Divider gần như bị loại
+
+Không dùng divider giữa heading, metric, list row hay table row.
+
+Bảng dùng:
+
+```txt
+header row       mono uppercase, không có đường kẻ dưới
+data row         không kẻ, phân biệt bằng khoảng cách + hover nền --sunk
+dòng tổng        một sunk block bo góc riêng, đặt cách bảng 20px
+```
+
+Bảng dài hơn 10 dòng: thêm nền so le rất nhạt, **không** thêm đường kẻ.
+
+Divider chỉ còn được phép ở: bottom navigation trên mobile, và nhóm form khó hiểu nếu thiếu separator.
 
 ## 2.5. Dashboard is preview, not detail page
 
@@ -331,26 +334,26 @@ Cần cập nhật       → Data nào đang làm forecast kém tin cậy?
 
 ## 2.6. Flexible Money là primary money number
 
-Không ưu tiên `total assets` hoặc `account balance` làm con số chính trên Home.
+Không ưu tiên `total assets`, `net worth` hoặc `account balance` làm con số chính trên Home.
 
 Primary number:
 
 ```txt
 Có thể linh hoạt
-54M đ
+54tr
 ```
 
 Helper chỉ tồn tại vì nó giải thích calculation:
 
 ```txt
-Sau các khoản đã biết trong thời gian tới và quỹ an toàn 40M đã đặt.
+Sau các khoản đã biết trong thời gian tới và quỹ an toàn 40tr đã đặt.
 ```
 
 Supporting breakdown:
 
 ```txt
 Current liquid
-- required near-term outflow
+- required near-term outflow      ← gồm cả kỳ trả nợ sắp tới
 - protected reserve
 + sufficiently certain incoming
 ```
@@ -424,7 +427,7 @@ Nó không được render thành:
 What-if card
 Scenario section
 Consequence preview card
-“30M hôm nay → goal chậm 3 tháng” trước khi user chủ động thử
+“30tr hôm nay → goal chậm 3 tháng” trước khi user chủ động thử
 ```
 
 Entry points hợp lý:
@@ -468,7 +471,7 @@ Good:
 
 ```txt
 Chỉ gồm các khoản đã biết.
-Sau các khoản đã biết và quỹ an toàn 40M đã đặt.
+Sau các khoản đã biết và quỹ an toàn 40tr đã đặt.
 2 khoản nên cập nhật.
 Cập nhật 35 ngày trước.
 ```
@@ -518,11 +521,128 @@ Riêng tư
 
 Không dùng privacy icon-only.
 
+## 2.13. Nợ là obligation, không phải Home metric — MỚI
+
+Nợ không có section riêng trên Home, và **không** được render thành một số lớn.
+
+Lý do: hero number của sản phẩm là Flexible Money. Đặt tổng nợ cạnh nó tạo hai anchor cạnh tranh, và với các cặp đôi mới cưới có vay mua nhà thì tổng nợ luôn lớn hơn mọi con số khác — nó sẽ chiếm hết visual weight mà không giúp gì cho quyết định hôm nay.
+
+Nợ vào bức tranh qua ba đường:
+
+```txt
+1. Kỳ trả nợ sắp tới  → là một event trong 30 ngày tới
+2. Nghĩa vụ gần       → trừ vào Flexible Money qua “Cần sớm”
+3. Payoff projection  → chỉ trên trang Tài sản → tab Nợ
+```
+
+Rules:
+
+```txt
+Không hero number “Tổng nợ”.
+Không progress bar “đã trả được bao nhiêu %” trên Home.
+Không màu riêng cho nợ (§5.4).
+Không copy phán xét về việc có nợ.
+What-if có thể hiển thị ảnh hưởng tới ngày tất toán nếu user chọn goal liên quan.
+```
+
+Net worth được phép hiển thị, nhưng chỉ ở trang Tài sản, không ở Home.
+
+## 2.14. Nhật ký ghi thay đổi của bức tranh, không ghi giao dịch — MỚI
+
+Đây là ranh giới quan trọng nhất của domain này. Money Space không phải app ghi thu chi (§0.2). Nếu Nhật ký ghi từng khoản mua sắm, sản phẩm tự biến thành expense tracker.
+
+Nhật ký chỉ ghi các **financial event** làm bức tranh thay đổi:
+
+```txt
+Cập nhật số dư một nguồn tiền
+Thêm / sửa / xoá một khoản sắp tới
+Thay đổi quỹ an toàn
+Tạo / sửa / hoàn thành mục tiêu
+Thêm / thay đổi khoản nợ
+Ghi nhận một kịch bản What-if đã được cả hai xem
+Thay đổi quyền chia sẻ
+Mời / gỡ thành viên
+```
+
+Không ghi:
+
+```txt
+Từng giao dịch mua sắm
+Từng lần mở app
+Từng lần xem section
+Hoạt động của partner ngoài phạm vi household picture
+```
+
+Mỗi entry cần: **ai, làm gì, khi nào, ảnh hưởng gì tới bức tranh.** Trường thứ tư là thứ phân biệt nó với audit log kỹ thuật.
+
+```txt
+Hà · hôm nay 09:12
+Cập nhật số dư VPBank
+18,9tr · thanh khoản +2,4tr
+```
+
+Rules:
+
+```txt
+Nhật ký là trang secondary, không phải Home section.
+Không notification realtime cho mọi entry — vi phạm §0.2 “không phải công cụ theo dõi đối phương”.
+Entry liên quan tới nguồn tiền `Riêng tư` chỉ hiện với người sở hữu.
+Nhật ký là nguồn dữ liệu cho `Cần cập nhật` trên Home.
+```
+
+---
+
+## 2.15. Freshness là thuộc tính của primary number — MỚI
+
+Mọi money number derived đều phải mang theo phạm vi dữ liệu tạo ra nó. Không có ngoại lệ trên Home.
+
+Cấu trúc bắt buộc quanh Flexible Money:
+
+```txt
+1. Giá trị            54tr
+2. Cách tính          Sau các khoản đã biết và quỹ an toàn 40tr đã đặt.
+3. Phạm vi dữ liệu    Tính từ 5 nguồn · 3 mới trong tuần · 2 cần cập nhật
+4. Hệ quả nếu thiếu   Số trên chưa gồm thay đổi của VCB và tiền mặt.
+5. Action             Cập nhật nhanh
+```
+
+Dòng 3 và 4 là phần mới của v3.4. Dòng 4 chỉ xuất hiện khi thực sự có nguồn stale.
+
+Rules:
+
+```txt
+Coverage strip nằm TRONG Financial Picture, không phải section riêng.
+Coverage strip hiện cả khi mọi thứ đều mới — nó là ngữ cảnh, không phải cảnh báo.
+  Trạng thái tất cả mới: “Tính từ 5 nguồn · tất cả mới trong tuần”, neutral, không màu.
+Không dùng phần trăm độ tin cậy. “87% đáng tin” là con số bịa.
+Không ẩn freshness sau tooltip hoặc icon.
+Không làm mờ money number khi dữ liệu cũ — giá trị vẫn là giá trị tốt nhất đang có.
+```
+
+Freshness cũng phải xuất hiện inline ở mọi nơi hiển thị một nguồn tiền cụ thể (§12.5) và ở mọi event chưa xác nhận (§12.3). Một chỗ tổng hợp không thay thế được các dấu hiệu tại điểm sử dụng.
+
+## 2.16. Không hiển thị độ chính xác giả — MỚI
+
+Sản phẩm dựa trên dữ liệu nhập tay và dự báo. Cả hai đều không chính xác tuyệt đối. UI không được tỏ ra chắc chắn hơn dữ liệu (§16.1).
+
+```txt
+Có nguồn stale        → nói rõ số nào chưa gồm nguồn nào.
+Có event chưa xác nhận → đánh dấu event, không âm thầm cộng vào forecast.
+Dự báo xa             → nói “theo tốc độ hiện tại”, không nói “sẽ”.
+What-if               → ghi rõ tính trên dữ liệu nào (§12.7).
+```
+
+Không dùng:
+
+```txt
+Con số lẻ tới hàng nghìn khi nguồn là ước lượng tay.
+Ngày tất toán / ngày đạt mục tiêu chính xác tới ngày.
+Thanh “độ tin cậy” dạng phần trăm.
+```
+
 ---
 
 ## 3. Tech Stack UI
-
-Recommended:
 
 ```txt
 React
@@ -531,390 +651,281 @@ shadcn/ui
 lucide-react
 ```
 
-Base components:
+Dùng shadcn ở lớp component, **không ship theme mặc định**. Theme default của shadcn là ngôn ngữ admin panel, và mấy thứ nó bật sẵn đều trái với §2.2–2.4.
+
+Ghi đè bắt buộc:
 
 ```txt
-Button
-Badge
-Input
-Label
-Select
-Dialog
-Sheet
-Table
-Tabs
-DropdownMenu
-Separator
-Tooltip
-Progress
-Sidebar
+Card       bỏ border, bỏ shadow, radius 14
+Table      bỏ border-b trên row, header dùng .label
+Separator  gần như không dùng
+Input      bỏ border, nền --sunk
+Button     radius 8–10, không shadow
+Sidebar    bỏ border-right và bỏ nền riêng
 ```
 
-CSS chỉ nên dùng cho:
-
-```txt
-design tokens
-base layer
-section frame
-small reusable utilities
-```
-
-Layout/style còn lại ưu tiên Tailwind utility classes.
+Đặt toàn bộ token §6 trước khi build màn hình đầu tiên. Retheme sau 40 màn hình đắt hơn nhiều lần.
 
 ---
 
 ## 4. Visual Language
 
-## 4.1. Brand feeling
+## 4.1. Register
+
+Money Space đọc ra là **một cuốn sổ được giữ tử tế**, không phải một app thư giãn và cũng không phải một terminal giao dịch.
 
 ```txt
-Consumer finance clarity
-Private shared space
-Calm household planning
-Modern but not trendy
-Premium through restraint
+Nghiêm cẩn nhưng không lạnh
+Đáng tin qua mật độ, không qua trang trí
+Ấm ở màu nền, chặt ở cấu trúc dữ liệu
+Trưởng thành, không phán xét
 ```
 
-Reference target:
+## 4.2. Hai cái bẫy đã gặp
+
+**Bẫy wellness.** Bảng màu đất khử màu, font-weight 300 ở cỡ lớn, mật độ thấp, không khối nào có trọng lượng → đọc ra là app thiền. Neo bằng: accent bão hoà thật, weight 500 cho số, bảng có dữ liệu thật.
+
+**Bẫy dashboard.** Nhiều KPI ngang cấp, chart lớn trang trí, viền sắc quanh mọi card, nền tối → đọc ra là công cụ quản trị. Neo bằng: một hero number duy nhất, chart chỉ khi truyền tải low point, không viền, không nền tối.
+
+## 4.3. Avoid
 
 ```txt
-Sạch như Apple product
-Gọn như consumer productivity app
-Rõ như finance tool
-Nhẹ như personal wellness product
-Riêng tư như shared private space
-```
-
-## 4.2. UI mood
-
-```txt
-Calm
-Minimal
-Warm-neutral
-Trustworthy
-Adult
-Non-judgmental
-Compact
-Continuous
-```
-
-## 4.3. What to borrow from fintech dashboard references
-
-Allowed inspiration:
-
-```txt
-sidebar proportion
-navigation compactness
-soft section boundary
-consistent card radius
-layout rhythm
-clear alignment
-compact metric grouping
-```
-
-Do not inherit by default:
-
-```txt
-lime as dominant brand color
-deep navy as dominant dashboard surface
-chart-heavy home
-investment-dashboard visual language
-high data density
-many small KPIs
-```
-
-## 4.4. Avoid
-
-```txt
-quá nhiều màu
-red background lớn
-gradient lòe loẹt
+nền tối cho bất kỳ section nào
+gradient
 emoji trong UI chính
-shadow đậm
+shadow trên panel
 chart trang trí
-card quá lớn nhưng ít nội dung
-card bị stretch vì layout
 nhiều divider
+viền quanh mọi child item
+card lồng card quá 3 tầng
 subtitle filler
-card lồng card lồng card
-border sắc
-BI dashboard density
+font-weight 300
+tông đất / sage / brass micro-type
+lime hoặc navy kiểu fintech dashboard
 ```
 
 ---
 
 ## 5. Color System
 
-## 5.1. Core tokens
+## 5.1. Hai bảng màu
+
+**Ledger** — mặc định. Trung tính lạnh, lục ngân hàng bão hoà.
 
 ```txt
-Background        #FFFFFF
-Surface           #FFFFFF
-Surface Soft      #FAFAFA
-Surface Muted     #F2F2F7
-
-Ink               #1D1D1F
-Secondary Text    #6E6E73
-Tertiary Text     #A1A1A6
-
-Accent Blue       #007AFF
-Green             #34C759
-Orange            #FF9500
-Red                #FF3B30
+--app          #EEF1F3
+--panel        #FFFFFF
+--sunk         #F5F7F8
+--ink          #15181C
+--ink2         #525860
+--ink3         #868D96
+--hair         #E5E9EC
+--accent       #0A6B47
+--accent-soft  #E3EFEA
+--attention    #B07A1E
+--alert        #B23A26
+--committed    #D2D6DA
+--protect      #A9B0B8
 ```
 
-Section border dùng alpha thay vì solid gray token:
+**Archive** — thay thế. Ngà ấm, đỏ rượu. Ấm hơn cho một sản phẩm gia đình, vẫn nghiêm nhờ tương phản cao.
 
 ```txt
-Section Border    rgba(29, 29, 31, 0.045)
-Sidebar Border    rgba(29, 29, 31, 0.038)
-Control Border    rgba(29, 29, 31, 0.10–0.14)
+--app          #F1ECE2
+--panel        #FDFBF7
+--sunk         #F7F3EB
+--ink          #1E1913
+--ink2         #5C5348
+--ink3         #8E8375
+--hair         #E9E2D6
+--accent       #8C2F39
+--accent-soft  #F4E8E8
+--attention    #9A6A16
+--alert        #A8391F
+--committed    #DCD3C4
+--protect      #B5AA98
 ```
+
+Chọn một và chốt. Không ship theme switcher cho user.
 
 ## 5.2. Semantic usage
 
 ```txt
-Green  → Ổn / confirmed positive state
-Orange → Cần chú ý / stale / near reserve
-Red    → actual shortfall / overdue / critical
-Blue   → navigation / secondary action / useful emphasis
-Black  → primary CTA
-Gray   → metadata / neutral context
+Accent      → primary CTA, active nav, link, tiền vào, đoạn “linh hoạt”
+Attention   → nguồn dữ liệu cũ, event chưa xác nhận, thấp nhất chạm gần quỹ
+Alert       → thiếu hụt thật, quá hạn, vượt phần linh hoạt
+Ink ramp    → mọi thứ còn lại
 ```
 
-Không dùng semantic colors để trang trí.
+**Màu chỉ dành cho thứ user cần làm gì đó.** Trạng thái bình thường không có màu.
 
 ## 5.3. Accent discipline
 
-Home không cần một brand color phủ diện tích lớn.
+Chụp màn hình Home, ước lượng diện tích có màu. Vượt khoảng 5% là đang tiêu màu vào trang trí.
 
-Accent chỉ nên xuất hiện ở:
+Accent xuất hiện ở đúng:
 
 ```txt
-primary decision CTA
-active navigation
-link / secondary action
-progress
-low-point callout khi cần
-status badge nhỏ
+nút Thử một khoản chi
+mục nav đang active
+link hành động trong header của mỗi section
+số tiền vào trong bảng dòng tiền
+đoạn “linh hoạt” trong thanh money composition
 ```
+
+## 5.4. Money composition dùng độ đậm, không dùng hue
+
+```txt
+Đã có nhiệm vụ    --committed    nhạt nhất
+Quỹ cần bảo vệ    --protect      trung
+Linh hoạt         --accent       bão hoà, cần đọc trước
+```
+
+Quỹ cần bảo vệ ở trạng thái bình thường là **neutral**, không phải amber. Amber được giải phóng hoàn toàn cho `attention`. Nếu dự báo cho thấy quỹ bị chạm, lúc đó đoạn đó mới chuyển amber — và lúc đó nó thực sự cần user phản ứng.
+
+Nợ không có hue riêng ở bất kỳ surface nào.
+
+## 5.5. Freshness color mapping
+
+```txt
+Mới, trong ngưỡng     --ink          segment đặc
+Cần cập nhật          --attention    segment đặc + text
+Chưa từng cập nhật    --committed    segment nhạt
+Event chưa xác nhận   --attention    nhãn text “cần xác nhận”
+```
+
+Không dùng màu xanh cho “mới” — dữ liệu mới là mặc định, tô màu cho mặc định làm loãng tín hiệu. Không dùng đỏ cho dữ liệu cũ — đỏ dành cho thiếu hụt tài chính thật.
 
 ---
 
-## 6. Tailwind v4 + CSS Variables
+## 6. Tokens
 
 ```css
-@import "tailwindcss";
+:root,
+.ledger {
+  --app: #eef1f3;
+  --panel: #ffffff;
+  --sunk: #f5f7f8;
+  --ink: #15181c;
+  --ink2: #525860;
+  --ink3: #868d96;
+  --hair: #e5e9ec;
+  --scrim: rgba(21, 24, 28, 0.34);
+  --accent: #0a6b47;
+  --accent-soft: #e3efea;
+  --attention: #b07a1e;
+  --alert: #b23a26;
+  --committed: #d2d6da;
+  --protect: #a9b0b8;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 3% 12%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 3% 12%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 3% 12%;
-
-    --primary: 240 3% 12%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 240 5% 98%;
-    --secondary-foreground: 240 3% 12%;
-
-    --muted: 240 6% 96%;
-    --muted-foreground: 240 4% 44%;
-
-    --accent: 211 100% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 3 100% 59%;
-    --destructive-foreground: 0 0% 100%;
-
-    --input: 240 6% 91%;
-    --ring: 211 100% 50%;
-
-    --status-green: 142 71% 45%;
-    --status-orange: 35 100% 50%;
-    --status-red: 3 100% 59%;
-    --status-blue: 211 100% 50%;
-  }
-
-  html {
-    @apply scroll-smooth;
-  }
-
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-family:
-      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter,
-      system-ui, sans-serif;
-  }
-
-  button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
+  --radius-panel: 14px;
+  --radius-sunk: 10px;
+  --radius-control: 8px;
 }
 
-@layer utilities {
-  .section-surface {
-    background: #fff;
-    border: 2px solid rgba(29, 29, 31, 0.045);
-    border-radius: 20px;
-  }
+.archive {
+  --app: #f1ece2;
+  --panel: #fdfbf7;
+  --sunk: #f7f3eb;
+  --ink: #1e1913;
+  --ink2: #5c5348;
+  --ink3: #8e8375;
+  --hair: #e9e2d6;
+  --scrim: rgba(30, 25, 19, 0.34);
+  --accent: #8c2f39;
+  --accent-soft: #f4e8e8;
+  --attention: #9a6a16;
+  --alert: #a8391f;
+  --committed: #dcd3c4;
+  --protect: #b5aa98;
+}
 
-  .sidebar-separator {
-    border-right: 2px solid rgba(29, 29, 31, 0.038);
-  }
+body {
+  background: var(--app);
+  color: var(--ink);
+  font-family: "Be Vietnam Pro", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
 
-  .money-number {
-    letter-spacing: -0.065em;
-    font-weight: 600;
-  }
+.panel {
+  background: var(--panel);
+  border-radius: var(--radius-panel);
+}
+.sunk {
+  background: var(--sunk);
+  border-radius: var(--radius-sunk);
+}
 
-  .page-title {
-    letter-spacing: -0.04em;
-  }
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
 
-  .section-title {
-    letter-spacing: -0.025em;
-  }
+.label {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink3);
 }
 ```
+
+Với shadcn: map `--card` → `--panel`, `--muted` → `--sunk`, `--background` → `--app`, `--primary` → `--accent`. Ghi đè `Card` để bỏ `border` và `shadow`, và `Table` để bỏ `border-b` trên row.
 
 ---
 
-## 7. Layout and Spacing Rules
+## 7. Layout and Spacing
 
-## 7.1. Global vertical rhythm
-
-Top-level sections phải dùng **một spacing scale cố định**.
-
-Canonical:
+## 7.1. Vertical rhythm
 
 ```txt
-Section → Section       20px
-Desktop column gap      20px
-Header → first section  20px
-Section heading → body  12–16px
-Content group → group   12–16px
-List row vertical gap   8–12px
+Section → Section          16px   (space-y-4)
+Section padding desktop    32px   (p-8)
+Section padding mobile     20px   (p-5)
+Header trong section → body 28px
+Column gap trong section   56px   (gap-x-14)
+Table row                  py-2.5 (dòng tiền) / py-3 (nguồn tiền)
+Bảng → dòng tổng           20px
 ```
 
-Tailwind:
+Section padding 32px lớn hơn v3.x có chủ ý: panel không có viền, nên khoảng trắng trong panel chính là thứ tạo cảm giác “khối”.
 
-```txt
-space-y-5
-gap-5
-mt-3 / mt-4
-```
+## 7.2. Grid trong section
 
-Không để mỗi section tự dùng `mb-4`, `mb-6`, `mt-8` khác nhau nếu không có lý do hierarchy.
-
-## 7.2. Section padding
-
-Home section nên compact hơn bản v3.1.
-
-Recommended:
-
-```txt
-Mobile       16–18px
-Desktop      18–20px
-Hero money   tối đa 20px trừ khi content thật sự cần thêm
-```
-
-Canonical:
+Mỗi section chia hai cột không đều: cột trái là **câu trả lời**, cột phải là **chi tiết**.
 
 ```tsx
-<section className="section-surface p-4 sm:p-5">...</section>
-```
-
-Tránh mặc định `p-7`, `p-8` cho Home.
-
-## 7.3. Natural height, never decorative height
-
-Card phải cao theo content.
-
-Không dùng:
-
-```txt
-min-height chỉ để cân layout
-equal-height card nếu content khác nhau
-stretch mặc định làm sinh empty space
-```
-
-Desktop grid:
-
-```tsx
-<div className="grid gap-5 lg:grid-cols-[7fr_5fr] lg:items-start">
-  <div className="space-y-5">...</div>
-  <div className="space-y-5">...</div>
+<div className="grid gap-x-14 gap-y-9 lg:grid-cols-[minmax(0,380px)_1fr]">
+  <div>{/* số lớn, tóm tắt, coverage */}</div>
+  <div>{/* bảng, legend, breakdown */}</div>
 </div>
 ```
 
-Điểm quan trọng:
+Home là **một cột dọc các section full width**, không phải grid 7fr/5fr hai cột. Mỗi section chiếm trọn chiều ngang và có hình dạng nội dung khác nhau — số lớn, biểu đồ + bảng, bảng, list — chính sự khác nhau đó là tín hiệu quét.
+
+## 7.3. Natural height
 
 ```txt
-Hai cột có independent vertical flow.
-Không dùng một row grid khiến card bên thấp bị stretch theo card bên cao.
+Không min-height để cân layout.
+Không equal-height.
+Chỉ ghép hai section cạnh nhau khi chúng là một cặp có nghĩa (Tài sản | Nợ).
 ```
 
-## 7.4. Radius
+## 7.4. Sidebar
 
 ```txt
-Top-level section     20px
-Soft grouped area     16px
-Input / select        14–16px
-Button / badge        rounded-full khi phù hợp
+Width 240px
+Không nền riêng, không viền phải — nằm trực tiếp trên --app
+Nav row cao 33px, radius 8px
+Active state: nền --panel, weight 500
+Nhóm nav có nhãn mono uppercase
+Primary CTA đặt ngay dưới logo
+Cụm hai người ở đáy sidebar
 ```
-
-Không tăng radius để “premium hóa” UI.
-
-## 7.5. Shadow
-
-Default Home section:
-
-```txt
-No visible shadow.
-```
-
-Chỉ dùng depth cực nhẹ khi border bị mất trên một số display:
-
-```css
-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.012);
-```
-
-Dialog / floating sheet có thể dùng shadow rõ hơn.
-
-## 7.6. Sidebar
-
-Desktop sidebar:
-
-```txt
-Width khoảng 232–248px.
-White background.
-Right border mềm 2px, opacity thấp.
-Navigation row compact.
-Active state dùng soft fill, không cần card nổi.
-```
-
-Canonical:
-
-```tsx
-<aside className="sidebar-separator hidden min-h-screen w-[238px] lg:block">
-  ...
-</aside>
-```
-
-Không dùng shadow dọc cho sidebar.
 
 ---
 
-## 8. App Shell
+## 8. App Shell — CẬP NHẬT
 
 Desktop:
 
@@ -940,7 +951,7 @@ Bottom nav max 5 items
 What-if CTA có thể sticky
 ```
 
-MVP navigation:
+MVP navigation — giữ đúng 5 item:
 
 ```txt
 Tổng quan
@@ -953,9 +964,13 @@ Nhà mình
 Secondary:
 
 ```txt
-Lịch sử cập nhật
+Lịch sử cập nhật     ← nơi ở của Financial Event Log
 Cài đặt
 ```
+
+**Nợ và Nhật ký không thêm nav item.** Nợ là tab thứ hai trong trang `Tài sản` (§14.9). Nhật ký là trang `Lịch sử cập nhật` đã có sẵn (§14.10). Nav 5 item là ràng buộc cứng vì mobile bottom nav không chứa được hơn.
+
+Mobile bottom nav khớp 1:1 với 5 item trên. `Lịch sử cập nhật` và `Cài đặt` vào trong `Nhà mình`.
 
 Không có Discussion tab.
 
@@ -992,29 +1007,34 @@ Logical priority:
 
 What-if **không phải item thứ 6**. Nó là action nằm trong Financial Picture.
 
+Nợ và Nhật ký **không phải item thứ 6 hoặc 7**. Xem §2.13, §2.14.
+
 ## 9.2. Desktop composition
 
-Recommended:
-
 ```txt
-┌ Sidebar ┐  ┌ Main ────────────────────────────────────────────┐
-│         │  │ Header                                             │
-│         │  │                                                    │
-│         │  │ ┌ Financial Picture ───────┐ ┌ 30 ngày tới ────┐ │
-│         │  │ │ status                    │ │ low point         │ │
-│         │  │ │ 54M flexible              │ │ cash-flow summary │ │
-│         │  │ │ breakdown + What-if CTA   │ │ timeline          │ │
-│         │  │ └───────────────────────────┘ └───────────────────┘ │
-│         │  │                                                    │
-│         │  │ ┌ Mục tiêu chính ──────────┐ ┌ Cần cập nhật ────┐ │
-│         │  │ └───────────────────────────┘ └───────────────────┘ │
-│         │  │                                                    │
-│         │  │ ┌ Tiền đang ở đâu ─────────┐                       │
-│         │  │ └───────────────────────────┘                       │
-│         │  └────────────────────────────────────────────────────┘
+┌ Sidebar ┐ ┌ Main ─────────────────────────────────────────────────┐
+│ CTA     │ │ Tổng quan · Thứ năm 13/08/2026        Cập nhật nhanh  │
+│         │ │                                                        │
+│ Bức     │ │ ┌ Bức tranh hôm nay ────────────────────────────────┐ │
+│ tranh   │ │ │ ● ổn                        ● 2 nguồn cần cập nhật│ │
+│ ·····   │ │ │ 48,2 triệu linh hoạt    │  composition + legend   │ │
+│ Quyết   │ │ │ coverage strip          │  [ Thử một khoản chi ]  │ │
+│ định    │ │ └───────────────────────────────────────────────────┘ │
+│ ·····   │ │ ┌ Ba mươi ngày tới ────────────────────────────────┐  │
+│ Nhà     │ │ │ 36,1 tr thấp nhất       │  bảng 5 cột + tổng    │  │
+│ mình    │ │ └──────────────────────────────────────────────────┘  │
+│         │ │ ┌ Mục tiêu chính ─────────────────────────────────┐   │
+│         │ │ └─────────────────────────────────────────────────┘   │
+│         │ │ ┌ Tài sản ──────────┐ ┌ Nợ ────────────────────┐      │
+│         │ │ └───────────────────┘ └────────────────────────┘      │
+│ A B     │ │ ┌ Tiền đang ở đâu ────────────────────────────────┐   │
+└─────────┘ │ └─────────────────────────────────────────────────┘   │
+            │ ┌ Nhật ký ────────────────────────────────────────┐   │
+            │ └─────────────────────────────────────────────────┘   │
+            └────────────────────────────────────────────────────────┘
 ```
 
-Không ép các section hai cột phải cao bằng nhau.
+Home là **một cột dọc các section full width**. Chia đôi chỉ ở cặp Tài sản | Nợ. Việc chia hai cột nằm _bên trong_ mỗi section (§7.2), không phải ở cấp trang.
 
 ## 9.3. Mobile order
 
@@ -1032,418 +1052,340 @@ Primary What-if CTA có thể sticky ở bottom, nhưng vẫn là cùng một ac
 
 ## 10. Typography System
 
-## 10.1. Scale
+## 10.1. Hai font, hai vai trò
 
 ```txt
-Page title
-text-3xl md:text-4xl font-semibold tracking-[-0.04em]
+Be Vietnam Pro   400 / 500 / 600
+  → mọi văn bản tiếng Việt, tiêu đề, nhãn, số lớn
 
-Primary money
-text-5xl md:text-[58px] font-semibold tracking-[-0.065em]
-
-Important metric
-text-2xl md:text-3xl font-semibold tracking-[-0.04em]
-
-Section title
-text-sm to text-base font-semibold
-
-Body
-text-sm / text-[15px]
-
-Caption
-text-[11px] to text-xs
+IBM Plex Mono    400 / 500
+  → ngày tháng, đơn vị, phần trăm phụ, nhãn .label, đếm, timestamp
 ```
 
-Home không cần mọi section title ở `text-2xl`.
+Quy tắc phân vai: **mono chỉ chạm chuỗi ASCII.** IBM Plex Mono render dấu tiếng Việt kém hơn Be Vietnam Pro, nên không dùng mono cho bất kỳ chuỗi có dấu nào. Đây là lỗi dev rất dễ mắc — ghi vào code review checklist.
 
-Compact title scale giúp consumer app nhẹ và scan nhanh hơn.
-
-## 10.2. Money formatting
-
-Prefer:
+## 10.2. Scale
 
 ```txt
-54M đ
-24,5M đ
-420M
-1,2B
-+45M
-−34M
+Hero money         64px / weight 500 / tracking -0.04em / leading 0.86
+Metric lớn thứ hai 30px / weight 500 / tracking -0.03em
+Metric trong bảng  22px / weight 500
+Page title         19px / weight 500 / tracking -0.015em
+Section title      16px / weight 500 / tracking -0.01em
+Body               14px / weight 400
+Secondary          13px / weight 400 / --ink2
+Caption            11–12px / --ink3
+.label             10px mono uppercase tracking 0.15em / --ink3
 ```
 
-Tránh hero number quá dài nếu có thể abbreviate mà không mất nghĩa.
+Không dùng weight 300 ở bất kỳ đâu. Không dùng weight 600 trừ logo và nhãn cần nhấn mạnh mạnh.
 
-Money value không bị truncate trên mobile.
+## 10.3. Vietnamese constraints
+
+```txt
+Weight tối thiểu 400.
+Line-height ≥ 1.4 body, ≥ 1.25 heading.
+tracking âm chỉ áp cho SỐ. Không áp cho chuỗi tiếng Việt.
+Mono uppercase tracking rộng chỉ dùng cho .label ngắn, không dùng cho câu.
+Test case bắt buộc: `Quỹ cần bảo vệ · Chưa đủ · Người phụ trách`
+```
+
+## 10.4. Money formatting
+
+```txt
+< 1 triệu        450.000đ
+1tr – 999tr      48,2 tr      130,0 tr      209,7 tr
+≥ 1 tỷ           1,81 tỷ      2,85 tỷ
+Delta            +32,0        −14,2
+Range            48,2 → 18,2
+```
+
+```txt
+tabular-nums bắt buộc ở mọi money value.
+Dấu phẩy là thập phân, dấu chấm là hàng nghìn.
+Tối đa một chữ số thập phân.
+Dấu trừ dùng − (U+2212).
+Trong bảng: bỏ đơn vị ở từng ô, ghi ở header hoặc chú thích cuối bảng.
+Ngoài bảng: luôn kèm đơn vị.
+```
+
+## 10.5. Timestamp
+
+```txt
+< 1 giờ        vừa xong
+cùng ngày      hôm nay
+1 ngày         hôm qua
+2–29 ngày      N ngày trước
+≥ 30 ngày      hơn 1 tháng trước
+chưa từng      chưa cập nhật
+```
+
+Vượt ngưỡng stale của loại nguồn → chuyển `--attention`. Luôn có con số, không dùng “gần đây”.
 
 ---
 
-## 11. Core Component Patterns
+## 11. Component Patterns
 
-## 11.1. Section Header
-
-Default header chỉ có **title + optional action**.
-
-Không mặc định có hint/subtitle.
+## 11.1. Panel
 
 ```tsx
-function SectionHeader({
-  title,
-  action,
-}: {
-  title: string;
-  action?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <h2 className="text-sm font-semibold tracking-[-0.02em]">{title}</h2>
-      {action ? (
-        <Button variant="ghost" className="h-8 rounded-full px-2 text-xs text-accent">
-          {action}
-        </Button>
-      ) : null}
-    </div>
-  );
-}
-```
-
-Hint chỉ được thêm nếu vượt qua helper-copy test ở §2.10.
-
-## 11.2. Top-level Section
-
-```tsx
-<section className="section-surface p-4 sm:p-5">
-  ...
+<section className="panel p-5 sm:p-8">
+  <div className="flex items-baseline justify-between">
+    <h2 className="text-[16px] font-medium tracking-[-.01em]">
+      Ba mươi ngày tới
+    </h2>
+    <span className="font-mono text-[11px] text-ink3">
+      13/08 — 12/09 · 4 khoản
+    </span>
+  </div>
+  <div className="mt-7">…</div>
 </section>
 ```
 
-Rules:
+Header của mỗi section là **title bên trái + một metadata hoặc một link hành động bên phải**. Không subtitle mặc định.
 
-```txt
-Natural height.
-No default shadow.
-No internal divider by default.
-Không wrap mỗi child item bằng border.
-```
+## 11.2. Sunk block
 
-## 11.3. Soft Group
-
-Dùng khi cần gom một nhóm có meaning rõ.
+Dùng cho dòng tổng, khối biểu đồ, ô kết quả, input, badge.
 
 ```tsx
-<div className="rounded-2xl bg-[#fafafa] p-3.5">...</div>
-```
-
-Không cần border nếu parent section đã có frame.
-
-## 11.4. Metric Group
-
-3 supporting metrics có thể dùng một soft group chung:
-
-```tsx
-<div className="grid grid-cols-3 gap-3 rounded-2xl bg-muted/50 px-3.5 py-3">
-  ...
+<div className="sunk mt-5 flex items-baseline justify-between px-4 py-3.5">
+  <span className="text-[13px] text-ink2">Tổng tiền mặt</span>
+  <span className="num text-[17px] font-medium">209,7 tr</span>
 </div>
 ```
 
-Không dùng ba card có border riêng.
+Dòng tổng là sunk block, **không** phải một dòng bảng có gạch trên.
 
-## 11.5. List row
+## 11.3. Dense table
 
 ```tsx
-<div className="flex items-center gap-3 py-2.5">
-  <div className="min-w-0 flex-1">...</div>
-  <div className="shrink-0 text-right">...</div>
+<table className="w-full text-[14px]">
+  <thead>
+    <tr className="label">
+      <th className="pb-3 text-left font-normal">Ngày</th>…
+      <th className="pb-3 text-right font-normal">Còn lại</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr className="hover:bg-[var(--sunk)]">
+      <td className="py-2.5 font-mono text-[12px] text-ink3">24/08</td>…
+    </tr>
+  </tbody>
+</table>
+```
+
+```txt
+Không kẻ row. Hover nền --sunk, bo góc hai đầu row.
+Cột số căn phải, tabular.
+Cột ngày và cột người dùng mono.
+Bảng dòng tiền BẮT BUỘC có cột “Còn lại” chạy số dư luỹ kế —
+  nó biến danh sách sự kiện thành một sequence, và trả lời trực tiếp §2.7.
+```
+
+## 11.4. Money composition bar
+
+```tsx
+<div className="flex h-2.5 gap-1" role="img" aria-label={summary}>
+  <div
+    className="rounded-l-full bg-[var(--committed)]"
+    style={{ flex: committed }}
+  />
+  <div className="bg-[var(--protect)]" style={{ flex: protectedReserve }} />
+  <div
+    className="rounded-r-full bg-[var(--accent)]"
+    style={{ flex: flexible }}
+  />
 </div>
 ```
 
-Rows phân biệt bằng spacing/alignment trước; separator chỉ dùng khi thật sự cần.
+Legend đi kèm là 3 dòng, mỗi dòng: chấm màu · nhãn · phần trăm (mono) · số tiền căn phải.
+
+```txt
+aria-label đọc ra cả ba giá trị bằng chữ.
+Segment < 4% cần min-width — đúng lúc linh hoạt ≈ 0 là lúc cần thấy nó nhất.
+Chỉ animate lần mount đầu.
+Không dùng pie chart cho cùng dữ liệu này.
+```
+
+## 11.5. SourceCoverageStrip
+
+Một segment cho mỗi nguồn tiền đang tính vào bức tranh. Đặt trong sunk block, ngay dưới hero money number.
+
+```tsx
+<div className="sunk mt-6 p-4">
+  <div
+    className="flex items-center gap-1.5"
+    role="img"
+    aria-label={ariaSummary}
+  >
+    {sources.map((s) => (
+      <span
+        key={s.id}
+        className="h-1.5 flex-1 rounded-full"
+        style={{ background: fill(s.state) }}
+      />
+    ))}
+  </div>
+  <div className="mt-3.5 flex items-center justify-between gap-2">
+    <p className="text-[13px] text-ink2">{summaryLine}</p>
+    {hasStale && (
+      <button className="text-[13px] font-medium text-accent">
+        Cập nhật nhanh
+      </button>
+    )}
+  </div>
+  {hasStale && <p className="mt-2 text-[13px] text-ink2">{scopeCaveat}</p>}
+</div>
+```
+
+```txt
+Một segment = một nguồn. Không gộp, không rút gọn thành “3/5”.
+Thứ tự cố định theo thứ tự nguồn trong trang Nơi giữ tiền, không sort theo trạng thái.
+Trên 8 nguồn: bỏ gap, strip thành dải liền.
+Segment không clickable — action duy nhất là “Cập nhật nhanh”.
+Strip hiện cả khi mọi nguồn đều mới, lúc đó toàn --ink và không có caveat.
+```
+
+Copy:
+
+```txt
+Tất cả mới    Tính từ 5 nguồn · tất cả mới trong tuần
+Có nguồn cũ   Tính từ 5 nguồn · 3 mới trong tuần · 2 cần cập nhật
+Caveat        Số trên chưa gồm thay đổi của Quỹ mở & ETF và tiền mặt.
+```
+
+## 11.6. Status chip
+
+```tsx
+<p className="flex items-center gap-2 text-[13px]">
+  <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+  Nhà mình đang ổn
+</p>
+```
+
+Chấm 6px + text. Không dùng pill có nền, không dùng icon.
+
+## 11.7. Simulation surface
+
+Vùng duy nhất trong sản phẩm có viền đứt.
+
+```tsx
+<div className="rounded-xl p-6" style={{ background: "var(--accent-soft)" }}>
+  <p className="label text-accent">Nếu thực hiện</p>…
+</div>
+```
+
+Trong modal: header có `.label` màu accent ghi “Đang thử — chưa ghi vào bức tranh”. Khối kết quả dùng nền `--accent-soft`. Không có surface nào khác trong app dùng nền này.
 
 ---
 
-## 12. Home Page Components
+## 12. Home Sections
 
-## 12.1. AppSidebar
+Thứ tự và nội dung giữ nguyên từ §9. Dưới đây là đặc tả thị giác.
 
-Navigation:
-
-```txt
-Tổng quan
-Sắp tới
-Mục tiêu
-Tài sản
-Nhà mình
-```
-
-Secondary:
+## 12.1. Bức tranh hôm nay
 
 ```txt
-Lịch sử cập nhật
-Cài đặt
+Hàng chip:      ● Nhà mình đang ổn        ● 2 nguồn cần cập nhật
+Cột trái:       .label “Sau nghĩa vụ và quỹ cần bảo vệ”
+                48,2 · triệu linh hoạt        ← 64px
+                trên tổng 209,7 tr tiền mặt · giá trị ròng 1,81 tỷ
+                SourceCoverageStrip           ← §11.5
+Cột phải:       money composition bar + legend 3 dòng có %
+                nút Thử một khoản chi
 ```
-
-Desktop width:
 
 ```txt
-232–248px
+48,2 là visual anchor lớn nhất Home.
+Coverage strip đứng ngay dưới hero, trước mọi breakdown.
+Nút mô phỏng có hai lối vào: sidebar và cột phải section này. Không thêm lối thứ ba.
+Trên mobile: chip → hero → coverage strip → composition. Không đẩy coverage xuống dưới fold.
 ```
 
-Visual:
+## 12.2. Ba mươi ngày tới
 
 ```txt
-white background
-2px very-low-opacity right border
-compact nav rows
-soft active background
-minimal icons
+Cột trái:   .label “Thấp nhất dự kiến”
+            36,1 tr                        ← 30px
+            “Vào 24/08, vẫn trên quỹ cần bảo vệ 31,5 tr.”
+            sunk block chứa đường dòng tiền, 3 mốc mono bên dưới
+Cột phải:   bảng 5 cột: Ngày · Khoản · Ai · Số tiền · Còn lại
+            sunk block “Cuối kỳ dự kiến còn linh hoạt”
 ```
-
-## 12.2. FinancialPictureSection
-
-Financial State và Flexible Money nên nằm trong **cùng một primary section** để giảm fragmentation và giúp scan nhanh hơn.
-
-Purpose:
 
 ```txt
-Trả lời ngay:
-- Nhà mình đang ổn không?
-- Còn bao nhiêu tiền linh hoạt?
+Điểm thấp nhất trên chart đánh dấu bằng chấm --attention.
+Event chưa xác nhận mang nhãn mono “cần xác nhận” màu --attention, đặt cạnh tên khoản.
+Không tách section phụ “Những khoản sắp tới”.
 ```
 
-Content hierarchy:
+## 12.3. Mục tiêu chính
 
 ```txt
-1. Status line
-2. Flexible Money label
-3. Flexible Money value
-4. Calculation helper
-5. What-if CTA
-6. Supporting breakdown
+Cột trái:   tên goal + chip “chính”
+            160,0 / 800,0 tr        20%
+            progress bar 1.5px, accent
+Cột phải:   Ngày mong muốn            06/2029
+            Theo tốc độ hiện tại      11/2029
+            Để về đúng ngày mong muốn +4,5 tr / tháng
 ```
 
-Example:
+Chỉ một goal trên Home. Ngày dự kiến quan trọng hơn progress bar.
 
-```txt
-● Nhà mình đang ổn                                Cập nhật
+## 12.4. Tiền đang ở đâu
 
-Có thể linh hoạt
-54M đ                              [ Thử một khoản chi ]
-Sau các khoản đã biết trong thời gian tới và quỹ an toàn 40M đã đặt.
+Bảng 5 cột: Nơi giữ · Phụ trách · Vai trò · Cập nhật · Số dư. Cột `Cập nhật` chuyển `--attention` khi vượt ngưỡng. Kết thúc bằng sunk block “Tổng tiền mặt”.
 
-Thanh khoản        Cần sớm        Quỹ bảo vệ
-128M               −34M           −40M
-```
+## 12.5. Nhật ký
 
-Rules:
+List 3 dòng gần nhất, mỗi dòng: thời gian (mono) · người (mono) · việc · số tiền · cột impact.
 
-```txt
-54M là visual anchor lớn nhất Home.
-Status rõ nhưng không cạnh tranh kích thước với money number.
-What-if là action duy nhất, không tạo scenario preview.
-Supporting metrics cùng một soft group.
-```
+Cột impact là bắt buộc — nếu một loại thay đổi không mô tả được impact thì cân nhắc không log nó.
 
-## 12.3. UpcomingPreviewSection — `30 ngày tới`
+## 12.6. Mô phỏng
 
-Không có subsection tên `Những khoản sắp tới`.
+Modal, không phải section. Nhập: tên khoản chi (trước), số tiền (sau), slider đồng bộ hai chiều. Kết quả 3 ô: linh hoạt còn lại · mục tiêu chậm bao lâu · quỹ cần bảo vệ có bị chạm không. Kết thúc bằng dòng phạm vi dữ liệu: “Tính trên dữ liệu hiện có; 2 nguồn chưa cập nhật.”
 
-Purpose:
-
-```txt
-Cho user thấy low point và sequence sắp diễn ra.
-```
-
-Hierarchy:
-
-```txt
-1. Lowest projected balance
-2. Incoming / outgoing totals
-3. Optional compact cash-flow visual
-4. Top 2–3 timeline events
-5. Xem timeline
-```
-
-Example:
-
-```txt
-30 ngày tới                              Xem timeline
-Chỉ gồm các khoản đã biết
-
-Balance thấp nhất dự kiến
-94M đ
-
-Tiền vào +45M        Tiền ra −34M
-
-15 Aug   Lương                 +45M  → 173M
-18 Aug   Tiền nhà              −15M  → 158M
-22 Aug   Thẻ tín dụng          −12M  → 146M
-```
-
-`Chỉ gồm các khoản đã biết` được phép vì đây là scope/assumption.
-
-## 12.4. MainGoalSection
-
-Purpose:
-
-```txt
-Cho user hiểu goal đang đi tới đâu theo tốc độ hiện tại.
-```
-
-Content:
-
-```txt
-Goal name
-Primary-goal badge nếu cần
-Current / target
-Progress
-Target date
-Projected completion date
-Required monthly contribution nếu behind target
-```
-
-Example:
-
-```txt
-Mua nhà     [Mục tiêu chính]                   Chi tiết
-
-420M / 1,2B                                      35%
-────────────── progress ───────────────────────────
-
-Ngày mong muốn            Jun 2029
-Theo tốc độ hiện tại      Oct 2029
-Để về đúng target         +4,5M / tháng
-```
-
-Rules:
-
-```txt
-Không show hypothetical impact trước khi user bấm What-if.
-Không đặt thêm What-if card trong Goal Home preview.
-Progress bar là secondary; projected completion quan trọng hơn.
-```
-
-## 12.5. MoneyLocationSection
-
-Purpose:
-
-```txt
-Cho biết tiền đang ở đâu và ai đang phụ trách.
-```
-
-Prefer compact grouped rows:
-
-```txt
-An        72M
-Bình      46M
-Chung     10M
-```
-
-Có thể thêm sharing state khi cần, nhưng không expose private detail vượt permission.
-
-## 12.6. DataFreshnessSection
-
-Chỉ nên có visual prominence khi có action.
-
-Example:
-
-```txt
-Cần cập nhật                            Cập nhật nhanh
-2 khoản nên cập nhật
-
-VCB                    35 ngày trước
-Lương tháng này        cần xác nhận
-```
-
-Không cần một subtitle chung kiểu “Theo dữ liệu hiện có”.
-
-## 12.7. WhatIfDialog / Sheet
-
-Input tối thiểu:
-
-```txt
-Số tiền
-Ngày dự kiến
-Goal optional
-```
-
-Result hierarchy:
-
-```txt
-1. Obligations covered?
-2. Reserve protected?
-3. Flexible Money before → after
-4. Goal projected date before → after
-5. Assumptions nếu cần
-```
-
-Example after user submits:
-
-```txt
-30.000.000đ
-
-✓ Các khoản đã biết vẫn được cover
-✓ Quỹ an toàn vẫn được giữ
-
-Tiền linh hoạt
-54M → 24M
-
-Mua nhà
-Oct 2029 → Jan 2030
-Khoảng 3 tháng chậm hơn
-
-[ Xem cách tính ]
-[ Thử số khác ]
-```
-
-Không có verdict:
-
-```txt
-Bạn nên mua.
-Bạn không nên mua.
-Quyết định này tốt/xấu.
-```
+Actions: Gửi cho [tên] xem · Lưu thành kịch bản · Xem cách tính. Không verdict.
 
 ---
 
-## 13. Full Home Layout Example
+## 13. Layout Example
 
 ```tsx
 export function HomePage() {
   return (
-    <div className="min-h-screen bg-white text-foreground lg:grid lg:grid-cols-[238px_minmax(0,1fr)]">
-      <AppSidebar className="sidebar-separator" />
+    <div className="flex min-h-screen bg-app">
+      <AppSidebar />
 
-      <main className="min-w-0 px-4 py-4 sm:px-5 lg:px-6 lg:py-5">
+      <main className="max-w-[1220px] min-w-0 flex-1 space-y-4 px-5 py-5 lg:px-7">
         <PageHeader />
 
-        <div className="mt-5 flex flex-col gap-5 lg:grid lg:grid-cols-[7fr_5fr] lg:items-start lg:gap-5">
-          <div className="contents lg:block lg:space-y-5">
-            <FinancialPictureSection />
-            <MainGoalSection />
-            <MoneyLocationSection />
-          </div>
+        <FinancialPictureSection />
+        <UpcomingSection />
+        <MainGoalSection />
 
-          <div className="contents lg:block lg:space-y-5">
-            <UpcomingPreviewSection />
-            <DataFreshnessSection />
-          </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <AssetsSection />
+          <DebtSection />
         </div>
+
+        <MoneyLocationSection />
+        <ActivityLogSection />
       </main>
 
-      <MobileBottomNav />
-      <WhatIfSheet />
+      <WhatIfDialog />
     </div>
   );
 }
 ```
 
-Rules:
-
 ```txt
-Top-level gap luôn 20px.
-Grid dùng items-start.
-Mỗi desktop column có space-y-5 độc lập.
-Không tạo equal-height rows.
-Không thêm placeholder card để lấp khoảng trống.
+Section gap 16px.
+Home là một cột dọc; chỉ Tài sản | Nợ ghép đôi vì chúng chỉ có nghĩa khi nhìn cùng nhau.
+Không placeholder card.
+Không equal-height.
 ```
 
 ---
@@ -1474,6 +1416,7 @@ Desktop:
 
 ```txt
 Header + Add source
+Tabs: Tài sản | Nợ
 Summary strip
 Toolbar
 Compact table / grouped management list
@@ -1498,6 +1441,14 @@ Sharing
 Updated at
 Action
 ```
+
+Summary strip hiển thị net worth:
+
+```txt
+Tài sản 3,27 tỷ   −   Nợ 1,46 tỷ   =   Giá trị ròng 1,81 tỷ
+```
+
+Đây là chỗ duy nhất net worth được phép xuất hiện.
 
 ## 14.2. Upcoming Page
 
@@ -1558,6 +1509,8 @@ Confirm / update những input đang làm forecast stale.
 
 Không yêu cầu nhập lại snapshot totals nếu derive được từ source-of-truth records.
 
+Mỗi lần Quick Update tạo entry trong Nhật ký.
+
 ## 14.6. Onboarding
 
 Flow:
@@ -1575,7 +1528,7 @@ Flow:
 10. Prompt What-if nếu user có khoản đang cân nhắc
 ```
 
-Không hỏi toàn bộ tài sản ngay.
+Không hỏi toàn bộ tài sản ngay. Không hỏi về nợ ở bước đầu — nợ thêm ở bước 7 dưới dạng khoản chi định kỳ, hoặc sau onboarding.
 
 ## 14.7. Settings / Privacy
 
@@ -1603,43 +1556,126 @@ Không dùng snapshot history làm source of truth cho current forecast.
 
 Không cần chart phức tạp trong MVP.
 
+## 14.9. Debt — tab trong trang Tài sản — MỚI
+
+Purpose:
+
+```txt
+Quản lý các khoản nợ và cho user thấy khi nào tất toán theo tốc độ hiện tại.
+```
+
+Required row info:
+
+```txt
+Tên khoản
+Chủ nợ / tổ chức
+Dư nợ còn lại
+Kỳ trả tiếp theo (ngày + số tiền)
+Lãi suất nếu có
+Người phụ trách
+Ngày tất toán dự kiến
+```
+
+Layout:
+
+```txt
+Header + Thêm khoản nợ
+Summary: tổng dư nợ · nghĩa vụ trong 30 ngày · ngày tất toán xa nhất
+Table desktop / grouped rows mobile
+Chi tiết một khoản → lịch trả, progress, What-if trả trước
+```
+
+Rules:
+
+```txt
+Không hue riêng cho nợ (§5.4).
+Progress bar “đã trả được” chỉ ở trang chi tiết, không ở summary.
+Kỳ trả tiếp theo tự động sinh event trong `Sắp tới`.
+Copy trung tính: “Dư nợ còn lại”, không dùng “Bạn đang nợ”.
+What-if trên trang này trả lời “nếu trả trước X thì tất toán sớm bao lâu”.
+```
+
+## 14.10. Nhật ký / `Lịch sử cập nhật` — MỚI
+
+Purpose:
+
+```txt
+Shared source of truth: cho hai người thấy bức tranh đã thay đổi vì lý do gì và do ai.
+```
+
+Xem §2.14 cho ranh giới nội dung.
+
+Entry structure:
+
+```txt
+Actor      ai làm
+Action     làm gì
+Object     lên đối tượng nào
+Timestamp  khi nào
+Impact     bức tranh đổi thế nào
+```
+
+Example:
+
+```txt
+Hôm nay
+  Hà · 09:12   Cập nhật số dư VPBank        18,9tr    thanh khoản +2,4tr
+  Minh · 08:40 Thêm khoản “Bảo hiểm nhân thọ” 12/09    cần sớm +6,8tr
+
+10 Aug
+  Cả hai       Xem kịch bản “Đổi xe máy”     45tr      chưa thực hiện
+  Hà           Nâng mục tiêu “Sinh em bé”    120tr     dự kiến đủ chậm 4 tháng
+```
+
+Layout:
+
+```txt
+Group theo ngày
+Filter: tất cả / theo người / theo loại thay đổi
+Không infinite scroll không giới hạn — phân trang theo tháng
+```
+
+Rules:
+
+```txt
+Không notification realtime cho mọi entry.
+Entry của nguồn `Riêng tư` chỉ hiện với người sở hữu.
+Mỗi entry có thể revert nếu là thao tác dữ liệu, không revert được nếu là quyết định.
+Cột Impact là bắt buộc — nếu một loại thay đổi không mô tả được impact, cân nhắc không ghi log nó.
+```
+
 ---
 
 ## 15. Responsive Rules
 
-## 15.1. Desktop
+**Desktop ≥1024px**
 
 ```txt
-Sidebar visible.
-Main content wide but not stretched vertically.
-Financial Picture + 30 days can sit side-by-side.
-Natural section height.
-What-if opens Dialog/Sheet.
+Sidebar 240px hiện.
+Section chia hai cột bên trong: minmax(0,380px) 1fr.
+Bảng đầy đủ cột.
+Mô phỏng mở modal.
 ```
 
-## 15.2. Tablet
+**Tablet 640–1023px**
 
 ```txt
-Sidebar collapsed / hidden.
-2-column chỉ khi đủ width.
-Timeline vẫn là một logical sequence.
-No horizontal overflow.
+Sidebar ẩn, thay bằng header có nút menu.
+Section về một cột: khối tóm tắt trên, bảng dưới.
+Bảng bỏ cột phụ (Vai trò, Ai) trước khi bỏ cột số.
 ```
 
-## 15.3. Mobile Web / PWA
+**Mobile <640px**
 
 ```txt
-Single column.
-Bottom nav max 5 items.
-Flexible Money visible early.
-What-if CTA may be sticky.
-No table.
-Timeline rows scan được bằng một tay.
-Money values không truncate.
-Top-level section gap giữ consistent.
+Section padding p-5, radius giữ 14.
+Bảng chuyển hoàn toàn thành grouped row — không scroll ngang.
+Thứ tự trong Bức tranh: chip → hero → coverage strip → composition.
+  Coverage strip KHÔNG được đẩy xuống dưới fold.
+Bottom nav 5 mục: Tổng quan · Sắp tới · Mục tiêu · Tài sản · Nhà mình.
+CTA mô phỏng sticky ở bottom, mở bottom sheet thay vì modal.
+Money value không truncate.
 ```
-
-Mobile ưu tiên decision moment, không phải management density.
 
 ---
 
@@ -1690,6 +1726,8 @@ Theo tốc độ hiện tại
 Ảnh hưởng
 Người phụ trách
 Cần cập nhật
+Dư nợ còn lại
+Tất toán dự kiến
 ```
 
 ## 16.4. Avoid words / filler
@@ -1704,6 +1742,8 @@ Sai lầm
 Không được mua
 Bạn nên mua
 Bạn không nên mua
+Bạn đang nợ
+Gánh nặng nợ
 ```
 
 Avoid filler on Home:
@@ -1744,6 +1784,12 @@ Incomplete:
 2 khoản cần cập nhật để forecast đáng tin hơn.
 ```
 
+Shortfall:
+
+```txt
+Có một thời điểm các khoản đã biết chưa được cover.
+```
+
 ---
 
 ## 17. Button Labels
@@ -1766,6 +1812,7 @@ Management:
 Thêm nguồn tiền
 Thêm khoản sắp tới
 Thêm mục tiêu
+Thêm khoản nợ
 ```
 
 Secondary:
@@ -1775,12 +1822,15 @@ Xem timeline
 Chi tiết
 Xem cách tính
 Xem nguồn tiền
+Xem nhật ký
 ```
 
 What-if result:
 
 ```txt
 Thử số khác
+Gửi cho <tên> xem
+Lưu thành kịch bản
 ```
 
 Avoid:
@@ -1796,80 +1846,74 @@ Mua được / Không mua được
 
 ## 18. Icon System
 
-Use `lucide-react`.
-
-Recommended:
+Use `lucide-react`, stroke 1.75.
 
 ```txt
-Home
-Wallet
-CalendarDays
-ArrowDown
-ArrowUp
-Landmark
-PiggyBank
-Shield
-Target
-Calculator
-RefreshCw
-Settings
-Users
-ChevronRight
-MoreHorizontal
-Plus
+LayoutGrid   Tổng quan
+CalendarDays Sắp tới
+Wallet       Nơi giữ tiền
+Landmark     Tài sản & nợ
+Target       Mục tiêu
+Calculator   Thử một khoản chi
+Bookmark     Kịch bản đã lưu
+History      Nhật ký
+Users        Hai người
+Settings     Thiết lập
+RefreshCw    Cập nhật nhanh
+ChevronRight điều hướng
+Plus         thêm mới
 ```
 
-Rules:
-
 ```txt
-Line icons.
-Stroke width 1.75–2.
-No emoji in production UI.
-Không icon cho mọi row nếu text đã rõ.
-Privacy không icon-only.
-Icon background chỉ dùng khi giúp phân loại nhanh.
+Icon chỉ dùng ở sidebar và ở nút. Không icon trong table row hay list row.
+Không emoji.
+Không icon-only cho privacy hoặc trạng thái — luôn kèm text.
+Trạng thái dùng chấm màu 6px, không dùng icon.
 ```
 
 ---
 
-## 19. MVP UI Rules
+## 19. MVP Rules
 
 Do:
 
 ```txt
-Home scan được trong 3–5 giây.
-Financial State + Flexible Money là primary financial picture.
-Flexible Money là money metric lớn nhất.
-Lowest Projected Balance được highlight trong 30-day section.
-30-day summary và timeline nằm cùng một section.
-Goal có projected completion date.
-What-if là action, không phải Home card.
-Consequence chỉ hiện sau user action.
-Có data freshness.
-Có money location / holder.
-Privacy dùng text rõ.
-Top-level section có soft 2px frame.
-Page background trắng.
-Top-level vertical spacing nhất quán 20px.
-Cards natural-height.
-Helper copy chỉ tồn tại khi có meaning/action.
+Home quét được trong 3–5 giây.
+Flexible Money là money number lớn nhất.
+Coverage strip nằm ngay dưới hero và luôn hiện.
+Hai chip trạng thái độc lập ở đầu section 1.
+Thấp nhất dự kiến là metric mở đầu section 30 ngày tới.
+Bảng dòng tiền có cột số dư luỹ kế.
+Goal có ngày dự kiến, không chỉ có phần trăm.
+What-if là action mở modal, không phải section.
+Consequence chỉ hiện sau khi user bấm.
+Nợ vào bức tranh qua nghĩa vụ, không qua hero number.
+Nhật ký ghi thay đổi bức tranh, không ghi giao dịch.
+tabular-nums ở mọi money value.
+mono chỉ chạm chuỗi ASCII.
+Panel không viền, không shadow.
+Phân tầng bằng độ sáng: app → panel → sunk.
 ```
 
 Do not:
 
 ```txt
-Không đưa transaction nhỏ lên Home.
-Không dùng Total Assets làm hero metric.
+Không nền trắng cho toàn trang.
+Không nền tối cho bất kỳ section nào.
+Không viền quanh panel hay row.
+Không divider giữa các dòng bảng.
+Không shadow trên surface trong trang.
+Không dùng Total Assets hoặc Net Worth làm hero.
 Không tách “Những khoản sắp tới” khỏi “30 ngày tới”.
-Không render What-if scenario preview trước click.
-Không dùng chart làm trọng tâm Home.
-Không build Discussion module trong MVP.
-Không dùng nested card >2 tầng.
-Không dùng divider giữa mọi row.
-Không stretch card chỉ để hai cột bằng nhau.
-Không để card lớn nhưng trống.
-Không dùng filler subtitle.
-Không dùng lime/navy dashboard aesthetic chỉ vì reference có nó.
+Không render scenario preview trước click.
+Không chart làm trọng tâm Home.
+Không thêm nav item cho mỗi feature mới.
+Không cấp hue riêng cho mỗi loại tiền.
+Không đặt freshness ở cuối trang.
+Không giấu freshness sau icon hay tooltip.
+Không phần trăm “độ tin cậy”.
+Không làm mờ money number khi dữ liệu cũ.
+Không font-weight 300.
 Không verdict nên mua / không nên mua.
 ```
 
@@ -1878,231 +1922,235 @@ Không verdict nên mua / không nên mua.
 ## 20. Example Home Content
 
 ```txt
-● Nhà mình đang ổn                                  Cập nhật
+● Nhà mình đang ổn                          ● 2 nguồn cần cập nhật
 
-Có thể linh hoạt
-54M đ                                [ Thử một khoản chi ]
-Sau các khoản đã biết trong thời gian tới và quỹ an toàn 40M đã đặt.
-
-Thanh khoản       Cần sớm       Quỹ bảo vệ
-128M              −34M          −40M
+SAU NGHĨA VỤ VÀ QUỸ CẦN BẢO VỆ              ▬▬▬▬▬▬▬  ▬▬  ▬▬▬
+48,2 triệu linh hoạt
+trên tổng 209,7 tr tiền mặt · ròng 1,81 tỷ  Đã có nhiệm vụ  62%  130,0 tr
+                                            Quỹ cần bảo vệ  15%   31,5 tr
+▬▬ ▬▬ ▬▬ ▬▬ ▬▬                              Linh hoạt       23%   48,2 tr
+Tính từ 5 nguồn · 3 mới trong tuần
+· 2 cần cập nhật          Cập nhật nhanh    [ Thử một khoản chi ]
+Số trên chưa gồm thay đổi của
+Quỹ mở & ETF và tiền mặt.
 ```
 
 ```txt
-30 ngày tới                                         Xem timeline
-Chỉ gồm các khoản đã biết
+Ba mươi ngày tới                                 13/08 — 12/09 · 4 khoản
 
-Balance thấp nhất dự kiến
-94M đ
-
-Tiền vào +45M                    Tiền ra −34M
-
-15 Aug  Lương                    +45M → 173M
-18 Aug  Tiền nhà                 −15M → 158M
-22 Aug  Thẻ tín dụng             −12M → 146M
+THẤP NHẤT DỰ KIẾN        NGÀY   KHOẢN                AI   SỐ TIỀN  CÒN LẠI
+36,1 tr                  24/08  Học phí               ·   −12,1     36,1
+Vào 24/08, vẫn trên      25/08  Lương An  cần xác nhận A   +32,0     68,1
+quỹ cần bảo vệ 31,5 tr.  05/09  Lương Bình            B   +21,5     89,6
+                         10/09  Trả góp nhà           ·    −8,9     80,7
+[ đường dòng tiền ]
+                         ┌ Cuối kỳ dự kiến còn linh hoạt      80,7 tr ┐
 ```
 
 ```txt
-Mua nhà   [Mục tiêu chính]                           Chi tiết
+Mục tiêu chính                                        Xem tất cả · 3
 
-420M / 1,2B                                           35%
-
-Ngày mong muốn             Jun 2029
-Theo tốc độ hiện tại       Oct 2029
-Để về đúng target          +4,5M / tháng
+Cọc căn thứ hai [chính]        Ngày mong muốn              06/2029
+160,0 / 800,0 tr        20%    Theo tốc độ hiện tại        11/2029
+▬▬▬░░░░░░░░░░░░░░░░░░          Để về đúng ngày mong muốn   +4,5 tr / tháng
 ```
 
 ```txt
-Tiền đang ở đâu                                      Xem nguồn tiền
+Tiền đang ở đâu                                       Xem nguồn tiền
 
-An        72M
-Bình      46M
-Chung     10M
-```
+NƠI GIỮ                    PHỤ TRÁCH  VAI TRÒ         CẬP NHẬT       SỐ DƯ
+Techcombank · thanh toán   An         Chi tiêu chung  hôm nay      36,4 tr
+VPBank · thanh toán        Bình       Chi tiêu chung  hôm nay      18,9 tr
+Sổ tiết kiệm chung         Cả hai     Quỹ cần bảo vệ  đáo hạn 03/12 31,5 tr
+Quỹ mở & ETF               Cả hai     Dài hạn         34 ngày trước 118,7 tr
+Tiền mặt & ví điện tử      Cả hai     Chi tiêu chung  21 ngày trước  4,2 tr
 
-```txt
-Cần cập nhật                                        Cập nhật nhanh
-2 khoản nên cập nhật
-
-VCB                     35 ngày trước
-Lương tháng này         cần xác nhận
+┌ Tổng tiền mặt                                              209,7 tr ┐
 ```
 
 Không có Home block:
 
 ```txt
-WHAT-IF
-30M hôm nay → Goal chậm 3 tháng
+NẾU CHI 30 TR → GOAL CHẬM 2 THÁNG
+TỔNG DƯ NỢ 1,46 TỶ
 ```
-
-Consequence đó chỉ xuất hiện sau khi user bấm `Thử một khoản chi`.
 
 ---
 
-## 21. Implementation Class Cheatsheet
-
-Page:
+## 21. Cheatsheet
 
 ```tsx
-<div className="min-h-screen bg-white text-foreground">
-  ...
+// Shell
+<div className="flex min-h-screen bg-app">
+  <aside className="hidden w-[240px] shrink-0 flex-col px-4 py-5 lg:flex">…</aside>
+  <main className="max-w-[1220px] min-w-0 flex-1 space-y-4 px-5 py-5 lg:px-7">…</main>
 </div>
+
+// Panel
+<section className="panel p-5 sm:p-8">…</section>
+
+// Grid trong section
+<div className="grid gap-x-14 gap-y-9 lg:grid-cols-[minmax(0,380px)_1fr]">…</div>
+
+// Sunk block / dòng tổng
+<div className="sunk flex items-baseline justify-between px-4 py-3.5">…</div>
+
+// Hero money
+<span className="num text-[64px] font-medium leading-[.86] tracking-[-.04em]">48,2</span>
+
+// Nhãn nhỏ
+<p className="label">Sau nghĩa vụ và quỹ cần bảo vệ</p>
+
+// Primary CTA
+<button className="h-10 rounded-lg px-5 text-[14px] font-medium"
+        style={{ background: "var(--accent)", color: "#fff" }}>
+  Thử một khoản chi
+</button>
+
+// Link hành động trong section header
+<button className="text-[13px]" style={{ color: "var(--accent)" }}>Xem nguồn tiền</button>
+
+// Nav row
+<a className="nav-item" aria-current="page">Tổng quan</a>
 ```
-
-Desktop shell:
-
-```tsx
-<div className="min-h-screen lg:grid lg:grid-cols-[238px_minmax(0,1fr)]">
-  <aside className="sidebar-separator">...</aside>
-  <main className="min-w-0 px-4 py-4 sm:px-5 lg:px-6 lg:py-5">...</main>
-</div>
-```
-
-Home columns:
-
-```tsx
-<div className="flex flex-col gap-5 lg:grid lg:grid-cols-[7fr_5fr] lg:items-start lg:gap-5">
-  <div className="contents lg:block lg:space-y-5">...</div>
-  <div className="contents lg:block lg:space-y-5">...</div>
-</div>
-```
-
-Top-level section:
-
-```tsx
-<section className="section-surface rounded-[20px] bg-white p-4 sm:p-5">
-  ...
-</section>
-```
-
-Soft group:
-
-```tsx
-<div className="rounded-2xl bg-[#fafafa] p-3.5">...</div>
-```
-
-Supporting metrics:
-
-```tsx
-<div className="grid grid-cols-3 gap-3 rounded-2xl bg-muted/50 px-3.5 py-3">
-  ...
-</div>
-```
-
-Money number:
-
-```tsx
-<p className="money-number text-5xl leading-none sm:text-[58px]">54M đ</p>
-```
-
-Primary decision CTA:
-
-```tsx
-<Button className="h-11 rounded-full px-5">Thử một khoản chi</Button>
-```
-
-Valid helper copy:
-
-```tsx
-<p className="text-sm text-muted-foreground">
-  Sau các khoản đã biết trong thời gian tới và quỹ an toàn 40M đã đặt.
-</p>
-```
-
-Avoid helper copy:
-
-```tsx
-// Không thêm nếu không truyền tải meaning/action.
-<p>Theo dữ liệu hiện có</p>
-<p>Không cần tự cộng trong đầu</p>
-```
-
-Sidebar separator:
 
 ```css
-.sidebar-separator {
-  border-right: 2px solid rgba(29, 29, 31, 0.038);
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 33px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ink2);
+  transition:
+    background 0.14s ease,
+    color 0.14s ease;
 }
-```
+.nav-item:hover {
+  background: var(--sunk);
+  color: var(--ink);
+}
+.nav-item[aria-current] {
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 500;
+}
 
-Section frame:
-
-```css
-.section-surface {
-  border: 2px solid rgba(29, 29, 31, 0.045);
-  border-radius: 20px;
-  background: #fff;
+tbody tr {
+  transition: background 0.12s ease;
+}
+tbody tr:hover {
+  background: var(--sunk);
+}
+td:first-child,
+th:first-child {
+  padding-left: 10px;
+  border-radius: 7px 0 0 7px;
+}
+td:last-child,
+th:last-child {
+  padding-right: 10px;
+  border-radius: 0 7px 7px 0;
 }
 ```
 
 ---
 
-## 22. Final Product Feel
+## 24. Accessibility và Motion
 
-Money Space phải có cảm giác:
+**Contrast**
 
 ```txt
-Một private financial home sạch, trưởng thành và bình tĩnh
-cho hai người đang xây cuộc sống chung.
+--ink   trên --panel   ≈ 15:1
+--ink2  trên --panel   ≈ 7:1
+--ink3  trên --panel   ≈ 3.2:1  → chỉ metadata, KHÔNG dùng cho money value
+--accent trên --panel  ≈ 6:1
+--attention trên --panel ≈ 4.6:1 — kiểm tra lại nếu đổi tông
+Trạng thái không được chỉ dựa vào màu — chấm màu luôn đi kèm text.
+```
 
-Không cần làm kế toán.
-Không cần gộp toàn bộ tiền.
-Không cần theo dõi từng khoản nhỏ.
+**Focus**
 
-Mở Home là thấy ngay:
-- tình hình household
-- tiền linh hoạt
-- low point sắp tới
-- goal đang đi tới đâu
+```txt
+outline 2px --accent, offset 2px.
+Modal trap focus, Esc đóng, trả focus về trigger.
+Row bảng không focusable trừ khi có action thật.
+```
+
+**Touch target**
+
+```txt
+Tối thiểu 44×44px trên mobile.
+Nav row, link trong section header, và CTA mô phỏng phải đạt ngưỡng này.
+Trên desktop nav row 33px là chấp nhận được vì có chuột.
+```
+
+**Screen reader**
+
+```txt
+Money composition bar và coverage strip cần aria-label đọc ra đầy đủ giá trị.
+Bảng dòng tiền là <table> có <thead> thật, không phải div grid.
+Nhật ký là <ul>.
+Trạng thái “đang thử” của modal phải được thông báo, không chỉ báo bằng nền accent-soft.
+```
+
+**Motion**
+
+```txt
+Chỉ animate lần mount đầu của thanh và strip.
+Duration 120–550ms, easing cubic-bezier(.2,.7,.3,1).
+Không animate money number đếm lên.
+prefers-reduced-motion: tắt toàn bộ.
+```
+
+---
+
+## 25. Deprecated Explorations
+
+Các hướng đã thử và bị loại. Ghi lại để không quay lại.
+
+| Hướng                                                                      | Vì sao loại                                                                                    |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| White-first: nền trang trắng, section frame viền 2px alpha, accent #007AFF | Viền quanh mọi card tạo cảm giác cứng; nền trắng phẳng không cho ranh giới section nào để quét |
+| Section padding p-4/p-5 trên desktop                                       | Panel không viền cần khoảng trắng trong để thành khối; p-4 làm nội dung dính mép               |
+| Grid Home 7fr/5fr hai cột                                                  | Section bị nén ngang, bảng mất cột; một cột dọc quét nhanh hơn                                 |
+| Dark section band cho hero                                                 | Cảm giác terminal tài chính; đã bị loại dứt khoát                                              |
+| Bảng màu đá vôi / sage / đồng                                              | Đọc ra là app thiền                                                                            |
+| Font-weight 300 ở cỡ lớn                                                   | Mất trọng lượng; dấu tiếng Việt bị mảnh                                                        |
+| Gạch đôi 2px dưới mỗi section title                                        | Divider thừa                                                                                   |
+| Hue riêng cho protected và debt                                            | Bảng màu phình; mất khả năng dùng màu báo trạng thái                                           |
+| What-if là Home section                                                    | Consequence hiện trước khi user hỏi                                                            |
+| Net worth làm hero number                                                  | Không giúp quyết định hôm nay                                                                  |
+| Freshness là section cuối Home                                             | User đã tin và có thể đã quyết định trước khi cuộn tới                                         |
+| Ẩn coverage strip khi mọi thứ đều mới                                      | Coverage là ngữ cảnh của con số, không phải cảnh báo                                           |
+| Phần trăm “độ tin cậy dữ liệu”                                             | Con số bịa, tạo cảm giác chính xác giả                                                         |
+| Theme switcher cho user                                                    | Chốt một bảng màu; switcher chỉ dùng trong giai đoạn thiết kế                                  |
+
+Nếu một hướng trên được đề xuất lại, cần lý do gắn với một vấn đề user thật, không phải lý do thẩm mỹ.
+
+---
+
+## 26. Final Product Feel
+
+```txt
+Một cuốn sổ chung được giữ tử tế cho hai người đang xây cuộc sống chung.
+
+Mở Tổng quan là thấy ngay:
+- nhà mình đang ổn không
+- bức tranh này có mới không
+- còn bao nhiêu linh hoạt
+- thấp nhất sắp tới là bao nhiêu
 
 Khi có một quyết định đáng cân nhắc:
 - bấm Thử một khoản chi
-- xem consequence
+- xem hệ quả
 - tự quyết định cùng nhau
 ```
 
-Visual feel:
+Không phải: expense tracker · household accounting · partner surveillance · investment terminal · BI dashboard · AI financial advisor · app thiền.
 
 ```txt
-Consumer app first
-Finance clarity second
-Dashboard mechanics only where useful
-White-first
-Soft framed sections
-Compact natural-height layout
-Minimal divider
-Meaningful copy only
-```
-
-Không phải:
-
-```txt
-expense tracker
-household accounting
-partner surveillance
-investment terminal
-enterprise BI dashboard
-fintech chart dashboard
-AI financial advisor
-```
-
-Final hierarchy:
-
-```txt
-Shared Financial Clarity
-→ Financial Foresight
-→ Decision Support
-```
-
-Design không phải làm dashboard “nhiều dữ liệu hơn”.
-
-Design phải làm những điều quan trọng nhất:
-
-```txt
-dễ quét
-dễ hiểu
-dễ tin
-dễ hành động
-không phán xét
-không kiểm soát
+Shared Financial Clarity → Financial Foresight → Decision Support
 ```

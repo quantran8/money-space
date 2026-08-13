@@ -64,7 +64,7 @@ export function ForecastTimeline({
     return (
       <Card>
         <div className="flex flex-col items-center gap-4 py-8">
-          <p className="text-center text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="text-center text-sm text-ink2">
             {t('upcoming.timeline.empty')}
           </p>
           {/* An empty forecast is the one place the add action matters most —
@@ -126,7 +126,7 @@ function DayGroup({
     <div>
       <div className="flex items-baseline justify-between gap-4">
         <p className="text-sm font-semibold">{label}</p>
-        <p className="text-xs text-[hsl(var(--muted-foreground))]">
+        <p className="text-xs text-ink2">
           {t('upcoming.timeline.closing')}{' '}
           <span className={cn('money-number font-semibold', BALANCE_TONE_CLASS[closingTone])}>
             {formatVndShort(day.closingBalance)}
@@ -184,8 +184,8 @@ function OccurrenceRow({
         className={cn(
           'flex size-9 shrink-0 items-center justify-center rounded-full',
           isIncoming
-            ? 'bg-[hsla(var(--status-green),0.12)] text-[hsl(var(--status-green))]'
-            : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]',
+            ? 'bg-accent-tint text-accent'
+            : 'bg-sunk text-ink2',
         )}
       >
         <Icon className="size-4" strokeWidth={1.8} />
@@ -197,7 +197,7 @@ function OccurrenceRow({
           {markers.map((marker) => (
             <span
               key={marker}
-              className="rounded-full bg-[hsl(var(--muted))] px-2 py-0.5 text-[11px] font-medium text-[hsl(var(--muted-foreground))]"
+              className="rounded-full bg-sunk px-2 py-0.5 text-[11px] font-medium text-ink2"
             >
               {t(`upcoming.markers.${marker}`)}
             </span>
@@ -218,7 +218,7 @@ function OccurrenceRow({
           BALANCE_TONE_CLASS[tone],
         )}
       >
-        <span className="text-[hsl(var(--muted-foreground))]">→ </span>
+        <span className="text-ink2">→ </span>
         {formatVndShort(runningBalance)}
       </p>
 
@@ -226,7 +226,7 @@ function OccurrenceRow({
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={t('upcoming.rowActions.label')}
-            className="shrink-0 rounded-full p-1.5 text-[hsl(var(--muted-foreground))] outline-none transition hover:bg-[hsl(var(--muted))] hover:text-foreground"
+            className="shrink-0 rounded-full p-1.5 text-ink2 outline-none transition hover:bg-sunk hover:text-foreground"
           >
             <MoreHorizontal className="size-4" />
           </DropdownMenuTrigger>
@@ -247,7 +247,7 @@ function OccurrenceRow({
             ) : null}
             {onDelete ? (
               <DropdownMenuItem
-                className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
+                className="text-alert focus:text-alert"
                 onClick={() => onDelete(occurrence.sourceEventId)}
               >
                 <Trash2 className="mr-2 size-4" />

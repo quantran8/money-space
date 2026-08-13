@@ -35,18 +35,18 @@ export function FlexibleMoneySection({
 
   return (
     <Card>
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="text-sm text-ink2">
         {t('home.flexible.title')}
       </p>
       <p
         className={cn(
           'money-number mt-3 text-4xl font-semibold sm:text-5xl',
-          isNegative && 'text-[hsl(var(--status-red))]',
+          isNegative && 'text-alert',
         )}
       >
         {formatVndShort(amount)}
       </p>
-      <p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+      <p className="mt-3 text-sm leading-6 text-ink2">
         {isNegative
           ? t('home.flexible.negativeNote')
           : t('home.flexible.note', {

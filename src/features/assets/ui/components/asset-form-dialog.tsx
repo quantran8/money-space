@@ -156,7 +156,7 @@ export function AssetFormDialog({
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Loại tài sản</p>
                       <h3 className="mt-1.5 text-[19px] font-semibold tracking-[-0.025em]">Bạn đang thêm khoản nào?</h3>
                     </div>
-                    <button type="button" onClick={() => setStep(1)} className="rounded-full px-3 py-2 text-sm font-medium text-[hsl(var(--accent))] transition hover:bg-[hsla(var(--accent),0.06)]">Đổi loại</button>
+                    <button type="button" onClick={() => setStep(1)} className="rounded-full px-3 py-2 text-sm font-medium text-accent transition hover:bg-accent-tint">Đổi loại</button>
                   </div>
                   <button type="button" onClick={() => setStep(1)} className="flex w-full items-center gap-4 rounded-[22px] border border-border bg-card p-4 text-left transition hover:border-foreground/20">
                     <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-muted text-xl">{TYPE_META[selectedType].icon}</span>
@@ -184,8 +184,8 @@ export function AssetFormDialog({
                       )} />
                     </EventField>
 
-                  <div className="flex items-start gap-3 rounded-[18px] border border-[hsla(var(--accent),0.1)] bg-[hsla(var(--accent),0.045)] px-4 py-3.5">
-                    <span className="rounded-full bg-[hsla(var(--accent),0.12)] px-3 py-1.5 text-xs font-semibold text-[hsl(var(--accent))]">{t(`options.valuationMode.${mode}`)}</span>
+                  <div className="flex items-start gap-3 rounded-[18px] border border-hair bg-accent-tint px-4 py-3.5">
+                    <span className="rounded-full bg-accent-tint px-3 py-1.5 text-xs font-semibold text-accent">{t(`options.valuationMode.${mode}`)}</span>
                     <p className="text-xs leading-5 text-muted-foreground">{MODE_HINTS[mode]}</p>
                   </div>
 

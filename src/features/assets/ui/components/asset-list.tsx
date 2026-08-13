@@ -53,24 +53,24 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
                 <p className="text-sm font-semibold">{asset.name}</p>
                 <Badge variant="outline">{t(`options.assetType.${asset.type}`)}</Badge>
                 {isAutoPriced ? (
-                  <Badge className="bg-[hsla(var(--accent),0.12)] text-[hsl(var(--accent))]">
+                  <Badge className="bg-accent-tint text-accent">
                     <Sparkles className="mr-1 size-3" />
                     {t('assets.list.autoPriced')}
                   </Badge>
                 ) : null}
                 {isSold ? (
-                  <Badge className="bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                  <Badge className="bg-sunk text-ink2">
                     {t('options.assetStatus.sold')}
                   </Badge>
                 ) : null}
               </div>
 
-              <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+              <p className="mt-1 text-xs text-ink2">
                 {asset.note || t('common.noNote')}
               </p>
 
               {asset.marketPosition ? (
-                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                <p className="mt-1 text-xs text-ink2">
                   {asset.marketPosition.symbol} ·{' '}
                   {t('assets.list.held', {
                     quantity: asset.marketPosition.quantity,
@@ -80,7 +80,7 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
               ) : null}
 
               {asset.calculationTerm?.maturityDate ? (
-                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                <p className="mt-1 text-xs text-ink2">
                   {t('assets.list.maturity', { value: asset.calculationTerm.maturityDate })} ·{' '}
                   {asset.calculationTerm.interestRate}%/yr
                   {(() => {
@@ -91,7 +91,7 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
               ) : null}
             </button>
 
-            <p className="text-xs font-medium text-[hsl(var(--accent))]">
+            <p className="text-xs font-medium text-accent">
               {t(`options.liquidity.${asset.liquidity}`)}
             </p>
             <p
@@ -126,7 +126,7 @@ export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: As
                     </DropdownMenuItem>
                   ) : null}
                   <DropdownMenuItem
-                    className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
+                    className="text-alert focus:text-alert"
                     onSelect={() => onDelete(asset.id)}
                   >
                     <Trash2 className="size-4" />

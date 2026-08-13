@@ -30,9 +30,9 @@ export function OnboardingHeader({ user }: OnboardingHeaderProps) {
       <div className="flex items-center gap-3">
         <div className="hidden text-right sm:block">
           <p className="text-sm font-semibold">{displayName}</p>
-          <p className="text-xs text-[hsl(var(--muted-foreground))]">{t('onboarding.signedIn')}</p>
+          <p className="text-xs text-ink2">{t('onboarding.signedIn')}</p>
         </div>
-        <div className="flex size-10 items-center justify-center rounded-full bg-[hsl(var(--muted))] text-sm font-semibold">
+        <div className="flex size-10 items-center justify-center rounded-full bg-sunk text-sm font-semibold">
           {initialsOf(user?.displayName ?? user?.fullName ?? null, user?.email ?? null)}
         </div>
       </div>

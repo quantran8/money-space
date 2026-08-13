@@ -26,7 +26,7 @@ export function SharingCard({ form }: SharingCardProps) {
         <h2 className="section-title text-xl font-semibold">
           {t('settings.privacy.title')}
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink2">
           {t('settings.privacy.description')}
         </p>
       </div>
@@ -35,7 +35,7 @@ export function SharingCard({ form }: SharingCardProps) {
         <div className="grid gap-4 py-5 first:pt-0 sm:grid-cols-[1fr_240px] sm:items-center">
           <div>
             <p className="text-sm font-medium">{t('settings.privacy.assetsTitle')}</p>
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="mt-1 text-xs text-ink2">
               {t('settings.privacy.assetsDescription')}
             </p>
           </div>
@@ -62,7 +62,7 @@ export function SharingCard({ form }: SharingCardProps) {
         <div className="grid gap-4 py-5 sm:grid-cols-[1fr_240px] sm:items-center">
           <div>
             <p className="text-sm font-medium">{t('settings.privacy.upcomingTitle')}</p>
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="mt-1 text-xs text-ink2">
               {t('settings.privacy.upcomingDescription')}
             </p>
           </div>
@@ -89,7 +89,7 @@ export function SharingCard({ form }: SharingCardProps) {
         <div className="flex items-center justify-between gap-4 py-5 pb-0">
           <div>
             <p className="text-sm font-medium">{t('settings.privacy.notesTitle')}</p>
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="mt-1 text-xs text-ink2">
               {t('settings.privacy.notesDescription')}
             </p>
           </div>

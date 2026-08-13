@@ -65,8 +65,8 @@ export type WhatIfResult = {
 
 /** Calm tone mapping. `not_covered` is the only one that earns red. */
 export const RESULT_TYPE_CLASS: Record<WhatIfResultType, string> = {
-  comfortable: 'text-[hsl(var(--status-green))]',
-  watch: 'text-[hsl(var(--muted-foreground))]',
-  tight: 'text-[hsl(var(--status-orange))]',
-  not_covered: 'text-[hsl(var(--status-red))]',
+  comfortable: 'text-accent',
+  watch: 'text-ink2',
+  tight: 'text-attention',
+  not_covered: 'text-alert',
 }

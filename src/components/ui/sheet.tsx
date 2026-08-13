@@ -43,7 +43,7 @@ const SheetOverlay = React.forwardRef<
     ref={ref}
     data-slot="sheet-overlay"
     className={cn(
-      'fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      'fixed inset-0 z-50 bg-[var(--scrim)] backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className,
     )}
     {...props}
@@ -51,6 +51,11 @@ const SheetOverlay = React.forwardRef<
 ))
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
+/**
+ * The mobile bottom sheet. Like a modal it genuinely floats, so it keeps a real
+ * shadow (design.md §2.3) — but no border-top: the shadow already separates it
+ * from the page, and a stroke on top of it is the v3.x habit (§2.2).
+ */
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>
@@ -61,15 +66,15 @@ const SheetContent = React.forwardRef<
       ref={ref}
       data-slot="sheet-content"
       className={cn(
-        'fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col gap-6 overflow-y-auto rounded-t-[28px] border-t bg-card p-6 pb-8 shadow-[0_-16px_50px_rgba(0,0,0,0.14)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom data-[state=closed]:duration-200 data-[state=open]:duration-300',
+        'fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col gap-6 overflow-y-auto rounded-t-panel bg-panel p-6 pb-8 text-ink shadow-[0_-16px_50px_rgba(0,0,0,0.18)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom data-[state=closed]:duration-200 data-[state=open]:duration-300',
         className,
       )}
       {...props}
     >
-      <div className="mx-auto -mt-2 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-border" />
+      <div className="mx-auto -mt-2 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-committed" />
       {children}
       <SheetPrimitive.Close
-        className="absolute right-5 top-5 rounded-full p-1 text-muted-foreground opacity-70 outline-none transition hover:bg-secondary hover:opacity-100 focus-visible:ring-2 focus-visible:ring-[hsl(var(--accent))]"
+        className="absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-sunk hover:opacity-100"
         aria-label="Close"
       >
         <X className="size-4" />
@@ -106,7 +111,7 @@ const SheetTitle = React.forwardRef<
   <SheetPrimitive.Title
     ref={ref}
     data-slot="sheet-title"
-    className={cn('section-title text-2xl font-semibold', className)}
+    className={cn('page-title text-[19px]', className)}
     {...props}
   />
 ))
@@ -119,7 +124,7 @@ const SheetDescription = React.forwardRef<
   <SheetPrimitive.Description
     ref={ref}
     data-slot="sheet-description"
-    className={cn('text-sm text-muted-foreground', className)}
+    className={cn('text-[13px] leading-relaxed text-ink2', className)}
     {...props}
   />
 ))

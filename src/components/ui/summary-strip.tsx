@@ -17,30 +17,21 @@ type SummaryTileProps = {
 /**
  * One tile in a detail-page summary strip (design.md §14, §2.6).
  *
- * Holds label + a large money number, with an optional palette dot or an
- * inverted dark treatment for the headline total. Tiles sit directly on the
- * page background — they are the strip itself, not nested inside a section card.
+ * A panel surface: no border, no shadow, radius 14 (§2.2–2.3). The `inverted`
+ * variant no longer paints a dark tile — no section in v4.0 uses a dark ground
+ * (§4.3, §19) — so the headline total is distinguished by an accent value on
+ * the same panel instead.
  */
 export function SummaryTile({ label, value, dotColor, inverted, className }: SummaryTileProps) {
   return (
-    <div
-      className={cn(
-        'rounded-[28px] border p-5 shadow-[0_8px_24px_rgba(0,0,0,0.04)]',
-        inverted
-          ? 'border-transparent bg-[hsl(var(--foreground))] text-white'
-          : 'border-border bg-card',
-        className,
-      )}
-    >
+    <div className={cn('rounded-panel bg-panel p-5', className)}>
       <div className="flex items-center gap-2">
         {dotColor ? (
           <span className="size-2.5 rounded-full" style={{ backgroundColor: dotColor }} />
         ) : null}
-        <p className={cn('text-sm', inverted ? 'text-white/60' : 'text-muted-foreground')}>
-          {label}
-        </p>
+        <p className="text-[13px] text-ink2">{label}</p>
       </div>
-      <p className="money-number mt-3 text-3xl font-semibold">{value}</p>
+      <p className={cn('money-number mt-3 text-[30px]', inverted && 'text-accent')}>{value}</p>
     </div>
   )
 }

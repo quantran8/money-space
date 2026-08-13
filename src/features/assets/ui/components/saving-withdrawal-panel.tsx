@@ -28,9 +28,9 @@ type SavingWithdrawalPanelProps = {
 function Money({ value, tone }: { value: number; tone?: 'muted' | 'orange' }) {
   const cls =
     tone === 'orange'
-      ? 'text-[hsl(var(--status-orange))]'
+      ? 'text-attention'
       : tone === 'muted'
-        ? 'text-[hsl(var(--muted-foreground))]'
+        ? 'text-ink2'
         : 'text-foreground'
   const sign = value < 0 ? '-' : ''
   return (
@@ -71,7 +71,7 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
             {t('assets.detail.withdrawal.title')}
           </h2>
         </div>
-        <Badge className="bg-[hsla(var(--accent),0.15)] text-[hsl(var(--accent))]">
+        <Badge className="bg-accent-tint text-accent">
           {t(`options.interestPayment.${term.interestPayment}`)}
         </Badge>
       </div>
@@ -79,7 +79,7 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
       {hasEarly ? (
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="text-[hsl(var(--muted-foreground))]">
+            <span className="text-ink2">
               {t('assets.detail.withdrawal.withdrawMonth', {
                 month: clampedMonth,
                 total: termMonths,
@@ -148,11 +148,11 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
         </TableBody>
       </Table>
 
-      <div className="mt-4 flex items-center justify-between rounded-2xl bg-[hsla(var(--status-orange),0.08)] px-4 py-3 text-sm">
-        <span className="text-[hsl(var(--muted-foreground))]">
+      <div className="mt-4 flex items-center justify-between rounded-2xl bg-attention-tint px-4 py-3 text-sm">
+        <span className="text-ink2">
           {t('assets.detail.withdrawal.difference')}
         </span>
-        <span className="money-number font-semibold text-[hsl(var(--status-orange))]">
+        <span className="money-number font-semibold text-attention">
           -{formatVndShort(Math.abs(difference))}
         </span>
       </div>

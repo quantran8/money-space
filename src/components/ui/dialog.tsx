@@ -43,7 +43,7 @@ const DialogOverlay = React.forwardRef<
     ref={ref}
     data-slot="dialog-overlay"
     className={cn(
-      'fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      'fixed inset-0 z-50 bg-[var(--scrim)] backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className,
     )}
     {...props}
@@ -51,6 +51,12 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
+/**
+ * A modal is the one surface that keeps a real shadow (design.md §2.3: "Modal
+ * được dùng shadow rõ vì nó nổi thật"). It genuinely floats above the page, so
+ * the shadow is doing work rather than decorating. Radius is the 14px panel
+ * token, and there is still no border.
+ */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
@@ -61,14 +67,14 @@ const DialogContent = React.forwardRef<
       ref={ref}
       data-slot="dialog-content"
       className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 overflow-y-auto rounded-[28px] border bg-card p-6 shadow-[0_24px_60px_rgba(0,0,0,0.12)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+        'fixed left-[50%] top-[50%] z-50 grid max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 overflow-y-auto rounded-panel bg-panel p-6 text-ink shadow-[0_24px_60px_rgba(0,0,0,0.18)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         className,
       )}
       {...props}
     >
       {children}
       <DialogPrimitive.Close
-        className="absolute right-5 top-5 rounded-full p-1 text-muted-foreground opacity-70 outline-none transition hover:bg-secondary hover:opacity-100 focus-visible:ring-2 focus-visible:ring-[hsl(var(--accent))]"
+        className="absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-sunk hover:opacity-100"
         aria-label="Close"
       >
         <X className="size-4" />
@@ -105,7 +111,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     data-slot="dialog-title"
-    className={cn('section-title text-2xl font-semibold', className)}
+    className={cn('page-title text-[19px]', className)}
     {...props}
   />
 ))
@@ -118,7 +124,7 @@ const DialogDescription = React.forwardRef<
   <DialogPrimitive.Description
     ref={ref}
     data-slot="dialog-description"
-    className={cn('text-sm text-muted-foreground', className)}
+    className={cn('text-[13px] leading-relaxed text-ink2', className)}
     {...props}
   />
 ))

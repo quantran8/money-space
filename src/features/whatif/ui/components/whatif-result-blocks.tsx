@@ -30,7 +30,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           // Negative is never hidden — it is the answer.
           afterClassName={RESULT_TYPE_CLASS[result.resultType]}
         />
-        <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 text-xs text-ink2">
           {t('whatif.lowestBalanceOn', { date: after.lowestProjectedBalanceDate })}
         </p>
       </SubSection>
@@ -43,7 +43,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
             : t('whatif.reserve.breached')}
         </p>
         {!after.obligationsCovered ? (
-          <p className="mt-2 text-sm text-[hsl(var(--status-orange))]">
+          <p className="mt-2 text-sm text-attention">
             {t('whatif.obligations.notCovered')}
           </p>
         ) : null}
@@ -56,7 +56,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           before={formatVndShort(before.flexibleMoneyHorizon)}
           after={formatVndShort(after.flexibleMoneyHorizon)}
         />
-        <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 text-xs text-ink2">
           {t('whatif.flexibleDelta', {
             amount: formatVndShort(Math.abs(delta.flexibleMoneyHorizon)),
           })}
@@ -74,7 +74,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
             <p className="text-sm">{t('whatif.goal.noChange')}</p>
           )}
           {after.goal.projectedCompletionDate ? (
-            <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
+            <p className="mt-2 text-xs text-ink2">
               {t('whatif.goal.projectedDate', {
                 date: after.goal.projectedCompletionDate,
               })}
@@ -103,10 +103,10 @@ function Row({
   const { t } = useTranslation()
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">{label}</p>
+      <p className="text-sm text-ink2">{label}</p>
       <p className="money-number text-sm font-semibold">
-        <span className="text-[hsl(var(--muted-foreground))]">{before}</span>
-        <span className="mx-2 text-[hsl(var(--muted-foreground))]">
+        <span className="text-ink2">{before}</span>
+        <span className="mx-2 text-ink2">
           {t('whatif.arrow')}
         </span>
         <span className={cn(afterClassName)}>{after}</span>

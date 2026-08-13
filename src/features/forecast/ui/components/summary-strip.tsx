@@ -63,11 +63,11 @@ function Metric({
 }) {
   return (
     <Card>
-      <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{label}</p>
+      <p className="text-xs font-medium text-ink2">{label}</p>
       <p className={cn('money-number mt-3 text-2xl font-semibold', valueClassName)}>
         {value}
       </p>
-      <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{note}</p>
+      <p className="mt-2 text-xs text-ink2">{note}</p>
     </Card>
   )
 }

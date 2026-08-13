@@ -105,7 +105,7 @@ export function CategoriesCard() {
 
       <ul className="divide-y divide-border">
         {categories.length === 0 ? (
-          <li className="rounded-[18px] bg-[hsl(var(--muted))] px-4 py-3 text-sm text-[hsl(var(--muted-foreground))]">
+          <li className="rounded-[18px] bg-sunk px-4 py-3 text-sm text-ink2">
             {t('settings.categories.empty')}
           </li>
         ) : null}
@@ -137,7 +137,7 @@ export function CategoriesCard() {
                     ) : null}
                   </div>
                   {!category.isSystem ? (
-                    <p className="truncate text-xs text-[hsl(var(--muted-foreground))]">
+                    <p className="truncate text-xs text-ink2">
                       {category.code}
                     </p>
                   ) : null}
@@ -161,7 +161,7 @@ export function CategoriesCard() {
                       : t('settings.categories.setDefault')
                   }
                   className={
-                    category.isDefault ? 'text-[hsl(var(--accent))]' : 'text-muted-foreground'
+                    category.isDefault ? 'text-accent' : 'text-muted-foreground'
                   }
                 >
                   <Star className={category.isDefault ? 'size-4 fill-current' : 'size-4'} />
@@ -208,7 +208,7 @@ export function CategoriesCard() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setDeleteTarget(category)}
-                    className="text-[hsl(var(--status-red))] hover:bg-[hsla(var(--status-red),0.06)]"
+                    className="text-alert hover:bg-alert-tint"
                     aria-label={t('common.delete')}
                   >
                     <Trash2 className="size-4" />
@@ -243,7 +243,7 @@ export function CategoriesCard() {
             aria-label={t('settings.categories.codeLabel')}
           />
         </div>
-        <p className="text-xs text-[hsl(var(--muted-foreground))]">
+        <p className="text-xs text-ink2">
           {t('settings.categories.codeHint')}
         </p>
         <Button

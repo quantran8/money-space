@@ -1,4 +1,4 @@
-import { CalendarClock, Home, Target, Users, Wallet } from 'lucide-react'
+import { CalendarDays, LayoutGrid, Target, Users, Wallet } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
@@ -17,8 +17,8 @@ type BottomNavItem = {
  * nobody can hit.
  */
 const items: BottomNavItem[] = [
-  { to: '/', labelKey: 'nav.dashboard', icon: Home },
-  { to: '/upcoming', labelKey: 'nav.upcoming', icon: CalendarClock },
+  { to: '/', labelKey: 'nav.dashboard', icon: LayoutGrid },
+  { to: '/upcoming', labelKey: 'nav.upcoming', icon: CalendarDays },
   { to: '/goals', labelKey: 'nav.goals', icon: Target },
   { to: '/assets', labelKey: 'nav.assets', icon: Wallet },
   { to: '/household', labelKey: 'nav.household', icon: Users },
@@ -31,7 +31,9 @@ export function MobileBottomNav() {
     <nav
       className={cn(
         'fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around',
-        'border-t border-border bg-card/90 backdrop-blur-xl lg:hidden',
+        // Bottom nav is one of the two places §2.4 still allows a divider — the
+        // bar floats over scrolling content and needs an edge to sit on.
+        'border-t border-hair bg-panel lg:hidden',
         // Clear the home indicator on iOS.
         'pb-[env(safe-area-inset-bottom)]',
       )}
@@ -43,12 +45,13 @@ export function MobileBottomNav() {
           end={to === '/'}
           className={({ isActive }) =>
             cn(
-              'flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors',
-              isActive ? 'text-foreground' : 'text-muted-foreground',
+              // 44px minimum touch target (§24).
+              'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors',
+              isActive ? 'font-medium text-ink' : 'text-ink2',
             )
           }
         >
-          <Icon className="size-5" strokeWidth={1.8} />
+          <Icon className="size-5" strokeWidth={1.75} />
           <span className="truncate px-1">{t(labelKey)}</span>
         </NavLink>
       ))}

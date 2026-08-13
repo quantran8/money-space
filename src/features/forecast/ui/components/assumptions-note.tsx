@@ -17,8 +17,8 @@ export function AssumptionsNote({ assumptions }: { assumptions: CalculationAssum
   return (
     <Card>
       <div className="flex items-start gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--muted))]">
-          <Info className="size-4 text-[hsl(var(--muted-foreground))]" strokeWidth={1.8} />
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sunk">
+          <Info className="size-4 text-ink2" strokeWidth={1.8} />
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold">{t('upcoming.assumptions.title')}</p>
@@ -26,7 +26,7 @@ export function AssumptionsNote({ assumptions }: { assumptions: CalculationAssum
             {assumptions.map((assumption) => (
               <li
                 key={`${assumption.code}:${assumption.value ?? ''}`}
-                className="text-sm leading-6 text-[hsl(var(--muted-foreground))]"
+                className="text-sm leading-6 text-ink2"
               >
                 {t(`upcoming.assumptions.codes.${assumption.code}`, {
                   value: assumption.value,

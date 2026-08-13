@@ -48,9 +48,9 @@ export function QuickActionPicker({ onSelect, onBorrowMoney, onSellAsset }: Quic
             }
             onSelect(action)
           }}
-          className="rounded-3xl border border-border bg-card p-4 text-left transition hover:bg-[hsl(var(--muted))]/40"
+          className="rounded-3xl border border-border bg-card p-4 text-left transition hover:bg-sunk/40"
         >
-          <div className="flex size-11 items-center justify-center rounded-2xl bg-[hsl(var(--muted))]">
+          <div className="flex size-11 items-center justify-center rounded-2xl bg-sunk">
             <Icon className="size-5" strokeWidth={1.8} />
           </div>
           <p className="mt-4 text-base font-semibold tracking-[-0.02em]">{title}</p>

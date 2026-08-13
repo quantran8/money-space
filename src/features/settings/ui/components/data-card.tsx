@@ -38,7 +38,7 @@ export function DataCard() {
           <Button
             type="button"
             variant="outline"
-            className="border-[hsla(var(--status-red),0.3)] text-[hsl(var(--status-red))] hover:bg-[hsla(var(--status-red),0.06)]"
+            className="border-alert text-alert hover:bg-alert-tint"
           >
             {t('settings.data.deleteAction')}
           </Button>

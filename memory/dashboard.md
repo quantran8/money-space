@@ -4,20 +4,56 @@ Single-glance household financial status — answers *"Nhà mình đang ổn kh�
 
 ## Overview
 
-**v3.1 (Phase 9): Home is now seven sections in a mandated order** — Financial
-State → Flexible Money → What-if CTA → 30 Days Ahead → Money Location → Main
-Goal → Freshness. See [[forecast-and-flexible-money]], [[what-if]],
-[[data-freshness]].
+**v4.0: Home is SIX blocks in a mandated order** — Bức tranh hôm nay → Ba mươi
+ngày tới → Mục tiêu chính → **Tài sản | Nợ** → Tiền đang ở đâu → Nhật ký. See
+[[forecast-and-flexible-money]], [[what-if]], [[data-freshness]], [[debts]].
 
-Two absences are deliberate product decisions, not omissions:
+Tài sản | Nợ is the **only** side-by-side pair on the page (§9.2) — each half is
+misleading without the other. It is a balance reading, not the hero: both totals
+are shown, their difference is **not**. Net worth belongs on the Assets page.
 
-- **Total Assets is not the hero** (§19). Net worth is a vanity number; what a
-  household can act on is its state and its flexible money.
-- **Small transactions are banned from Home** (§12). Recent-events and discuss
-  lists belong on `/events`.
+This replaces the v3.1 seven-section order. Three of those became parts of
+section 1 rather than sections of their own: financial state and freshness are
+now the two **independent status chips** at its head (a household can be fine on
+stale data, or in trouble on fresh data — they are never merged), and what-if is
+an action button, not a section.
+
+Four absences are deliberate product decisions, not omissions:
+
+- **Total Assets / net worth is not the hero** (§2.6, §19). What a household can
+  act on is its state and its flexible money. Net worth is allowed **only** on
+  the Assets page (§14.1).
+- **Total debt has no Home metric** (§2.13). It would be the largest number on
+  the page for any couple with a mortgage and would win the visual fight against
+  flexible money without helping today's decision. Debt enters the picture via
+  its upcoming payment and via "Cần sớm".
+- **Small transactions are banned from Home** (§12). Nhật ký logs *changes to
+  the picture* (a balance update, a new upcoming item, a reserve change), never
+  individual purchases — logging those would make this an expense tracker.
+- **Consequence never renders before it is asked for** (§2.9). No what-if
+  preview appears until the household opens the dialog.
 
 Home composes slices that own their own data rather than fanning out to
 everything — it no longer pulls debts, events or cashflow.
+
+## Home derivations (`model/home-derivations.ts`)
+
+- **Money composition** splits current liquid money into committed → protected →
+  flexible. `committed` is **derived**, not reported: `totalLiquid − protected −
+  max(flexible, 0)`. Deriving it makes the three parts sum to the total by
+  construction, so the bar can never show a misleading gap. A negative flexible
+  figure must not inflate committed.
+- **Running balance** (`Còn lại`) accumulates across the **whole** timeline
+  before the visible rows are sliced, so a truncated table still shows true
+  balances. Occurrences the forecast does not bank (estimated incoming, planned
+  outgoing, postponed) are listed and flagged `cần xác nhận` but do **not** move
+  the balance — see [[forecast-and-flexible-money]].
+- **Tổng tiền mặt excludes `long_term`.** Long-term holdings are not cash and
+  must not inflate that line.
+- **Coverage** = one strip segment per money source, in the source list's own
+  order (never sorted by state). `aging` counts as covered — it has not crossed
+  the household's own threshold. The strip renders even when everything is
+  fresh: it is context for the number above it, not a warning.
 
 ## Composed cards
 

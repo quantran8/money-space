@@ -46,13 +46,13 @@ export function WizardShell({
             key={i}
             className={cn(
               'h-1 flex-1 rounded-full transition-colors',
-              i <= stepIndex ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--muted))]',
+              i <= stepIndex ? 'bg-[hsl(var(--primary))]' : 'bg-sunk',
             )}
           />
         ))}
       </div>
 
-      <p className="mt-6 text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="mt-6 text-sm text-ink2">
         {t('onboarding.wizard.stepCounter', {
           current: stepIndex + 1,
           total: stepCount,
@@ -60,7 +60,7 @@ export function WizardShell({
       </p>
       <h1 className="page-title mt-2 text-3xl font-semibold">{title}</h1>
       {description ? (
-        <p className="mt-2 max-w-xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 max-w-xl text-sm leading-6 text-ink2">
           {description}
         </p>
       ) : null}

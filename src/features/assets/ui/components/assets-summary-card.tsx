@@ -22,14 +22,14 @@ export function AssetsSummaryCard({ totals, total }: AssetsSummaryCardProps) {
         <div>
           <h2 className="text-lg font-semibold">{t('assets.summary.title')}</h2>
         </div>
-        <Landmark className="size-5 text-[hsl(var(--accent))]" />
+        <Landmark className="size-5 text-accent" />
       </div>
 
       <div className="space-y-4">
         <SubSection
           title={t('assets.summary.liquidityGroup')}
           aside={
-            <Badge className="bg-[hsla(var(--status-green),0.1)] text-[hsl(var(--status-green))]">
+            <Badge className="bg-accent-tint text-accent">
               {t('assets.summary.healthy')}
             </Badge>
           }

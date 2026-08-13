@@ -50,7 +50,7 @@ export function InviteFormDialog({
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[560px]">
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
-          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm font-medium text-ink2">
             {t('members.invite.eyebrow')}
           </p>
           <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
@@ -93,7 +93,7 @@ export function InviteFormDialog({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-foreground hover:bg-[hsl(var(--muted))]"
+              className="text-foreground hover:bg-sunk"
             >
               {t('common.cancel')}
             </Button>

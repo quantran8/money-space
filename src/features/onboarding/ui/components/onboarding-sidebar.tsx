@@ -5,16 +5,16 @@ export function OnboardingSidebar() {
   const { t } = useTranslation()
 
   return (
-    <aside className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-6 sm:p-8 lg:border-b-0 lg:border-r lg:p-10">
+    <aside className="border-b border-[hsl(var(--border))] bg-sunk p-6 sm:p-8 lg:border-b-0 lg:border-r lg:p-10">
       <div className="lg:sticky lg:top-10">
-        <span className="inline-flex rounded-full bg-[hsl(var(--card))] px-3 py-1.5 text-xs font-semibold text-[hsl(var(--accent))] shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
+        <span className="inline-flex rounded-full bg-[hsl(var(--card))] px-3 py-1.5 text-xs font-semibold text-accent shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
           {t('onboarding.sidebar.eyebrow')}
         </span>
 
         <h1 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-[-0.05em] sm:text-5xl">
           {t('onboarding.sidebar.title')}
         </h1>
-        <p className="mt-4 max-w-md text-[15px] leading-7 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-4 max-w-md text-[15px] leading-7 text-ink2">
           {t('onboarding.sidebar.description')}
         </p>
 
@@ -25,7 +25,7 @@ export function OnboardingSidebar() {
             </span>
             <div>
               <p className="text-sm font-semibold">{t('onboarding.sidebar.stepTitle')}</p>
-              <p className="mt-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+              <p className="mt-1 text-sm leading-6 text-ink2">
                 {t('onboarding.sidebar.stepDescription')}
               </p>
             </div>
@@ -34,12 +34,12 @@ export function OnboardingSidebar() {
 
         <div className="mt-8 rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5">
           <div className="flex items-start gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[hsla(var(--accent),0.1)] text-[hsl(var(--accent))]">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-tint text-accent">
               <ShieldCheck className="size-5" />
             </span>
             <div>
               <p className="text-sm font-semibold">{t('onboarding.sidebar.privacyTitle')}</p>
-              <p className="mt-1 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+              <p className="mt-1 text-sm leading-6 text-ink2">
                 {t('onboarding.sidebar.privacyDescription')}
               </p>
             </div>

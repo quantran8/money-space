@@ -128,7 +128,7 @@ function DetailRow({
         </div>
         <div className="flex w-[46%] min-w-0 shrink-0 justify-end">{children}</div>
       </div>
-      {error ? <p className="px-4 pb-3 text-xs font-medium text-[hsl(var(--status-red))]">{error}</p> : null}
+      {error ? <p className="px-4 pb-3 text-xs font-medium text-alert">{error}</p> : null}
     </div>
   )
 }
@@ -221,7 +221,7 @@ export function ActualRecordForm({
           <p className="mt-3 text-xs text-muted-foreground">Ví dụ: 5.000.000</p>
         </div>
         {errors.amount ? (
-          <p className="mt-2 px-1 text-sm font-medium text-[hsl(var(--status-red))]">
+          <p className="mt-2 px-1 text-sm font-medium text-alert">
             {errors.amount.message}
           </p>
         ) : null}
@@ -279,7 +279,7 @@ export function ActualRecordForm({
               </>
             )}
           />
-          {errors.category ? <p className="mt-2 text-xs font-medium text-[hsl(var(--status-red))]">{errors.category.message}</p> : null}
+          {errors.category ? <p className="mt-2 text-xs font-medium text-alert">{errors.category.message}</p> : null}
         </div>
       ) : null}
 

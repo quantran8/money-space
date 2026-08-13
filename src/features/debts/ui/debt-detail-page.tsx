@@ -130,7 +130,7 @@ function DebtTrendChart({ debt, history }: { debt: DebtItem; history: DebtHistor
           <p className="text-xs text-muted-foreground">Hiện tại</p>
           <p className="money-number mt-1 text-2xl font-semibold">{formatVndShort(debt.outstandingAmountValue)}</p>
         </div>
-        <p className={cn('text-sm font-medium', change <= 0 ? 'text-[hsl(var(--status-green))]' : 'text-[hsl(var(--status-red))]')}>
+        <p className={cn('text-sm font-medium', change <= 0 ? 'text-accent' : 'text-alert')}>
           {change > 0 ? '+' : change < 0 ? '−' : ''}{formatVndShort(Math.abs(change))}
           {range !== 'all' ? ` trong ${range} tháng` : ''}
         </p>
@@ -314,7 +314,7 @@ export function DebtDetailPage() {
               const date = paymentDate(payment)!
               return <div key={payment.id} className="grid gap-3 py-4 first:pt-0 last:pb-0 sm:grid-cols-[76px_1fr_110px] sm:items-center">
                 <div><p className="text-sm font-semibold">{new Date(`${date}T00:00:00`).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</p><p className="mt-1 text-xs text-muted-foreground">{dueMeta(date)}</p></div>
-                <div className="min-w-0"><p className="truncate text-sm font-medium">{payment.name}</p><p className={cn('mt-1 text-xs', payment.status === 'normal' ? 'text-[hsl(var(--status-green))]' : 'text-muted-foreground')}>{payment.status === 'normal' ? 'Đã chuẩn bị nguồn' : payment.status === 'important' ? 'Cần ưu tiên' : 'Chờ xác nhận'}</p></div>
+                <div className="min-w-0"><p className="truncate text-sm font-medium">{payment.name}</p><p className={cn('mt-1 text-xs', payment.status === 'normal' ? 'text-accent' : 'text-muted-foreground')}>{payment.status === 'normal' ? 'Đã chuẩn bị nguồn' : payment.status === 'important' ? 'Cần ưu tiên' : 'Chờ xác nhận'}</p></div>
                 <p className="money-number text-sm font-semibold sm:text-right">{formatVndShort(payment.amountValue ?? 0)}</p>
               </div>
             })}

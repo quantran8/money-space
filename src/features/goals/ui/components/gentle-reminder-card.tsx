@@ -8,12 +8,12 @@ export function GentleReminderCard() {
   return (
     <Card>
       <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[hsla(var(--accent),0.1)]">
-          <Info className="size-5 text-[hsl(var(--accent))]" strokeWidth={1.8} />
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-tint">
+          <Info className="size-5 text-accent" strokeWidth={1.8} />
         </div>
         <div>
           <h3 className="font-semibold">{t('goals.gentle.title')}</h3>
-          <p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+          <p className="mt-2 text-sm leading-6 text-ink2">
             {t('goals.gentle.description')}
           </p>
         </div>

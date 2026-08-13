@@ -20,9 +20,9 @@ type SubSectionProps = {
  */
 export function SubSection({ title, aside, children, className }: SubSectionProps) {
   return (
-    <div className={cn('rounded-3xl bg-muted/50 p-4', className)}>
+    <div className={cn('sunk p-4', className)}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <p className="text-[13px] text-ink2">{title}</p>
         {aside}
       </div>
       <div className="mt-4">{children}</div>

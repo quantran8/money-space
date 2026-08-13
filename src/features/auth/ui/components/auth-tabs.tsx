@@ -12,7 +12,7 @@ export function AuthTabs({ tab, onTabChange }: AuthTabsProps) {
   const { t } = useTranslation()
 
   return (
-    <div className="rounded-full bg-[hsl(var(--muted))] p-1">
+    <div className="rounded-full bg-sunk p-1">
       <div className="grid grid-cols-2 gap-1">
         <TabButton active={tab === 'login'} onClick={() => onTabChange('login')}>
           {t('auth.tabs.login')}
@@ -42,7 +42,7 @@ function TabButton({
         'rounded-full px-4 py-2.5 text-sm font-semibold transition-colors',
         active
           ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-[0_8px_24px_rgba(0,0,0,0.04)]'
-          : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
+          : 'text-ink2 hover:text-[hsl(var(--foreground))]',
       )}
     >
       {children}

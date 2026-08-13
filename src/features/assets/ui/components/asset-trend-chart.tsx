@@ -63,8 +63,8 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
         <p
           className={
             growth >= 0
-              ? 'text-sm font-medium text-[hsl(var(--status-green))]'
-              : 'text-sm font-medium text-[hsl(var(--status-red))]'
+              ? 'text-sm font-medium text-accent'
+              : 'text-sm font-medium text-alert'
           }
         >
           {growth >= 0 ? '+' : ''}

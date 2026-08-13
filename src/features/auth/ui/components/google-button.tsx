@@ -29,7 +29,7 @@ export function AuthDivider() {
   return (
     <div className="my-6 flex items-center gap-4">
       <div className="h-px flex-1 bg-[hsl(var(--border))]" />
-      <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+      <span className="text-xs font-medium text-ink2">
         {t('auth.or')}
       </span>
       <div className="h-px flex-1 bg-[hsl(var(--border))]" />

@@ -3,15 +3,21 @@ import * as React from 'react'
 
 import { cn } from '@/shared/lib/utils'
 
+/**
+ * Badges stay `rounded-full` (design.md §2.3) and sit on a sunk fill rather than
+ * a stroke — the v4.0 system separates by lightness, not by borders (§2.2).
+ * Colour is reserved for something the user must act on (§5.2), which is why the
+ * neutral `secondary` fill is the default.
+ */
 const badgeVariants = cva(
   'inline-flex w-fit shrink-0 items-center rounded-full px-3 py-1 text-xs font-medium transition-colors',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground',
-        secondary: 'bg-secondary text-muted-foreground',
-        destructive: 'bg-destructive text-destructive-foreground',
-        outline: 'border border-border bg-card text-foreground',
+        default: 'bg-accent text-white',
+        secondary: 'bg-sunk text-ink2',
+        destructive: 'bg-alert text-white',
+        outline: 'bg-sunk text-ink',
       },
     },
     defaultVariants: {

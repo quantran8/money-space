@@ -22,14 +22,14 @@ export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps)
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-[hsla(var(--status-green),0.12)] text-[hsl(var(--status-green))]">
+            <Badge className="bg-accent-tint text-accent">
               {t('goals.primary.onTrack')}
             </Badge>
           </div>
           <h2 className="section-title mt-3 truncate text-2xl font-semibold">
             {goal.name}
           </h2>
-          <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="mt-1 text-sm text-ink2">
             {formatAmount(goalAmount(goal.currentAmount))} /{' '}
             {formatAmount(goalAmount(goal.targetAmount))} ·{' '}
             {t('goals.primary.remaining', { value: formatAmount(remaining) })}
@@ -44,7 +44,7 @@ export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps)
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <div className="surface-muted rounded-3xl p-4">
-          <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+          <p className="text-xs font-medium text-ink2">
             {t('goals.primary.targetDate')}
           </p>
           <p className="money-number mt-2 text-2xl font-semibold">
@@ -55,7 +55,7 @@ export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps)
         </div>
 
         <div className="surface-muted rounded-3xl p-4">
-          <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+          <p className="text-xs font-medium text-ink2">
             {t('goals.primary.atCurrentPace')}
           </p>
           <p className="money-number mt-2 text-2xl font-semibold">
@@ -67,7 +67,7 @@ export function PrimaryGoalCard({ goal, remaining, pace }: PrimaryGoalCardProps)
         </div>
 
         <div className="surface-muted rounded-3xl p-4">
-          <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+          <p className="text-xs font-medium text-ink2">
             {t('goals.primary.needPerMonth')}
           </p>
           <p className="money-number mt-2 text-2xl font-semibold">

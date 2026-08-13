@@ -50,16 +50,16 @@ export function MemberRow({
               <p className="truncate font-medium">{member.name}</p>
               <Badge className={roleTone[member.role]}>{roleLabels[member.role]}</Badge>
               {member.status === 'invited' ? (
-                <Badge className="bg-[hsla(var(--status-orange),0.12)] text-[hsl(var(--status-orange))]">
+                <Badge className="bg-attention-tint text-attention">
                   {t('members.list.pending')}
                 </Badge>
               ) : (
-                <Badge className="bg-[hsla(var(--status-green),0.1)] text-[hsl(var(--status-green))]">
+                <Badge className="bg-accent-tint text-accent">
                   {t('members.list.active')}
                 </Badge>
               )}
             </div>
-            <p className="mt-1 truncate text-sm text-[hsl(var(--muted-foreground))]">
+            <p className="mt-1 truncate text-sm text-ink2">
               {member.email}
             </p>
           </div>
@@ -71,7 +71,7 @@ export function MemberRow({
             variant="outline"
             size="sm"
             onClick={() => onRemove(member.id)}
-            className="shrink-0 border-[hsla(var(--status-red),0.25)] text-[hsl(var(--status-red))] hover:bg-[hsla(var(--status-red),0.06)] hover:text-[hsl(var(--status-red))]"
+            className="shrink-0 border-alert text-alert hover:bg-alert-tint hover:text-alert"
           >
             {t('common.remove')}
           </Button>

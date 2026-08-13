@@ -78,7 +78,7 @@ function PreviewRow({
         <span className="truncate text-[#8e8e93] line-through">{before}</span>
         <span className="shrink-0 text-[#8e8e93]">→</span>
         <span
-          className={`shrink-0 font-semibold ${emphasize ? 'text-[hsl(var(--status-blue))]' : 'text-[#1d1d1f]'}`}
+          className={`shrink-0 font-semibold ${emphasize ? 'text-accent' : 'text-[#1d1d1f]'}`}
         >
           {after}
         </span>
@@ -243,7 +243,7 @@ export function DebtUpdateModeDialog({
           )}
 
           {mode === 'correction' ? (
-            <p className="rounded-[16px] bg-[hsla(var(--status-orange),0.1)] px-4 py-3 text-[13px] leading-5 text-[hsl(var(--status-orange))]">
+            <p className="rounded-[16px] bg-attention-tint px-4 py-3 text-[13px] leading-5 text-attention">
               Thay đổi này sẽ cập nhật lại lịch sử và số dư khoản nợ.
             </p>
           ) : null}

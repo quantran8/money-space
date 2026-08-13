@@ -15,10 +15,10 @@ import { cn } from '@/shared/lib/utils'
  * the copy stays calm: this reports a situation, it does not scold.
  */
 const STATE_TONE: Record<FinancialState, string> = {
-  on_track: 'text-[hsl(var(--status-green))]',
+  on_track: 'text-accent',
   watch: 'text-[hsl(var(--foreground))]',
-  tight: 'text-[hsl(var(--status-orange))]',
-  incomplete: 'text-[hsl(var(--muted-foreground))]',
+  tight: 'text-attention',
+  incomplete: 'text-ink2',
 }
 
 export function FinancialStateSection({
@@ -42,7 +42,7 @@ export function FinancialStateSection({
 
   return (
     <Card className="apple-shadow">
-      <p className="text-sm text-[hsl(var(--muted-foreground))]">
+      <p className="text-sm text-ink2">
         {t('home.financialState.eyebrow')}
       </p>
       <h2 className={cn('page-title mt-2 text-3xl font-semibold', STATE_TONE[state])}>
@@ -52,7 +52,7 @@ export function FinancialStateSection({
       {reasons.length > 0 ? (
         <ul className="mt-4 space-y-1.5">
           {reasons.map((reason) => (
-            <li key={reason} className="text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+            <li key={reason} className="text-sm leading-6 text-ink2">
               {t(`home.financialState.reason.${reason}`)}
             </li>
           ))}

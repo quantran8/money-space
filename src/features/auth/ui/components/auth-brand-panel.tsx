@@ -14,7 +14,7 @@ export function AuthBrandPanel() {
   return (
     <section className="relative hidden overflow-hidden bg-[hsl(var(--primary))] p-10 text-[hsl(var(--primary-foreground))] lg:flex lg:flex-col lg:justify-between">
       <div className="absolute -right-24 -top-24 size-80 rounded-full bg-white/5 blur-3xl" />
-      <div className="absolute -bottom-32 -left-24 size-96 rounded-full bg-[hsla(var(--accent),0.2)] blur-3xl" />
+      <div className="absolute -bottom-32 -left-24 size-96 rounded-full bg-accent-tint blur-3xl" />
 
       <div className="relative z-10 inline-flex items-center gap-3">
         <span className="flex size-11 items-center justify-center rounded-2xl bg-white text-[hsl(var(--primary))] shadow-[0_8px_24px_rgba(0,0,0,0.04)]">

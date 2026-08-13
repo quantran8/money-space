@@ -101,7 +101,7 @@ export function RecordCard({
         <p
           className={cn(
             'mt-1 truncate text-sm font-medium',
-            isUpcoming && record.status === 'overdue' && 'text-[hsl(var(--status-red))]',
+            isUpcoming && record.status === 'overdue' && 'text-alert',
             isUpcoming && record.status === 'pending_confirmation' && 'text-accent',
           )}
         >
@@ -112,7 +112,7 @@ export function RecordCard({
       <p
         className={cn(
           'money-number text-lg font-semibold md:text-right',
-          !isUpcoming && isInflow && 'text-[hsl(var(--status-green))]',
+          !isUpcoming && isInflow && 'text-accent',
         )}
       >
         {amount}
@@ -155,7 +155,7 @@ export function RecordCard({
                 {t('events.redesign.actions.attention')}
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="text-[hsl(var(--status-red))] focus:text-[hsl(var(--status-red))]"
+                className="text-alert focus:text-alert"
                 onSelect={() => onDeleteEvent(record.id)}
               >
                 {t('common.delete')}

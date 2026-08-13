@@ -492,23 +492,23 @@ export function getStatusLabel(status: RecordStatus) {
 
 export function getStatusTone(status: RecordStatus) {
   if (status === 'overdue') {
-    return 'bg-[hsla(var(--status-red),0.1)] text-[hsl(var(--status-red))] border-none'
+    return 'bg-alert-tint text-alert border-none'
   }
   if (status === 'pending_confirmation' || status === 'postponed') {
-    return 'bg-[hsla(var(--status-orange),0.12)] text-[hsl(var(--status-orange))] border-none'
+    return 'bg-attention-tint text-attention border-none'
   }
   if (status === 'recorded' || status === 'paid') {
-    return 'bg-[hsla(var(--status-green),0.12)] text-[hsl(var(--status-green))] border-none'
+    return 'bg-accent-tint text-accent border-none'
   }
-  return 'bg-[hsla(var(--status-blue),0.1)] text-[hsl(var(--status-blue))] border-none'
+  return 'bg-accent-tint text-accent border-none'
 }
 
 export function getAttentionTone(level: AttentionLevel) {
   if (level === 'urgent') {
-    return 'bg-[hsla(var(--status-red),0.08)] text-[hsl(var(--status-red))] border-none'
+    return 'bg-alert-tint text-alert border-none'
   }
   if (level === 'important') {
-    return 'bg-[hsla(var(--status-orange),0.12)] text-[hsl(var(--status-orange))] border-none'
+    return 'bg-attention-tint text-attention border-none'
   }
   return 'bg-secondary text-muted-foreground border-none'
 }
@@ -524,9 +524,9 @@ export function formatRecordAmount(record: FinancialRecordItem, formatVndShort: 
 export function getRecordAmountTone(record: FinancialRecordItem) {
   // Inflow / neutral records (income, asset sale, revaluation) read green;
   // money out reads orange — matching the timeline row's arrow colors.
-  if (record.direction === 'outflow') return 'text-[hsl(var(--status-orange))]'
+  if (record.direction === 'outflow') return 'text-attention'
   if (record.sourceType === 'upcoming_payment') return 'text-foreground'
-  return 'text-[hsl(var(--status-green))]'
+  return 'text-accent'
 }
 
 export function getTimelineGroupLabel(key: TimelineGroupKey) {

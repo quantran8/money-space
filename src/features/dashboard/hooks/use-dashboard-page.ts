@@ -1,37 +1,71 @@
 import { useDashboardOverview } from '@/features/dashboard/hooks/use-dashboard-overview'
-import { buildAssetBuckets } from '@/features/dashboard/model/dashboard'
+import {
+  buildAssetRows,
+  buildDebtRows,
+  buildMoneyLocationRows,
+} from '@/features/dashboard/model/home-derivations'
+import { useDebts } from '@/features/debts/hooks/use-debts'
+import {
+  useFinancialState,
+  useFlexibleMoney,
+  useForecast,
+} from '@/features/forecast/hooks/use-forecast'
+import { useFreshness } from '@/features/freshness/hooks/use-freshness'
 
 /**
- * Home's page state.
+ * Home's page state (design.md §12).
  *
- * Deliberately small. The v3.1 Home (Phase 9) composes slices that own their
- * own data — financial state, flexible money and the forecast come from
- * `features/forecast`, freshness from `features/freshness`, the goal card from
- * `features/goals`. All this hook still owes Home is the gate on the snapshot
- * and the asset buckets behind Money Location.
+ * Composition only — every figure comes from the slice that owns it: the
+ * forecast trio from `features/forecast`, coverage from `features/freshness`,
+ * goals from `features/goals`, sources from `features/assets`.
  *
- * The pre-v3.1 net-worth hero, discuss topics, responsibility rows and
- * reserve-runway derivations were deleted with the components that consumed
- * them: Total Assets must not be the hero (§19) and small transactions are
- * banned from Home (§12).
+ * The skeleton is gated on the whole fan-out rather than on any single query,
+ * because Home's sections are not independent: the hero, the low point and the
+ * coverage strip are three readings of the same inputs, and showing them as
+ * they trickle in would let the household read a number before the strip that
+ * qualifies it has arrived (§2.15).
  */
 export function useDashboardPage() {
-  const { snapshot, goals, assets, isLoading } = useDashboardOverview()
+  const { snapshot, goals, assets, isLoading: overviewLoading } = useDashboardOverview()
 
-  // Keep the skeleton up until EVERY underlying query has resolved — not just
-  // the snapshot. The snapshot query can finish before assets / goals, and
-  // rendering on `!snapshot` alone would flash the page with empty sections.
-  if (isLoading || !snapshot) {
-    return { snapshot: undefined } as const
+  const { forecast, isLoading: forecastLoading } = useForecast()
+  const { flexibleMoney, isLoading: flexibleLoading } = useFlexibleMoney()
+  const { financialState, isLoading: stateLoading } = useFinancialState()
+  const { freshness, isLoading: freshnessLoading, confirmUnchanged } = useFreshness()
+  const { debts, isLoading: debtsLoading } = useDebts()
+
+  const isLoading =
+    overviewLoading ||
+    forecastLoading ||
+    flexibleLoading ||
+    stateLoading ||
+    freshnessLoading ||
+    debtsLoading
+
+  if (isLoading || !snapshot || !flexibleMoney) {
+    return { isReady: false as const }
   }
 
-  // Only non-empty buckets, so the segmented bar and legend stay honest when a
-  // household holds just one or two classes.
-  const { buckets } = buildAssetBuckets(assets)
+  const { rows: sourceRows, totalCash } = buildMoneyLocationRows(assets, freshness)
+
+  // The Tài sản | Nợ pair is read together (§9.1), so both halves are derived
+  // here rather than each section reaching for its own slice.
+  const assetSummary = buildAssetRows(assets)
+  const debtSummary = buildDebtRows(debts, forecast)
 
   return {
-    snapshot,
+    isReady: true as const,
     goals,
-    assetBuckets: buckets.filter((bucket) => bucket.value > 0),
-  } as const
+    mainGoal: goals[0],
+    forecast,
+    flexibleMoney,
+    financialState,
+    freshness,
+    sourceRows,
+    totalCash,
+    assetSummary,
+    debtSummary,
+    /** Quick update = confirm the stale sources are unchanged (§14.5). */
+    confirmUnchanged,
+  }
 }

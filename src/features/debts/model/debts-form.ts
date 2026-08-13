@@ -93,15 +93,15 @@ export function formatDate(isoDate?: string) {
 
 export function getStatusTone(status: DebtStatus) {
   if (status === 'overdue') {
-    return 'bg-[hsla(var(--status-red),0.1)] text-[hsl(var(--status-red))] border-none'
+    return 'bg-alert-tint text-alert border-none'
   }
   if (status === 'paid_off') {
-    return 'bg-[hsla(var(--status-green),0.12)] text-[hsl(var(--status-green))] border-none'
+    return 'bg-accent-tint text-accent border-none'
   }
   if (status === 'paused' || status === 'cancelled') {
     return 'bg-secondary text-muted-foreground border-none'
   }
-  return 'bg-[hsla(var(--status-orange),0.12)] text-[hsl(var(--status-orange))] border-none'
+  return 'bg-attention-tint text-attention border-none'
 }
 
 export function getStatusLabel(status: DebtStatus) {

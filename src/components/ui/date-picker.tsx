@@ -55,19 +55,18 @@ export function DatePicker({
           type="button"
           variant="outline"
           className={cn(
-            'h-11 w-full justify-start rounded-[22px] px-4 text-left text-sm font-normal shadow-none [&_svg]:text-muted-foreground',
-            !selected && 'text-muted-foreground',
-            ariaInvalid &&
-              'border-[hsl(var(--status-red))] focus-visible:ring-[hsl(var(--status-red))]',
+            'h-11 w-full justify-start rounded-control px-4 text-left text-sm font-normal [&_svg]:text-ink3',
+            !selected && 'text-ink3',
+            ariaInvalid && 'outline-2 outline-alert',
             className
           )}
           aria-invalid={ariaInvalid}
         >
-          <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
+          <CalendarIcon className="mr-2 size-4 text-ink3" />
           {selected ? format(selected, 'P', { locale }) : resolvedPlaceholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto rounded-[24px] p-0">
+      <PopoverContent align="start" className="w-auto p-0">
         <Calendar
           mode="single"
           selected={selected}

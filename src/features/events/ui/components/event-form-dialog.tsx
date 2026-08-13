@@ -125,7 +125,7 @@ export function EventFormDialog({
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent
-        className={`gap-0 overflow-x-hidden border-0 bg-[hsl(var(--muted))]/95 p-0 [&>button]:right-5 [&>button]:top-5 [&>button]:grid [&>button]:size-9 [&>button]:place-items-center [&>button]:rounded-full [&>button]:bg-black/[0.05] ${isActualForm ? 'sm:max-w-[560px]' : 'sm:max-w-[720px]'}`}
+        className={`gap-0 overflow-x-hidden border-0 bg-sunk/95 p-0 [&>button]:right-5 [&>button]:top-5 [&>button]:grid [&>button]:size-9 [&>button]:place-items-center [&>button]:rounded-full [&>button]:bg-black/[0.05] ${isActualForm ? 'sm:max-w-[560px]' : 'sm:max-w-[720px]'}`}
       >
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-8">
           <ResponsiveDialogTitle className="text-[25px] font-semibold tracking-[-0.035em] sm:text-[28px]">

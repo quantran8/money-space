@@ -27,7 +27,7 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
 
       <div className="mt-4">
         <div className="flex items-baseline justify-between gap-3">
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm text-ink2">
             {t('goals.projection.progress')}
           </p>
           <p className="money-number text-sm font-semibold">
@@ -36,7 +36,7 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
           </p>
         </div>
         <Progress value={projection.progressPercent} className="mt-3 h-3" />
-        <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 text-xs text-ink2">
           {t('goals.projection.remaining', {
             amount: formatVndShort(projection.remainingAmount),
           })}
@@ -50,7 +50,7 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
               {projection.projectedCompletionDate}
             </p>
             {projection.estimatedMonthsToGoal !== null ? (
-              <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+              <p className="mt-1 text-xs text-ink2">
                 {t('goals.projection.months', { count: projection.estimatedMonthsToGoal })}
               </p>
             ) : null}
@@ -71,7 +71,7 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
       ) : (
         // No declared contribution → progress only, plus a calm invitation to
         // declare one. Never a projected date.
-        <p className="mt-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-4 text-sm leading-6 text-ink2">
           {t(`goals.projection.reason.${projection.reason}`)}
         </p>
       )}

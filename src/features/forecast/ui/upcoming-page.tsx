@@ -74,7 +74,7 @@ export function UpcomingPage() {
 
       {forecast && forecast.excludedPrivateRecordCount > 0 ? (
         <Card>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm text-ink2">
             {t('upcoming.privateExcluded', {
               count: forecast.excludedPrivateRecordCount,
             })}

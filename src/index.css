@@ -1,87 +1,150 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/**
+ * Money Space — Web Design System v4.0 (family-finance-v3.1/design.md).
+ *
+ * Three surfaces separated by LIGHTNESS, not by strokes: app → panel → sunk
+ * (§2.1). Because borders, dividers and shadows are gone (§2.2–2.4), that
+ * lightness step is the only remaining mechanism that draws a section boundary
+ * — which is why the page background is tinted and white is reserved for panels.
+ *
+ * The `--ledger` palette is the shipped one. `--archive` exists as the approved
+ * alternate (§5.1) but is NOT a user-facing theme switcher (§25).
+ */
 @theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-status-green: hsl(var(--status-green));
-  --color-status-orange: hsl(var(--status-orange));
-  --color-status-red: hsl(var(--status-red));
-  --color-status-blue: hsl(var(--status-blue));
-  --radius-sm: calc(var(--radius) - 8px);
-  --radius-md: calc(var(--radius) - 6px);
-  --radius-lg: calc(var(--radius) - 2px);
-  --radius-xl: var(--radius);
+  /* v4.0 surfaces & ink. Raw hex — these are NOT hsl-triplet tokens. */
+  --color-app: var(--app);
+  --color-panel: var(--panel);
+  --color-sunk: var(--sunk);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink2);
+  --color-ink3: var(--ink3);
+  --color-hair: var(--hair);
+  --color-accent-soft: var(--accent-soft);
+  --color-attention: var(--attention);
+  --color-alert: var(--alert);
+  --color-committed: var(--committed);
+  --color-protect: var(--protect);
+  --color-accent-tint: var(--accent-tint);
+  --color-attention-tint: var(--attention-tint);
+  --color-alert-tint: var(--alert-tint);
+
+  /* shadcn compatibility layer. Mapped onto the v4.0 surfaces (§6) so the
+     primitives keep working while features migrate off them. */
+  --color-background: var(--app);
+  --color-foreground: var(--ink);
+  --color-card: var(--panel);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--panel);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--sunk);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--sunk);
+  --color-muted-foreground: var(--ink2);
+  --color-accent: var(--accent);
+  --color-accent-foreground: #ffffff;
+  --color-destructive: var(--alert);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--hair);
+  --color-input: var(--sunk);
+  --color-ring: var(--accent);
+
+  /* Status colours collapse onto the v4.0 semantic set (§5.2). There is no
+     blue and no separate green: accent IS the positive tone. */
+  --color-status-green: var(--accent);
+  --color-status-orange: var(--attention);
+  --color-status-red: var(--alert);
+  --color-status-blue: var(--accent);
+
+  --radius-control: var(--radius-control);
+  --radius-sunk: var(--radius-sunk);
+  --radius-panel: var(--radius-panel);
+  --radius-card: var(--radius-panel);
+  --radius-sm: var(--radius-control);
+  --radius-md: var(--radius-control);
+  --radius-lg: var(--radius-sunk);
+  --radius-xl: var(--radius-panel);
+
+  --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
 @layer base {
-  :root {
-    --background: 240 11% 96%;
-    --foreground: 240 3% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 3% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 3% 12%;
-    --primary: 240 3% 12%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 6% 96%;
-    --secondary-foreground: 240 3% 12%;
-    --muted: 240 6% 96%;
-    --muted-foreground: 240 4% 44%;
-    --accent: 211 100% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 3 100% 59%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 240 6% 91%;
-    --input: 240 6% 91%;
-    --ring: 211 100% 50%;
-    --radius: 1.25rem;
-    --status-green: 142 71% 45%;
-    --status-orange: 35 100% 50%;
-    --status-red: 3 100% 59%;
-    --status-blue: 211 100% 50%;
+  /* Ledger — the shipped palette (§5.1). Cool neutral, saturated banking green. */
+  :root,
+  .ledger {
+    --app: #eef1f3;
+    --panel: #ffffff;
+    --sunk: #f5f7f8;
+    --ink: #15181c;
+    --ink2: #525860;
+    --ink3: #868d96;
+    --hair: #e5e9ec;
+    --scrim: rgba(21, 24, 28, 0.34);
+    --accent: #0a6b47;
+    --accent-soft: #e3efea;
+    --attention: #b07a1e;
+    --alert: #b23a26;
+    --committed: #d2d6da;
+    --protect: #a9b0b8;
+
+    --radius-panel: 14px;
+    --radius-sunk: 10px;
+    --radius-control: 8px;
+
+    /**
+     * Tinted fills for badges and soft backgrounds.
+     *
+     * v3.x wrote these inline as `hsla(var(--status-green), 0.12)`, which only
+     * worked while the tokens were bare HSL triplets. v4.0 tokens are hex, so
+     * that form silently resolves to nothing — these named tokens replace it.
+     *
+     * Per §5.2 colour marks what needs action, so the set is deliberately small:
+     * accent for positive/inflow, attention for "needs a look", alert for a real
+     * shortfall. There is no blue and no separate green.
+     */
+    --accent-tint: rgba(10, 107, 71, 0.1);
+    --attention-tint: rgba(176, 122, 30, 0.12);
+    --alert-tint: rgba(178, 58, 38, 0.1);
   }
 
-  * {
-    border-color: hsl(var(--border));
+  /* Archive — approved alternate (§5.1). Warm ivory, wine red. */
+  .archive {
+    --app: #f1ece2;
+    --panel: #fdfbf7;
+    --sunk: #f7f3eb;
+    --ink: #1e1913;
+    --ink2: #5c5348;
+    --ink3: #8e8375;
+    --hair: #e9e2d6;
+    --scrim: rgba(30, 25, 19, 0.34);
+    --accent: #8c2f39;
+    --accent-soft: #f4e8e8;
+    --attention: #9a6a16;
+    --alert: #a8391f;
+    --committed: #dcd3c4;
+    --protect: #b5aa98;
+
+    --accent-tint: rgba(140, 47, 57, 0.1);
+    --attention-tint: rgba(154, 106, 22, 0.12);
+    --alert-tint: rgba(168, 57, 31, 0.1);
   }
 
   html {
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
-    background: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family:
-      -apple-system,
-      BlinkMacSystemFont,
-      "SF Pro Display",
-      "SF Pro Text",
-      Inter,
-      "Segoe UI",
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    background: var(--app);
+    color: var(--ink);
+    font-family: "Be Vietnam Pro", system-ui, sans-serif;
   }
 
   button,
@@ -94,41 +157,159 @@
   #root {
     min-height: 100vh;
   }
+
+  /* Focus is the one place a stroke is always allowed (§24). */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
-  .apple-shadow {
-    box-shadow: 0 16px 40px rgba(17, 24, 39, 0.06);
+  /* --- Surfaces (§2.1, §11.1–11.2) ------------------------------------- */
+
+  .panel {
+    background: var(--panel);
+    border-radius: var(--radius-panel);
   }
 
-  .apple-shadow-soft {
-    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
+  .sunk {
+    background: var(--sunk);
+    border-radius: var(--radius-sunk);
   }
 
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  /* --- Type (§10) ------------------------------------------------------- */
+
+  /**
+   * Every money value. Tabular figures keep columns of numbers aligned so a
+   * table can be scanned vertically without reading each row (§10.4).
+   */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
   }
 
+  /**
+   * The small mono uppercase label. Only ever wraps SHORT ASCII strings —
+   * IBM Plex Mono renders Vietnamese diacritics poorly, so `.label` must not
+   * be applied to a sentence or to any accented text (§10.1, §10.3).
+   */
+  .label {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink3);
+  }
+
+  /**
+   * Negative tracking is for NUMBERS only. Applying it to Vietnamese text
+   * crushes the diacritics (§10.3).
+   */
   .money-number {
-    letter-spacing: -0.07em;
-    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.03em;
+    font-weight: 500;
   }
 
   .page-title {
-    letter-spacing: -0.045em;
+    letter-spacing: -0.015em;
+    font-weight: 500;
   }
 
   .section-title {
-    letter-spacing: -0.035em;
+    letter-spacing: -0.01em;
+    font-weight: 500;
   }
 
-  .dashboard-shell {
-    max-width: 1536px;
+  /* --- Nav (§7.4, §21) --------------------------------------------------- */
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 33px;
+    padding: 0 12px;
+    border-radius: var(--radius-control);
+    font-size: 14px;
+    color: var(--ink2);
+    transition:
+      background 0.14s ease,
+      color 0.14s ease;
   }
 
-  .surface-muted {
-    background: #f2f2f7;
+  .nav-item:hover {
+    background: var(--sunk);
+    color: var(--ink);
+  }
+
+  .nav-item[aria-current] {
+    background: var(--panel);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* --- Dense table (§11.3) ---------------------------------------------- */
+
+  /**
+   * Rows are separated by rhythm and hover, never by rules (§2.4). The
+   * first/last-cell padding + radius is what makes the hover read as a single
+   * rounded band instead of a full-bleed stripe.
+   */
+  .table-dense tbody tr {
+    transition: background 0.12s ease;
+  }
+
+  .table-dense tbody tr:hover {
+    background: var(--sunk);
+  }
+
+  .table-dense td:first-child,
+  .table-dense th:first-child {
+    padding-left: 10px;
+    border-radius: 7px 0 0 7px;
+  }
+
+  .table-dense td:last-child,
+  .table-dense th:last-child {
+    padding-right: 10px;
+    border-radius: 0 7px 7px 0;
+  }
+
+  /* --- Motion (§24) ------------------------------------------------------ */
+
+  /** Bars and strips animate on first mount only. Money numbers never count up. */
+  .seg {
+    animation: seg-grow 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    transform-origin: left;
+  }
+
+  @keyframes seg-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seg {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

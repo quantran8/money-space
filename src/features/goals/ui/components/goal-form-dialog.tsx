@@ -56,7 +56,7 @@ export function GoalFormDialog({
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[560px]">
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
-          <p className="text-sm font-medium text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm font-medium text-ink2">
             {isEditing ? t('goals.form.editEyebrow') : t('goals.form.eyebrow')}
           </p>
           <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
@@ -73,7 +73,7 @@ export function GoalFormDialog({
             label={t('goals.form.target')}
             error={errors.target?.message}
             trailing={
-              <span className="text-lg font-semibold text-[hsl(var(--muted-foreground))]">₫</span>
+              <span className="text-lg font-semibold text-ink2">₫</span>
             }
           >
             <Controller
@@ -145,7 +145,7 @@ export function GoalFormDialog({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-foreground hover:bg-[hsl(var(--muted))]"
+              className="text-foreground hover:bg-sunk"
             >
               {t('common.cancel')}
             </Button>
