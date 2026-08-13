@@ -4,11 +4,10 @@ import { motion } from 'motion/react'
 import {
   Calculator,
   CalendarDays,
-  History,
+  CircleDollarSign,
   Landmark,
   LayoutGrid,
   Menu,
-  Settings,
   Target,
   Users,
   Wallet,
@@ -58,9 +57,8 @@ const NAV_GROUPS: { labelKey: string; items: NavItem[] }[] = [
   {
     labelKey: 'nav.group.household',
     items: [
-      { to: '/events', labelKey: 'nav.events', icon: History },
+      { to: '/events', labelKey: 'nav.events', icon: CircleDollarSign },
       { to: '/household', labelKey: 'nav.household', icon: Users },
-      { to: '/settings', labelKey: 'nav.settings', icon: Settings },
     ],
   },
 ]
@@ -104,7 +102,7 @@ function NavGroups({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
-/** Primary CTA, directly under the logo (§7.4). One of exactly two entry points. */
+/** The sole what-if entry point, directly under the sidebar logo. */
 function SimulateButton({ onClick }: { onClick: () => void }) {
   const { t } = useTranslation()
 
@@ -189,7 +187,7 @@ export function AppShell() {
           <span className="text-[15px] font-medium tracking-[.01em]">Money Space</span>
         </div>
 
-        <SimulateButton onClick={() => openWhatIf({ source: 'home' })} />
+        <SimulateButton onClick={() => openWhatIf({ source: 'other' })} />
 
         <NavGroups />
 
@@ -242,6 +240,15 @@ export function AppShell() {
                 </Dialog.Close>
               </div>
 
+              <div className="mt-5">
+                <SimulateButton
+                  onClick={() => {
+                    setDrawerOpen(false)
+                    openWhatIf({ source: 'other' })
+                  }}
+                />
+              </div>
+
               <NavGroups onNavigate={() => setDrawerOpen(false)} />
 
               <div className="mt-auto px-3 pt-6">
@@ -257,15 +264,14 @@ export function AppShell() {
           animate="animate"
           variants={pageVariants}
           transition={pageTransition}
-          className="px-5 py-5 pb-24 lg:px-7 lg:pb-6"
+          className="mx-auto w-full max-w-[1220px] px-5 py-5 pb-24 lg:px-7 lg:pb-6"
         >
           <Outlet />
         </motion.div>
       </main>
 
-      {/* What-if is a contextual action available anywhere, deliberately not a
-          route (§2.9). The floating trigger is gone: Home and the sidebar are
-          the only two entry points (§12.1). */}
+      {/* What-if is deliberately not a route (§2.9). Its sheet is mounted once
+          here and opened only by the sidebar CTA. */}
       <MobileBottomNav />
       <WhatIfSheet />
     </div>

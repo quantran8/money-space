@@ -114,6 +114,11 @@ export type Asset = {
   calculationTerm?: CalculationTerm
   currentValue?: number
   valueUpdatedAt?: string
+  /** Classification and sharing fields returned by the v3.1 API. */
+  financialNature?: import('@/features/assets/model/asset-classification').FinancialNature
+  visibilityLevel?: import('@/features/assets/model/asset-classification').VisibilityLevel
+  holderMemberId?: string | null
+  privacyOwnerMemberId?: string | null
 }
 
 /** Price of one `unit` expressed in `quoteCurrency`. */

@@ -5,9 +5,9 @@ import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
+import { Panel } from '@/components/ui/panel'
 import { useEventCategories } from '@/features/events/hooks/use-event-categories'
 import type { EventCategoryItem } from '@/features/events/api/event-categories.repository'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
@@ -22,6 +22,7 @@ export function CategoriesCard() {
 
   const [newCode, setNewCode] = useState('')
   const [newLabel, setNewLabel] = useState('')
+  const [addOpen, setAddOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingLabel, setEditingLabel] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<EventCategoryItem | null>(null)
@@ -45,6 +46,7 @@ export function CategoriesCard() {
       })
       setNewCode('')
       setNewLabel('')
+      setAddOpen(false)
       toast.success(t('settings.categories.created'))
     } catch (error) {
       toast.error(getErrorMessage(error, t('settings.categories.createError')))
@@ -94,18 +96,31 @@ export function CategoriesCard() {
   }
 
   return (
-    <Card>
-      <div className="mb-5 flex items-start justify-between gap-4">
+    <Panel>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="section-title text-xl font-semibold">
-            {t('settings.categories.title')}
-          </h2>
+          <h2 className="section-title text-[16px]">{t('settings.categories.title')}</h2>
+          <p className="mt-2 max-w-[680px] text-[12px] leading-5 text-ink2">
+            {t('settings.categories.description')}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="font-mono text-[11px] text-ink3">
+            {t('household.merged.categoryCount', {
+              system: categories.filter((category) => category.isSystem).length,
+              custom: categories.filter((category) => !category.isSystem).length,
+            })}
+          </span>
+          <Button type="button" variant="secondary" size="sm" onClick={() => setAddOpen((open) => !open)}>
+            <Plus className="size-3.5" />
+            {t('settings.categories.addAction')}
+          </Button>
         </div>
       </div>
 
-      <ul className="divide-y divide-border">
+      <ul className="mt-7 grid gap-x-8 gap-y-1 md:grid-cols-2">
         {categories.length === 0 ? (
-          <li className="rounded-[18px] bg-sunk px-4 py-3 text-sm text-ink2">
+          <li className="rounded-sunk bg-sunk px-4 py-8 text-center text-[13px] text-ink2 md:col-span-2">
             {t('settings.categories.empty')}
           </li>
         ) : null}
@@ -115,7 +130,7 @@ export function CategoriesCard() {
           return (
             <li
               key={category.id}
-              className="flex items-center gap-2 py-3 first:pt-0"
+              className="flex min-h-12 items-center gap-2 rounded-sunk px-3 py-2 transition-colors hover:bg-sunk"
             >
               {isEditing ? (
                 <Input
@@ -127,17 +142,17 @@ export function CategoriesCard() {
               ) : (
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-medium text-foreground">
+                    <p className="truncate text-[13px] font-medium text-foreground">
                       {displayName(category)}
                     </p>
                     {category.isDefault ? (
-                      <Badge variant="secondary" className="shrink-0">
+                      <Badge variant="secondary" className="shrink-0 text-[10px]">
                         {t('settings.categories.default')}
                       </Badge>
                     ) : null}
                   </div>
                   {!category.isSystem ? (
-                    <p className="truncate text-xs text-ink2">
+                    <p className="truncate text-[10px] text-ink3">
                       {category.code}
                     </p>
                   ) : null}
@@ -169,7 +184,7 @@ export function CategoriesCard() {
               ) : null}
 
               {category.isSystem ? (
-                <Badge variant="secondary">{t('settings.categories.system')}</Badge>
+                <Badge variant="secondary" className="text-[10px] text-ink3">{t('settings.categories.system')}</Badge>
               ) : isEditing ? (
                 <div className="flex shrink-0 items-center gap-1">
                   <Button
@@ -220,13 +235,9 @@ export function CategoriesCard() {
         })}
       </ul>
 
-      {/* Add a custom category. */}
-      <details className="mt-4 border-t border-border pt-4">
-        <summary className="cursor-pointer list-none text-sm font-medium text-muted-foreground">
-          {t('settings.categories.manage')}
-        </summary>
-        <div className="mt-4 space-y-2">
-        <p className="text-sm font-medium text-foreground">
+      {addOpen ? (
+        <div className="sunk mt-5 space-y-3 p-4">
+        <p className="text-[13px] font-medium text-foreground">
           {t('settings.categories.addTitle')}
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -243,13 +254,13 @@ export function CategoriesCard() {
             aria-label={t('settings.categories.codeLabel')}
           />
         </div>
-        <p className="text-xs text-ink2">
+        <p className="text-[11px] text-ink2">
           {t('settings.categories.codeHint')}
         </p>
         <Button
           type="button"
           variant="secondary"
-          className="w-full"
+          size="sm"
           onClick={handleAdd}
           disabled={!canAdd || createCategory.isPending}
         >
@@ -257,7 +268,7 @@ export function CategoriesCard() {
           {t('settings.categories.addAction')}
         </Button>
         </div>
-      </details>
+      ) : null}
 
       <ConfirmDialog
         open={deleteTarget !== null}
@@ -269,6 +280,6 @@ export function CategoriesCard() {
         confirmDisabled={deleteCategory.isPending}
         onConfirm={() => (deleteTarget ? handleDelete(deleteTarget) : undefined)}
       />
-    </Card>
+    </Panel>
   )
 }

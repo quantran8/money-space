@@ -1,14 +1,14 @@
-import { ArrowDownLeft, ArrowUpRight, Check, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Panel, PanelHeader, TotalRow } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import type {
   ForecastDay,
@@ -20,12 +20,14 @@ import {
   occurrenceMarkers,
   runningBalancesForDay,
 } from '@/features/forecast/model/forecast-presentation'
-import { formatVndShort } from '@/shared/lib/format-money'
+import { formatVndCell, formatVndCellSigned, formatVndScale } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
 type ForecastTimelineProps = {
   days: ForecastDay[]
   protectedReserveAmount: number
+  endingProjectedBalance: number
+  ownerNameByEventId?: Record<string, string | undefined>
   isLoading?: boolean
   isEmpty?: boolean
   /** Opens the create dialog from the empty state. */
@@ -36,9 +38,16 @@ type ForecastTimelineProps = {
   onDelete?: (sourceEventId: string) => void
 }
 
+type TimelineRow = {
+  occurrence: ForecastOccurrence
+  runningBalance?: number
+}
+
 export function ForecastTimeline({
   days,
   protectedReserveAmount,
+  endingProjectedBalance,
+  ownerNameByEventId = {},
   isLoading = false,
   isEmpty = false,
   onAdd,
@@ -47,106 +56,79 @@ export function ForecastTimeline({
   onDelete,
 }: ForecastTimelineProps) {
   const { t } = useTranslation()
+  const rows = flattenTimeline(days)
 
   if (isLoading) {
     return (
-      <Card>
-        <div className="space-y-4">
-          {[0, 1, 2].map((row) => (
-            <Skeleton key={row} className="h-16 w-full" />
+      <Panel>
+        <PanelHeader title={t('upcoming.timeline.title')} />
+        <div className="mt-7 space-y-2">
+          {[0, 1, 2, 3].map((row) => (
+            <Skeleton key={row} className="h-12 w-full rounded-control" />
           ))}
         </div>
-      </Card>
+      </Panel>
     )
   }
 
   if (isEmpty) {
     return (
-      <Card>
-        <div className="flex flex-col items-center gap-4 py-8">
-          <p className="text-center text-sm text-ink2">
+      <Panel>
+        <PanelHeader
+          title={t('upcoming.timeline.title')}
+          meta={t('upcoming.timeline.count', { count: 0 })}
+        />
+        <div className="flex flex-col items-center gap-4 py-10">
+          <p className="text-center text-[13px] text-ink2">
             {t('upcoming.timeline.empty')}
           </p>
-          {/* An empty forecast is the one place the add action matters most —
-              there is nothing else on the screen to act on. */}
           {onAdd ? (
-            <Button onClick={onAdd}>
-              <Plus className="mr-2 size-4" />
-              {t('upcoming.form.submit')}
+            <Button size="sm" onClick={onAdd}>
+              <Plus className="size-4" />
+              {t('upcoming.form.title')}
             </Button>
           ) : null}
         </div>
-      </Card>
+      </Panel>
     )
   }
 
   return (
-    <Card>
-      <h2 className="section-title text-xl font-semibold">{t('upcoming.timeline.title')}</h2>
-      <div className="mt-5 space-y-6">
-        {days.map((day) => (
-          <DayGroup
-            key={day.date}
-            day={day}
-            protectedReserveAmount={protectedReserveAmount}
-            onComplete={onComplete}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ))}
-      </div>
-    </Card>
-  )
-}
+    <Panel>
+      <PanelHeader
+        title={t('upcoming.timeline.title')}
+        meta={t('upcoming.timeline.count', { count: rows.length })}
+      />
 
-function DayGroup({
-  day,
-  protectedReserveAmount,
-  onComplete,
-  onEdit,
-  onDelete,
-}: {
-  day: ForecastDay
-  protectedReserveAmount: number
-  onComplete?: (sourceEventId: string, occurrenceDate: string) => void
-  onEdit?: (sourceEventId: string) => void
-  onDelete?: (sourceEventId: string) => void
-}) {
-  const { t, i18n } = useTranslation()
-  const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
-  const balances = runningBalancesForDay(day)
-  const label = new Date(`${day.date}T00:00:00`).toLocaleDateString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  })
-  const closingTone = balanceTone(day.closingBalance, protectedReserveAmount)
-
-  return (
-    <div>
-      <div className="flex items-baseline justify-between gap-4">
-        <p className="text-sm font-semibold">{label}</p>
-        <p className="text-xs text-ink2">
-          {t('upcoming.timeline.closing')}{' '}
-          <span className={cn('money-number font-semibold', BALANCE_TONE_CLASS[closingTone])}>
-            {formatVndShort(day.closingBalance)}
-          </span>
-        </p>
+      <div className="mt-7 hidden grid-cols-[84px_minmax(220px,1fr)_116px_128px_128px_32px] px-3 lg:grid">
+        <p className="label">{t('upcoming.timeline.columns.date')}</p>
+        <p className="label">{t('upcoming.timeline.columns.item')}</p>
+        <p className="label">{t('upcoming.timeline.columns.owner')}</p>
+        <p className="label text-right">{t('upcoming.timeline.columns.amount')}</p>
+        <p className="label text-right">{t('upcoming.timeline.columns.remaining')}</p>
+        <span />
       </div>
-      <div className="mt-3 divide-y divide-border">
-        {day.occurrences.map((occurrence) => (
+
+      <div className="mt-2 space-y-1">
+        {rows.map(({ occurrence, runningBalance }) => (
           <OccurrenceRow
             key={occurrence.occurrenceKey}
             occurrence={occurrence}
-            runningBalance={balances.get(occurrence.occurrenceKey) ?? day.closingBalance}
+            runningBalance={runningBalance}
             protectedReserveAmount={protectedReserveAmount}
+            ownerName={ownerNameByEventId[occurrence.sourceEventId]}
             onComplete={onComplete}
             onEdit={onEdit}
             onDelete={onDelete}
           />
         ))}
       </div>
-    </div>
+
+      <TotalRow
+        label={t('upcoming.timeline.ending')}
+        value={formatVndScale(endingProjectedBalance)}
+      />
+    </Panel>
   )
 }
 
@@ -154,79 +136,70 @@ function OccurrenceRow({
   occurrence,
   runningBalance,
   protectedReserveAmount,
+  ownerName,
   onComplete,
   onEdit,
   onDelete,
 }: {
   occurrence: ForecastOccurrence
-  runningBalance: number
+  runningBalance?: number
   protectedReserveAmount: number
+  ownerName?: string
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
 }) {
   const { t } = useTranslation()
   const isIncoming = occurrence.direction === 'incoming'
-  const Icon = isIncoming ? ArrowDownLeft : ArrowUpRight
-  const tone = balanceTone(runningBalance, protectedReserveAmount)
-  const markers = occurrenceMarkers(occurrence)
+  const tone = balanceTone(runningBalance ?? 0, protectedReserveAmount)
+  const markers = occurrenceMarkers(occurrence).filter(
+    (marker) => marker !== 'confirmed' && marker !== 'required',
+  )
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-3 py-3',
-        // Not counted in the balance — shown, but visually set back so it can't
-        // be mistaken for money that actually moves.
-        !occurrence.countedInBalance && 'opacity-60',
-      )}
-    >
-      <div
-        className={cn(
-          'flex size-9 shrink-0 items-center justify-center rounded-full',
-          isIncoming
-            ? 'bg-accent-tint text-accent'
-            : 'bg-sunk text-ink2',
-        )}
-      >
-        <Icon className="size-4" strokeWidth={1.8} />
-      </div>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[84px_minmax(220px,1fr)_116px_128px_128px_32px] lg:items-center lg:py-2.5">
+      <p className="col-start-1 row-start-1 font-mono text-[11px] text-ink3 lg:col-auto lg:row-auto">
+        {formatDayMonth(occurrence.date)}
+      </p>
 
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{occurrence.name}</p>
-        <div className="mt-1 flex flex-wrap gap-1.5">
+      <div className="col-start-1 row-start-2 mt-1 min-w-0 lg:col-auto lg:row-auto lg:mt-0">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="truncate text-[13px] font-medium">{occurrence.name}</span>
           {markers.map((marker) => (
-            <span
-              key={marker}
-              className="rounded-full bg-sunk px-2 py-0.5 text-[11px] font-medium text-ink2"
-            >
+            <span key={marker} className="font-mono text-[10px] text-attention">
               {t(`upcoming.markers.${marker}`)}
             </span>
           ))}
         </div>
       </div>
 
-      <p className="money-number shrink-0 text-sm font-semibold">
-        {isIncoming ? '+' : '−'}
-        {formatVndShort(occurrence.amount)}
+      <p className="col-start-1 row-start-3 mt-2 text-[12px] text-ink2 lg:col-auto lg:row-auto lg:mt-0">
+        {ownerName ?? t('upcoming.timeline.householdOwner')}
       </p>
 
-      {/* The trailing running-balance column — what makes this a forecast
-          rather than a list. */}
       <p
         className={cn(
-          'money-number w-24 shrink-0 text-right text-sm font-semibold',
-          BALANCE_TONE_CLASS[tone],
+          'num col-start-2 row-start-2 mt-1 text-right text-[14px] font-medium lg:col-auto lg:row-auto lg:mt-0',
+          isIncoming && 'text-accent',
         )}
       >
-        <span className="text-ink2">→ </span>
-        {formatVndShort(runningBalance)}
+        {formatVndCellSigned(isIncoming ? occurrence.amount : -occurrence.amount)}
+      </p>
+
+      <p
+        className={cn(
+          'num col-start-2 row-start-3 mt-2 text-right text-[12px] text-ink2 lg:col-auto lg:row-auto lg:mt-0 lg:text-[14px]',
+          runningBalance !== undefined && BALANCE_TONE_CLASS[tone],
+        )}
+      >
+        {runningBalance === undefined ? '—' : formatVndCell(runningBalance)}
       </p>
 
       {onComplete || onEdit || onDelete ? (
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={t('upcoming.rowActions.label')}
-            className="shrink-0 rounded-full p-1.5 text-ink2 outline-none transition hover:bg-sunk hover:text-foreground"
+            className="col-start-2 row-start-1 flex size-8 items-center justify-center justify-self-end rounded-full text-ink3 outline-none transition hover:bg-panel hover:text-ink lg:col-auto lg:row-auto"
           >
             <MoreHorizontal className="size-4" />
           </DropdownMenuTrigger>
@@ -259,4 +232,23 @@ function OccurrenceRow({
       ) : null}
     </div>
   )
+}
+
+function flattenTimeline(days: ForecastDay[]): TimelineRow[] {
+  return days.flatMap((day) => {
+    const balances = runningBalancesForDay(day)
+    return day.occurrences.map((occurrence) => ({
+      occurrence,
+      // A displayed-but-excluded amount must not claim a resulting balance.
+      runningBalance: occurrence.countedInBalance
+        ? balances.get(occurrence.occurrenceKey)
+        : undefined,
+    }))
+  })
+}
+
+/** "24/08" — mono-safe ASCII, per design.md §10.1. */
+function formatDayMonth(isoDate: string): string {
+  const match = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  return match ? `${match[3]}/${match[2]}` : isoDate
 }

@@ -14,7 +14,15 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
   - `formula_calculated` → requires `principal` + `interestRate ≥ 0` + `startDate`.
 - `toAsset()` converts raw form → typed `Asset`, returning `null` on incomplete inputs. `fromAsset()` does the reverse (seed the form for **edit**).
 - **Edit / create share one form** (frontend-web): the same discriminated `AssetFormDialog`; edit re-seeds via `fromAsset` and PATCHes. Rows have an Edit/Delete actions menu.
-- **Liquidity summary**: assets are grouped/summed into 3 buckets — "Có thể dùng ngay" (`usable_now`), "Tiết kiệm & dự phòng" (`not_immediately_usable`), "Dài hạn" (`long_term`). `snapshotTotal` = sum of the three (`computeLiquidityTotals` on backend).
+- **Liquidity summary**: assets are grouped/summed into 3 buckets — "Có thể dùng ngay" (`usable_now`), "Tiết kiệm" (`not_immediately_usable`), "Dài hạn" (`long_term`). `snapshotTotal` = sum of the three (`computeLiquidityTotals` on backend).
+  - **Do not label `not_immediately_usable` "dự phòng" / "reserve".** It used to be
+    "Quỹ cần bảo vệ" / "Protected reserve", which is the name of the household's
+    emergency fund ([[protected-reserves]]) — two unrelated numbers under one
+    word. The bucket is a classification of assets; the fund is a floor on the
+    forecast.
+  - Only `usable_now` feeds `currentSharedLiquidMoney`, so a fund parked in a
+    `saving_deposit` is already outside the spendable pool — see the
+    double-subtraction note in [[protected-reserves]].
 - **Delete** = soft-delete (`deletedAt`) + also delete the asset's valuations + unlink the asset from any money events.
 - **Status / lifecycle**: `status` (`active` | `sold` | `closed`, default `active`) + `soldAt`. Distinct from `deletedAt`: a **sold** asset is kept (quantity/value 0) for history, excluded from the liquidity buckets and net worth, but still listed (with a "Đã bán" badge; the list dropdown shows a "Bán" action for sellable, still-active assets). Selling is driven by an `asset_sale` money event — see [[asset-sale]].
 

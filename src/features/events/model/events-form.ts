@@ -11,7 +11,7 @@ export type RecordStatus =
   | 'recorded'
   | 'pending_confirmation'
   | 'postponed'
-export type RecordTab = 'all' | 'upcoming' | 'actual' | 'inflow' | 'outflow'
+export type RecordTab = 'all' | 'source' | 'upcoming' | 'goal' | 'debt'
 export type RecordDirection = 'inflow' | 'outflow' | 'neutral'
 export type QuickAction =
   | 'upcoming'
@@ -108,6 +108,7 @@ export type FinancialRecordItem = {
   toAssetName?: string
   upcomingPaymentId?: string
   financialGoalId?: string
+  debtId?: string
   ownerMemberId?: string
   ownerName?: string
   frequency?: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'

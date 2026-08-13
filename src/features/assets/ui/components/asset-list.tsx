@@ -1,7 +1,6 @@
-import { HandCoins, MoreVertical, Pencil, Sparkles, Trash2 } from 'lucide-react'
+import { HandCoins, MoreVertical, Pencil, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,16 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  computeCurrentValue,
-  computeMaturityValue,
-  isSellableAssetType,
-  type Asset,
-} from '@/features/assets/model/assets'
-import { formatVndShort } from '@/shared/lib/format-money'
+import { computeCurrentValue, isSellableAssetType, type Asset } from '@/features/assets/model/assets'
+import type { MemberItem } from '@/features/members/model/members.types'
+import { formatVndCell } from '@/shared/lib/format-money'
+import { cn } from '@/shared/lib/utils'
 
 type AssetListProps = {
   assets: Asset[]
+  members: MemberItem[]
   asOf: string
   onOpen?: (assetId: string) => void
   onEdit: (assetId: string) => void
@@ -26,117 +23,115 @@ type AssetListProps = {
   onDelete: (assetId: string) => void
 }
 
-export function AssetList({ assets, asOf, onOpen, onEdit, onSell, onDelete }: AssetListProps) {
+export function AssetList({
+  assets,
+  members,
+  asOf,
+  onOpen,
+  onEdit,
+  onSell,
+  onDelete,
+}: AssetListProps) {
   const { t } = useTranslation()
+  const memberNameById = new Map(members.map((member) => [member.id, member.name]))
 
   return (
-    <div className="divide-y divide-border">
-      {assets.map((asset) => {
-        const value = computeCurrentValue(asset, asOf)
-        const isAutoPriced = asset.valuationMode !== 'manual'
-        const priceMissing = value === null
-        const isSold = asset.status === 'sold'
-        const canSell = !isSold && isSellableAssetType(asset.type)
+    <div className="mt-7">
+      <div className="hidden grid-cols-[1.35fr_.8fr_.8fr_.9fr_1fr_.8fr_110px] px-3 lg:grid">
+        <p className="label">{t('assets.demo.columns.source')}</p>
+        <p className="label">{t('assets.demo.columns.owner')}</p>
+        <p className="label">{t('assets.demo.columns.role')}</p>
+        <p className="label">{t('assets.demo.columns.sharing')}</p>
+        <p className="label">{t('assets.demo.columns.updated')}</p>
+        <p className="label text-right">{t('assets.demo.columns.balance')}</p>
+        <span />
+      </div>
 
-        return (
-          <div
-            key={asset.id}
-            className="grid gap-3 py-5 first:pt-0 last:pb-0 md:grid-cols-[minmax(0,1.35fr)_minmax(100px,.7fr)_minmax(110px,.65fr)_36px] md:items-center"
-          >
-            <button
-              type="button"
-              onClick={() => onOpen?.(asset.id)}
-              className="min-w-0 flex-1 cursor-pointer text-left"
-              aria-label={asset.name}
+      <div className="mt-2 space-y-1">
+        {assets.map((asset) => {
+          const value = computeCurrentValue(asset, asOf)
+          const isSold = asset.status === 'sold'
+          const canSell = !isSold && isSellableAssetType(asset.type)
+          const freshness = formatFreshness(asset.valueUpdatedAt, t)
+
+          return (
+            <article
+              key={asset.id}
+              className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[1.35fr_.8fr_.8fr_.9fr_1fr_.8fr_110px] lg:items-center"
             >
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-semibold">{asset.name}</p>
-                <Badge variant="outline">{t(`options.assetType.${asset.type}`)}</Badge>
-                {isAutoPriced ? (
-                  <Badge className="bg-accent-tint text-accent">
-                    <Sparkles className="mr-1 size-3" />
-                    {t('assets.list.autoPriced')}
-                  </Badge>
-                ) : null}
-                {isSold ? (
-                  <Badge className="bg-sunk text-ink2">
-                    {t('options.assetStatus.sold')}
-                  </Badge>
-                ) : null}
-              </div>
+              <button
+                type="button"
+                onClick={() => onOpen?.(asset.id)}
+                className="min-w-0 text-left"
+              >
+                <p className="truncate text-[13px] font-medium">{asset.name}</p>
+                <p className="mt-1 text-[11px] text-ink3">{t(`options.assetType.${asset.type}`)}</p>
+              </button>
 
-              <p className="mt-1 text-xs text-ink2">
-                {asset.note || t('common.noNote')}
+              <p className="mt-2 text-[12px] text-ink2 lg:mt-0">
+                {asset.holderMemberId
+                  ? memberNameById.get(asset.holderMemberId) ?? t('assets.demo.householdOwner')
+                  : t('assets.demo.householdOwner')}
+              </p>
+              <p className="mt-1 text-[12px] lg:mt-0">{t(`options.liquidity.${asset.liquidity}`)}</p>
+              <p className="mt-1 text-[12px] lg:mt-0">
+                {t(`options.sharingLevel.${asset.visibilityLevel ?? 'detail'}`)}
+              </p>
+              <p className={cn('mt-1 text-[12px] lg:mt-0', freshness.stale ? 'text-attention' : 'text-ink2')}>
+                {freshness.label}
+              </p>
+              <p className={cn('num col-start-2 row-start-1 text-right text-[14px] font-medium lg:col-auto lg:row-auto', isSold && 'text-ink3 line-through')}>
+                {value === null ? t('assets.list.priceUnavailable') : formatVndCell(value)}
               </p>
 
-              {asset.marketPosition ? (
-                <p className="mt-1 text-xs text-ink2">
-                  {asset.marketPosition.symbol} ·{' '}
-                  {t('assets.list.held', {
-                    quantity: asset.marketPosition.quantity,
-                    unit: asset.marketPosition.unit,
-                  })}
-                </p>
-              ) : null}
-
-              {asset.calculationTerm?.maturityDate ? (
-                <p className="mt-1 text-xs text-ink2">
-                  {t('assets.list.maturity', { value: asset.calculationTerm.maturityDate })} ·{' '}
-                  {asset.calculationTerm.interestRate}%/yr
-                  {(() => {
-                    const maturity = computeMaturityValue(asset.calculationTerm!)
-                    return maturity !== null ? ` → ${formatVndShort(maturity)}` : ''
-                  })()}
-                </p>
-              ) : null}
-            </button>
-
-            <p className="text-xs font-medium text-accent">
-              {t(`options.liquidity.${asset.liquidity}`)}
-            </p>
-            <p
-              className={
-                isSold
-                  ? 'money-number text-lg font-semibold text-muted-foreground line-through md:text-right'
-                  : 'money-number text-lg font-semibold md:text-right'
-              }
-            >
-              {priceMissing ? t('assets.list.priceUnavailable') : formatVndShort(value ?? 0)}
-            </p>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 shrink-0"
-                    aria-label={t('common.actions')}
-                  >
-                    <MoreVertical className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={() => onEdit(asset.id)}>
-                    <Pencil className="size-4" />
-                    {t('common.edit')}
-                  </DropdownMenuItem>
-                  {canSell && onSell ? (
-                    <DropdownMenuItem onSelect={() => onSell(asset.id)}>
-                      <HandCoins className="size-4" />
-                      {t('assets.sale.action')}
+              <div className="col-start-2 row-start-2 row-span-4 flex items-start justify-end gap-1 lg:col-auto lg:row-auto">
+                <button
+                  type="button"
+                  onClick={() => onOpen?.(asset.id)}
+                  className="hidden text-[12px] font-medium text-accent xl:block"
+                >
+                  {t('assets.demo.detail')}
+                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-8" aria-label={t('common.actions')}>
+                      <MoreVertical className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => onEdit(asset.id)}>
+                      <Pencil className="size-4" />
+                      {t('common.edit')}
                     </DropdownMenuItem>
-                  ) : null}
-                  <DropdownMenuItem
-                    className="text-alert focus:text-alert"
-                    onSelect={() => onDelete(asset.id)}
-                  >
-                    <Trash2 className="size-4" />
-                    {t('common.delete')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )
-      })}
+                    {canSell && onSell ? (
+                      <DropdownMenuItem onSelect={() => onSell(asset.id)}>
+                        <HandCoins className="size-4" />
+                        {t('assets.sale.action')}
+                      </DropdownMenuItem>
+                    ) : null}
+                    <DropdownMenuItem className="text-alert focus:text-alert" onSelect={() => onDelete(asset.id)}>
+                      <Trash2 className="size-4" />
+                      {t('common.delete')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </article>
+          )
+        })}
+      </div>
     </div>
   )
+}
+
+function formatFreshness(
+  value: string | undefined,
+  t: (key: string, params?: Record<string, unknown>) => string,
+) {
+  if (!value) return { label: t('time.never'), stale: true }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return { label: t('time.never'), stale: true }
+  const days = Math.max(0, Math.floor((Date.now() - date.getTime()) / 86_400_000))
+  if (days === 0) return { label: t('time.today'), stale: false }
+  return { label: t('time.daysAgo', { count: days }), stale: days > 30 }
 }

@@ -17,9 +17,8 @@ type WhatIfState = {
   open: boolean
   prefill: WhatIfPrefill
   /**
-   * Open the global what-if sheet. Spec v3.1: what-if is a contextual action
-   * available from anywhere, deliberately NOT a nav tab — so it lives in a
-   * store with a single sheet mounted in AppShell rather than on a route.
+   * Open the global what-if sheet. The sidebar is its single entry point, and
+   * the sheet stays mounted once in AppShell rather than living on a route.
    */
   openWhatIf: (prefill?: WhatIfPrefill) => void
   close: () => void

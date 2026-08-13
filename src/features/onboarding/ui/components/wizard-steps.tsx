@@ -21,7 +21,6 @@ import {
 } from '@/features/forecast/hooks/use-forecast'
 import { useGoals } from '@/features/goals/hooks/use-goals'
 import { useReserves } from '@/features/reserves/hooks/use-reserves'
-import { WhatIfTrigger } from '@/features/whatif/ui/components/whatif-trigger'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { parseRawMoney } from '@/shared/lib/number-format'
 
@@ -33,10 +32,10 @@ import { parseRawMoney } from '@/shared/lib/number-format'
  * implementation of them.
  */
 
-/** Step 5 — the household's reserve (§19C). */
+/** Step 5 — the household's emergency fund, a floor on the forecast (§19C). */
 export function ReserveStep() {
   const { t } = useTranslation()
-  const { createReserve } = useReserves()
+  const { setEmergencyFund } = useReserves()
   const [amount, setAmount] = useState('')
 
   const value = parseRawMoney(amount)
@@ -56,12 +55,9 @@ export function ReserveStep() {
       </p>
       <SaveHint
         canSave={Number.isFinite(value) && value > 0}
-        isSaving={createReserve.isPending}
+        isSaving={setEmergencyFund.isPending}
         onSave={async () => {
-          await createReserve.mutateAsync({
-            name: t('onboarding.steps.reserve.defaultName'),
-            amount: value,
-          })
+          await setEmergencyFund.mutateAsync(value)
         }}
       />
     </>
@@ -212,8 +208,8 @@ export function FirstPictureStep() {
 }
 
 /**
- * Step 10 — the **Consequence Moment**: the first what-if. Opens the same
- * global sheet the rest of the app uses.
+ * Step 10 closes onboarding with a pointer to the single what-if entry point
+ * in the application sidebar.
  */
 export function FirstWhatIfStep() {
   const { t } = useTranslation()
@@ -224,9 +220,9 @@ export function FirstWhatIfStep() {
       <p className="mt-1 text-sm leading-6 text-ink2">
         {t('onboarding.steps.firstWhatIf.description')}
       </p>
-      <div className="mt-4">
-        <WhatIfTrigger prefill={{ source: 'onboarding' }} variant="default" />
-      </div>
+      <p className="mt-4 text-sm font-medium text-accent">
+        {t('onboarding.steps.firstWhatIf.sidebarHint')}
+      </p>
     </Card>
   )
 }

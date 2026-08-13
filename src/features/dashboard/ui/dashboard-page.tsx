@@ -9,7 +9,6 @@ import { FinancialPictureSection } from '@/features/dashboard/ui/components/fina
 import { MainGoalSection } from '@/features/dashboard/ui/components/main-goal-section'
 import { MoneySourcesSection } from '@/features/dashboard/ui/components/money-sources-section'
 import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-section'
-import { useWhatIfStore } from '@/shared/stores/whatif-store'
 
 /**
  * Home (design.md §9.1, §12, §13).
@@ -20,7 +19,7 @@ import { useWhatIfStore } from '@/shared/stores/whatif-store'
  * the scanning cue that lets the household read the page in 3–5 seconds (§7.2).
  *
  * The order is fixed by priority (§1.1, §9.1):
- *   1. Bức tranh hôm nay — state, flexible money, coverage, what-if
+ *   1. Bức tranh hôm nay — state, flexible money, coverage
  *   2. Ba mươi ngày tới  — low point and the event sequence
  *   3. Mục tiêu chính    — one goal, projected date over progress
  *   4. Tài sản | Nợ      — the ONE paired block (§9.2)
@@ -43,7 +42,6 @@ import { useWhatIfStore } from '@/shared/stores/whatif-store'
 export function DashboardPage() {
   const { t } = useTranslation()
   const state = useDashboardPage()
-  const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
 
   if (!state.isReady) {
     return <DashboardSkeleton />
@@ -71,7 +69,7 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="max-w-[1220px] space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 px-1 pb-1">
         <div>
           <h1 className="page-title text-[19px]">{t('nav.dashboard')}</h1>
@@ -83,7 +81,6 @@ export function DashboardPage() {
         flexibleMoney={flexibleMoney}
         financialState={financialState}
         freshness={freshness}
-        onSimulate={() => openWhatIf({ source: 'home' })}
         onQuickUpdate={handleQuickUpdate}
       />
 

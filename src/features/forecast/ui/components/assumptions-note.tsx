@@ -1,7 +1,5 @@
-import { Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { Card } from '@/components/ui/card'
 import type { CalculationAssumption } from '@/features/forecast/model/forecast.types'
 
 /**
@@ -15,31 +13,21 @@ export function AssumptionsNote({ assumptions }: { assumptions: CalculationAssum
   if (assumptions.length === 0) return null
 
   return (
-    <Card>
-      <div className="flex items-start gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sunk">
-          <Info className="size-4 text-ink2" strokeWidth={1.8} />
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold">{t('upcoming.assumptions.title')}</p>
-          <ul className="mt-2 space-y-1.5">
-            {assumptions.map((assumption) => (
-              <li
-                key={`${assumption.code}:${assumption.value ?? ''}`}
-                className="text-sm leading-6 text-ink2"
-              >
-                {t(`upcoming.assumptions.codes.${assumption.code}`, {
-                  value: assumption.value,
-                  count:
-                    typeof assumption.value === 'number'
-                      ? assumption.value
-                      : (assumption.relatedIds?.length ?? 0),
-                })}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </Card>
+    <section className="px-1 py-3 text-[12px] leading-5 text-ink3">
+      <h2 className="sr-only">{t('upcoming.assumptions.title')}</h2>
+      <ul className="space-y-1">
+        {assumptions.map((assumption) => (
+          <li key={`${assumption.code}:${assumption.value ?? ''}`}>
+            {t(`upcoming.assumptions.codes.${assumption.code}`, {
+              value: assumption.value,
+              count:
+                typeof assumption.value === 'number'
+                  ? assumption.value
+                  : (assumption.relatedIds?.length ?? 0),
+            })}
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }

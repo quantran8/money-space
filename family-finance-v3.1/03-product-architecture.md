@@ -159,8 +159,10 @@ Ví dụ:
 - Bank account.
 - Ví điện tử.
 - Savings account.
-- Quỹ dự phòng.
 - Một khoản tiền user muốn đưa vào household picture.
+
+> Quỹ dự phòng **không** phải một money source. Nó là một mức sàn trên forecast —
+> xem §5 "Protected Reserve". Tiền của quỹ vẫn nằm trong một money source có sẵn.
 
 Fields:
 
@@ -263,13 +265,31 @@ Fields:
 
 ## Protected Reserve
 
-Số tiền household không muốn coi là discretionary.
+Mức household không muốn để số dư tụt xuống dưới.
 
 Ví dụ:
 
-> Emergency reserve: 100 triệu.
+> Quỹ dự phòng: 100 triệu.
 
-Đây là constraint, không nhất thiết phải là một account riêng.
+Đây là **sàn trên forecast**, không phải một account và cũng không phải hàng rào.
+Không có khoản tiền nào bị chuyển đi hay bị khoá — tiền vẫn tiêu được; app chỉ
+cho thấy trước khi số dư dự kiến chạm mức đó.
+
+Hai hệ quả:
+
+- **Khoản sắp phải chi không được cộng vào đây.** Thuế, học phí… là Upcoming
+  Obligation: forecast đã kéo số dư xuống đúng ngày đến hạn và chúng tự hết vai
+  trò sau khi trả. Cộng vào sàn là trừ hai lần, và một con số khai tay thì không
+  tự hết hạn.
+- **Không derive được.** Không dữ liệu nào nói household muốn giữ 100 triệu chứ
+  không phải 60 triệu — đó là một quyết định, nên phải được khai.
+
+Mỗi household chỉ có **một** mức. Nhiều khoản để riêng có tên là **Financial
+Goal** (goal không target date chính là một quỹ có tên, có số dư và có lịch sử
+đóng góp).
+
+UI chỉ dùng chữ **Quỹ dự phòng** — "Protected Reserve" là tên bảng, không phải
+từ vựng của user.
 
 ## Financial Goal
 

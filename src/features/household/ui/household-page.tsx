@@ -1,15 +1,15 @@
-import { Save, UserPlus } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { PageHeader } from '@/app/layout/page-header'
+import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { FreshnessSection } from '@/features/freshness/ui/components/freshness-section'
-import { HouseholdAssetsCard } from '@/features/household/ui/components/household-assets-card'
+import { HouseholdOverviewCard } from '@/features/household/ui/components/household-overview-card'
 import { HouseholdReserveCard } from '@/features/household/ui/components/household-reserve-card'
 import { useMembersPage } from '@/features/members/hooks/use-members-page'
 import { useSettingsPage } from '@/features/settings/hooks/use-settings-page'
-import { RemindersCard } from '@/features/settings/ui/components/reminders-card'
+import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
+import { DataCard } from '@/features/settings/ui/components/data-card'
 import { SharingCard } from '@/features/settings/ui/components/sharing-card'
 import { InviteFormDialog } from '@/features/members/ui/components/invite-form-dialog'
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
@@ -48,25 +48,33 @@ export function HouseholdPage() {
 
   // Sharing defaults + reminders moved here from /settings (Phase 10).
   const {
+    isLoading: isSettingsLoading,
     form: settingsForm,
-    isValid: settingsValid,
     isSaving: settingsSaving,
     submit: submitSettings,
   } = useSettingsPage()
 
   return (
     <div className="space-y-4">
-      <PageHeader
+      <CompactPageHeader
         eyebrow={t('household.header.eyebrow')}
         title={t('household.header.title')}
         description={t('household.header.description')}
         actions={
           <Button onClick={openInvite}>
-            <UserPlus className="mr-2 size-4" />
+            <UserPlus className="size-4" />
             {t('members.invite.submit')}
           </Button>
         }
       />
+
+      {!isSettingsLoading ? (
+        <HouseholdOverviewCard
+          form={settingsForm}
+          isSaving={settingsSaving}
+          onSave={() => void submitSettings()}
+        />
+      ) : null}
 
       <MembersListSection
         members={members}
@@ -80,33 +88,13 @@ export function HouseholdPage() {
         onRemove={setRemoveId}
       />
 
-      {/*
-        These two are controlled inputs with no submit of their own — on
-        /settings they lived inside that page's form. They need their own
-        form + save here, otherwise edits would silently go nowhere.
-      */}
-      <form id="household-settings-form" onSubmit={submitSettings} noValidate className="space-y-4">
-        <SharingCard form={settingsForm} />
+      {!isSettingsLoading ? <HouseholdReserveCard form={settingsForm} /> : null}
 
-        <RemindersCard form={settingsForm} />
+      {!isSettingsLoading ? <SharingCard form={settingsForm} /> : null}
 
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            form="household-settings-form"
-            disabled={!settingsValid || settingsSaving}
-          >
-            <Save className="mr-2 size-4" />
-            {t('settings.header.save')}
-          </Button>
-        </div>
-      </form>
+      <CategoriesCard />
 
-      <HouseholdReserveCard />
-
-      <HouseholdAssetsCard />
-
-      <FreshnessSection />
+      <DataCard />
 
       <InviteFormDialog
         open={formOpen}

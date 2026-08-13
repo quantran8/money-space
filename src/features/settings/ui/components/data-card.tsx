@@ -1,49 +1,58 @@
 import { Download } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 
 export function DataCard() {
   const { t } = useTranslation()
 
   return (
-    <Card>
-      <div className="mb-6">
-        <h2 className="section-title text-xl font-semibold">
-          {t('settings.data.title')}
-        </h2>
-      </div>
+    <Panel>
+      <PanelHeader title={t('settings.data.title')} meta={t('household.merged.householdData')} />
 
-      <div className="divide-y divide-border">
-        <div className="flex flex-col gap-4 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-7 grid gap-3 lg:grid-cols-2">
+        <div className="sunk flex min-h-[118px] flex-col justify-between p-4">
           <div>
-            <p className="text-sm font-medium">{t('settings.data.export')}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-[13px] font-medium">{t('settings.data.export')}</p>
+            <p className="mt-1.5 text-[11px] leading-5 text-ink2">
               {t('settings.data.exportDescription')}
             </p>
           </div>
-          <Button type="button" variant="outline">
-            <Download className="mr-2 size-4" />
+          <button type="button" className="mt-4 flex w-fit items-center gap-2 text-[12px] font-medium text-accent">
+            <Download className="size-4" />
             {t('settings.data.exportAction')}
-          </Button>
+          </button>
         </div>
-        <div className="flex flex-col gap-4 py-4 pb-0 sm:flex-row sm:items-center sm:justify-between">
+
+        <div className="sunk flex min-h-[118px] flex-col justify-between p-4">
           <div>
-            <p className="text-sm font-medium">{t('settings.data.delete')}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-[13px] font-medium">{t('household.merged.privacyTitle')}</p>
+            <p className="mt-1.5 text-[11px] leading-5 text-ink2">
+              {t('household.merged.privacyDescription')}
+            </p>
+          </div>
+          <Link to="/assets" className="mt-4 w-fit text-[12px] font-medium text-accent">
+            {t('household.merged.viewSources')}
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <p className="label text-alert">{t('common.dangerZone')}</p>
+        <div className="sunk mt-3 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[13px] font-medium">{t('settings.data.delete')}</p>
+            <p className="mt-1 text-[11px] leading-5 text-ink2">
               {t('settings.data.deleteDescription')}
             </p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="border-alert text-alert hover:bg-alert-tint"
-          >
+          <Button type="button" variant="ghost" size="sm" className="shrink-0 bg-panel text-alert hover:bg-alert-tint hover:text-alert">
             {t('settings.data.deleteAction')}
           </Button>
         </div>
       </div>
-    </Card>
+    </Panel>
   )
 }

@@ -1,6 +1,6 @@
-import { ArrowRight, CheckCircle2, Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { CheckCircle2, Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,10 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { formatDate, getStatusLabel, getStatusTone } from '@/features/debts/model/debts-form'
-import type { DebtItem } from '@/features/debts/model/debts.types'
 import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
-import { formatVndShort } from '@/shared/lib/format-money'
+import { formatDate } from '@/features/debts/model/debts-form'
+import type { DebtItem } from '@/features/debts/model/debts.types'
+import { formatVndCell, formatVndScale } from '@/shared/lib/format-money'
 
 type DebtListItemProps = {
   debt: DebtItem
@@ -25,12 +25,6 @@ type DebtListItemProps = {
   onDelete: (id: string) => void
 }
 
-const lenderLabels: Record<DebtItem['lenderType'], string> = {
-  bank_institution: 'Vay ngân hàng',
-  relative: 'Người thân',
-  other: 'Khoản vay khác',
-}
-
 export function DebtListItem({
   debt,
   ownerName,
@@ -41,101 +35,66 @@ export function DebtListItem({
   onViewDetail,
   onDelete,
 }: DebtListItemProps) {
-  const repaid = Math.max(0, debt.originalAmountValue - debt.outstandingAmountValue)
-  const progress = debt.originalAmountValue > 0
-    ? Math.min(100, Math.round((repaid / debt.originalAmountValue) * 100))
-    : 0
+  const { t } = useTranslation()
+  const dueDate = nextPayment ? nextPayment.dueDate ?? nextPayment.due : undefined
 
   return (
-    <article className="group py-6 first:pt-0 last:pb-0">
-      <div className="grid gap-5 xl:grid-cols-[1.3fr_.8fr_.7fr_110px] xl:items-center">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onViewDetail(debt.id)}
-              className="truncate text-left text-base font-semibold transition-colors hover:text-accent"
-            >
-              {debt.name}
-            </button>
-            <Badge variant="secondary" className="border-none text-[11px] font-medium">
-              {lenderLabels[debt.lenderType]}
-            </Badge>
-            <Badge className={`${getStatusTone(debt.status)} text-[11px] font-medium`}>
-              {getStatusLabel(debt.status)}
-            </Badge>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {debt.lenderName}
-            {ownerName ? ` · ${ownerName} phụ trách` : ''}
-            {debt.expectedFinalDueDate ? ` · Kết thúc ${formatDate(debt.expectedFinalDueDate)}` : ''}
-          </p>
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-            <span>Đã trả {formatVndShort(repaid)} / {formatVndShort(debt.originalAmountValue)}</span>
-            <span>{progress}%</span>
-          </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-[hsl(var(--accent))] transition-[width]"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        <div>
-          <p className="text-xs text-muted-foreground">Dư nợ còn lại</p>
-          <p className="money-number mt-1 text-xl font-semibold">
-            {formatVndShort(debt.outstandingAmountValue)}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {nextPayment
-              ? `Kỳ tới ${formatDate(nextPayment.dueDate ?? nextPayment.due)} · ${formatVndShort(nextPayment.amountValue ?? 0)}`
-              : debt.fixedPaymentAmountValue
-                ? `Mỗi kỳ · ${formatVndShort(debt.fixedPaymentAmountValue)}`
-                : 'Chưa có kỳ thanh toán'}
-          </p>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 xl:justify-end">
-          <button
-            type="button"
-            onClick={() => onViewDetail(debt.id)}
-            className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-accent"
-          >
-            Chi tiết
-            <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-          </button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="ghost" className="size-8 rounded-full" aria-label="Tùy chọn khoản nợ">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onViewDetail(debt.id)}>
-                <Eye className="mr-2 size-4" /> Xem chi tiết
+    <article className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[1.2fr_1fr_.8fr_1.15fr_.65fr_.8fr_1fr_90px] lg:items-center">
+      <button type="button" onClick={() => onViewDetail(debt.id)} className="min-w-0 text-left">
+        <p className="truncate text-[13px] font-medium">{debt.name}</p>
+        <p className="mt-1 text-[11px] text-ink3">{t(`debts.demo.lenderType.${debt.lenderType}`)}</p>
+      </button>
+      <p className="mt-2 text-[12px] lg:mt-0">{debt.lenderName || t('debts.demo.unknownLender')}</p>
+      <p className="num col-start-2 row-start-1 text-right text-[14px] font-medium lg:col-auto lg:row-auto">
+        {formatVndCell(debt.outstandingAmountValue)}
+      </p>
+      <div className="mt-1 text-[12px] lg:mt-0">
+        {nextPayment ? (
+          <>
+            <p>{formatDate(dueDate)}</p>
+            <p className="mt-1 text-[11px] text-ink3">{formatVndScale(nextPayment.amountValue ?? 0)}</p>
+          </>
+        ) : (
+          <p className="text-attention">{t('debts.demo.unconfirmed')}</p>
+        )}
+      </div>
+      <p className="num mt-1 text-[12px] lg:mt-0 lg:text-right">{debt.interestSummary ?? '—'}</p>
+      <p className="mt-1 text-[12px] lg:mt-0">{ownerName ?? t('debts.demo.householdOwner')}</p>
+      <p className="mt-1 text-[12px] text-ink2 lg:mt-0">
+        {debt.expectedFinalDueDate ? formatDate(debt.expectedFinalDueDate) : t('debts.demo.unknown')}
+      </p>
+      <div className="col-start-2 row-start-2 row-span-5 flex items-start justify-end gap-1 lg:col-auto lg:row-auto">
+        <button
+          type="button"
+          onClick={() => onViewDetail(debt.id)}
+          className="hidden text-[12px] font-medium text-accent xl:block"
+        >
+          {t('assets.demo.detail')}
+        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="icon" variant="ghost" className="size-8" aria-label={t('common.actions')}>
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onViewDetail(debt.id)}>
+              <Eye className="size-4" /> {t('goals.list.viewDetail')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(debt.id)}>
+              <Pencil className="size-4" /> {t('common.edit')}
+            </DropdownMenuItem>
+            {debt.status !== 'paid_off' ? (
+              <DropdownMenuItem disabled={isUpdating} onClick={() => onMarkPaidOff(debt.id)}>
+                <CheckCircle2 className="size-4" /> {t('debts.demo.markPaid')}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(debt.id)}>
-                <Pencil className="mr-2 size-4" /> Chỉnh sửa
-              </DropdownMenuItem>
-              {debt.status !== 'paid_off' ? (
-                <DropdownMenuItem disabled={isUpdating} onClick={() => onMarkPaidOff(debt.id)}>
-                  <CheckCircle2 className="mr-2 size-4" /> Đánh dấu đã trả
-                </DropdownMenuItem>
-              ) : null}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-alert focus:text-alert"
-                onClick={() => onDelete(debt.id)}
-              >
-                <Trash2 className="mr-2 size-4" /> Xóa khoản nợ
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+            ) : null}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-alert focus:text-alert" onClick={() => onDelete(debt.id)}>
+              <Trash2 className="size-4" /> {t('common.delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </article>
   )

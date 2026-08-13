@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
  */
 export function DashboardSkeleton() {
   return (
-    <div className="max-w-[1220px] space-y-4">
+    <div className="space-y-4">
       <Skeleton className="h-10 w-48 rounded-[8px]" />
 
       {/* 1 — Bức tranh hôm nay */}

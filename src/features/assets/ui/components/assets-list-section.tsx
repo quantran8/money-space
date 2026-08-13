@@ -1,15 +1,23 @@
 import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { Panel, TotalRow } from '@/components/ui/panel'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AssetList } from '@/features/assets/ui/components/asset-list'
-import { FilterChip } from '@/features/assets/ui/components/filter-chip'
-import { liquidityOrder, type Asset, type AssetLiquidity } from '@/features/assets/model/assets'
+import { computeCurrentValue, liquidityOrder, type Asset, type AssetLiquidity } from '@/features/assets/model/assets'
+import type { MemberItem } from '@/features/members/model/members.types'
+import { formatVndScale } from '@/shared/lib/format-money'
 
 type AssetsListSectionProps = {
   assets: Asset[]
+  members: MemberItem[]
   isLoading?: boolean
   asOf: string
   query: string
@@ -24,6 +32,7 @@ type AssetsListSectionProps = {
 
 export function AssetsListSection({
   assets,
+  members,
   isLoading = false,
   asOf,
   query,
@@ -36,71 +45,54 @@ export function AssetsListSection({
   onDelete,
 }: AssetsListSectionProps) {
   const { t } = useTranslation()
+  const total = assets.reduce((sum, asset) => sum + (computeCurrentValue(asset, asOf) ?? 0), 0)
 
   return (
-    <Card className="overflow-hidden p-0">
-      <div className="border-b border-border p-5 sm:p-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="section-title text-2xl font-semibold">{t('assets.list.title')}</h2>
-          </div>
-          <p className="shrink-0 rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-muted-foreground">
-            {t('assets.list.count', { count: assets.length })}
-          </p>
+    <Panel>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="section-title text-[16px]">{t('assets.demo.sources')}</h2>
+          <p className="mt-1 text-[12px] text-ink2">{t('assets.demo.sourcesDescription')}</p>
         </div>
-
-        <div className="mt-6 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink2" />
-          <Input
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder={t('assets.toolbar.searchPlaceholder')}
-            className="h-12 rounded-2xl pl-11"
-          />
-        </div>
-
-          <div className="flex shrink-0 gap-2 overflow-x-auto pb-1 xl:pb-0">
-          <FilterChip
-            label={t('assets.toolbar.all')}
-            active={liquidityFilter === 'all'}
-            onClick={() => onLiquidityFilterChange('all')}
-          />
-          {liquidityOrder.map((liquidity) => (
-            <FilterChip
-              key={liquidity}
-              label={t(`options.liquidity.${liquidity}`)}
-              active={liquidityFilter === liquidity}
-              onClick={() => onLiquidityFilterChange(liquidity)}
+        <div className="flex items-center gap-2">
+          <label className="sunk flex h-10 min-w-0 flex-1 items-center gap-2 px-3 sm:w-[250px]">
+            <Search className="size-4 shrink-0 text-ink3" />
+            <input
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder={t('assets.demo.search')}
+              className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink3"
             />
-          ))}
-          </div>
+          </label>
+          <Select
+            value={liquidityFilter}
+            onValueChange={(value) => onLiquidityFilterChange(value as AssetLiquidity | 'all')}
+          >
+            <SelectTrigger className="h-10 w-[112px] bg-sunk px-3 text-[13px]" aria-label={t('assets.demo.filter')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('assets.toolbar.all')}</SelectItem>
+              {liquidityOrder.map((liquidity) => (
+                <SelectItem key={liquidity} value={liquidity}>
+                  {t(`options.liquidity.${liquidity}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <div className="p-5 sm:p-7">
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="mt-7 space-y-2">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className="surface-muted flex items-center justify-between rounded-3xl px-4 py-4"
-            >
-              <div className="min-w-0 flex-1 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Skeleton className="h-4 w-32 rounded-full" />
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                  <Skeleton className="h-5 w-20 rounded-full" />
-                </div>
-                <Skeleton className="h-3 w-40 rounded-full" />
-              </div>
-              <Skeleton className="h-7 w-24 rounded-full" />
-            </div>
+            <Skeleton key={index} className="h-14 w-full rounded-control" />
           ))}
         </div>
       ) : assets.length > 0 ? (
         <AssetList
           assets={assets}
+          members={members}
           asOf={asOf}
           onOpen={onOpen}
           onEdit={onEdit}
@@ -108,11 +100,14 @@ export function AssetsListSection({
           onDelete={onDelete}
         />
       ) : (
-        <p className="rounded-3xl bg-sunk px-4 py-8 text-center text-sm text-ink2">
+        <p className="mt-7 rounded-sunk bg-sunk px-4 py-8 text-center text-[13px] text-ink2">
           {t('assets.toolbar.empty')}
         </p>
       )}
-      </div>
-    </Card>
+
+      {!isLoading && assets.length > 0 ? (
+        <TotalRow label={t('assets.demo.total')} value={formatVndScale(total)} />
+      ) : null}
+    </Panel>
   )
 }

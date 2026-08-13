@@ -1,120 +1,194 @@
-import { Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
+import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { EventField, EventFieldInput, EventMoneyInput } from '@/components/ui/event-field'
+import { MoneyInput } from '@/components/ui/number-input'
+import { Panel, PanelHeader } from '@/components/ui/panel'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { useFlexibleMoney } from '@/features/forecast/hooks/use-forecast'
 import { useReserves } from '@/features/reserves/hooks/use-reserves'
+import type { Settings } from '@/features/settings/model/settings-form'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
-import { formatVndShort } from '@/shared/lib/format-money'
 import { parseRawMoney } from '@/shared/lib/number-format'
+import { cn } from '@/shared/lib/utils'
 
-/**
- * The reserve card (§19C).
- *
- * A reserve is a constraint on the forecast, not an account — nothing is moved
- * anywhere. Only `active` reserves are subtracted from flexible money, which is
- * why the total shown here is `activeReserveTotal`.
- */
-export function HouseholdReserveCard() {
-  const { t } = useTranslation()
-  const { reserves, activeReserveTotal, isLoading, createReserve, deleteReserve } =
-    useReserves()
+type HouseholdReserveCardProps = {
+  form: UseFormReturn<Settings>
+}
 
-  const [name, setName] = useState('')
-  const [amount, setAmount] = useState('')
-
+export function HouseholdReserveCard({ form }: HouseholdReserveCardProps) {
+  const { t, i18n } = useTranslation()
+  const { emergencyFund, hasEmergencyFund, isLoading, setEmergencyFund } = useReserves()
+  const { flexibleMoney } = useFlexibleMoney()
+  const { control } = form
+  // The field shows the stored floor until the user types, so it reads as "what
+  // is in force" rather than an empty box next to a live number. Derived rather
+  // than seeded through an effect: clearing the draft after a save re-syncs it
+  // to whatever the server now holds.
+  const [draft, setDraft] = useState<string | null>(null)
+  const amount = draft ?? (hasEmergencyFund ? String(emergencyFund) : '')
   const amountValue = parseRawMoney(amount)
-  const canAdd = name.trim().length > 0 && Number.isFinite(amountValue) && amountValue > 0
+  const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
+  const dateLabel = new Date().toLocaleDateString(locale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 
-  async function handleAdd() {
-    if (!canAdd) return
+  const canSave =
+    Number.isFinite(amountValue) && amountValue >= 0 && amountValue !== emergencyFund
+
+  /**
+   * A floor above the money that is actually spendable almost always means the
+   * fund is already sitting in savings — which the forecast excludes from liquid
+   * money anyway, so declaring it here subtracts it a second time.
+   */
+  const liquid = flexibleMoney?.currentSharedLiquidMoney
+  const exceedsLiquid =
+    hasEmergencyFund && liquid !== undefined && emergencyFund > liquid
+
+  async function handleSave() {
+    if (!canSave) return
     try {
-      await createReserve.mutateAsync({ name: name.trim(), amount: amountValue })
-      setName('')
-      setAmount('')
+      await setEmergencyFund.mutateAsync(amountValue)
+      setDraft(null)
     } catch (error) {
-      toast.error(getErrorMessage(error, t('reserve.addFailed')))
+      toast.error(getErrorMessage(error, t('reserve.saveFailed')))
     }
   }
 
   return (
-    <Card>
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="section-title text-xl font-semibold">{t('reserve.title')}</h2>
-          <p className="mt-1 text-sm leading-6 text-ink2">
-            {t('reserve.description')}
-          </p>
-        </div>
-        <p className="money-number shrink-0 text-2xl font-semibold">
-          {formatVndShort(activeReserveTotal)}
-        </p>
-      </div>
-
-      {isLoading ? (
-        <div className="mt-5 h-16 animate-pulse rounded-2xl bg-muted" />
-      ) : reserves.length === 0 ? (
-        <p className="mt-5 text-sm text-ink2">
-          {t('reserve.empty')}
-        </p>
-      ) : (
-        <div className="mt-5 divide-y divide-border">
-          {reserves.map((reserve) => (
-            <div
-              key={reserve.id}
-              className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+    <Panel>
+      <PanelHeader title={t('household.merged.reserveCadence')} meta={dateLabel} />
+      <div className="mt-7 grid gap-8 lg:grid-cols-2 lg:gap-x-14">
+        <div>
+          <p className="label">{t('household.merged.safetyFund')}</p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+            <MoneyInput
+              value={amount}
+              onChange={setDraft}
+              placeholder="0"
+              aria-label={t('reserve.form.amount')}
+              className="h-11 text-[20px]"
+            />
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleSave}
+              disabled={!canSave || setEmergencyFund.isPending}
             >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{reserve.name}</p>
-                <p className="mt-0.5 text-xs text-ink2">
-                  {t(`reserve.status.${reserve.status}`)}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <p className="money-number text-sm font-semibold">
-                  {formatVndShort(reserve.amount)}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t('common.remove')}
-                  disabled={deleteReserve.isPending}
-                  onClick={() => deleteReserve.mutate(reserve.id)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+              {t('reserve.form.save')}
+            </Button>
+          </div>
+          <p className="mt-2 text-[12px] leading-5 text-ink2">
+            {t('household.merged.safetyFundDescription')}
+          </p>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-        <EventField label={t('reserve.form.name')} htmlFor="reserve-name">
-          <EventFieldInput
-            id="reserve-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder={t('reserve.form.namePlaceholder')}
+          {!isLoading && !hasEmergencyFund ? (
+            <p className="mt-2 text-[12px] leading-5 text-ink3">{t('reserve.empty')}</p>
+          ) : null}
+
+          {exceedsLiquid ? (
+            <p className="mt-3 rounded-sunk bg-sunk px-3 py-2 text-[12px] leading-5 text-ink2">
+              {t('reserve.overLiquid')}
+            </p>
+          ) : null}
+        </div>
+
+        <div>
+          <p className="label">{t('household.merged.updateCadence')}</p>
+          <Controller
+            control={control}
+            name="updateFrequency"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger className="mt-2 h-auto w-fit min-w-40 bg-transparent p-0 text-[17px] font-medium focus-visible:outline-none">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">{t('options.frequency.weekly')}</SelectItem>
+                  <SelectItem value="biweekly">{t('options.frequency.biweekly')}</SelectItem>
+                  <SelectItem value="monthly">{t('options.frequency.monthly')}</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           />
-        </EventField>
-        <EventField label={t('reserve.form.amount')} htmlFor="reserve-amount">
-          <EventMoneyInput
-            id="reserve-amount"
-            value={amount}
-            onChange={setAmount}
-            placeholder="0"
-            className="text-[20px] sm:text-[20px]"
-          />
-        </EventField>
-        <Button onClick={handleAdd} disabled={!canAdd || createReserve.isPending}>
-          <Plus className="mr-2 size-4" />
-          {t('reserve.form.add')}
-        </Button>
+          <p className="mt-2 text-[12px] leading-5 text-ink2">
+            {t('household.merged.cadenceDescription')}
+          </p>
+
+          <ReminderToggle
+            className="mt-5"
+            title={t('settings.reminders.updatesTitle')}
+            description={t('settings.reminders.updatesDescription')}
+          >
+            <Controller
+              control={control}
+              name="reminderUpdate"
+              render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
+            />
+          </ReminderToggle>
+
+          <details className="mt-2 rounded-sunk bg-sunk px-4 py-3">
+            <summary className="cursor-pointer list-none text-[12px] font-medium text-ink2">
+              {t('household.merged.otherReminders')}
+            </summary>
+            <div className="mt-3 space-y-3">
+              <ReminderToggle
+                title={t('settings.reminders.upcomingTitle')}
+                description={t('settings.reminders.upcomingDescription')}
+              >
+                <Controller
+                  control={control}
+                  name="reminderPayments"
+                  render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
+                />
+              </ReminderToggle>
+              <ReminderToggle
+                title={t('settings.reminders.accessTitle')}
+                description={t('settings.reminders.accessDescription')}
+              >
+                <Controller
+                  control={control}
+                  name="reminderAccess"
+                  render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
+                />
+              </ReminderToggle>
+            </div>
+          </details>
+        </div>
       </div>
-    </Card>
+    </Panel>
+  )
+}
+
+function ReminderToggle({
+  title,
+  description,
+  children,
+  className,
+}: {
+  title: string
+  description: string
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn('sunk flex items-center justify-between gap-4 p-4', className)}>
+      <div>
+        <p className="text-[12px] font-medium">{title}</p>
+        <p className="mt-1 text-[11px] leading-5 text-ink3">{description}</p>
+      </div>
+      {children}
+    </div>
   )
 }

@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -24,19 +24,15 @@ export function useSettingsPage() {
     mutationFn: (currency: Settings['currency']) =>
       updateHouseholdConfig(activeHouseholdId!, currency),
   })
-  const safeHousehold = household ?? {
-    name: '',
-    currency: 'VND',
-    updateFrequency: 'weekly',
-    createdAt: '',
-  }
-
   const settingsSchema = useMemo(() => buildSettingsSchema(t), [t])
 
-  const initialSettings: Settings = {
-    householdName: safeHousehold.name,
-    currency: isCurrency(safeHousehold.currency) ? safeHousehold.currency : 'VND',
-    updateFrequency: isFrequency(safeHousehold.updateFrequency) ? safeHousehold.updateFrequency : 'weekly',
+  const initialSettings = useMemo<Settings>(() => ({
+    householdName: household?.name ?? '',
+    currency: household && isCurrency(household.currency) ? household.currency : 'VND',
+    updateFrequency:
+      household && isFrequency(household.updateFrequency)
+        ? household.updateFrequency
+        : 'weekly',
     language: i18n.resolvedLanguage === 'en' ? 'en' : 'vi',
     reminderPayments: true,
     reminderUpdate: true,
@@ -44,7 +40,7 @@ export function useSettingsPage() {
     shareAssets: 'grouped',
     shareUpcoming: 'detail',
     hidePrivateNotes: true,
-  }
+  }), [household, i18n.resolvedLanguage])
 
   const form = useForm<Settings>({
     resolver: zodResolver(settingsSchema),
@@ -57,6 +53,23 @@ export function useSettingsPage() {
     reset,
     formState: { isValid },
   } = form
+  const initializedHouseholdId = useRef<string | null>(null)
+
+  // The shared app shell often starts this hook before the household request
+  // has completed. Rehydrate the form once the active household arrives so the
+  // merged page does not keep the empty pre-request defaults.
+  useEffect(() => {
+    if (!household || initializedHouseholdId.current === household.id) return
+    reset({
+      ...initialSettings,
+      householdName: household.name,
+      currency: isCurrency(household.currency) ? household.currency : 'VND',
+      updateFrequency: isFrequency(household.updateFrequency)
+        ? household.updateFrequency
+        : 'weekly',
+    })
+    initializedHouseholdId.current = household.id
+  }, [household, initialSettings, reset])
 
   async function handleSave(values: Settings) {
     if (!activeHouseholdId) return

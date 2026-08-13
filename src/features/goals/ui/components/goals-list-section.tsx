@@ -1,19 +1,16 @@
-import { ArrowRight, ArrowUpDown, MoreVertical, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { MoreVertical, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { MoneyInput } from '@/components/ui/number-input'
-import { Progress } from '@/components/ui/progress'
+import { Panel } from '@/components/ui/panel'
 import {
   Select,
   SelectContent,
@@ -22,22 +19,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { GoalItem, GoalPriority } from '@/features/goals/model/goals'
-import {
-  formatAmount,
-  goalAmount,
-  priorityRank,
-  priorityTone,
-  suggestedPace,
-} from '@/features/goals/model/goals-form'
+import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
+import type { GoalItem } from '@/features/goals/model/goals'
+import { formatAmount, goalAmount, priorityRank } from '@/features/goals/model/goals-form'
+import { formatMonthYear } from '@/shared/lib/format-money'
 
 type WalletOption = { value: string; label: string }
-type SortMode = 'priority' | 'progress'
 
 type GoalsListSectionProps = {
   goals: GoalItem[]
+  primaryGoalId?: string
   isLoading?: boolean
-  priorityLabels: Record<GoalPriority, string>
   contributions: Record<string, string>
   onContributionChange: (goalId: string, value: string) => void
   contributionSources: Record<string, string>
@@ -53,8 +45,8 @@ type GoalsListSectionProps = {
 
 export function GoalsListSection({
   goals,
+  primaryGoalId,
   isLoading = false,
-  priorityLabels,
   contributions,
   onContributionChange,
   contributionSources,
@@ -69,190 +61,161 @@ export function GoalsListSection({
 }: GoalsListSectionProps) {
   const { t, i18n } = useTranslation()
   const [query, setQuery] = useState('')
-  const [sortMode, setSortMode] = useState<SortMode>('priority')
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
-
   const visibleGoals = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase(locale)
-    return goals
-      .filter((goal) => {
-        if (!needle) return true
-        return `${goal.name} ${goal.note}`.toLocaleLowerCase(locale).includes(needle)
-      })
-      .sort((a, b) =>
-        sortMode === 'priority'
-          ? priorityRank[a.priority] - priorityRank[b.priority] || b.progress - a.progress
-          : b.progress - a.progress,
-      )
-  }, [goals, locale, query, sortMode])
+    return [...goals]
+      .filter((goal) => !needle || `${goal.name} ${goal.note}`.toLocaleLowerCase(locale).includes(needle))
+      .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority] || b.progress - a.progress)
+  }, [goals, locale, query])
 
   return (
-    <Card>
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="section-title text-xl font-semibold">{t('goals.list.title')}</h2>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative sm:w-72">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={t('goals.list.searchPlaceholder')}
-              className="pl-11"
-            />
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="justify-start"
-            onClick={() => setSortMode((current) => (current === 'priority' ? 'progress' : 'priority'))}
-          >
-            <ArrowUpDown className="mr-2 size-4" />
-            {t(`goals.list.sort.${sortMode}`)}
-          </Button>
-        </div>
+    <Panel>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="section-title text-[16px]">{t('goals.demo.listTitle')}</h2>
+        <label className="sunk flex h-10 items-center gap-2 px-3 sm:w-[250px]">
+          <Search className="size-4 text-ink3" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t('goals.list.searchPlaceholder')}
+            className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink3"
+          />
+        </label>
       </div>
 
-      <div className="mt-6 divide-y divide-border">
-        {isLoading ? (
-          Array.from({ length: 3 }).map((_, index) => <GoalRowSkeleton key={index} />)
-        ) : goals.length === 0 ? (
+      <div className="mt-7 space-y-2">
+        {isLoading
+          ? Array.from({ length: 3 }).map((_, index) => <GoalRowSkeleton key={index} />)
+          : null}
+        {!isLoading && goals.length === 0 ? (
           <div className="py-10 text-center">
-            <p className="text-sm text-muted-foreground">{t('goals.list.empty')}</p>
-            <Button className="mt-4" onClick={onCreate}>
-              <Plus className="mr-2 size-4" />
+            <p className="text-[13px] text-ink2">{t('goals.list.empty')}</p>
+            <Button size="sm" className="mt-4" onClick={onCreate}>
+              <Plus className="size-4" />
               {t('goals.form.submit')}
             </Button>
           </div>
-        ) : visibleGoals.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            {t('goals.list.emptySearch')}
-          </p>
-        ) : (
-          visibleGoals.map((goal) => {
-            const current = goalAmount(goal.currentAmount)
-            const target = goalAmount(goal.targetAmount)
-            const deadline = goal.targetDate && goal.targetDate !== 'No deadline'
-              ? new Date(goal.targetDate).toLocaleDateString(locale, {
-                  month: '2-digit',
-                  year: 'numeric',
-                })
-              : t('goals.list.noDeadline')
+        ) : null}
+        {!isLoading && goals.length > 0 && visibleGoals.length === 0 ? (
+          <p className="py-10 text-center text-[13px] text-ink2">{t('goals.list.emptySearch')}</p>
+        ) : null}
 
-            return (
-              <article key={goal.id} className="py-6 first:pt-0 last:pb-0">
-                <div className="grid gap-4 md:grid-cols-[1.15fr_1fr_.7fr_auto] md:items-center">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-semibold">{goal.name}</h3>
-                      {goal.priority === 'high' ? (
-                        <Badge className={priorityTone[goal.priority]}>
-                          {priorityLabels[goal.priority]}
-                        </Badge>
-                      ) : null}
+        {!isLoading
+          ? visibleGoals.map((goal) => {
+              const current = goalAmount(goal.currentAmount)
+              const target = goalAmount(goal.targetAmount)
+              const deadline = goal.targetDate && goal.targetDate !== 'No deadline'
+                ? formatMonthYear(goal.targetDate, locale)
+                : t('goals.list.noDeadline')
+              const projection = goal.projection
+              const projectedDate = projection && hasProjectedDate(projection)
+                ? formatMonthYear(projection.projectedCompletionDate!, locale)
+                : t('goals.demo.unknownProjection')
+              const requiredMonthly = projection?.requiredMonthlyContributionForTargetDate
+
+              return (
+                <article key={goal.id} className="rounded-sunk px-3 py-4 transition-colors hover:bg-sunk sm:px-4">
+                  <div className="grid gap-5 lg:grid-cols-[minmax(180px,1fr)_1.4fr_1fr_100px] lg:items-center">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="truncate text-[14px] font-medium">{goal.name}</h3>
+                        {goal.id === primaryGoalId ? (
+                          <span className="rounded-full bg-accent-soft px-2 py-1 text-[10px] font-medium text-accent">
+                            {t('home.mainGoal.badge')}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1.5 text-[11px] text-ink3">
+                        {goal.targetDate && goal.targetDate !== 'No deadline'
+                          ? t('goals.demo.targetDate', { date: deadline })
+                          : t('goals.demo.noTargetDate')}
+                      </p>
                     </div>
-                    <p className="mt-2 truncate text-xs text-muted-foreground">
-                      {t('goals.list.deadline', { value: deadline })}
-                      {goal.note ? ` · ${goal.note}` : ''}
-                    </p>
-                  </div>
 
-                  <div>
-                    <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                      <span>
-                        {formatAmount(current)} / {formatAmount(target)}
-                      </span>
-                      <span>{goal.progress}%</span>
+                    <div>
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="num text-[12px] text-ink2">
+                          {formatAmount(current)} / {formatAmount(target)}
+                        </span>
+                        <span className="font-mono text-[11px] text-ink3">{goal.progress}%</span>
+                      </div>
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sunk">
+                        <div className="h-full min-w-px bg-accent" style={{ width: `${goal.progress}%` }} />
+                      </div>
                     </div>
-                    <Progress value={goal.progress} className="mt-2 h-2" />
+
+                    <div>
+                      <p className="label">{t('goals.projection.atCurrentPace')}</p>
+                      <p className="mt-1.5 text-[13px] font-medium">{projectedDate}</p>
+                      <p className="mt-1 text-[11px] text-ink2">
+                        {requiredMonthly
+                          ? t('goals.demo.needMonthly', { amount: formatAmount(requiredMonthly) })
+                          : goal.targetDate && goal.targetDate !== 'No deadline'
+                            ? t('goals.projection.noPace')
+                            : t('goals.demo.setTargetDate')}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-1 lg:justify-end">
+                      <button type="button" onClick={() => onOpen(goal.id)} className="text-[12px] font-medium text-accent">
+                        {t('assets.demo.detail')}
+                      </button>
+                      <GoalMenu
+                        goalId={goal.id}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        actionsLabel={t('common.actions')}
+                        editLabel={t('common.edit')}
+                        deleteLabel={t('common.delete')}
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t('goals.list.monthlyPace')}</p>
-                    <p className="money-number mt-1 text-sm font-semibold">
-                      {formatAmount(suggestedPace(goal))}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-1 md:justify-end">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="px-2 text-sm"
-                      onClick={() => onOpen(goal.id)}
+                  <details className="mt-3 rounded-sunk bg-sunk px-4 py-3 lg:ml-[28%]">
+                    <summary className="cursor-pointer list-none text-[12px] font-medium text-ink2">
+                      {t('goals.actions.contributeHelp')}
+                    </summary>
+                    <form
+                      className="mt-3 flex flex-wrap items-center gap-2"
+                      onSubmit={(event) => {
+                        event.preventDefault()
+                        onAddContribution(goal.id)
+                      }}
                     >
-                      <span className="hidden xl:inline">{t('goals.list.viewDetail')}</span>
-                      <ArrowRight className="size-4 xl:ml-2" />
-                    </Button>
-                    <GoalMenu
-                      goalId={goal.id}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                      actionsLabel={t('common.actions')}
-                      editLabel={t('common.edit')}
-                      deleteLabel={t('common.delete')}
-                    />
-                  </div>
-                </div>
-
-                <details className="mt-3 rounded-2xl bg-muted/55 px-4 py-3 md:ml-[28%]">
-                  <summary className="cursor-pointer list-none text-sm font-medium text-muted-foreground">
-                    {t('goals.actions.contributeHelp')}
-                  </summary>
-                  <form
-                    className="mt-3 flex flex-wrap items-center gap-2"
-                    onSubmit={(event) => {
-                      event.preventDefault()
-                      onAddContribution(goal.id)
-                    }}
-                  >
-                    <MoneyInput
-                      value={contributions[goal.id] ?? ''}
-                      onChange={(raw) => onContributionChange(goal.id, raw)}
-                      placeholder={t('goals.actions.contributePlaceholder')}
-                      className="h-9 min-w-[10rem] flex-1"
-                      aria-label={t('goals.actions.contribute')}
-                    />
-                    <Select
-                      value={contributionSources[goal.id] ?? ''}
-                      onValueChange={(value) => onContributionSourceChange(goal.id, value)}
-                      disabled={walletOptions.length === 0}
-                    >
-                      <SelectTrigger className="h-9 w-40" aria-label={t('goals.actions.source')}>
-                        <SelectValue
-                          placeholder={
-                            walletOptions.length === 0
-                              ? t('goals.actions.sourceEmpty')
-                              : t('goals.actions.sourcePlaceholder')
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {walletOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      disabled={isContributing || !contributionSources[goal.id]}
-                    >
-                      <Plus className="mr-1 size-4" />
-                      {isContributing ? t('goals.actions.contributing') : t('goals.actions.contribute')}
-                    </Button>
-                  </form>
-                </details>
-              </article>
-            )
-          })
-        )}
+                      <MoneyInput
+                        value={contributions[goal.id] ?? ''}
+                        onChange={(raw) => onContributionChange(goal.id, raw)}
+                        placeholder={t('goals.actions.contributePlaceholder')}
+                        className="h-9 min-w-[10rem] flex-1"
+                        aria-label={t('goals.actions.contribute')}
+                      />
+                      <Select
+                        value={contributionSources[goal.id] ?? ''}
+                        onValueChange={(value) => onContributionSourceChange(goal.id, value)}
+                        disabled={walletOptions.length === 0}
+                      >
+                        <SelectTrigger className="h-9 w-40" aria-label={t('goals.actions.source')}>
+                          <SelectValue placeholder={walletOptions.length === 0 ? t('goals.actions.sourceEmpty') : t('goals.actions.sourcePlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {walletOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button type="submit" size="sm" disabled={isContributing || !contributionSources[goal.id]}>
+                        <Plus className="size-4" />
+                        {isContributing ? t('goals.actions.contributing') : t('goals.actions.contribute')}
+                      </Button>
+                    </form>
+                  </details>
+                </article>
+              )
+            })
+          : null}
       </div>
-    </Card>
+    </Panel>
   )
 }
 
@@ -283,10 +246,7 @@ function GoalMenu({
           <Pencil className="size-4" />
           {editLabel}
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="text-alert focus:text-alert"
-          onSelect={() => onDelete(goalId)}
-        >
+        <DropdownMenuItem className="text-alert focus:text-alert" onSelect={() => onDelete(goalId)}>
           <Trash2 className="size-4" />
           {deleteLabel}
         </DropdownMenuItem>
@@ -296,18 +256,5 @@ function GoalMenu({
 }
 
 function GoalRowSkeleton() {
-  return (
-    <div className="grid gap-4 py-6 first:pt-0 md:grid-cols-[1.15fr_1fr_.7fr_auto] md:items-center">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-32 rounded-full" />
-        <Skeleton className="h-3 w-44 rounded-full" />
-      </div>
-      <div className="space-y-2">
-        <Skeleton className="h-3 w-full rounded-full" />
-        <Skeleton className="h-2 w-full rounded-full" />
-      </div>
-      <Skeleton className="h-5 w-24 rounded-full" />
-      <Skeleton className="h-8 w-20 rounded-xl" />
-    </div>
-  )
+  return <Skeleton className="h-[92px] w-full rounded-sunk" />
 }

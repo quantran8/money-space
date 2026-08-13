@@ -1,15 +1,15 @@
-import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Panel } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
-import { DebtListItem } from '@/features/debts/ui/components/debt-list-item'
 import type { Asset } from '@/features/assets/model/assets.types'
-import type { DebtItem, DebtStatus } from '@/features/debts/model/debts.types'
-import type { MemberItem } from '@/features/members/model/members.types'
 import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
+import type { DebtItem } from '@/features/debts/model/debts.types'
+import { DebtListItem } from '@/features/debts/ui/components/debt-list-item'
+import type { MemberItem } from '@/features/members/model/members.types'
 
 type DebtsListSectionProps = {
   debts: DebtItem[]
@@ -24,8 +24,6 @@ type DebtsListSectionProps = {
   onDelete: (id: string) => void
 }
 
-type StatusFilter = 'all' | DebtStatus
-
 export function DebtsListSection({
   debts,
   members,
@@ -37,16 +35,15 @@ export function DebtsListSection({
   onViewDetail,
   onDelete,
 }: DebtsListSectionProps) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
-  const [status, setStatus] = useState<StatusFilter>('all')
   const visibleDebts = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('vi')
-    return debts.filter((debt) => {
-      if (status !== 'all' && debt.status !== status) return false
-      if (!needle) return true
-      return `${debt.name} ${debt.lenderName}`.toLocaleLowerCase('vi').includes(needle)
-    })
-  }, [debts, query, status])
+    if (!needle) return debts
+    return debts.filter((debt) =>
+      `${debt.name} ${debt.lenderName}`.toLocaleLowerCase('vi').includes(needle),
+    )
+  }, [debts, query])
 
   function nextPaymentFor(debtId: string) {
     const now = new Date()
@@ -57,70 +54,72 @@ export function DebtsListSection({
       .sort((a, b) => (a.dueDate ?? a.due).localeCompare(b.dueDate ?? b.due))[0]
   }
 
-  return (
-    <Card>
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Các khoản đang phải trả</h2>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <label className="relative sm:w-72">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Tìm khoản nợ..."
-              className="rounded-xl bg-muted/40 pl-11"
-            />
-          </label>
-          <Select value={status} onValueChange={(value) => setStatus(value as StatusFilter)}>
-            <SelectTrigger className="rounded-xl sm:w-48" aria-label="Lọc trạng thái">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="active">Đang trả</SelectItem>
-              <SelectItem value="overdue">Quá hạn</SelectItem>
-              <SelectItem value="paused">Tạm dừng</SelectItem>
-              <SelectItem value="paid_off">Đã xong</SelectItem>
-              <SelectItem value="cancelled">Đã hủy</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+  const missingScheduleCount = debts.filter((debt) => !nextPaymentFor(debt.id)).length
 
-      <div className="mt-6 divide-y divide-border">
-        {isLoading ? Array.from({ length: 3 }).map((_, index) => <DebtListItemSkeleton key={index} />) : null}
-        {!isLoading && visibleDebts.length === 0 ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">
-            {debts.length === 0 ? 'Chưa có khoản nợ nào.' : 'Không tìm thấy khoản nợ phù hợp.'}
-          </div>
-        ) : null}
-        {!isLoading && visibleDebts.map((debt) => (
-          <DebtListItem
-            key={debt.id}
-            debt={debt}
-            ownerName={members.find((member) => member.id === debt.ownerMemberId)?.name}
-            nextPayment={nextPaymentFor(debt.id)}
-            isUpdating={isUpdating}
-            onEdit={onEdit}
-            onMarkPaidOff={onMarkPaidOff}
-            onViewDetail={onViewDetail}
-            onDelete={onDelete}
+  return (
+    <Panel>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="section-title text-[16px]">{t('debts.demo.listTitle')}</h2>
+        <label className="sunk flex h-10 items-center gap-2 px-3 sm:w-[250px]">
+          <Search className="size-4 text-ink3" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t('debts.demo.search')}
+            className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink3"
           />
-        ))}
+        </label>
       </div>
-    </Card>
-  )
-}
 
-function DebtListItemSkeleton() {
-  return (
-    <div className="grid gap-5 py-6 first:pt-0 xl:grid-cols-[1.3fr_.8fr_.7fr_110px] xl:items-center">
-      <div className="space-y-2"><Skeleton className="h-5 w-44" /><Skeleton className="h-4 w-64" /></div>
-      <div className="space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-2 w-full" /></div>
-      <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-6 w-32" /></div>
-      <Skeleton className="h-9 w-24" />
-    </div>
+      <div className="mt-7 hidden grid-cols-[1.2fr_1fr_.8fr_1.15fr_.65fr_.8fr_1fr_90px] px-3 lg:grid">
+        <p className="label">{t('debts.demo.columns.item')}</p>
+        <p className="label">{t('debts.demo.columns.lender')}</p>
+        <p className="label text-right">{t('debts.demo.columns.outstanding')}</p>
+        <p className="label">{t('debts.demo.columns.nextPayment')}</p>
+        <p className="label text-right">{t('debts.demo.columns.interest')}</p>
+        <p className="label">{t('debts.demo.columns.owner')}</p>
+        <p className="label">{t('debts.demo.columns.payoff')}</p>
+        <span />
+      </div>
+
+      <div className="mt-2 space-y-1">
+        {isLoading
+          ? Array.from({ length: 3 }).map((_, index) => (
+              <Skeleton key={index} className="h-14 w-full rounded-control" />
+            ))
+          : null}
+        {!isLoading && visibleDebts.length === 0 ? (
+          <p className="rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">
+            {debts.length === 0 ? t('debts.demo.empty') : t('debts.demo.emptySearch')}
+          </p>
+        ) : null}
+        {!isLoading
+          ? visibleDebts.map((debt) => (
+              <DebtListItem
+                key={debt.id}
+                debt={debt}
+                ownerName={members.find((member) => member.id === debt.ownerMemberId)?.name}
+                nextPayment={nextPaymentFor(debt.id)}
+                isUpdating={isUpdating}
+                onEdit={onEdit}
+                onMarkPaidOff={onMarkPaidOff}
+                onViewDetail={onViewDetail}
+                onDelete={onDelete}
+              />
+            ))
+          : null}
+      </div>
+
+      {!isLoading && missingScheduleCount > 0 ? (
+        <div className="sunk mt-5 flex flex-col gap-1.5 px-4 py-3.5 sm:flex-row sm:items-baseline sm:justify-between">
+          <span className="text-[13px] text-ink2">
+            {t('debts.demo.missingPaymentCount', { count: missingScheduleCount })}
+          </span>
+          <Link to="/upcoming" className="text-[13px] font-medium text-accent">
+            {t('debts.demo.addSchedule')}
+          </Link>
+        </div>
+      ) : null}
+    </Panel>
   )
 }

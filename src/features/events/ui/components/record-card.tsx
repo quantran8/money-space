@@ -8,11 +8,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  differenceInDays,
   formatRecordAmount,
-  getStatusLabel,
   getTimelineRowTypeLabel,
-  TODAY,
   type FinancialRecordItem,
 } from '@/features/events/model/events-form'
 import { formatVndShort } from '@/shared/lib/format-money'
@@ -43,84 +40,35 @@ export function RecordCard({
   onToggleEventAttention,
   onDeleteEvent,
 }: RecordCardProps) {
-  const { t, i18n } = useTranslation()
-  const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
+  const { t } = useTranslation()
   const isUpcoming = record.sourceType === 'upcoming_payment'
   const isInflow = record.direction === 'inflow'
-  const date = new Date(`${record.date}T00:00:00`)
-  const dateLabel = Number.isNaN(date.getTime())
-    ? record.displayDate
-    : date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })
-  const days = isUpcoming ? differenceInDays(TODAY, record.date) : 0
   const typeLabel = isUpcoming
-    ? t('events.redesign.timeline.planned')
-    : t(`options.eventType.${record.eventType}`, {
-        defaultValue: getTimelineRowTypeLabel(record),
-      })
-  const related = record.fromAssetName || record.toAssetName || record.ownerName
-  const descriptionParts = [record.ownerName, record.fromAssetName || record.toAssetName].filter(Boolean)
+    ? t('events.history.types.upcoming')
+    : t(`options.eventType.${record.eventType}`, { defaultValue: getTimelineRowTypeLabel(record) })
+  const actor = record.ownerName || record.fromAssetName || record.toAssetName || t('events.history.householdActor')
   const amount = isUpcoming
     ? `-${formatVndShort(Math.abs(record.amount))}`
     : formatRecordAmount(record, formatVndShort)
 
   return (
-    <article className="grid gap-4 px-4 py-5 md:grid-cols-[90px_1fr_150px_130px_42px] md:items-center">
-      <div>
-        <p className="text-xs font-medium text-muted-foreground">{dateLabel}</p>
-        <p className="mt-1 text-xs text-muted-foreground/70">
-          {isUpcoming
-            ? days === 0
-              ? t('events.redesign.timeline.dueToday')
-              : days > 0
-                ? t('events.redesign.timeline.daysRemaining', { count: days })
-                : t('events.redesign.timeline.overdue', { count: Math.abs(days) })
-            : record.displayDate}
-        </p>
-      </div>
-
+    <article className="grid gap-2 py-3 first:pt-0 last:pb-0 sm:grid-cols-[minmax(170px,1fr)_130px_120px_34px] sm:items-center sm:gap-4">
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <h4 className="truncate text-sm font-semibold">{record.title}</h4>
-          <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-            {typeLabel}
-          </span>
-        </div>
-        <p className="mt-1 truncate text-xs text-muted-foreground">
-          {descriptionParts.length > 0
-            ? descriptionParts.join(' · ')
-            : record.note || t('events.redesign.timeline.noSource')}
-        </p>
+        <h4 className="truncate text-[13px] font-medium">{record.title}</h4>
+        <p className="mt-1 truncate text-[11px] text-ink3">{actor}</p>
       </div>
-
       <div>
-        <p className="text-xs text-muted-foreground">
-          {isUpcoming
-            ? t('events.redesign.timeline.status')
-            : t('events.redesign.timeline.related')}
-        </p>
-        <p
-          className={cn(
-            'mt-1 truncate text-sm font-medium',
-            isUpcoming && record.status === 'overdue' && 'text-alert',
-            isUpcoming && record.status === 'pending_confirmation' && 'text-accent',
-          )}
-        >
-          {isUpcoming ? getStatusLabel(record.status) : related || t('common.noNote')}
-        </p>
+        <span className="rounded-full bg-sunk px-2.5 py-1 text-[11px] text-ink2">{typeLabel}</span>
+        {isUpcoming ? (
+          <p className="mt-1.5 text-[10px] text-attention">{t(`events.history.status.${record.status}`)}</p>
+        ) : null}
       </div>
-
-      <p
-        className={cn(
-          'money-number text-lg font-semibold md:text-right',
-          !isUpcoming && isInflow && 'text-accent',
-        )}
-      >
+      <p className={cn('num text-[14px] font-medium sm:text-right', isInflow && 'text-accent')}>
         {amount}
       </p>
-
       <DropdownMenu>
         <DropdownMenuTrigger
-          className="grid size-8 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          className="grid size-8 place-items-center rounded-control text-ink3 transition hover:bg-sunk hover:text-ink"
           aria-label={t('events.redesign.timeline.actions')}
         >
           <MoreVertical className="size-4" />
@@ -128,38 +76,17 @@ export function RecordCard({
         <DropdownMenuContent align="end">
           {isUpcoming ? (
             <>
-              <DropdownMenuItem disabled={isSavingActual} onSelect={() => onMarkPaid(record.id)}>
-                {t('events.redesign.actions.paid')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onPostponePayment(record.id)}>
-                {t('events.redesign.actions.postpone')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onEditPayment(record.id)}>
-                {t('common.edit')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onTogglePaymentAttention(record.id)}>
-                {t('events.redesign.actions.attention')}
-              </DropdownMenuItem>
+              <DropdownMenuItem disabled={isSavingActual} onSelect={() => onMarkPaid(record.id)}>{t('events.redesign.actions.paid')}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onPostponePayment(record.id)}>{t('events.redesign.actions.postpone')}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onEditPayment(record.id)}>{t('common.edit')}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onTogglePaymentAttention(record.id)}>{t('events.redesign.actions.attention')}</DropdownMenuItem>
             </>
           ) : (
             <>
-              {record.canEdit !== false ? (
-                <DropdownMenuItem onSelect={() => onEditEvent(record.id)}>
-                  {t('common.edit')}
-                </DropdownMenuItem>
-              ) : null}
-              <DropdownMenuItem onSelect={() => onDuplicateEvent(record.id)}>
-                {t('events.redesign.actions.duplicate')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onToggleEventAttention(record.id)}>
-                {t('events.redesign.actions.attention')}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-alert focus:text-alert"
-                onSelect={() => onDeleteEvent(record.id)}
-              >
-                {t('common.delete')}
-              </DropdownMenuItem>
+              {record.canEdit !== false ? <DropdownMenuItem onSelect={() => onEditEvent(record.id)}>{t('common.edit')}</DropdownMenuItem> : null}
+              <DropdownMenuItem onSelect={() => onDuplicateEvent(record.id)}>{t('events.redesign.actions.duplicate')}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onToggleEventAttention(record.id)}>{t('events.redesign.actions.attention')}</DropdownMenuItem>
+              <DropdownMenuItem className="text-alert focus:text-alert" onSelect={() => onDeleteEvent(record.id)}>{t('common.delete')}</DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>

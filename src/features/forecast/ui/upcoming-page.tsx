@@ -1,52 +1,74 @@
 import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { PageHeader } from '@/app/layout/page-header'
-import { Card } from '@/components/ui/card'
-import { FilterChip } from '@/features/assets/ui/components/filter-chip'
-import { useUpcomingPage } from '@/features/forecast/hooks/use-upcoming-page'
-import { ALLOWED_HORIZONS, type HorizonDays } from '@/features/forecast/model/forecast.types'
-import { ForecastTimeline } from '@/features/forecast/ui/components/forecast-timeline'
-import { SummaryStrip } from '@/features/forecast/ui/components/summary-strip'
-import { AssumptionsNote } from '@/features/forecast/ui/components/assumptions-note'
-import { WhatIfTrigger } from '@/features/whatif/ui/components/whatif-trigger'
 import { Button } from '@/components/ui/button'
 import { CashflowEventFormDialog } from '@/features/cashflow/ui/components/cashflow-event-form-dialog'
-import { useCashflowForm } from '@/features/cashflow/hooks/use-cashflow-form'
 import { useCashflowEvents } from '@/features/cashflow/hooks/use-cashflow-events'
+import { useCashflowForm } from '@/features/cashflow/hooks/use-cashflow-form'
+import { useUpcomingPage } from '@/features/forecast/hooks/use-upcoming-page'
+import { ALLOWED_HORIZONS, type HorizonDays } from '@/features/forecast/model/forecast.types'
+import { AssumptionsNote } from '@/features/forecast/ui/components/assumptions-note'
+import { ForecastTimeline } from '@/features/forecast/ui/components/forecast-timeline'
+import { SummaryStrip } from '@/features/forecast/ui/components/summary-strip'
+import { useMembers } from '@/features/members/hooks/use-members'
+import { cn } from '@/shared/lib/utils'
 
 export function UpcomingPage() {
   const { t } = useTranslation()
   const { horizonDays, setHorizonDays, forecast, days, isLoading, isEmpty } =
     useUpcomingPage()
   const cashflowForm = useCashflowForm()
-  const { completeCashflowEvent } = useCashflowEvents()
+  const { cashflowEvents, completeCashflowEvent } = useCashflowEvents()
+  const { members } = useMembers()
+
+  const memberNameById = new Map(members.map((member) => [member.id, member.name]))
+  const ownerNameByEventId = Object.fromEntries(
+    cashflowEvents.map((event) => [
+      event.id,
+      event.ownerMemberId ? memberNameById.get(event.ownerMemberId) : undefined,
+    ]),
+  )
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow={t('upcoming.eyebrow')}
-        title={t('upcoming.title')}
-        description={t('upcoming.description')}
-        actions={
-          <>
-            <WhatIfTrigger prefill={{ source: 'upcoming' }} />
-            <Button onClick={() => cashflowForm.openCreate('outgoing')}>
-              <Plus className="mr-2 size-4" />
-              {t('upcoming.form.submit')}
-            </Button>
-          </>
-        }
-      />
+    <div className="space-y-4 pb-3">
+      <header className="flex flex-col gap-5 pb-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="label">{t('upcoming.eyebrow')}</p>
+          <h1 className="page-title mt-2 text-[30px] leading-[1.15] sm:text-[34px]">
+            {t('upcoming.title')}
+          </h1>
+        </div>
 
-      <div className="flex flex-wrap gap-2">
-        {ALLOWED_HORIZONS.map((horizon) => (
-          <FilterChip
+        <div className="flex items-center gap-2.5">
+          <Button
+            className="h-10 px-4 text-[13px]"
+            onClick={() => cashflowForm.openCreate('outgoing')}
+          >
+            <Plus className="size-4" />
+            {t('upcoming.form.title')}
+          </Button>
+        </div>
+      </header>
+
+      <div
+        className="flex items-center gap-1 rounded-sunk bg-sunk p-1 sm:w-fit"
+        role="tablist"
+        aria-label={t('upcoming.horizon.label')}
+      >
+        {ALLOWED_HORIZONS.slice(0, 3).map((horizon) => (
+          <button
             key={horizon}
-            label={t('upcoming.horizon.days', { count: horizon })}
-            active={horizon === horizonDays}
+            type="button"
+            role="tab"
+            aria-selected={horizon === horizonDays}
             onClick={() => setHorizonDays(horizon as HorizonDays)}
-          />
+            className={cn(
+              'h-9 flex-1 rounded-control px-4 text-[13px] font-medium transition-colors sm:flex-none',
+              horizon === horizonDays ? 'bg-panel text-ink' : 'text-ink2 hover:text-ink',
+            )}
+          >
+            {t('upcoming.horizon.days', { count: horizon })}
+          </button>
         ))}
       </div>
 
@@ -55,6 +77,8 @@ export function UpcomingPage() {
       <ForecastTimeline
         days={days}
         protectedReserveAmount={forecast?.protectedReserveAmount ?? 0}
+        endingProjectedBalance={forecast?.endingProjectedBalance ?? 0}
+        ownerNameByEventId={ownerNameByEventId}
         isLoading={isLoading}
         isEmpty={isEmpty}
         onAdd={() => cashflowForm.openCreate('outgoing')}
@@ -73,13 +97,11 @@ export function UpcomingPage() {
       {forecast ? <AssumptionsNote assumptions={forecast.assumptions} /> : null}
 
       {forecast && forecast.excludedPrivateRecordCount > 0 ? (
-        <Card>
-          <p className="text-sm text-ink2">
-            {t('upcoming.privateExcluded', {
-              count: forecast.excludedPrivateRecordCount,
-            })}
-          </p>
-        </Card>
+        <p className="px-1 text-[12px] leading-5 text-ink3">
+          {t('upcoming.privateExcluded', {
+            count: forecast.excludedPrivateRecordCount,
+          })}
+        </p>
       ) : null}
 
       <CashflowEventFormDialog

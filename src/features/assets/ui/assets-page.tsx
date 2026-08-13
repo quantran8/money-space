@@ -2,25 +2,28 @@ import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import { PageHeader } from '@/app/layout/page-header'
+import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useAssetsPage } from '@/features/assets/hooks/use-assets-page'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
-import { AssetsCharts } from '@/features/assets/ui/components/assets-charts'
+import { AssetsDebtTabs } from '@/features/assets/ui/components/assets-debt-tabs'
 import { AssetsListSection } from '@/features/assets/ui/components/assets-list-section'
 import { AssetsSummaryStrip } from '@/features/assets/ui/components/assets-summary-strip'
 import { AS_OF } from '@/features/assets/model/assets-form'
+import { useDebts } from '@/features/debts/hooks/use-debts'
+import { useMembers } from '@/features/members/hooks/use-members'
 
 export function AssetsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { debts } = useDebts()
+  const { members } = useMembers()
   const {
-    snapshots,
     asOf,
-    totals,
     total,
+    assetCount,
     filteredAssets,
     isLoading,
     query,
@@ -46,30 +49,31 @@ export function AssetsPage() {
     isDeleting,
     handleDeleteAsset,
   } = useAssetsPage()
+  const activeDebts = debts.filter((debt) => debt.status === 'active' || debt.status === 'overdue')
+  const totalDebt = activeDebts.reduce((sum, debt) => sum + debt.outstandingAmountValue, 0)
 
   return (
-    <div className="space-y-5 pb-8">
-      <PageHeader
+    <div className="space-y-4 pb-3">
+      <CompactPageHeader
         eyebrow={t('assets.header.eyebrow')}
         title={t('assets.header.title')}
-        description={t('assets.header.description')}
-        className="gap-5 [&_h1]:mt-2 [&_h1]:max-w-4xl [&_h1]:text-[34px] [&_h1]:leading-[1.05] sm:[&_h1]:text-[46px] [&_p:last-child]:mt-3 [&_p:last-child]:max-w-3xl [&_p:last-child]:text-[15px] sm:[&_p:last-child]:text-base"
         actions={
-          <Button className="h-12 rounded-full px-6" onClick={openCreate}>
-            <Plus className="mr-2 size-4" />
-            {t('assets.form.submit')}
+          <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
+            <Plus className="size-4" />
+            {t('assets.demo.addSource')}
           </Button>
         }
       />
 
-      <AssetsSummaryStrip
-        totals={totals}
-        total={total}
-        asOf={asOf || AS_OF}
-        snapshots={snapshots}
-      />
+      <AssetsDebtTabs />
 
-      <AssetsCharts totals={totals} snapshots={snapshots} />
+      <AssetsSummaryStrip
+        total={total}
+        assetCount={assetCount}
+        totalDebt={totalDebt}
+        debtCount={activeDebts.length}
+        asOf={asOf || AS_OF}
+      />
 
       <AssetsListSection
         assets={filteredAssets}
@@ -79,6 +83,7 @@ export function AssetsPage() {
         onQueryChange={setQuery}
         liquidityFilter={liquidityFilter}
         onLiquidityFilterChange={setLiquidityFilter}
+        members={members}
         onOpen={(assetId) => navigate(`/assets/${assetId}`)}
         onEdit={openEdit}
         onSell={openSale}

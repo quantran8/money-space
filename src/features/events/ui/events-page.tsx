@@ -1,14 +1,13 @@
-import { Plus } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { PageHeader } from '@/app/layout/page-header'
+import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useEventsPage } from '@/features/events/hooks/use-events-page'
 import { EventFormDialog } from '@/features/events/ui/components/event-form-dialog'
-import { EventsSummaryStrip } from '@/features/events/ui/components/events-summary-strip'
 import { EventsTimelineCard } from '@/features/events/ui/components/events-timeline-card'
 import type { QuickAction } from '@/features/events/model/events-form'
 
@@ -17,15 +16,12 @@ export function EventsPage() {
   const { asOf } = useAssets()
   const {
     sale,
-    summary,
     groupedRecords,
     recordCounts,
     isLoading,
     payments,
     tab,
     setTab,
-    query,
-    setQuery,
     formOpen,
     quickAction,
     setQuickAction,
@@ -76,24 +72,19 @@ export function EventsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        eyebrow={t('events.header.eyebrow')}
-        title={t('events.header.title')}
-        description={t('events.header.description')}
+    <div className="space-y-4 pb-3">
+      <CompactPageHeader
+        eyebrow={t('events.history.eyebrow')}
+        title={t('events.history.title')}
         actions={
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 size-4" />
-            {t('events.redesign.create')}
+          <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
+            <RefreshCw className="size-4" />
+            {t('events.history.quickUpdate')}
           </Button>
         }
       />
 
-      <EventsSummaryStrip summary={summary} />
-
       <EventsTimelineCard
-        query={query}
-        onQueryChange={setQuery}
         tab={tab}
         onTabChange={setTab}
         groupedRecords={groupedRecords}
@@ -146,10 +137,10 @@ export function EventsPage() {
       <ConfirmDialog
         open={deleteEventId !== null}
         onOpenChange={(open) => !open && setDeleteEventId(null)}
-        title="Xóa record này?"
-        description={`Bạn có chắc muốn xóa “${deletingEvent?.note ?? ''}”? Hành động này không thể hoàn tác.`}
+        title={t('common.confirmDelete.title')}
+        description={t('common.confirmDelete.description', { name: deletingEvent?.note ?? '' })}
         confirmDisabled={isDeleting}
-        confirmLoadingLabel="Dang xoa..."
+        confirmLoadingLabel={t('events.history.deleting')}
         onConfirm={() => (deleteEventId ? handleDeleteEvent(deleteEventId) : undefined)}
       />
 

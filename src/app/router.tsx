@@ -16,7 +16,6 @@ import { HouseholdPage } from '@/features/household/ui/household-page'
 import { GoalDetailPage } from '@/features/goals/ui/goal-detail-page'
 import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
 import { RequireHousehold } from '@/features/onboarding/ui/require-household'
-import { SettingsPage } from '@/features/settings/ui/settings-page'
 
 export const router = createBrowserRouter([
   {
@@ -58,7 +57,7 @@ export const router = createBrowserRouter([
       // v3.1 redirects (Phase 10): the old routes are gone, not aliased.
       { path: 'payments', element: <Navigate to="/upcoming" replace /> },
       { path: 'members', element: <Navigate to="/household" replace /> },
-      { path: 'settings', element: <SettingsPage /> },
+      { path: 'settings', element: <Navigate to="/household" replace /> },
     ],
   },
 ])

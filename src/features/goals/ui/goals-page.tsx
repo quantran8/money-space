@@ -2,14 +2,13 @@ import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import { PageHeader } from '@/app/layout/page-header'
+import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useGoalsPage } from '@/features/goals/hooks/use-goals-page'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
 import { GoalsListSection } from '@/features/goals/ui/components/goals-list-section'
 import { GoalsSummaryStrip } from '@/features/goals/ui/components/goals-summary-strip'
-import { WhatIfTrigger } from '@/features/whatif/ui/components/whatif-trigger'
 
 export function GoalsPage() {
   const { t } = useTranslation()
@@ -18,7 +17,7 @@ export function GoalsPage() {
     goals,
     isLoading,
     stats,
-    priorityLabels,
+    primaryGoal,
     contributions,
     setContribution,
     contributionSources,
@@ -42,19 +41,15 @@ export function GoalsPage() {
   } = useGoalsPage()
 
   return (
-    <div className="space-y-4">
-      <PageHeader
+    <div className="space-y-4 pb-3">
+      <CompactPageHeader
         eyebrow={t('goals.header.eyebrow')}
         title={t('goals.header.title')}
-        description={t('goals.header.description')}
         actions={
-          <>
-            <WhatIfTrigger prefill={{ source: 'goal' }} />
-            <Button onClick={openCreate}>
-            <Plus className="mr-2 size-4" />
-              {t('goals.form.submit')}
-            </Button>
-          </>
+          <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
+            <Plus className="size-4" />
+            {t('goals.form.submit')}
+          </Button>
         }
       />
 
@@ -62,8 +57,8 @@ export function GoalsPage() {
 
       <GoalsListSection
         goals={goals}
+        primaryGoalId={primaryGoal?.id}
         isLoading={isLoading}
-        priorityLabels={priorityLabels}
         contributions={contributions}
         onContributionChange={setContribution}
         contributionSources={contributionSources}

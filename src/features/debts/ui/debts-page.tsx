@@ -1,23 +1,23 @@
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-import { PageHeader } from '@/app/layout/page-header'
+import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { AssetsDebtTabs } from '@/features/assets/ui/components/assets-debt-tabs'
 import { useDebtsPage } from '@/features/debts/hooks/use-debts-page'
 import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
-import { DebtsInsightsSection } from '@/features/debts/ui/components/debts-insights-section'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
 import { DebtsListSection } from '@/features/debts/ui/components/debts-list-section'
 import { DebtsSummaryStrip } from '@/features/debts/ui/components/debts-summary-strip'
 
 export function DebtsPage() {
+  const { t } = useTranslation()
   const {
     debts,
     assets,
     members,
-    events,
     payments,
-    isPaymentsLoading,
     isLoading,
     summary,
     memberOptions,
@@ -59,18 +59,19 @@ export function DebtsPage() {
   } = useDebtsPage()
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        eyebrow="Khoản nợ gia đình"
-        title="Nhà mình đang nợ gì?"
-        description="Xem số còn phải trả, tiến độ thanh toán và các kỳ hạn sắp tới."
+    <div className="space-y-4 pb-3">
+      <CompactPageHeader
+        eyebrow={t('debts.demo.eyebrow')}
+        title={t('debts.demo.title')}
         actions={
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 size-4" />
-            Thêm khoản nợ
+          <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
+            <Plus className="size-4" />
+            {t('debts.demo.add')}
           </Button>
         }
       />
+
+      <AssetsDebtTabs />
 
       <DebtsSummaryStrip summary={summary} debts={debts} payments={payments} />
 
@@ -85,13 +86,6 @@ export function DebtsPage() {
         onMarkPaidOff={markPaidOff}
         onViewDetail={openDetail}
         onDelete={requestDelete}
-      />
-
-      <DebtsInsightsSection
-        debts={debts}
-        events={events}
-        payments={payments}
-        isLoading={isLoading || isPaymentsLoading}
       />
 
       <DebtFormDialog

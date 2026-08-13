@@ -32,7 +32,6 @@ export function FinancialPictureSection({
   financialState,
   freshness,
   netWorth,
-  onSimulate,
   onQuickUpdate,
 }: {
   flexibleMoney: FlexibleMoneyResult
@@ -40,7 +39,6 @@ export function FinancialPictureSection({
   freshness?: DataFreshnessResult
   /** Only shown when the household has non-liquid assets or debts. */
   netWorth?: number
-  onSimulate: () => void
   onQuickUpdate: () => void
 }) {
   const { t } = useTranslation()
@@ -158,16 +156,6 @@ export function FinancialPictureSection({
             })}
           />
 
-          {/* One of exactly two entry points into what-if; the other is the
-              sidebar. No third (§12.1). */}
-          <button
-            type="button"
-            onClick={onSimulate}
-            className="mt-8 h-11 rounded-lg px-5 text-[14px] font-medium text-white"
-            style={{ background: 'var(--accent)' }}
-          >
-            {t('home.picture.simulate')}
-          </button>
         </div>
       </div>
     </Panel>

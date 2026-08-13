@@ -1,7 +1,7 @@
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { Card } from '@/components/ui/card'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 import {
   Select,
   SelectContent,
@@ -21,21 +21,14 @@ export function SharingCard({ form }: SharingCardProps) {
   const { control } = form
 
   return (
-    <Card>
-      <div className="mb-6">
-        <h2 className="section-title text-xl font-semibold">
-          {t('settings.privacy.title')}
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink2">
-          {t('settings.privacy.description')}
-        </p>
-      </div>
+    <Panel>
+      <PanelHeader title={t('settings.privacy.title')} meta={t('household.merged.newDataOnly')} />
 
-      <div className="divide-y divide-border">
-        <div className="grid gap-4 py-5 first:pt-0 sm:grid-cols-[1fr_240px] sm:items-center">
+      <div className="mt-7 space-y-1">
+        <div className="rounded-sunk px-3 py-3 transition-colors hover:bg-sunk sm:grid sm:grid-cols-[1fr_260px] sm:items-center sm:gap-6 sm:px-4">
           <div>
-            <p className="text-sm font-medium">{t('settings.privacy.assetsTitle')}</p>
-            <p className="mt-1 text-xs text-ink2">
+            <p className="text-[13px] font-medium">{t('settings.privacy.assetsTitle')}</p>
+            <p className="mt-1 text-[11px] leading-5 text-ink2">
               {t('settings.privacy.assetsDescription')}
             </p>
           </div>
@@ -44,7 +37,7 @@ export function SharingCard({ form }: SharingCardProps) {
             name="shareAssets"
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="rounded-xl bg-muted/45">
+                <SelectTrigger className="mt-3 h-10 text-[12px] sm:mt-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -59,10 +52,10 @@ export function SharingCard({ form }: SharingCardProps) {
           />
         </div>
 
-        <div className="grid gap-4 py-5 sm:grid-cols-[1fr_240px] sm:items-center">
+        <div className="rounded-sunk px-3 py-3 transition-colors hover:bg-sunk sm:grid sm:grid-cols-[1fr_260px] sm:items-center sm:gap-6 sm:px-4">
           <div>
-            <p className="text-sm font-medium">{t('settings.privacy.upcomingTitle')}</p>
-            <p className="mt-1 text-xs text-ink2">
+            <p className="text-[13px] font-medium">{t('settings.privacy.upcomingTitle')}</p>
+            <p className="mt-1 text-[11px] leading-5 text-ink2">
               {t('settings.privacy.upcomingDescription')}
             </p>
           </div>
@@ -71,7 +64,7 @@ export function SharingCard({ form }: SharingCardProps) {
             name="shareUpcoming"
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="rounded-xl bg-muted/45">
+                <SelectTrigger className="mt-3 h-10 text-[12px] sm:mt-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -86,10 +79,10 @@ export function SharingCard({ form }: SharingCardProps) {
           />
         </div>
 
-        <div className="flex items-center justify-between gap-4 py-5 pb-0">
+        <div className="flex items-center justify-between gap-4 rounded-sunk px-3 py-3 transition-colors hover:bg-sunk sm:px-4">
           <div>
-            <p className="text-sm font-medium">{t('settings.privacy.notesTitle')}</p>
-            <p className="mt-1 text-xs text-ink2">
+            <p className="text-[13px] font-medium">{t('settings.privacy.notesTitle')}</p>
+            <p className="mt-1 text-[11px] leading-5 text-ink2">
               {t('settings.privacy.notesDescription')}
             </p>
           </div>
@@ -102,6 +95,6 @@ export function SharingCard({ form }: SharingCardProps) {
           />
         </div>
       </div>
-    </Card>
+    </Panel>
   )
 }

@@ -36,7 +36,6 @@ import {
 } from '@/features/goals/model/goals-form'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
 import { GoalProjectionPanel } from '@/features/goals/ui/components/goal-projection-panel'
-import { WhatIfTrigger } from '@/features/whatif/ui/components/whatif-trigger'
 
 type ChartPoint = {
   date: string
@@ -324,12 +323,7 @@ export function GoalDetailPage() {
       </section>
 
       {goal.projection ? (
-        <div className="space-y-3">
-          <GoalProjectionPanel projection={goal.projection} />
-          {/* Prefilled with this goal, so the result shows the time cost
-              against it (§26D goal-consequence block). */}
-          <WhatIfTrigger prefill={{ source: 'goal-detail', goalId: goal.id }} />
-        </div>
+        <GoalProjectionPanel projection={goal.projection} />
       ) : null}
 
       <Card>

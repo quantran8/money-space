@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import { Card } from '@/components/ui/card'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MemberRow } from '@/features/members/ui/components/member-row'
 import type {
@@ -35,21 +35,13 @@ export function MembersListSection({
   const { t } = useTranslation()
 
   return (
-    <Card className="xl:col-span-8">
-      <div className="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <h2 className="section-title text-xl font-semibold">
-            {t('members.list.count', { count: members.length })}
-          </h2>
-        </div>
-        {invitedCount > 0 ? (
-          <p className="text-sm font-medium text-muted-foreground">
-            {t('members.list.invitedCount', { count: invitedCount })}
-          </p>
-        ) : null}
-      </div>
+    <Panel>
+      <PanelHeader
+        title={t('household.merged.membersTitle')}
+        meta={t('members.list.count', { count: members.length })}
+      />
 
-      <div className="divide-y divide-border">
+      <div className="mt-7 space-y-1">
         {isLoading
           ? Array.from({ length: 3 }).map((_, index) => <MemberRowSkeleton key={index} />)
           : null}
@@ -67,37 +59,32 @@ export function MembersListSection({
             />
           ))}
       </div>
-    </Card>
+
+      <div className="sunk mt-5 flex flex-col gap-2 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-[12px] leading-5 text-ink2">
+          {invitedCount > 0
+            ? t('members.list.invitedCount', { count: invitedCount })
+            : t('household.merged.membersHelp')}
+        </p>
+        <span className="text-[12px] text-ink3">{t('household.merged.permissionNote')}</span>
+      </div>
+    </Panel>
   )
 }
 
 function MemberRowSkeleton() {
   return (
-    <div className="surface-muted rounded-3xl p-4">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <Skeleton className="size-11 shrink-0 rounded-full" />
-          <div className="min-w-0 space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Skeleton className="h-5 w-32 rounded-full" />
-              <Skeleton className="h-6 w-20 rounded-full" />
-            </div>
-            <Skeleton className="h-4 w-48 rounded-full" />
-            <Skeleton className="h-3 w-40 rounded-full" />
-          </div>
+    <div className="grid gap-4 rounded-sunk px-4 py-3 lg:grid-cols-[1.2fr_.8fr_.9fr_120px] lg:items-center">
+      <div className="flex items-center gap-3">
+        <Skeleton className="size-10 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-44" />
         </div>
       </div>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Skeleton className="h-4 w-16 rounded-full" />
-          <Skeleton className="h-10 w-full rounded-xl" />
-        </div>
-        <div className="space-y-1.5">
-          <Skeleton className="h-4 w-20 rounded-full" />
-          <Skeleton className="h-10 w-full rounded-xl" />
-        </div>
-      </div>
+      <Skeleton className="h-9 w-full" />
+      <Skeleton className="h-9 w-full" />
+      <Skeleton className="h-4 w-24" />
     </div>
   )
 }

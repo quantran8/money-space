@@ -217,6 +217,7 @@ export function useEventsPage() {
       toAssetName: event.toAssetName,
       upcomingPaymentId: event.upcomingPaymentId,
       financialGoalId: event.financialGoalId,
+      debtId: event.debtId,
       note: event.note,
     }))
 
@@ -237,10 +238,17 @@ export function useEventsPage() {
   const filteredRecords = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return timelineRecords.filter((record) => {
+      const isGoal = Boolean(record.financialGoalId) || record.eventType === 'goal_contribution'
+      const isDebt = Boolean(record.debtId) || record.eventType === 'debt_update'
+      const isSource =
+        record.sourceType === 'money_event' &&
+        !isGoal &&
+        !isDebt &&
+        Boolean(record.fromAssetId || record.toAssetId)
+      if (tab === 'source' && !isSource) return false
       if (tab === 'upcoming' && record.sourceType !== 'upcoming_payment') return false
-      if (tab === 'actual' && record.sourceType !== 'money_event') return false
-      if (tab === 'inflow' && record.direction !== 'inflow') return false
-      if (tab === 'outflow' && record.direction !== 'outflow') return false
+      if (tab === 'goal' && !isGoal) return false
+      if (tab === 'debt' && !isDebt) return false
       if (!needle) return true
       return (
         record.title.toLowerCase().includes(needle) ||
@@ -266,10 +274,21 @@ export function useEventsPage() {
 
   const recordCounts = useMemo(
     () => ({
+      source: timelineRecords.filter((record) =>
+        record.sourceType === 'money_event' &&
+        !record.financialGoalId &&
+        !record.debtId &&
+        record.eventType !== 'goal_contribution' &&
+        record.eventType !== 'debt_update' &&
+        Boolean(record.fromAssetId || record.toAssetId),
+      ).length,
       upcoming: timelineRecords.filter((record) => record.sourceType === 'upcoming_payment').length,
-      actual: timelineRecords.filter((record) => record.sourceType === 'money_event').length,
-      inflow: timelineRecords.filter((record) => record.direction === 'inflow').length,
-      outflow: timelineRecords.filter((record) => record.direction === 'outflow').length,
+      goal: timelineRecords.filter(
+        (record) => Boolean(record.financialGoalId) || record.eventType === 'goal_contribution',
+      ).length,
+      debt: timelineRecords.filter(
+        (record) => Boolean(record.debtId) || record.eventType === 'debt_update',
+      ).length,
     }),
     [timelineRecords],
   )

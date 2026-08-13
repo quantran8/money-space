@@ -158,6 +158,7 @@ export function useAssetsPage() {
     asOf,
     totals,
     total,
+    assetCount: assets.length,
     filteredAssets,
     isLoading,
     // toolbar state

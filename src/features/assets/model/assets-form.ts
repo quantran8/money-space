@@ -101,6 +101,10 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
     liquidity: values.liquidity,
     currency: 'VND',
     note: values.note.trim(),
+    financialNature: values.financialNature,
+    visibilityLevel: values.visibilityLevel,
+    holderMemberId: values.holderMemberId || null,
+    privacyOwnerMemberId: values.privacyOwnerMemberId || null,
   }
 
   if (mode === 'manual') {
@@ -197,6 +201,10 @@ export function fromAsset(asset: Asset): AssetForm {
     nonTermRate: decimalToRaw(asset.calculationTerm?.nonTermRate),
     interestDestination: asset.calculationTerm?.interestDestination ?? 'principal',
     receivingWalletId: asset.calculationTerm?.receivingWalletId ?? '',
+    financialNature: asset.financialNature ?? DEFAULT_FINANCIAL_NATURE,
+    visibilityLevel: asset.visibilityLevel ?? DEFAULT_VISIBILITY_LEVEL,
+    holderMemberId: asset.holderMemberId ?? '',
+    privacyOwnerMemberId: asset.privacyOwnerMemberId ?? '',
   }
 }
 

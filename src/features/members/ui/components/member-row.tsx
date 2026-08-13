@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -10,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { roleTone } from '@/features/members/model/members-form'
 import type {
   HouseholdRole,
   MemberItem,
@@ -39,54 +36,41 @@ export function MemberRow({
   const { t } = useTranslation()
 
   return (
-    <div className="py-5 first:pt-0 last:pb-0">
-      <div className="flex items-start justify-between gap-4">
+    <article className="rounded-sunk px-3 py-3 transition-colors hover:bg-sunk sm:px-4">
+      <div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr_.9fr_120px] lg:items-center">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold">
+          <div className="grid size-10 shrink-0 place-items-center rounded-full bg-sunk text-[12px] font-medium">
             {member.initials}
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="truncate font-medium">{member.name}</p>
-              <Badge className={roleTone[member.role]}>{roleLabels[member.role]}</Badge>
+              <p className="truncate text-[13px] font-medium">{member.name}</p>
+              {member.role === 'owner' ? (
+                <span className="rounded-full bg-sunk px-2 py-1 text-[10px]">
+                  {roleLabels[member.role]}
+                </span>
+              ) : null}
               {member.status === 'invited' ? (
-                <Badge className="bg-attention-tint text-attention">
+                <span className="rounded-full bg-attention-tint px-2 py-1 text-[10px] text-attention">
                   {t('members.list.pending')}
-                </Badge>
-              ) : (
-                <Badge className="bg-accent-tint text-accent">
-                  {t('members.list.active')}
-                </Badge>
-              )}
+                </span>
+              ) : null}
             </div>
-            <p className="mt-1 truncate text-sm text-ink2">
-              {member.email}
-            </p>
+            <p className="mt-1 truncate text-[11px] text-ink3">{member.email}</p>
           </div>
         </div>
 
-        {member.role !== 'owner' ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onRemove(member.id)}
-            className="shrink-0 border-alert text-alert hover:bg-alert-tint hover:text-alert"
-          >
-            {t('common.remove')}
-          </Button>
-        ) : null}
-      </div>
-
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">{t('members.list.role')}</Label>
+        <div>
+          <p className="label lg:hidden">{t('members.list.role')}</p>
+          {member.role === 'owner' ? (
+            <p className="mt-1.5 text-[13px] lg:mt-0">{roleLabels[member.role]}</p>
+          ) : (
           <Select
             value={member.role}
-            disabled={member.role === 'owner' || isUpdating}
+            disabled={isUpdating}
             onValueChange={(value) => onUpdateRole(member.id, value as HouseholdRole)}
           >
-            <SelectTrigger className="rounded-xl bg-muted/45">
+            <SelectTrigger className="h-9 text-[12px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -97,17 +81,19 @@ export function MemberRow({
               ))}
             </SelectContent>
           </Select>
+          )}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">
-            {t('members.list.permission')}
-          </Label>
+          <p className="label lg:hidden">{t('members.list.permission')}</p>
+          {member.role === 'owner' ? (
+            <p className="mt-1.5 text-[13px] lg:mt-0">{permissionLabels[member.permission]}</p>
+          ) : (
           <Select
             value={member.permission}
-            disabled={member.role === 'owner' || isUpdating}
+            disabled={isUpdating}
             onValueChange={(value) => onUpdatePermission(member.id, value as PermissionLevel)}
           >
-            <SelectTrigger className="rounded-xl bg-muted/45">
+            <SelectTrigger className="h-9 text-[12px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -118,8 +104,21 @@ export function MemberRow({
               ))}
             </SelectContent>
           </Select>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-3 lg:justify-end">
+          <span className="inline-flex items-center gap-2 text-[12px]">
+            <span className={member.status === 'active' ? 'size-1.5 rounded-full bg-accent' : 'size-1.5 rounded-full bg-attention'} />
+            {member.status === 'active' ? t('members.list.active') : t('members.list.pending')}
+          </span>
+          {member.role !== 'owner' ? (
+            <Button type="button" variant="ghost" size="sm" onClick={() => onRemove(member.id)} className="text-alert hover:bg-alert-tint hover:text-alert">
+              {t('common.remove')}
+            </Button>
+          ) : null}
         </div>
       </div>
-    </div>
+    </article>
   )
 }
