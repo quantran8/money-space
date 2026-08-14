@@ -85,10 +85,16 @@ export function useSettingsPage() {
 
     try {
       await updateConfig.mutateAsync(values.currency)
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.households }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.members(activeHouseholdId) }),
-      ])
+      // Outside the await deliberately. These were awaited INSIDE the try, so a
+      // failed refetch ran the catch below and rolled the UI back to the old
+      // currency — telling the user the save failed when it had succeeded. The
+      // save's success is decided by `updateConfig` alone.
+      for (const queryKey of [
+        queryKeys.households,
+        queryKeys.members(activeHouseholdId),
+      ]) {
+        void queryClient.invalidateQueries({ queryKey })
+      }
     } catch {
       setDisplayCurrency(previousCurrency)
       await i18n.changeLanguage(previousLanguage)

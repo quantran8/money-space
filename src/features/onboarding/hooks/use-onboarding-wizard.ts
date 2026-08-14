@@ -32,6 +32,9 @@ export function useOnboardingWizard() {
 
   async function finish() {
     setStep(null)
+    // Awaited ON PURPOSE, unlike the mutation invalidations elsewhere: this one
+    // gates a navigation. Landing on Home before the household list has
+    // refreshed shows an empty or stale picture on the user's very first view.
     if (activeHouseholdId) {
       await queryClient.invalidateQueries({ queryKey: queryKeys.households })
     }

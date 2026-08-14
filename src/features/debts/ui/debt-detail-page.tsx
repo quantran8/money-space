@@ -213,7 +213,7 @@ export function DebtDetailPage() {
   if (!debt) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/debts')}>
+        <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/networth')}>
           <ChevronLeft className="size-4" /> Danh sách khoản nợ
         </Button>
         <Card className="py-10 text-center">
@@ -241,7 +241,7 @@ export function DebtDetailPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="ghost" className="-ml-2 w-fit gap-1" onClick={() => navigate('/debts')}>
+        <Button variant="ghost" className="-ml-2 w-fit gap-1" onClick={() => navigate('/networth')}>
           <ChevronLeft className="size-4" /> Danh sách khoản nợ
         </Button>
         <div className="flex flex-wrap gap-2">

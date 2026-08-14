@@ -33,7 +33,7 @@ export function DataCard() {
               {t('household.merged.privacyDescription')}
             </p>
           </div>
-          <Link to="/assets" className="mt-4 w-fit text-[12px] font-medium text-accent">
+          <Link to="/networth" className="mt-4 w-fit text-[12px] font-medium text-accent">
             {t('household.merged.viewSources')}
           </Link>
         </div>

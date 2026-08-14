@@ -24,17 +24,18 @@ export function useFreshness() {
    * but the staleness ASSUMPTION they carry does change, so the forecast
    * family is invalidated too.
    */
-  const invalidate = async () => {
+  // NOT awaited — see the note in `use-assets.ts`.
+  const invalidate = () => {
     if (!activeHouseholdId) return
-    await Promise.all(
-      [
-        queryKeys.freshness(activeHouseholdId),
-        queryKeys.assets(activeHouseholdId),
-        ['households', activeHouseholdId, 'forecast'],
-        ['households', activeHouseholdId, 'financial-state'],
-        queryKeys.dashboard(activeHouseholdId),
-      ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
-    )
+    for (const queryKey of [
+      queryKeys.freshness(activeHouseholdId),
+      queryKeys.assets(activeHouseholdId),
+      ['households', activeHouseholdId, 'forecast'],
+      ['households', activeHouseholdId, 'financial-state'],
+      queryKeys.dashboard(activeHouseholdId),
+    ]) {
+      void queryClient.invalidateQueries({ queryKey })
+    }
   }
 
   return {

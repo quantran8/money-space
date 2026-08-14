@@ -85,6 +85,7 @@ export function AssetDetailPage() {
     mode,
     walletOptions,
     isEditing,
+    editingAsset,
     isSubmitting,
     submit,
     formOpen,
@@ -112,7 +113,7 @@ export function AssetDetailPage() {
   if (!asset) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/assets')}>
+        <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/networth')}>
           <ChevronLeft className="size-4" />
           {t('assets.detail.back')}
         </Button>
@@ -161,7 +162,7 @@ export function AssetDetailPage() {
         <Button
           variant="ghost"
           className="-ml-2 w-fit gap-1"
-          onClick={() => navigate('/assets')}
+          onClick={() => navigate('/networth')}
         >
           <ChevronLeft className="size-4" />
           {t('assets.detail.back')}
@@ -419,6 +420,7 @@ export function AssetDetailPage() {
         mode={mode}
         walletOptions={walletOptions}
         isEditing={isEditing}
+        editingAsset={editingAsset}
         isSubmitting={isSubmitting}
         onSubmit={submit}
       />

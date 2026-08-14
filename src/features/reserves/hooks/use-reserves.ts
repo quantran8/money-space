@@ -35,17 +35,18 @@ export function useReserves() {
   })
 
   /** A reserve change moves flexible money and the financial state. */
-  const invalidate = async () => {
+  const invalidate = () => {
     if (!activeHouseholdId) return
-    await Promise.all(
-      [
-        queryKeys.reserves(activeHouseholdId),
-        ['households', activeHouseholdId, 'forecast'],
-        ['households', activeHouseholdId, 'flexible-money'],
-        ['households', activeHouseholdId, 'financial-state'],
-        queryKeys.dashboard(activeHouseholdId),
-      ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
-    )
+    // NOT awaited — see the note in `use-assets.ts`.
+    for (const queryKey of [
+      queryKeys.reserves(activeHouseholdId),
+      ['households', activeHouseholdId, 'forecast'],
+      ['households', activeHouseholdId, 'flexible-money'],
+      ['households', activeHouseholdId, 'financial-state'],
+      queryKeys.dashboard(activeHouseholdId),
+    ]) {
+      void queryClient.invalidateQueries({ queryKey })
+    }
   }
 
   const reserves = query.data?.items ?? EMPTY_RESERVES

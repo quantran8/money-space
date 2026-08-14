@@ -14,15 +14,22 @@ export function useDebts() {
     enabled: !!activeHouseholdId,
   })
 
-  const invalidate = async () => {
+  // NOT awaited — see the note in `use-assets.ts`.
+  const invalidate = () => {
     if (!activeHouseholdId) return
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.debts(activeHouseholdId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeHouseholdId) }),
+    for (const queryKey of [
+      queryKeys.debts(activeHouseholdId),
+      queryKeys.dashboard(activeHouseholdId),
       // An effective-from-now / disbursement / reconcile update logs a money
       // event, so the events timeline (and the debt detail history) must refetch.
-      queryClient.invalidateQueries({ queryKey: queryKeys.events(activeHouseholdId) }),
-    ])
+      queryKeys.events(activeHouseholdId),
+      // A debt write moves the repayment schedule, which the forecast and the
+      // flexible-money figure are computed from.
+      ['households', activeHouseholdId, 'forecast'],
+      ['households', activeHouseholdId, 'flexible-money'],
+    ]) {
+      void queryClient.invalidateQueries({ queryKey })
+    }
   }
 
   return {

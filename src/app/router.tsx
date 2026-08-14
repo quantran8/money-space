@@ -1,14 +1,13 @@
-import { Navigate, createBrowserRouter } from 'react-router-dom'
+import { Navigate, createBrowserRouter, useLocation } from 'react-router-dom'
 
 import { AppShell } from '@/app/layout/app-shell'
 import { AssetDetailPage } from '@/features/assets/ui/asset-detail-page'
-import { AssetsPage } from '@/features/assets/ui/assets-page'
 import { AuthCallbackPage } from '@/features/auth/ui/auth-callback-page'
 import { AuthPage } from '@/features/auth/ui/auth-page'
 import { RequireAuth } from '@/features/auth/ui/require-auth'
 import { DebtDetailPage } from '@/features/debts/ui/debt-detail-page'
-import { DebtsPage } from '@/features/debts/ui/debts-page'
 import { DashboardPage } from '@/features/dashboard/ui/dashboard-page'
+import { NetWorthPage } from '@/features/networth/ui/networth-page'
 import { EventsPage } from '@/features/events/ui/events-page'
 import { UpcomingPage } from '@/features/forecast/ui/upcoming-page'
 import { GoalsPage } from '@/features/goals/ui/goals-page'
@@ -16,6 +15,16 @@ import { HouseholdPage } from '@/features/household/ui/household-page'
 import { GoalDetailPage } from '@/features/goals/ui/goal-detail-page'
 import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
 import { RequireHousehold } from '@/features/onboarding/ui/require-household'
+
+/**
+ * `/assets` and `/debts` → `/networth`, carrying navigation state across.
+ * A plain <Navigate> would drop it, and the events page uses
+ * `state: { openCreate: true }` to open the debt form on arrival.
+ */
+function RedirectToNetWorth() {
+  const location = useLocation()
+  return <Navigate to="/networth" replace state={location.state} />
+}
 
 export const router = createBrowserRouter([
   {
@@ -45,10 +54,17 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'assets', element: <AssetsPage /> },
+      // Assets and debts are ONE route (§: two halves of the same balance
+      // sheet). The tab lives in page state, not the URL.
+      { path: 'networth', element: <NetWorthPage /> },
+      // The detail routes stay separate — an asset and a debt stop being
+      // comparable the moment you open one.
       { path: 'assets/:assetId', element: <AssetDetailPage /> },
-      { path: 'debts', element: <DebtsPage /> },
       { path: 'debts/:debtId', element: <DebtDetailPage /> },
+      // The old list routes are gone; keep the redirects so existing links and
+      // bookmarks still land somewhere sensible.
+      { path: 'assets', element: <RedirectToNetWorth /> },
+      { path: 'debts', element: <RedirectToNetWorth /> },
       { path: 'events', element: <EventsPage /> },
       { path: 'upcoming', element: <UpcomingPage /> },
       { path: 'goals', element: <GoalsPage /> },

@@ -17,7 +17,7 @@ import {
   type ValuationMode,
 } from '@/features/assets/model/assets'
 import { parseRawDecimal, parseRawMoney } from '@/shared/lib/number-format'
-import { localizedOptionalText, localizedRequiredText } from '@/shared/lib/validation'
+import { localizedOptionalText } from '@/shared/lib/validation'
 
 export const AS_OF = '2026-07-06'
 
@@ -91,12 +91,28 @@ export function parseMoneyToVnd(raw: string): number {
   return parseRawMoney(raw)
 }
 
+/**
+ * The display name for a market-priced holding.
+ *
+ * For stock / crypto / gold the symbol IS the name — asking for both makes the
+ * user type "FPT" twice. `name` stays the display identity everywhere (list
+ * rows, detail title, sale dialog), so it is derived here rather than dropped,
+ * and the form hides the field for these types (§22.1: never ask for what the
+ * app can derive). A name the user typed explicitly still wins.
+ */
+export function resolveAssetName(values: AssetForm): string {
+  const typed = values.name.trim()
+  if (typed) return typed
+  if (valuationModeForType(values.type) === 'market_priced') return values.symbol.trim().toUpperCase()
+  return typed
+}
+
 /** Build an Asset from raw form values, or null if inputs are incomplete. */
 export function toAsset(id: string, values: AssetForm): Asset | null {
   const mode = valuationModeForType(values.type)
   const base = {
     id,
-    name: values.name.trim(),
+    name: resolveAssetName(values),
     type: values.type,
     liquidity: values.liquidity,
     currency: 'VND',
@@ -181,9 +197,17 @@ function decimalToRaw(value?: number): string {
 
 /** Build editable form values from an existing asset (edit mode). */
 export function fromAsset(asset: Asset): AssetForm {
+  // A stored name equal to the symbol was DERIVED, not typed (see
+  // `resolveAssetName`). Round-tripping it into the optional custom-name field
+  // would turn a derived name into an explicit one on the next save, so it
+  // comes back empty and stays derived.
+  const symbol = asset.marketPosition?.symbol ?? ''
+  const isDerivedName =
+    Boolean(symbol) && asset.name.trim().toUpperCase() === symbol.trim().toUpperCase()
+
   return {
     ...defaultAssetFormValues,
-    name: asset.name,
+    name: isDerivedName ? '' : asset.name,
     type: asset.type,
     liquidity: asset.liquidity,
     note: asset.note,
@@ -213,7 +237,10 @@ const moneyLike = /^\d+$/
 export function buildAssetSchema(t: (key: string, params?: Record<string, unknown>) => string) {
   return z
     .object({
-      name: localizedRequiredText(t, t('assets.form.name')),
+      // Required only where the app cannot derive it — a market-priced holding
+      // takes its name from the symbol (see `resolveAssetName`). Enforced in
+      // `.superRefine` below rather than here, since it depends on `type`.
+      name: localizedOptionalText(t, 120),
       type: z.enum(assetTypeOrder as [AssetType, ...AssetType[]]),
       liquidity: z.enum(['usable_now', 'not_immediately_usable', 'long_term']),
       note: localizedOptionalText(t, 120),
@@ -258,6 +285,16 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
       const mode = valuationModeForType(values.type)
       const invalidMoney = t('validation.invalidMoney')
       const required = (label: string) => t('validation.required', { label })
+
+      // Market-priced holdings derive their name from the symbol, so the field
+      // is hidden and empty is valid. Everything else must be named.
+      if (mode !== 'market_priced' && !values.name.trim()) {
+        ctx.addIssue({
+          path: ['name'],
+          code: 'custom',
+          message: required(t('assets.form.name')),
+        })
+      }
 
       if (mode === 'manual') {
         if (!values.value) {

@@ -87,6 +87,12 @@ export function useEventsPage() {
   // Money events move money in/out of a WALLET (cash or bank account), never a
   // non-liquid holding like stock/real-estate. Every asset picker on the events
   // form is a wallet source/destination, so restrict the options to those types.
+  //
+  // Source ("nguồn tiền") and destination are the same set: money leaves and
+  // arrives through a spendable wallet, never through a valued asset (gold,
+  // stock, savings…), which changes hands via its own sell / revalue flow.
+  // `assetOptions` and `sourceAssetOptions` were two byte-identical memos;
+  // they are one list with two names kept for the call sites' readability.
   const assetOptions = useMemo(
     () =>
       assets
@@ -94,17 +100,7 @@ export function useEventsPage() {
         .map((asset) => ({ value: asset.id, label: asset.name })),
     [assets],
   )
-  // Source ("nguồn tiền") of an event can only be a spendable wallet — money
-  // leaves the household from cash or a bank account, never from a valued asset
-  // (gold, stock, savings…). Those non-wallet assets change hands through their
-  // own dedicated flows (sell / revalue), not a generic income/expense record.
-  const sourceAssetOptions = useMemo(
-    () =>
-      assets
-        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
-        .map((asset) => ({ value: asset.id, label: asset.name })),
-    [assets],
-  )
+  const sourceAssetOptions = assetOptions
   const memberOptions = useMemo(
     () => members.filter((member) => member.status === 'active').map((member) => ({
       value: member.id,
@@ -142,11 +138,16 @@ export function useEventsPage() {
     register: registerUpcoming,
     reset: resetUpcoming,
     handleSubmit: handleUpcomingSubmit,
-    formState: { errors: upcomingErrors, isValid: isUpcomingValid },
+    formState: { errors: upcomingErrors, isDirty: isUpcomingDirty },
   } = useForm<UpcomingRecordForm>({
     resolver: zodResolver(upcomingSchema),
     defaultValues: upcomingDefaults,
-    mode: 'onChange',
+    // §22.10 — the submit button is never disabled, so validation happens on
+    // submit and errors say what is missing. Re-validating on change is what
+    // clears an error the moment the user starts fixing that field.
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    shouldFocusError: true,
   })
 
   const {
@@ -154,11 +155,13 @@ export function useEventsPage() {
     register: registerActual,
     reset: resetActual,
     handleSubmit: handleActualSubmit,
-    formState: { errors: actualErrors, isValid: isActualValid },
+    formState: { errors: actualErrors, isDirty: isActualDirty },
   } = useForm<ActualRecordForm>({
     resolver: zodResolver(actualSchema),
     defaultValues: actualDefaults,
-    mode: 'onChange',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    shouldFocusError: true,
   })
 
   const timelineRecords = useMemo<FinancialRecordItem[]>(() => {
@@ -325,6 +328,11 @@ export function useEventsPage() {
 
   useEffect(() => {
     if (!formOpen) return
+    // This effect depends on `events` / `payments` / `assets`, so a background
+    // refetch while the dialog is open would re-run it and overwrite whatever
+    // the user has typed. Once the form is dirty, their input wins (§23: a
+    // form must never silently discard what the user entered).
+    if (quickAction === 'upcoming' ? isUpcomingDirty : isActualDirty) return
 
     if (quickAction === 'upcoming') {
       if (editingPaymentId) {
@@ -434,6 +442,8 @@ export function useEventsPage() {
     editingPaymentId,
     events,
     formOpen,
+    isActualDirty,
+    isUpcomingDirty,
     markPaidPaymentId,
     memberOptions,
     payments,
@@ -455,12 +465,12 @@ export function useEventsPage() {
 
   function openBorrowMoney() {
     handleFormOpenChange(false)
-    navigate('/debts', { state: { openCreate: true } })
+    navigate('/networth', { state: { openCreate: true } })
   }
 
   function openSellAsset() {
     handleFormOpenChange(false)
-    navigate('/assets')
+    navigate('/networth')
   }
 
   function openEditPayment(paymentId: string) {
@@ -813,12 +823,10 @@ export function useEventsPage() {
     registerUpcoming,
     handleUpcomingSubmit,
     upcomingErrors,
-    isUpcomingValid,
     actualControl,
     registerActual,
     handleActualSubmit,
     actualErrors,
-    isActualValid,
     // handlers
     openCreate,
     openBorrowMoney,

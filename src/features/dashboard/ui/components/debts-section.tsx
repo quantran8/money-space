@@ -28,7 +28,7 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
       <PanelHeader
         title={t('home.debts.title')}
         action={
-          <Link to="/debts" className="text-[13px] text-accent">
+          <Link to="/networth" className="text-[13px] text-accent">
             {t('home.debts.viewAll')}
           </Link>
         }

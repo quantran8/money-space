@@ -18,7 +18,7 @@ export function HouseholdAssetsCard() {
       <div className="flex items-center justify-between gap-3">
         <h2 className="section-title text-xl font-semibold">{t('household.assets.title')}</h2>
         <Link
-          to="/assets"
+          to="/networth"
           className="flex items-center gap-1 text-sm font-medium text-ink2 transition hover:text-foreground"
         >
           {t('household.assets.viewAll')}

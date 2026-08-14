@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { useAssets } from '@/features/assets/hooks/use-assets'
+import { computeCurrentValue } from '@/features/assets/model/assets'
 import { useEvents } from '@/features/events/hooks/use-events'
 import { useGoals } from '@/features/goals/hooks/use-goals'
 import { parseAmount, type GoalPriority } from '@/features/goals/model/goals'
@@ -31,7 +32,7 @@ export function useGoalsPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { goals, activeHouseholdId, createGoal, updateGoal, deleteGoal, isLoading } = useGoals()
-  const { assets } = useAssets()
+  const { assets, asOf } = useAssets()
   // Each contribution debits a wallet — its `fromAssetId` must be a spendable
   // cash / bank_account asset (chosen per contribution, not stored on the goal).
   // Same filter the asset-sale wallet picker uses (see use-asset-sale).
@@ -39,8 +40,16 @@ export function useGoalsPage() {
     () =>
       assets
         .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
-        .map((asset) => ({ value: asset.id, label: asset.name })),
-    [assets],
+        .map((asset) => {
+          const balance = computeCurrentValue(asset, asOf) ?? 0
+          return {
+            value: asset.id,
+            label: `${asset.name} · ${formatAmount(balance)}`,
+            name: asset.name,
+            balance,
+          }
+        }),
+    [asOf, assets],
   )
   // Contributions are recorded as `goal_contribution` money events; the goal's
   // currentAmount/progress is derived server-side from their sum (there is no
@@ -87,7 +96,9 @@ export function useGoalsPage() {
     }))
   }, [goals, stats.saved])
 
-  const goalSchema = useMemo(() => buildGoalSchema(t), [t])
+  // Rebuilt when the mode flips: `current` is create-only (the API rejects it on
+  // PATCH), so the schema must stop validating it once we are editing.
+  const goalSchema = useMemo(() => buildGoalSchema(t, isEditing), [t, isEditing])
 
   const priorityLabels: Record<GoalPriority, string> = {
     high: t('options.priority.high'),
@@ -112,6 +123,10 @@ export function useGoalsPage() {
       reset({
         name: editingGoal.name,
         target: amountToRaw(goalAmount(editingGoal.targetAmount)),
+        // Shown read-only while editing (the API ignores it on PATCH), but kept
+        // in form state so the summary can report progress without a second read.
+        current: amountToRaw(goalAmount(editingGoal.currentAmount)),
+        plannedMonthly: amountToRaw(editingGoal.plannedMonthlyContribution ?? undefined),
         priority: editingGoal.priority,
         targetDate: editingGoal.targetDate === 'No deadline' ? '' : (editingGoal.targetDate ?? ''),
         note: editingGoal.note,
@@ -121,24 +136,14 @@ export function useGoalsPage() {
     }
   }, [formOpen, editingGoal, reset])
 
-  // Default each goal's contribution source to the first wallet, so the required
-  // "nguồn tiền" picker on the quick-add row starts pre-filled. Only fills goals
-  // not yet chosen; never overrides a user's pick.
-  useEffect(() => {
+  // Resolve the first wallet as a display default without synchronously writing
+  // derived state from an effect. Explicit user choices still win per goal.
+  const resolvedContributionSources = useMemo(() => {
     const fallback = walletOptions[0]?.value
-    if (!fallback || goals.length === 0) return
-    setContributionSources((prev) => {
-      let changed = false
-      const next = { ...prev }
-      for (const goal of goals) {
-        if (!next[goal.id]) {
-          next[goal.id] = fallback
-          changed = true
-        }
-      }
-      return changed ? next : prev
-    })
-  }, [goals, walletOptions])
+    return Object.fromEntries(
+      goals.map((goal) => [goal.id, contributionSources[goal.id] ?? fallback ?? '']),
+    )
+  }, [contributionSources, goals, walletOptions])
 
   function openCreate() {
     setEditingId(null)
@@ -157,22 +162,32 @@ export function useGoalsPage() {
 
   async function onSubmit(values: GoalForm) {
     try {
-      // currentAmount is NOT part of the payload: progress is derived server-side
-      // from goal_contribution money events. To raise progress, add a
-      // contribution (addContribution) rather than editing the goal.
+      const plannedMonthly = parseAmount(values.plannedMonthly.trim())
       const payload = {
         name: values.name.trim(),
         targetAmount: parseAmount(values.target.trim()),
         priority: values.priority,
         targetDate: values.targetDate || undefined,
         note: values.note.trim() || priorityLabels[values.priority],
+        // Sent as 0 rather than omitted when cleared, so clearing the field on an
+        // existing goal actually retracts the declared pace. Omitting it would
+        // make the backend fall back to the stored value (`?? goal.planned…`),
+        // leaving a projection the household no longer stands behind.
+        plannedMonthlyContribution: plannedMonthly,
       }
 
       if (editingId) {
+        // No currentAmount on update: `UpdateFinancialGoalDto` omits it so the
+        // stored total cannot diverge from the contribution history. Raise
+        // progress with a goal_contribution event (addContribution) instead.
         await updateGoal.mutateAsync({ goalId: editingId, payload })
         toast.success('Cap nhat muc tieu thanh cong.')
       } else {
-        await createGoal.mutateAsync(payload)
+        // Create-only: lets onboarding record savings that predate the app.
+        await createGoal.mutateAsync({
+          ...payload,
+          currentAmount: parseAmount(values.current.trim()),
+        })
         toast.success('Tao muc tieu thanh cong.')
       }
 
@@ -200,20 +215,20 @@ export function useGoalsPage() {
 
   async function addContribution(goalId: string) {
     const raw = contributions[goalId]?.trim()
-    if (!raw) return
+    if (!raw) return false
     const delta = parseAmount(raw)
-    if (delta <= 0) return
+    if (delta <= 0) return false
 
     const goal = goals.find((item) => item.id === goalId)
-    if (!goal) return
+    if (!goal) return false
 
     // A contribution moves money out of a spendable wallet — the source is chosen
     // per contribution and is required (the backend rejects a goal_contribution
     // with no / non-wallet fromAssetId). Block + prompt when none is picked.
-    const fromAssetId = contributionSources[goalId]
+    const fromAssetId = resolvedContributionSources[goalId]
     if (!fromAssetId) {
       toast.error(t('goals.actions.sourceRequired'))
-      return
+      return false
     }
     try {
       await createEvent.mutateAsync({
@@ -229,14 +244,16 @@ export function useGoalsPage() {
         fromAssetId,
       })
       // currentAmount is derived from goal_contribution events — refetch goals
-      // so the progress bar and allocation reflect this contribution.
+      // so the progress bar and allocation reflect this contribution. Not
+      // awaited: the contribution is saved once the write above returns, and
+      // awaiting the refetch only delays the toast.
       if (activeHouseholdId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.goals(activeHouseholdId) })
+        void queryClient.invalidateQueries({ queryKey: queryKeys.goals(activeHouseholdId) })
       }
       toast.success('Da cap nhat dong gop cho muc tieu.')
     } catch (error) {
       toast.error(getErrorMessage(error, 'Khong the cap nhat dong gop.'))
-      return
+      return false
     }
     setContributions((prev) => ({ ...prev, [goalId]: '' }))
     if (goal) {
@@ -250,6 +267,7 @@ export function useGoalsPage() {
         ].slice(0, 4),
       )
     }
+    return true
   }
 
   function setContribution(goalId: string, value: string) {
@@ -283,7 +301,7 @@ export function useGoalsPage() {
     // contributions
     contributions,
     setContribution,
-    contributionSources,
+    contributionSources: resolvedContributionSources,
     setContributionSource,
     walletOptions,
     addContribution,

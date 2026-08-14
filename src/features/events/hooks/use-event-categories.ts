@@ -26,9 +26,10 @@ export function useEventCategories() {
     enabled: !!activeHouseholdId,
   })
 
-  const invalidate = async () => {
+  // NOT awaited — see the note in `use-assets.ts`.
+  const invalidate = () => {
     if (!activeHouseholdId) return
-    await queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: queryKeys.eventCategories(activeHouseholdId),
     })
   }

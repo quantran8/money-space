@@ -35,20 +35,23 @@ export function useCashflowEvents(filters?: CashflowEventFilters) {
    * Prefix-invalidating `['households', id]` would nuke assets and members
    * needlessly, so the affected families are listed explicitly.
    */
-  const invalidate = async () => {
+  const invalidate = () => {
     if (!activeHouseholdId) return
-    await Promise.all(
-      [
-        queryKeys.cashflowEvents(activeHouseholdId),
-        queryKeys.events(activeHouseholdId),
-        queryKeys.dashboard(activeHouseholdId),
-        // Horizon-scoped keys: match on the prefix so every horizon drops.
-        ['households', activeHouseholdId, 'forecast'],
-        ['households', activeHouseholdId, 'flexible-money'],
-        ['households', activeHouseholdId, 'financial-state'],
-        queryKeys.attentionItems(activeHouseholdId),
-      ].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
-    )
+    // NOT awaited — see the note in `use-assets.ts`. Awaiting these keeps
+    // `mutateAsync` pending until every refetch lands, long after the write
+    // itself returned.
+    for (const queryKey of [
+      queryKeys.cashflowEvents(activeHouseholdId),
+      queryKeys.events(activeHouseholdId),
+      queryKeys.dashboard(activeHouseholdId),
+      // Horizon-scoped keys: match on the prefix so every horizon drops.
+      ['households', activeHouseholdId, 'forecast'],
+      ['households', activeHouseholdId, 'flexible-money'],
+      ['households', activeHouseholdId, 'financial-state'],
+      queryKeys.attentionItems(activeHouseholdId),
+    ]) {
+      void queryClient.invalidateQueries({ queryKey })
+    }
   }
 
   return {

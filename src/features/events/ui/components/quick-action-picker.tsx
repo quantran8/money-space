@@ -1,13 +1,4 @@
-import {
-  ArrowLeftRight,
-  BanknoteArrowDown,
-  BanknoteArrowUp,
-  CalendarClock,
-  Goal,
-  HandCoins,
-  Landmark,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import type { QuickAction } from '@/features/events/model/events-form'
 
@@ -20,20 +11,34 @@ type QuickActionPickerProps = {
   onSellAsset: () => void
 }
 
-const ACTIONS: [PickerKey, string, string, LucideIcon][] = [
-  ['upcoming', 'Khoản sắp tới', 'Có khoản cần chuẩn bị', CalendarClock],
-  ['expense', 'Đã chi / đã trả', 'Ghi nhận một khoản tiền ra', BanknoteArrowDown],
-  ['income', 'Nhận tiền', 'Lương, thưởng hoặc khoản tiền vào', BanknoteArrowUp],
-  ['transfer', 'Chuyển tiền', 'Chuyển giữa tài khoản/quỹ', ArrowLeftRight],
-  ['debt_borrow', 'Vay tiền', 'Tạo khoản vay và theo dõi trong mục đang nợ', Landmark],
-  ['sell_asset', 'Bán tài sản', 'Bán tài sản trong mục tài sản', HandCoins],
-  ['goal_contribution', 'Góp mục tiêu', 'Thêm tiền vào mục tiêu chung', Goal],
+const ACTIONS: PickerKey[] = [
+  'upcoming',
+  'expense',
+  'income',
+  'transfer',
+  'debt_borrow',
+  'sell_asset',
+  'goal_contribution',
 ]
 
-export function QuickActionPicker({ onSelect, onBorrowMoney, onSellAsset }: QuickActionPickerProps) {
+/**
+ * A plain list of labels on `--sunk`.
+ *
+ * This was a seven-card grid, each card carrying an icon tile and a subtitle.
+ * Two rules ruled that out: §18 allows icons only in the sidebar and on
+ * buttons — never in list rows — and §22.0 counts a helper line under every
+ * entry as an admin-form signal. The label alone says what each one does.
+ */
+export function QuickActionPicker({
+  onSelect,
+  onBorrowMoney,
+  onSellAsset,
+}: QuickActionPickerProps) {
+  const { t } = useTranslation()
+
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {ACTIONS.map(([action, title, subtitle, Icon]) => (
+    <div className="flex flex-col gap-1.5">
+      {ACTIONS.map((action) => (
         <button
           key={action}
           type="button"
@@ -48,13 +53,9 @@ export function QuickActionPicker({ onSelect, onBorrowMoney, onSellAsset }: Quic
             }
             onSelect(action)
           }}
-          className="rounded-3xl border border-border bg-card p-4 text-left transition hover:bg-sunk/40"
+          className="flex min-h-[46px] items-center rounded-[10px] bg-sunk px-4 text-left text-[15px] text-ink transition-colors hover:bg-accent-soft"
         >
-          <div className="flex size-11 items-center justify-center rounded-2xl bg-sunk">
-            <Icon className="size-5" strokeWidth={1.8} />
-          </div>
-          <p className="mt-4 text-base font-semibold tracking-[-0.02em]">{title}</p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">{subtitle}</p>
+          {t(`events.form.action.${action}`)}
         </button>
       ))}
     </div>

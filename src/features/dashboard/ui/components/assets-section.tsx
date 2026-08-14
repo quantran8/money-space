@@ -32,7 +32,7 @@ export function AssetsSection({
       <PanelHeader
         title={t('home.assets.title')}
         action={
-          <Link to="/assets" className="text-[13px] text-accent">
+          <Link to="/networth" className="text-[13px] text-accent">
             {t('home.assets.viewAll')}
           </Link>
         }

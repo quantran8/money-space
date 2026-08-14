@@ -5,7 +5,6 @@ import {
   Calculator,
   CalendarDays,
   CircleDollarSign,
-  Landmark,
   LayoutGrid,
   Menu,
   Target,
@@ -31,6 +30,8 @@ type NavItem = {
   to: string
   labelKey: string
   icon: ComponentType<{ className?: string; strokeWidth?: number }>
+  /** Extra route prefixes that should keep this item highlighted. */
+  alsoActiveOn?: string[]
 }
 
 /**
@@ -46,8 +47,8 @@ const NAV_GROUPS: { labelKey: string; items: NavItem[] }[] = [
     items: [
       { to: '/', labelKey: 'nav.dashboard', icon: LayoutGrid },
       { to: '/upcoming', labelKey: 'nav.upcoming', icon: CalendarDays },
-      { to: '/assets', labelKey: 'nav.assets', icon: Wallet },
-      { to: '/debts', labelKey: 'nav.debts', icon: Landmark },
+      // Assets and debts are one route and one destination.
+      { to: '/networth', labelKey: 'nav.assetsDebts', icon: Wallet, alsoActiveOn: ['/assets', '/debts'] },
     ],
   },
   {
@@ -65,7 +66,14 @@ const NAV_GROUPS: { labelKey: string; items: NavItem[] }[] = [
 
 function NavItemLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
   const { t } = useTranslation()
-  const { to, labelKey, icon: Icon } = item
+  const { pathname } = useLocation()
+  const { to, labelKey, icon: Icon, alsoActiveOn } = item
+
+  // A merged item stays lit on its sibling routes too — /debts must not leave
+  // the sidebar with nothing selected.
+  const activeElsewhere = (alsoActiveOn ?? []).some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  )
 
   return (
     <NavLink
@@ -76,6 +84,7 @@ function NavItemLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => v
       // `aria-current` drives the active style via the .nav-item CSS (§21) and
       // is what a screen reader announces — one attribute, both jobs.
       className="nav-item"
+      aria-current={activeElsewhere ? 'page' : undefined}
     >
       <Icon className="size-4 shrink-0" strokeWidth={1.75} />
       <span className="truncate">{t(labelKey)}</span>

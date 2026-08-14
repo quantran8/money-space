@@ -24,9 +24,10 @@ export function useMembers() {
     enabled: !!activeHouseholdId,
   })
 
-  const invalidate = async () => {
+  // NOT awaited — see the note in `use-assets.ts`.
+  const invalidate = () => {
     if (!activeHouseholdId) return
-    await queryClient.invalidateQueries({ queryKey: queryKeys.members(activeHouseholdId) })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.members(activeHouseholdId) })
   }
 
   return {

@@ -35,6 +35,9 @@ export function useOnboardingPage() {
     mutationFn: createHousehold,
     onSuccess: async (household) => {
       setActiveHouseholdId(household.id)
+      // Awaited ON PURPOSE — the submit flow redirects into the app right after
+      // this, and the destination reads the household list. See the note in
+      // `use-onboarding-wizard.ts`.
       await queryClient.invalidateQueries({ queryKey: queryKeys.households })
     },
   })

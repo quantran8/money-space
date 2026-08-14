@@ -46,10 +46,15 @@ export function useAssetsPage() {
 
   const assetSchema = useMemo(() => buildAssetSchema(t), [t])
 
+  // §22.10 — the primary button is never disabled, so validation runs on submit
+  // and errors explain what is missing. Re-validating on change afterwards is
+  // what makes an error clear the moment the user starts fixing that field.
   const form = useForm<AssetForm>({
     resolver: zodResolver(assetSchema),
     defaultValues: defaultAssetFormValues,
-    mode: 'onChange',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    shouldFocusError: true,
   })
 
   const { watch, reset, setValue, handleSubmit } = form
@@ -105,7 +110,14 @@ export function useAssetsPage() {
   async function onSubmit(values: AssetForm) {
     try {
       const nextAsset = toAsset(editingId ?? crypto.randomUUID(), values)
-      if (!nextAsset) return
+      // `toAsset` returns null on incomplete market/formula input. The schema
+      // should have caught that first, but with the submit button always
+      // enabled (§22.10) this path is reachable — so it must say something
+      // rather than silently doing nothing.
+      if (!nextAsset) {
+        toast.error(t('assets.form.incomplete'))
+        return
+      }
       const payload = {
         name: nextAsset.name,
         type: nextAsset.type,
@@ -172,6 +184,8 @@ export function useAssetsPage() {
     walletOptions,
     setValue,
     isEditing,
+    /** The stored record behind an edit — drives the §22.8 change sentence. */
+    editingAsset,
     isSubmitting,
     submit: handleSubmit(onSubmit),
     // dialog

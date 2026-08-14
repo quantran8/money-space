@@ -17,22 +17,32 @@ export function useEvents(month?: string) {
     enabled: !!activeHouseholdId,
   })
 
-  const invalidate = async () => {
+  /**
+   * NOT awaited — see the note in `use-assets.ts`. Awaiting `invalidateQueries`
+   * inside `onSuccess` holds `mutateAsync` open until every refetch lands,
+   * which is what made saving a record feel slow long after the write itself
+   * had returned.
+   */
+  const invalidate = () => {
     if (!activeHouseholdId) return
-    await Promise.all([
+    const keys = [
       // Invalidate by the `events` prefix so BOTH the list (`…, 'events', month`)
       // and the backend-computed thu/chi/net summary (`…, 'events', 'summary',
       // month`) refetch — the summary is the source of truth for the totals.
-      queryClient.invalidateQueries({ queryKey: ['households', activeHouseholdId, 'events'] }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeHouseholdId) }),
+      ['households', activeHouseholdId, 'events'],
+      queryKeys.dashboard(activeHouseholdId),
       // Recording a repayment reduces the linked debt's outstanding balance
       // (see backend MoneyEventsService), so the debts view must refetch.
-      queryClient.invalidateQueries({ queryKey: queryKeys.debts(activeHouseholdId) }),
+      queryKeys.debts(activeHouseholdId),
       // Asset purchase/sale/transfer events change asset values, the liquidity
       // buckets and the per-asset value history — refetch the assets views too.
       // (Prefix-matches the assets list, summary, snapshots and value-history.)
-      queryClient.invalidateQueries({ queryKey: queryKeys.assets(activeHouseholdId) }),
-    ])
+      queryKeys.assets(activeHouseholdId),
+      // The forms quote flexible money back at the user (§22.7).
+      ['households', activeHouseholdId, 'flexible-money'],
+      ['households', activeHouseholdId, 'forecast'],
+    ]
+    for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey })
   }
 
   return {

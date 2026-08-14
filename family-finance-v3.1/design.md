@@ -25,6 +25,8 @@
 §12    Home component cập nhật theo hệ mới, giữ nguyên nội dung và thứ tự.
 §13    Layout example viết lại: sidebar + single column, không phải grid 7fr/5fr.
 §21    Cheatsheet viết lại.
+§22    MỚI — Form Patterns: tạo, sửa, ô nhập, tiền tệ, validation, phá huỷ.
+§23    UI States giữ từ v3.4, cập nhật theo token mới.
 §25    Hướng white-first/Apple-blue chuyển vào deprecated.
 ```
 
@@ -2058,6 +2060,316 @@ th:last-child {
 
 ---
 
+## 22. Form Patterns
+
+Áp cho mọi màn tạo và sửa: mục tiêu, nguồn tiền, khoản sắp tới, khoản nợ, quỹ an toàn.
+
+## 22.0. Quy tắc điều phối — form không được đọc ra là màn nhập liệu
+
+Đây là ràng buộc cao nhất của §22. Mọi mục còn lại chỉ là cách thực hiện nó. Nếu một quy tắc phía dưới xung đột với mục này, mục này thắng.
+
+Money Space không phải công cụ ghi chép (§0.2). Nếu form tạo mục tiêu đọc ra như một bảng khai báo, người dùng sẽ kết luận sản phẩm là nơi phải nhập liệu — và đó chính là điều sản phẩm tuyên bố không phải.
+
+**Ba bài kiểm tra, chạy trước khi merge:**
+
+```txt
+1. ĐẾM QUYẾT ĐỊNH
+   Bao nhiêu thứ user phải nghĩ hoặc gõ trước khi thấy hệ quả đầu tiên?
+   ≤ 2   đạt
+   3     cần lý do
+   ≥ 4   là form quản trị, thiết kế lại
+
+2. XOÁ THỬ
+   Xoá từng dòng một. Nếu user vẫn hoàn thành được việc, dòng đó ở lại vì thói quen,
+   không vì cần thiết. Xoá thật.
+
+3. KHÔNG BẮT TRA CỨU
+   Không trường nào buộc user rời form để tìm số ở chỗ khác trong app.
+   Nếu số đó nằm trong app, app phải điền sẵn.
+```
+
+**Dấu hiệu nhận biết form quản trị.** Gặp từ ba dấu hiệu trở lên là đã hỏng:
+
+```txt
+Trên 4 trường hiện cùng lúc
+Mỗi trường có một dòng helper
+Nhãn mono uppercase xếp thành cột
+Nhiều lưới hai cột ghép các trường không liên quan
+Mọi trường cùng cỡ, cùng trọng lượng, không có trường nào là chính
+Bảng before/after
+Khối “Danger zone” có viền
+Không có gì xảy ra cho tới khi bấm Lưu
+```
+
+Điểm cuối cùng là dấu hiệu nặng nhất. Form quản trị là một cái phễu: nhập hết rồi gửi đi. Form của sản phẩm này phải là một cuộc đối thoại — user gõ một con số, app trả lời ngay bằng hệ quả (§22.7).
+
+**Đích đến.** Form mục tiêu ở trạng thái tạo chỉ hiện: tên · số tiền · tháng mong muốn · một câu hệ quả · một link mở rộng. Mọi thứ khác — số đã dành, mức để dành mỗi tháng, ghi chú — được điền sẵn hoặc ẩn. Việc đặt mục tiêu chính không nằm trong form tạo: mục tiêu đầu tiên tự động là chính, các mục sau nâng lên từ danh sách.
+
+## 22.1. Không hỏi thứ app đã biết
+
+Đây là ranh giới giữa form tiêu dùng và form quản trị. Form quản trị hỏi mọi trường vì hệ thống không biết gì; form tiêu dùng đề xuất sẵn rồi để user chỉnh.
+
+```txt
+App đã biết          → điền sẵn, cho sửa
+App suy ra được      → điền sẵn, ghi rõ nguồn suy ra
+App không thể biết   → hỏi
+```
+
+Ví dụ ở form mục tiêu: mức để dành mỗi tháng suy từ tiền linh hoạt hiện có, điền sẵn 18 tr, kèm dòng “Mặc định lấy từ 48,2 tr đang linh hoạt của nhà mình”. User không phải gõ lại con số app vừa hiển thị trên Tổng quan.
+
+Hệ quả trực tiếp: **khối hệ quả có số ngay từ trường thứ hai**, thay vì bắt điền hết mới thấy được gì.
+
+## 22.2. Tối đa 3–4 trường hiện mặc định
+
+Còn lại đưa vào một disclosure duy nhất.
+
+```txt
+Hiện mặc định     những gì app không thể suy ra
+Sau disclosure    giá trị đã điền sẵn, trường tuỳ chọn, ghi chú
+Không bao giờ     nhiều hơn một tầng disclosure
+```
+
+Form mục tiêu: hiện `tên · số tiền · tháng mong muốn`. Ẩn `đã dành được · mỗi tháng · ghi chú` sau “Điều chỉnh cách để dành”.
+
+Nếu một form cần hơn 8 trường kể cả sau disclosure, nó không thuộc về modal — chuyển sang route riêng (§22.9).
+
+## 22.3. Ô nhập bắt buộc có nền `--sunk`
+
+Hệ thị giác không dùng viền (§2.2). Trong màn hiển thị điều đó đúng; trong form nó nguy hiểm — bỏ viền mà không thay bằng nền thì ô nhập trông y hệt văn bản tĩnh và user không biết chỗ nào bấm được.
+
+```css
+.field {
+  background: var(--sunk);
+  border-radius: 10px;
+  height: 46px; /* 40px cho trường phụ */
+  padding: 0 14px;
+  font-size: 16px; /* 16px tránh iOS zoom khi focus */
+  border: 1px solid transparent;
+}
+.field:focus {
+  background: var(--panel);
+  border-color: var(--accent);
+}
+.field.invalid {
+  border-color: var(--alert);
+}
+```
+
+Focus đảo ngược tầng surface: nền sáng lên thành `--panel`, viền accent xuất hiện. **Đây là chỗ duy nhất trong sản phẩm viền được dùng cho mục đích thị giác** — ngoài viền đứt của vùng mô phỏng, vốn mang nghĩa.
+
+```txt
+Không dùng viền xám tĩnh quanh ô nhập.
+Không dùng shadow cho ô nhập.
+Không để ô nhập nền trắng trên panel trắng.
+Textarea cùng nền, padding dọc 11px, resize dọc.
+Checkbox và radio dùng nền --sunk, tick màu --accent.
+Segmented control: nền --sunk, mục active nền --panel.
+```
+
+## 22.4. Nhãn và helper trong form
+
+```txt
+Nhãn trường     13px, chữ thường, --ink2. KHÔNG dùng .label mono uppercase.
+Helper          12px, --ink3, tối đa 1–2 dòng trên toàn form.
+Lỗi             12px, --alert, ngay dưới trường.
+```
+
+`.label` mono uppercase là phụ kiện thưa của màn hiển thị. Xếp bảy cái liên tiếp trong một form thì nó thành ngôn ngữ form builder.
+
+Helper phải qua bài kiểm tra §2.10. “Phần đã dành riêng cho mục tiêu này” dưới trường tên là “Đã dành riêng được” — không qua. “Mặc định lấy từ 48,2 tr đang linh hoạt” — qua, vì nó nói nguồn của con số đã điền sẵn.
+
+## 22.5. Ô nhập tiền
+
+```txt
+Chiều cao chuẩn, KHÔNG dùng cỡ hero. Số lớn là output, không phải input.
+weight 500, tabular-nums.
+Đơn vị là hậu tố cố định trong ô (`tr`), không phải nhãn rời.
+Dòng đọc ra số đầy đủ ngay dưới: 800 → “800.000.000 đ”.
+Nhập theo đơn vị triệu; không bắt user gõ chín chữ số.
+```
+
+Dòng đọc ra số đầy đủ là bắt buộc với tiền Việt. Lệch một chữ số 0 là lỗi thật và không có cách nào bắt được nếu chỉ hiện `800`.
+
+Chip gợi ý mốc tiền: mặc định **không dùng**. Một hàng bốn nút dưới ô nhập là nhiễu thị giác, và mốc tròn tuỳ ý còn là gợi ý ngầm về mức mục tiêu — sản phẩm không định hướng quyết định tài chính của user (§0.2). Chỉ cân nhắc khi mốc lấy từ dữ liệu của chính household đó, ví dụ “bằng 6 tháng chi tiêu”, và khi đó nên là một dòng text gợi ý, không phải hàng chip.
+
+## 22.6. Độ chính xác của ngày
+
+```txt
+Mục tiêu tiết kiệm    input[type=month]   — không có độ chính xác tới ngày
+Khoản sắp tới         input[type=date]    — có ngày cụ thể
+Kỳ trả nợ             input[type=date]
+```
+
+Đây là §2.16 áp vào form: đừng để UI tỏ ra chắc chắn hơn dữ liệu.
+
+## 22.7. Hệ quả hiện ngay khi gõ
+
+Mọi form tạo/sửa có ảnh hưởng tới dự báo đều phải hiện hệ quả **trực tiếp trong form**, cập nhật theo từng phím, không chờ bấm lưu.
+
+```txt
+Mục tiêu     khi nào đủ · chậm/sớm bao lâu · cần bao nhiêu mỗi tháng để đúng hẹn
+Khoản chi    thấp nhất trong kỳ đổi thế nào · quỹ an toàn có bị chạm không
+Nguồn tiền   tiền linh hoạt đổi bao nhiêu
+Nợ           tất toán dự kiến đổi thế nào
+```
+
+Trình bày là **một câu văn**, không phải lưới metric có nhãn:
+
+```txt
+Đúng
+Với 18,0 tr mỗi tháng, nhà mình đủ vào 11/2029. Chậm 5 tháng so với
+mong muốn — để đúng hẹn cần 20,2 tr mỗi tháng.
+
+Sai
+DỰ KIẾN ĐỦ VÀO    SO VỚI MONG MUỐN    ĐỂ ĐÚNG HẸN CẦN
+11/2029           chậm 5 tháng        20,2 tr/th
+```
+
+Lưới ba ô có nhãn là ngôn ngữ báo cáo. Câu văn là ngôn ngữ hai người nói với nhau. Số quan trọng vẫn nhấn bằng `font-weight 500` và `tabular-nums` ngay trong câu.
+
+Nền khối hệ quả dùng `--accent-soft`, giống vùng mô phỏng — cả hai đều là “nếu làm thế này thì sao”.
+
+## 22.8. Khác biệt giữa tạo và sửa
+
+|                   | Tạo               | Sửa                        |
+| ----------------- | ----------------- | -------------------------- |
+| Tiêu đề           | Mục tiêu mới      | Sửa mục tiêu               |
+| Nút chính         | Tạo mục tiêu      | Lưu thay đổi               |
+| Giá trị           | trống hoặc suy ra | điền sẵn từ bản đã lưu     |
+| Tóm tắt thay đổi  | không             | một câu, hiện khi dirty    |
+| Hành động phá huỷ | không             | text button trong hàng nút |
+| Ghi Nhật ký       | “tạo mục tiêu X”  | “sửa mục tiêu X: …”        |
+
+**Tóm tắt thay đổi là một câu, không phải bảng before/after.**
+
+```txt
+Đúng
+Bạn đã đổi số tiền cần từ 800,0 tr thành 900,0 tr và tháng mong muốn
+từ 06/2029 thành 09/2029.
+
+Sai
+Cần bao nhiêu    800,0 tr → 900,0 tr
+Muốn đạt vào     06/2029  → 09/2029
+Ghi chú          trống    → trống
+```
+
+Bảng before/after là công cụ audit. Ở trang Nhật ký nó hợp lý; trong hộp thoại sửa của một sản phẩm tiêu dùng thì lạnh và thừa. Chỉ liệt kê trường thực sự đổi.
+
+## 22.9. Container
+
+```txt
+≤ 4 trường hiện, không phụ thuộc nhau   → modal (desktop) / bottom sheet (mobile)
+> 8 trường, hoặc nhiều bước, hoặc upload → route riêng
+Xác nhận phá huỷ                         → dialog nhỏ riêng, không lồng trong form
+```
+
+```txt
+Modal width 520px cho form đơn, 660px cho form có bảng.
+max-height 88vh. Body cuộn, header và footer cố định.
+Footer luôn thấy được — nút chính không bao giờ nằm dưới vùng cuộn.
+Esc đóng, click backdrop đóng, trap focus, trả focus về trigger.
+Dirty + đóng → hỏi xác nhận. Không dirty → đóng thẳng.
+```
+
+## 22.10. Validation
+
+```txt
+Nút chính LUÔN bật. Không disable.
+Kiểm tra khi bấm, không kiểm tra khi gõ.
+Lỗi hiện dưới trường + viền --alert + focus về trường đầu tiên sai.
+Lỗi biến mất ngay khi user bắt đầu sửa trường đó.
+Bắt buộc tối thiểu: chỉ những gì thật sự không thể thiếu.
+```
+
+Nút bị disable giấu mất lý do — user không biết còn thiếu gì. Nút bật rồi báo lỗi cụ thể tốt hơn.
+
+## 22.11. Hành động phá huỷ
+
+```txt
+Dùng động từ đúng với dữ liệu:
+  “Đóng mục tiêu”   không phải “Xoá mục tiêu”   — lịch sử vẫn còn trong Nhật ký
+  “Gỡ nguồn tiền”   không phải “Xoá tài khoản”
+Luôn nói hệ quả bằng số: “160,0 tr đã dành sẽ quay về phần tiền linh hoạt.”
+Là text button màu --alert trong hàng nút, tách bằng khoảng cách.
+KHÔNG dùng khối có viền và tiêu đề “Danger zone” — đó là ngôn ngữ bảng quản trị.
+Xác nhận bằng dialog nhỏ, không bằng gõ lại tên.
+```
+
+## 22.12. Minh bạch với người kia
+
+Mọi thao tác lưu đều sinh một entry Nhật ký (§2.14). Form phải nói trước điều đó, đặt cạnh nút chính:
+
+```txt
+Bình sẽ thấy trong Nhật ký
+```
+
+Với thay đổi lớn — đổi mục tiêu chính, đổi quỹ an toàn, gỡ nguồn tiền chung — thêm lựa chọn `Gửi cho Bình xem` bên cạnh `Lưu`. Đây là cam kết “không giám sát lén” thể hiện theo chiều ngược lại: người thực hiện chủ động cho người kia biết.
+
+---
+
+## 23. UI States
+
+Mỗi section và mỗi form phải định nghĩa đủ 5 trạng thái trước khi coi là xong.
+
+**Empty — chưa có dữ liệu**
+
+```txt
+Bức tranh hôm nay  → prompt onboarding, KHÔNG hiện 0đ
+Ba mươi ngày tới   → “Chưa có khoản nào sắp tới” + Thêm khoản
+Mục tiêu chính     → “Chưa có mục tiêu” + Thêm mục tiêu
+Tiền đang ở đâu    → “Chưa có nguồn tiền” + Thêm nguồn tiền
+Tài sản / Nợ       → ẩn section
+Nhật ký            → ẩn section
+```
+
+Không hiển thị `0đ` khi thực chất là chưa nhập dữ liệu. Hai thứ này khác nhau, và nhầm ở đây làm mất niềm tin ngay lần mở đầu tiên.
+
+Empty state dùng nền `--panel` bình thường, không dùng illustration, không dùng emoji. Một dòng nói thiếu gì + một nút.
+
+**Loading**
+
+```txt
+Skeleton dùng nền --sunk, giữ đúng chiều cao thật để layout không nhảy.
+Không spinner toàn trang.
+Money number không hiện giá trị trung gian khi đang tải.
+Coverage strip hiện đủ số segment ở màu --committed trước khi biết trạng thái.
+```
+
+**Stale — dữ liệu cũ**
+
+```txt
+Giá trị vẫn hiện đầy đủ, không làm mờ.
+Timestamp chuyển --attention.
+Coverage strip đổi segment tương ứng.
+Scope caveat xuất hiện dưới strip.
+```
+
+**Partial — thiếu một phần input**
+
+Đây là trạng thái **thường gặp nhất**, không phải ngoại lệ. Dữ liệu do hai người nhập tay ở hai thời điểm khác nhau thì “tất cả nguồn đều mới” mới là trường hợp hiếm. Partial phải được thiết kế trước, không xử lý sau.
+
+```txt
+Flexible Money vẫn tính, vẫn hiện — đó là ước lượng tốt nhất đang có.
+Coverage strip chỉ đúng nguồn nào thiếu.
+Caveat nêu đích danh: “Số trên chưa gồm thay đổi của Quỹ mở & ETF và tiền mặt.”
+Kết quả mô phỏng kèm dòng phạm vi: “Tính trên dữ liệu hiện có; 2 nguồn chưa cập nhật.”
+Không chặn user dùng app cho tới khi cập nhật xong.
+Không thay số bằng dấu “—” chỉ vì một nguồn cũ.
+```
+
+Kiểm tra khi review: mở Tổng quan ở trạng thái 2/5 nguồn cũ, trả lời trong 5 giây — _user có biết con số này chưa đầy đủ không, và có biết thiếu cái gì không?_
+
+**Error**
+
+```txt
+Giữ dữ liệu đã có trên màn hình. Báo lỗi ở phạm vi nhỏ nhất có thể.
+Không thay cả section bằng error state nếu chỉ một nguồn lỗi.
+Copy nêu hệ quả: “Chưa lấy được số dư VCB. Con số dưới đây chưa gồm nguồn này.”
+Lỗi lưu form: giữ nguyên dữ liệu user đã nhập, không đóng modal, không reset.
+```
+
+---
+
 ## 24. Accessibility và Motion
 
 **Contrast**
@@ -2127,6 +2439,11 @@ Các hướng đã thử và bị loại. Ghi lại để không quay lại.
 | Ẩn coverage strip khi mọi thứ đều mới                                      | Coverage là ngữ cảnh của con số, không phải cảnh báo                                           |
 | Phần trăm “độ tin cậy dữ liệu”                                             | Con số bịa, tạo cảm giác chính xác giả                                                         |
 | Theme switcher cho user                                                    | Chốt một bảng màu; switcher chỉ dùng trong giai đoạn thiết kế                                  |
+| Form 7 trường ngang cấp, mỗi trường một helper                             | Ngôn ngữ form quản trị; §22.1–22.4                                                             |
+| Nhãn `.label` mono uppercase cho từng trường form                          | Xếp chồng thành cột chữ hoa, mất chất tiêu dùng                                                |
+| Bảng before/after trong hộp thoại sửa                                      | Công cụ audit; thuộc trang Nhật ký, không thuộc form                                           |
+| Khối “Danger zone” có viền trong form                                      | Ngôn ngữ bảng quản trị; §22.11                                                                 |
+| Số tiền cỡ hero làm ô nhập                                                 | Số lớn là output, không phải input; §22.5                                                      |
 
 Nếu một hướng trên được đề xuất lại, cần lý do gắn với một vấn đề user thật, không phải lý do thẩm mỹ.
 

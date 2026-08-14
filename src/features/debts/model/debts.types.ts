@@ -41,6 +41,7 @@ export type DebtItem = {
   fixedPaymentAmountValue?: number
   currency: string
   borrowedAt: string
+  firstPaymentDate?: string
   expectedFinalDueDate?: string
   status: DebtStatus
   ownerMemberId?: string

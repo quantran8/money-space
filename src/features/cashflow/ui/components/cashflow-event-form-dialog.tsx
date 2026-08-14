@@ -1,16 +1,11 @@
+import { ChevronDown } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
-import {
-  EventField,
-  EventFieldInput,
-  EventFieldTextarea,
-  EventMoneyInput,
-  eventDateTriggerClass,
-  eventSelectTriggerClass,
-} from '@/components/ui/event-field'
+import { EventMoneyInput } from '@/components/ui/event-field'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -41,12 +36,39 @@ type CashflowEventFormDialogProps = {
   onSubmit: () => void
 }
 
+type CashflowFieldProps = {
+  label: string
+  htmlFor?: string
+  error?: string
+  children: ReactNode
+}
+
+function CashflowField({ label, htmlFor, error, children }: CashflowFieldProps) {
+  return (
+    <div>
+      <label
+        htmlFor={htmlFor}
+        className="mb-[7px] block text-[13px] font-normal leading-[1.4] text-ink2"
+      >
+        {label}
+      </label>
+      {children}
+      {error ? <p className="mt-1.5 text-[12px] leading-[1.45] text-alert">{error}</p> : null}
+    </div>
+  )
+}
+
+const controlClass =
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
+const inputClass =
+  'h-full min-w-0 w-full bg-transparent text-[16px] leading-none text-ink outline-none placeholder:text-ink3'
+const selectClass =
+  'h-full rounded-none bg-transparent p-0 text-[16px] font-normal text-ink data-[placeholder]:text-ink3'
+
 /**
  * Create/edit a cashflow event — the only thing that feeds the forecast (§18).
- *
- * `direction` is a segmented choice at the top rather than a dropdown: money in
- * and money out are the two different things this form makes, and which one you
- * are recording changes what the rest of the fields mean.
+ * The compact default view asks only for the three facts needed to place an
+ * event on the timeline; recurrence and confidence remain one disclosure away.
  */
 export function CashflowEventFormDialog({
   open,
@@ -57,6 +79,7 @@ export function CashflowEventFormDialog({
   onSubmit,
 }: CashflowEventFormDialogProps) {
   const { t } = useTranslation()
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const {
     control,
     register,
@@ -65,200 +88,256 @@ export function CashflowEventFormDialog({
   } = form
 
   const direction = watch('direction')
+  const certainty = watch('certainty')
   const isOutgoing = direction === 'outgoing'
 
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) setDetailsOpen(false)
+    onOpenChange(nextOpen)
+  }
+
+  function handleSubmit() {
+    if (isValid) setDetailsOpen(false)
+    onSubmit()
+  }
+
   return (
-    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[560px]">
-        <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
-          <p className="text-sm font-medium text-ink2">
-            {isEditing ? t('upcoming.form.editEyebrow') : t('upcoming.form.eyebrow')}
-          </p>
-          <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em] sm:text-[32px]">
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveDialogContent className="grid max-h-[88dvh] grid-rows-[auto_1fr_auto] gap-0 overflow-hidden p-0 sm:max-w-[520px]">
+        <ResponsiveDialogHeader className="px-5 pb-4 pt-5 pr-16 text-left sm:px-8 sm:pt-7 sm:pr-16">
+          <ResponsiveDialogTitle className="text-[19px] font-medium tracking-[-0.015em]">
             {isEditing ? t('upcoming.form.editTitle') : t('upcoming.form.title')}
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
+          <ResponsiveDialogDescription className="sr-only">
             {t('upcoming.form.help')}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <form
-          className="mt-6 max-h-[60vh] space-y-4 overflow-y-auto px-6 pb-6 sm:px-8 sm:pb-8"
-          onSubmit={onSubmit}
-          noValidate
-        >
-          {/* Direction — money in or money out. */}
-          <Controller
-            control={control}
-            name="direction"
-            render={({ field }) => (
-              <div className="grid grid-cols-2 gap-2 rounded-[20px] bg-sunk p-1.5">
-                {(['outgoing', 'incoming'] as const).map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => field.onChange(value)}
-                    className={cn(
-                      'rounded-[14px] px-4 py-2.5 text-sm font-semibold transition-colors',
-                      field.value === value
-                        ? 'bg-[hsl(var(--card))] text-foreground shadow-[0_1px_3px_rgba(20,20,28,0.08)]'
-                        : 'text-ink2',
-                    )}
+        <form className="contents" onSubmit={handleSubmit} noValidate>
+          <div className="min-h-0 overflow-y-auto px-5 pb-5 sm:px-8">
+            <div className="space-y-4">
+              <Controller
+                control={control}
+                name="direction"
+                render={({ field }) => (
+                  <div
+                    className="grid grid-cols-2 rounded-[10px] bg-sunk p-1"
+                    role="group"
+                    aria-label={t('upcoming.form.eyebrow')}
                   >
-                    {t(`upcoming.form.direction.${value}`)}
-                  </button>
-                ))}
-              </div>
-            )}
-          />
+                    {(['outgoing', 'incoming'] as const).map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={field.value === value}
+                        onClick={() => field.onChange(value)}
+                        className={cn(
+                          'h-[38px] rounded-control text-[13px] font-medium text-ink2 transition-colors',
+                          field.value === value && 'bg-panel text-ink',
+                        )}
+                      >
+                        {t(`upcoming.form.direction.${value}`)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              />
 
-          {/* Hero amount field. */}
-          <EventField
-            label={t('upcoming.form.amount')}
-            error={errors.amount?.message}
-            trailing={
-              <span className="text-lg font-semibold text-ink2">₫</span>
-            }
-          >
-            <Controller
-              control={control}
-              name="amount"
-              render={({ field }) => (
-                <EventMoneyInput
-                  placeholder="0"
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                />
-              )}
-            />
-          </EventField>
-
-          <EventField label={t('upcoming.form.name')} error={errors.name?.message}>
-            <EventFieldInput
-              placeholder={
-                isOutgoing
-                  ? t('upcoming.form.namePlaceholderOutgoing')
-                  : t('upcoming.form.namePlaceholderIncoming')
-              }
-              {...register('name')}
-            />
-          </EventField>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <EventField
-              label={t('upcoming.form.expectedDate')}
-              error={errors.expectedDate?.message}
-            >
-              <Controller
-                control={control}
-                name="expectedDate"
-                render={({ field }) => (
-                  <DatePicker
-                    value={field.value}
-                    onChange={field.onChange}
-                    className={eventDateTriggerClass}
+              <CashflowField
+                label={t('upcoming.form.amount')}
+                htmlFor="cashflow-amount"
+                error={errors.amount?.message}
+              >
+                <div className={cn(controlClass, errors.amount && 'border-alert')}>
+                  <Controller
+                    control={control}
+                    name="amount"
+                    render={({ field }) => (
+                      <EventMoneyInput
+                        id="cashflow-amount"
+                        className="h-full text-[16px] font-medium tracking-normal sm:text-[16px]"
+                        placeholder="0"
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                      />
+                    )}
                   />
-                )}
-              />
-            </EventField>
+                  <span className="shrink-0 font-mono text-[12px] text-ink3">đ</span>
+                </div>
+              </CashflowField>
 
-            <EventField label={t('upcoming.form.recurrence')}>
-              <Controller
-                control={control}
-                name="recurrence"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className={eventSelectTriggerClass}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {RECURRENCE_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {t(`upcoming.form.recurrenceOption.${option}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </EventField>
+              <CashflowField
+                label={t('upcoming.form.name')}
+                htmlFor="cashflow-name"
+                error={errors.name?.message}
+              >
+                <div className={cn(controlClass, errors.name && 'border-alert')}>
+                  <input
+                    id="cashflow-name"
+                    className={inputClass}
+                    placeholder={
+                      isOutgoing
+                        ? t('upcoming.form.namePlaceholderOutgoing')
+                        : t('upcoming.form.namePlaceholderIncoming')
+                    }
+                    {...register('name')}
+                  />
+                </div>
+              </CashflowField>
+
+              <CashflowField
+                label={t('upcoming.form.expectedDate')}
+                error={errors.expectedDate?.message}
+              >
+                <div className={cn(controlClass, errors.expectedDate && 'border-alert')}>
+                  <Controller
+                    control={control}
+                    name="expectedDate"
+                    render={({ field }) => (
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        aria-invalid={Boolean(errors.expectedDate)}
+                        className="h-full rounded-none bg-transparent p-0 font-mono text-[16px] font-normal hover:bg-transparent [&_svg]:hidden"
+                      />
+                    )}
+                  />
+                </div>
+              </CashflowField>
+
+              <div>
+                <button
+                  type="button"
+                  aria-expanded={detailsOpen}
+                  aria-controls="cashflow-event-details"
+                  onClick={() => setDetailsOpen((value) => !value)}
+                  className="flex min-h-11 w-full items-center justify-between rounded-control text-left text-[13px] font-medium text-accent outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                >
+                  <span>{t('upcoming.form.moreDetails')}</span>
+                  <ChevronDown
+                    className={cn('size-4 transition-transform', detailsOpen && 'rotate-180')}
+                  />
+                </button>
+
+                {detailsOpen ? (
+                  <div id="cashflow-event-details" className="mt-3 space-y-4">
+                    <CashflowField label={t('upcoming.form.recurrence')}>
+                      <div className={controlClass}>
+                        <Controller
+                          control={control}
+                          name="recurrence"
+                          render={({ field }) => (
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <SelectTrigger className={selectClass}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {RECURRENCE_OPTIONS.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {t(`upcoming.form.recurrenceOption.${option}`)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                      </div>
+                    </CashflowField>
+
+                    {isOutgoing ? (
+                      <CashflowField label={t('upcoming.form.requirement')}>
+                        <div className={controlClass}>
+                          <Controller
+                            control={control}
+                            name="requirement"
+                            render={({ field }) => (
+                              <Select value={field.value} onValueChange={field.onChange}>
+                                <SelectTrigger className={selectClass}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="required">
+                                    {t('upcoming.markers.required')}
+                                  </SelectItem>
+                                  <SelectItem value="planned">
+                                    {t('upcoming.markers.planned')}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                        </div>
+                      </CashflowField>
+                    ) : null}
+
+                    <CashflowField label={t('upcoming.form.certainty')}>
+                      <div className={controlClass}>
+                        <Controller
+                          control={control}
+                          name="certainty"
+                          render={({ field }) => (
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <SelectTrigger className={selectClass}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="confirmed">
+                                  {t('upcoming.markers.confirmed')}
+                                </SelectItem>
+                                <SelectItem value="estimated">
+                                  {t('upcoming.markers.estimated')}
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                      </div>
+                    </CashflowField>
+
+                    {!isOutgoing && certainty === 'estimated' ? (
+                      <p className="px-1 text-[12px] leading-5 text-ink2">
+                        {t('upcoming.form.estimatedIncomingHint')}
+                      </p>
+                    ) : null}
+
+                    <CashflowField
+                      label={t('upcoming.form.note')}
+                      htmlFor="cashflow-note"
+                      error={errors.note?.message}
+                    >
+                      <textarea
+                        id="cashflow-note"
+                        rows={3}
+                        className={cn(
+                          'min-h-[88px] w-full resize-y rounded-[10px] border border-transparent bg-sunk px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-accent focus:bg-panel',
+                          errors.note && 'border-alert',
+                        )}
+                        placeholder={t('upcoming.form.notePlaceholder')}
+                        {...register('note')}
+                      />
+                    </CashflowField>
+                  </div>
+                ) : null}
+              </div>
+            </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {/*
-              Requirement is outgoing-only: the backend forces `null` for
-              incoming, because nothing obliges money to arrive.
-            */}
-            {isOutgoing ? (
-              <EventField label={t('upcoming.form.requirement')}>
-                <Controller
-                  control={control}
-                  name="requirement"
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className={eventSelectTriggerClass}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="required">
-                          {t('upcoming.markers.required')}
-                        </SelectItem>
-                        <SelectItem value="planned">
-                          {t('upcoming.markers.planned')}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </EventField>
-            ) : null}
-
-            <EventField label={t('upcoming.form.certainty')}>
-              <Controller
-                control={control}
-                name="certainty"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className={eventSelectTriggerClass}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="confirmed">
-                        {t('upcoming.markers.confirmed')}
-                      </SelectItem>
-                      <SelectItem value="estimated">
-                        {t('upcoming.markers.estimated')}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </EventField>
-          </div>
-
-          {/* Estimated incoming is shown on the timeline but never banked — say
-              so here, so the choice is understood before it is made. */}
-          {!isOutgoing && watch('certainty') === 'estimated' ? (
-            <p className="px-1 text-sm leading-6 text-ink2">
-              {t('upcoming.form.estimatedIncomingHint')}
-            </p>
-          ) : null}
-
-          <EventField label={t('upcoming.form.note')} error={errors.note?.message}>
-            <EventFieldTextarea
-              rows={3}
-              placeholder={t('upcoming.form.notePlaceholder')}
-              {...register('note')}
-            />
-          </EventField>
-
-          <ResponsiveDialogFooter className="flex-row items-center justify-end gap-2 px-0 pt-2">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+          <ResponsiveDialogFooter className="shrink-0 flex-row items-center justify-end gap-2.5 px-5 pb-5 pt-3 sm:px-8 sm:pb-7">
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-11 px-4 text-[13px]"
+              onClick={() => handleOpenChange(false)}
+            >
               {t('common.cancel')}
             </Button>
-            <Button type="submit" disabled={!isValid || isSubmitting}>
-              {isEditing ? t('upcoming.form.saveEdit') : t('upcoming.form.submit')}
+            <Button
+              type="submit"
+              className="h-11 px-5 text-[13px]"
+              disabled={!isValid || isSubmitting}
+            >
+              {isEditing ? t('upcoming.form.saveEdit') : t('upcoming.form.title')}
             </Button>
           </ResponsiveDialogFooter>
         </form>

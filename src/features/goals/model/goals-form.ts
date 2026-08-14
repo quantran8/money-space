@@ -4,6 +4,7 @@ import type { GoalItem, GoalPriority } from '@/features/goals/model/goals'
 import { formatVndShort } from '@/shared/lib/format-money'
 import {
   localizedMoneyAmount,
+  localizedOptionalMoneyAmount,
   localizedOptionalText,
   localizedRequiredText,
 } from '@/shared/lib/validation'
@@ -11,6 +12,20 @@ import {
 export type GoalForm = {
   name: string
   target: string
+  /**
+   * What the household has already put aside. Accepted **on create only** — the
+   * backend rejects it on PATCH so the stored total cannot diverge from the
+   * contribution history (`UpdateFinancialGoalDto`). Onboarding needs it: a
+   * couple arrives with savings that predate the app ("we already have 200M
+   * toward the house") and there is no honest event to invent for them.
+   */
+  current: string
+  /**
+   * The declared monthly contribution. This is what drives the §26C projection —
+   * with it undeclared the API returns `reason: 'no_contribution'` and the UI
+   * can only show progress, never a projected completion date (§14.3).
+   */
+  plannedMonthly: string
   priority: GoalPriority
   targetDate: string
   note: string
@@ -37,6 +52,8 @@ export type GoalAllocationSlice = {
 export const defaultGoalFormValues: GoalForm = {
   name: '',
   target: '',
+  current: '',
+  plannedMonthly: '',
   priority: 'medium',
   targetDate: '',
   note: '',
@@ -84,14 +101,37 @@ export function goalAmount(amount: number | undefined): number {
   return typeof amount === 'number' && Number.isFinite(amount) ? amount : 0
 }
 
-export function buildGoalSchema(t: (key: string, params?: Record<string, unknown>) => string) {
-  // No `current` field: progress is driven by goal_contribution money events,
-  // not entered on the goal form. See addContribution in use-goals-page.
-  return z.object({
-    name: localizedRequiredText(t, t('goals.form.name')),
-    target: localizedMoneyAmount(t),
-    priority: z.enum(['high', 'medium', 'low']),
-    targetDate: z.string(),
-    note: localizedOptionalText(t, 120),
-  })
+/**
+ * `current` is only editable while creating: `UpdateFinancialGoalDto` omits it,
+ * so after creation the only thing that may move the stored total is a
+ * `goal_contribution` money event. Pass `isEditing` so the schema stops
+ * validating (and the dialog stops rendering) a field the API would ignore.
+ */
+export function buildGoalSchema(
+  t: (key: string, params?: Record<string, unknown>) => string,
+  isEditing = false,
+) {
+  return z
+    .object({
+      name: localizedRequiredText(t, t('goals.form.name')),
+      target: localizedMoneyAmount(t),
+      current: localizedOptionalMoneyAmount(t),
+      plannedMonthly: localizedOptionalMoneyAmount(t),
+      priority: z.enum(['high', 'medium', 'low']),
+      targetDate: z.string(),
+      note: localizedOptionalText(t, 120),
+    })
+    .superRefine((values, ctx) => {
+      // Only meaningful on create — on edit the field is not rendered and the
+      // API ignores it, so a stale value must not block the save.
+      if (!isEditing && values.current !== '' && values.target !== '') {
+        if (Number(values.current) > Number(values.target)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['current'],
+            message: t('goals.form.currentExceedsTarget'),
+          })
+        }
+      }
+    })
 }

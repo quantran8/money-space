@@ -13,6 +13,7 @@ export type DebtForm = {
   originalAmount: string
   outstandingAmount: string
   borrowedAt: string
+  firstPaymentDate: string
   expectedFinalDueDate: string
   ownerMemberId: string
   receivedToAssetId: string
@@ -44,6 +45,7 @@ export const defaultValues: DebtForm = {
   originalAmount: '',
   outstandingAmount: '',
   borrowedAt: '2026-07-08',
+  firstPaymentDate: '',
   expectedFinalDueDate: '',
   ownerMemberId: '',
   receivedToAssetId: '',
@@ -119,15 +121,16 @@ export function getStatusLabel(status: DebtStatus) {
   }
 }
 
-export function buildDebtSchema() {
+export function buildDebtSchema(t: (key: string) => string) {
   return z
     .object({
-      name: z.string().trim().min(1, 'Vui lòng nhập tên khoản nợ.'),
+      name: z.string().trim().min(1, t('debts.form.validation.requiredName')),
       lenderType: z.enum(['relative', 'bank_institution', 'other']),
-      lenderName: z.string().trim().min(1, 'Vui lòng nhập nơi cho vay.'),
-      originalAmount: z.string().trim().min(1, 'Vui lòng nhập số tiền vay.'),
-      outstandingAmount: z.string().trim().min(1, 'Vui lòng nhập số còn nợ.'),
-      borrowedAt: z.string().min(1, 'Vui lòng chọn ngày vay.'),
+      lenderName: z.string().trim().min(1, t('debts.form.validation.requiredLender')),
+      originalAmount: z.string().trim().min(1, t('debts.form.validation.requiredOriginalAmount')),
+      outstandingAmount: z.string().trim().min(1, t('debts.form.validation.requiredOutstanding')),
+      borrowedAt: z.string().min(1, t('debts.form.validation.requiredBorrowedAt')),
+      firstPaymentDate: z.string(),
       expectedFinalDueDate: z.string(),
       ownerMemberId: z.string(),
       receivedToAssetId: z.string(),
@@ -147,25 +150,43 @@ export function buildDebtSchema() {
       note: z.string(),
     })
     .superRefine((value, ctx) => {
+      if (value.paymentFrequency !== 'none' && !value.firstPaymentDate.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['firstPaymentDate'],
+          message: t('debts.form.validation.requiredFirstPaymentDate'),
+        })
+      }
+      if (
+        value.firstPaymentDate &&
+        value.expectedFinalDueDate &&
+        value.firstPaymentDate > value.expectedFinalDueDate
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['firstPaymentDate'],
+          message: t('debts.form.validation.firstPaymentAfterFinal'),
+        })
+      }
       if (parseAmountInput(value.originalAmount) <= 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['originalAmount'],
-          message: 'Số tiền vay cần lớn hơn 0.',
+          message: t('debts.form.validation.positiveOriginalAmount'),
         })
       }
       if (parseAmountInput(value.outstandingAmount) <= 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['outstandingAmount'],
-          message: 'Số còn nợ cần lớn hơn 0.',
+          message: t('debts.form.validation.positiveOutstanding'),
         })
       }
       if (parseAmountInput(value.outstandingAmount) > parseAmountInput(value.originalAmount)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['outstandingAmount'],
-          message: 'Số còn nợ không nên lớn hơn số vay ban đầu.',
+          message: t('debts.form.validation.outstandingExceedsOriginal'),
         })
       }
       // A bank/institution loan is a fixed-schedule debt: the interest rate, the
@@ -180,21 +201,21 @@ export function buildDebtSchema() {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['interestPeriods'],
-            message: 'Khoản vay ngân hàng/tổ chức cần có lãi suất.',
+            message: t('debts.form.validation.bankInterest'),
           })
         }
         if (!value.expectedFinalDueDate.trim()) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['expectedFinalDueDate'],
-            message: 'Khoản vay ngân hàng/tổ chức cần có kỳ hạn trả (ngày đáo hạn).',
+            message: t('debts.form.validation.bankDueDate'),
           })
         }
         if (parseAmountInput(value.fixedPaymentAmount) <= 0) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['fixedPaymentAmount'],
-            message: 'Khoản vay ngân hàng/tổ chức cần số tiền trả hàng tháng.',
+            message: t('debts.form.validation.bankPayment'),
           })
         }
       }

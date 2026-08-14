@@ -4,6 +4,7 @@ import type {
   UseFormHandleSubmit,
   UseFormRegister,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import {
   ResponsiveDialog,
@@ -15,7 +16,6 @@ import {
 import { ActualRecordForm } from '@/features/events/ui/components/actual-record-form'
 import { QuickActionPicker } from '@/features/events/ui/components/quick-action-picker'
 import { UpcomingRecordForm } from '@/features/events/ui/components/upcoming-record-form'
-import { eventTypeLabels } from '@/features/events/model/events'
 import type {
   ActualRecordForm as ActualRecordFormValues,
   LocalUpcomingPayment,
@@ -34,6 +34,8 @@ type EventFormDialogProps = {
    *  "quick update". */
   editingEventType?: string
   onSelectQuickAction: (action: QuickAction) => void
+  /** Returns to the picker without closing the dialog. */
+  onBack: () => void
   onBorrowMoney: () => void
   onSellAsset: () => void
   showMoreDetails: boolean
@@ -53,7 +55,6 @@ type EventFormDialogProps = {
   upcomingErrors: FieldErrors<UpcomingRecordFormValues>
   handleUpcomingSubmit: UseFormHandleSubmit<UpcomingRecordFormValues>
   onSubmitUpcoming: (values: UpcomingRecordFormValues) => void
-  isUpcomingValid: boolean
   isSavingUpcoming: boolean
   // actual form
   actualControl: Control<ActualRecordFormValues>
@@ -61,8 +62,13 @@ type EventFormDialogProps = {
   actualErrors: FieldErrors<ActualRecordFormValues>
   handleActualSubmit: UseFormHandleSubmit<ActualRecordFormValues>
   onSubmitActual: (values: ActualRecordFormValues) => void
-  isActualValid: boolean
   isSavingActual: boolean
+}
+
+/** Maps a quick action to its title key suffix. */
+function titleKeyFor(quickAction: QuickAction, isRevaluation: boolean) {
+  if (isRevaluation) return 'revaluation'
+  return quickAction === 'debt_borrow' ? 'expense' : quickAction
 }
 
 export function EventFormDialog({
@@ -71,6 +77,7 @@ export function EventFormDialog({
   quickAction,
   editingEventType,
   onSelectQuickAction,
+  onBack,
   onBorrowMoney,
   onSellAsset,
   showMoreDetails,
@@ -87,56 +94,50 @@ export function EventFormDialog({
   upcomingErrors,
   handleUpcomingSubmit,
   onSubmitUpcoming,
-  isUpcomingValid,
   isSavingUpcoming,
   actualControl,
   registerActual,
   actualErrors,
   handleActualSubmit,
   onSubmitActual,
-  isActualValid,
   isSavingActual,
 }: EventFormDialogProps) {
-  const isActualForm = quickAction !== null && quickAction !== 'upcoming'
-  const title = editingEventType
-    ? `Sửa ${eventTypeLabels[editingEventType as keyof typeof eventTypeLabels] ?? 'khoản tiền'}`
-    : quickAction === 'income'
-      ? 'Thêm khoản tiền'
-      : quickAction === 'expense'
-        ? 'Thêm khoản chi'
-        : quickAction === 'transfer'
-          ? 'Chuyển tiền'
-          : quickAction === 'goal_contribution'
-            ? 'Góp vào mục tiêu'
-            : quickAction === 'payment_paid'
-              ? 'Đánh dấu đã trả'
-              : quickAction === 'upcoming'
-                ? 'Thêm khoản sắp tới'
-                : 'Bạn muốn cập nhật gì?'
+  const { t } = useTranslation()
+  const isEditing = Boolean(editingEventType)
+  const isRevaluation = editingEventType === 'asset_update'
 
-  const description = editingEventType
-    ? 'Chỉnh sửa thông tin đã ghi nhận.'
-    : isActualForm
-      ? 'Chỉ vài chạm là xong.'
-      : quickAction === 'upcoming'
-        ? 'Ghi lại khoản cần chuẩn bị trong thời gian tới.'
-        : 'Chọn một loại cập nhật để bắt đầu.'
+  const title = quickAction
+    ? t(
+        `events.form.${isEditing ? 'updateTitle' : 'createTitle'}.${titleKeyFor(
+          quickAction,
+          isRevaluation,
+        )}`,
+      )
+    : t('events.form.pickTitle')
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent
-        className={`gap-0 overflow-x-hidden border-0 bg-sunk/95 p-0 [&>button]:right-5 [&>button]:top-5 [&>button]:grid [&>button]:size-9 [&>button]:place-items-center [&>button]:rounded-full [&>button]:bg-black/[0.05] ${isActualForm ? 'sm:max-w-[560px]' : 'sm:max-w-[720px]'}`}
-      >
-        <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-8">
-          <ResponsiveDialogTitle className="text-[25px] font-semibold tracking-[-0.035em] sm:text-[28px]">
+      {/* §22.9 — 520px for a simple form, body scrolls, footer stays visible. */}
+      <ResponsiveDialogContent className="grid max-h-[88dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[520px]">
+        <ResponsiveDialogHeader className="px-5 pb-5 pr-16 pt-5 text-left sm:px-8 sm:pr-16 sm:pt-7">
+          {/* Returning to the picker used to require closing the dialog. */}
+          {quickAction && !isEditing ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="mb-2 self-start text-[13px] text-accent transition-opacity hover:opacity-70"
+            >
+              ← {t('events.form.back')}
+            </button>
+          ) : null}
+          <ResponsiveDialogTitle className="text-[19px] font-medium tracking-[-0.015em]">
             {title}
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
-            {description}
-          </ResponsiveDialogDescription>
+          {/* §16.2 — a subtitle here would be mood, not meaning. */}
+          <ResponsiveDialogDescription className="sr-only">{title}</ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <div className="mt-6 min-w-0 max-w-full space-y-5 px-6 pb-6 sm:px-8 sm:pb-8">
+        <div className="overflow-y-auto px-5 pb-5 sm:px-8 sm:pb-7">
           {!quickAction ? (
             <QuickActionPicker
               onSelect={onSelectQuickAction}
@@ -154,7 +155,7 @@ export function EventFormDialog({
               onToggleMoreDetails={onToggleMoreDetails}
               memberOptions={memberOptions}
               sourceAssetOptions={sourceAssetOptions}
-              isValid={isUpcomingValid}
+              isEditing={isEditing}
               isSaving={isSavingUpcoming}
               onCancel={() => onOpenChange(false)}
             />
@@ -166,7 +167,8 @@ export function EventFormDialog({
               handleSubmit={handleActualSubmit}
               onSubmit={onSubmitActual}
               quickAction={quickAction}
-              isRevaluation={editingEventType === 'asset_update'}
+              isRevaluation={isRevaluation}
+              isEditing={isEditing}
               markPaidPaymentId={markPaidPaymentId}
               selectedUpcomingForMarkPaid={selectedUpcomingForMarkPaid}
               payments={payments}
@@ -175,7 +177,6 @@ export function EventFormDialog({
               categoryOptions={categoryOptions}
               showMoreDetails={showMoreDetails}
               onToggleMoreDetails={onToggleMoreDetails}
-              isValid={isActualValid}
               isSaving={isSavingActual}
               onCancel={() => onOpenChange(false)}
             />

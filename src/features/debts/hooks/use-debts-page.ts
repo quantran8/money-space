@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -32,6 +33,7 @@ import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 export function useDebtsPage() {
+  const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const { debts, createDebt, updateDebt, deleteDebt, isLoading } = useDebts()
@@ -71,7 +73,7 @@ export function useDebtsPage() {
     totalRepaid: number
   } | null>(null)
 
-  const debtSchema = useMemo(() => buildDebtSchema(), [])
+  const debtSchema = useMemo(() => buildDebtSchema(t), [t])
 
   const form = useForm<DebtForm>({
     resolver: zodResolver(debtSchema),
@@ -214,6 +216,7 @@ export function useDebtsPage() {
         originalAmount: amountToRaw(editingDebt.originalAmountValue),
         outstandingAmount: amountToRaw(editingDebt.outstandingAmountValue),
         borrowedAt: editingDebt.borrowedAt,
+        firstPaymentDate: editingDebt.firstPaymentDate ?? '',
         expectedFinalDueDate: editingDebt.expectedFinalDueDate ?? '',
         ownerMemberId: editingDebt.ownerMemberId ?? '',
         receivedToAssetId: editingDebt.receivedToAssetId ?? '',
@@ -285,6 +288,7 @@ export function useDebtsPage() {
         outstandingAmount: parseAmountInput(values.outstandingAmount),
         currency: 'VND',
         borrowedAt: values.borrowedAt || undefined,
+        firstPaymentDate: values.firstPaymentDate || undefined,
         expectedFinalDueDate: values.expectedFinalDueDate || undefined,
         status: (values.expectedFinalDueDate && values.expectedFinalDueDate < '2026-07-08'
           ? 'overdue'

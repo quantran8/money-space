@@ -44,12 +44,10 @@ export function EventsPage() {
     registerUpcoming,
     handleUpcomingSubmit,
     upcomingErrors,
-    isUpcomingValid,
     actualControl,
     registerActual,
     handleActualSubmit,
     actualErrors,
-    isActualValid,
     openCreate,
     openBorrowMoney,
     openSellAsset,
@@ -107,6 +105,10 @@ export function EventsPage() {
         quickAction={quickAction}
         editingEventType={editingEventType}
         onSelectQuickAction={handleSelectQuickAction}
+        onBack={() => {
+          setQuickAction(null)
+          setShowMoreDetails(false)
+        }}
         onBorrowMoney={openBorrowMoney}
         onSellAsset={openSellAsset}
         showMoreDetails={showMoreDetails}
@@ -123,14 +125,12 @@ export function EventsPage() {
         upcomingErrors={upcomingErrors}
         handleUpcomingSubmit={handleUpcomingSubmit}
         onSubmitUpcoming={onSubmitUpcoming}
-        isUpcomingValid={isUpcomingValid}
         isSavingUpcoming={isSavingUpcoming}
         actualControl={actualControl}
         registerActual={registerActual}
         actualErrors={actualErrors}
         handleActualSubmit={handleActualSubmit}
         onSubmitActual={onSubmitActual}
-        isActualValid={isActualValid}
         isSavingActual={isSavingActual}
       />
 

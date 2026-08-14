@@ -36,19 +36,40 @@ export function useAssets() {
     enabled: !!activeHouseholdId,
   })
 
-  const invalidate = async () => {
+  /**
+   * Mark everything an asset write affects as stale.
+   *
+   * NOT awaited, deliberately. `invalidateQueries` resolves only once the
+   * refetches it triggers have COMPLETED, so awaiting it inside `onSuccess`
+   * keeps `mutateAsync` pending until all seven round-trips finish — the
+   * dialog sat on "Đang lưu..." for seconds after the write itself had already
+   * succeeded. The save is done when the POST returns; the refetches are
+   * background bookkeeping, and each list shows its own loading state.
+   *
+   * `void` on each call marks the floating promise as intentional. Failures
+   * are not swallowed silently — a failed refetch surfaces through the
+   * consuming query's own error state, exactly as a background refetch does.
+   */
+  const invalidate = () => {
     if (!activeHouseholdId) return
-    await Promise.all([
-      // `assets` is a prefix of the per-asset value-history key, so this also
-      // refreshes the value-over-time chart.
-      queryClient.invalidateQueries({ queryKey: queryKeys.assets(activeHouseholdId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.assetSummary(activeHouseholdId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.assetSnapshots(activeHouseholdId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeHouseholdId) }),
+    const keys = [
+      // PREFIX MATCH. `['households', id, 'assets']` already covers the summary
+      // (`…, 'assets', 'summary'`), the snapshots (`…, 'assets', 'snapshots'`)
+      // and each per-asset value history (`…, 'assets', <id>, 'value-history'`).
+      // Listing those explicitly as well invalidated them TWICE, which is why
+      // the network panel showed two `summary` and two `snapshots` calls per
+      // save. One key, one refetch each.
+      queryKeys.assets(activeHouseholdId),
+      queryKeys.dashboard(activeHouseholdId),
       // A create/update/delete asset can log an `asset_update` revaluation money
       // event (see asset-valuation), so refresh the events list too.
-      queryClient.invalidateQueries({ queryKey: queryKeys.events(activeHouseholdId) }),
-    ])
+      queryKeys.events(activeHouseholdId),
+      // An asset moves liquid money, so the flexible-money figure the forms
+      // quote back (§22.7) is stale until this refetches.
+      ['households', activeHouseholdId, 'flexible-money'],
+      ['households', activeHouseholdId, 'forecast'],
+    ]
+    for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey })
   }
 
   return {

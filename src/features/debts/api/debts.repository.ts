@@ -13,6 +13,7 @@ type DebtListResponse = {
     outstandingAmount: number
     currency: string
     borrowedAt?: string
+    firstPaymentDate?: string
     expectedFinalDueDate?: string
     status: DebtItem['status']
     ownerMemberId?: string
@@ -36,6 +37,7 @@ export type DebtPayload = {
   outstandingAmount: number
   currency?: string
   borrowedAt?: string
+  firstPaymentDate?: string
   expectedFinalDueDate?: string
   status?: DebtItem['status']
   ownerMemberId?: string
@@ -86,6 +88,7 @@ function toDebtItem(record: DebtListResponse['items'][number]): DebtItem {
     fixedPaymentAmountValue: record.fixedPaymentAmount,
     currency: record.currency,
     borrowedAt: record.borrowedAt ?? '',
+    firstPaymentDate: record.firstPaymentDate,
     expectedFinalDueDate: record.expectedFinalDueDate,
     status: record.status,
     ownerMemberId: record.ownerMemberId,

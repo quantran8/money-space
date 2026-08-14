@@ -24,14 +24,25 @@ type GoalListResponse = {
 
 export type GoalPayload = {
   name: string
-  // No currentAmount: progress is derived server-side from the sum of the goal's
-  // goal_contribution money events. Raise progress by adding a contribution
-  // (a goal_contribution money event), not by PATCHing the goal.
   targetAmount: number
   priority: 'high' | 'medium' | 'low'
   note?: string
   plannedMonthlyContribution?: number
   targetDate?: string
+}
+
+/**
+ * Create accepts one extra field: `currentAmount`, so onboarding can record
+ * savings that predate the app ("we already have 200M toward the house") — there
+ * is no honest contribution event to invent for those, and deriving would show 0.
+ *
+ * It is deliberately absent from {@link GoalPayload}, which types the PATCH body:
+ * `UpdateFinancialGoalDto` omits it server-side, so after creation the only thing
+ * that may move the stored total is a `goal_contribution` money event. That keeps
+ * the column and the event history from diverging.
+ */
+export type CreateGoalPayload = GoalPayload & {
+  currentAmount?: number
 }
 
 /** Always asks for projections — every goal surface in v3.1 shows one. */
@@ -47,7 +58,7 @@ export function getGoalProjection(householdId: string, goalId: string) {
   )
 }
 
-export function createGoal(householdId: string, payload: GoalPayload) {
+export function createGoal(householdId: string, payload: CreateGoalPayload) {
   return apiRequest<GoalRecord>(`/api/households/${householdId}/financial-goals`, {
     method: 'POST',
     body: JSON.stringify(payload),
