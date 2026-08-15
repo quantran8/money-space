@@ -1,12 +1,8 @@
-import { Controller, type UseFormReturn } from 'react-hook-form'
+import type { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import {
-  EventField,
-  EventFieldInput,
-  eventSelectTriggerClass,
-} from '@/components/ui/event-field'
+import { EventField, EventFieldInput } from '@/components/ui/event-field'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -15,13 +11,6 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import type { InviteForm } from '@/features/members/model/members-form'
 
 type InviteFormDialogProps = {
@@ -41,7 +30,6 @@ export function InviteFormDialog({
 }: InviteFormDialogProps) {
   const { t } = useTranslation()
   const {
-    control,
     register,
     formState: { errors, isValid },
   } = form
@@ -70,23 +58,6 @@ export function InviteFormDialog({
             />
           </EventField>
 
-          <EventField label={t('members.invite.role')} error={errors.role?.message}>
-            <Controller
-              control={control}
-              name="role"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className={eventSelectTriggerClass}>
-                    <SelectValue placeholder={t('members.invite.rolePlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="partner">{t('options.role.partner')}</SelectItem>
-                    <SelectItem value="viewer">{t('options.role.viewer')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </EventField>
 
           <ResponsiveDialogFooter className="-mx-6 mt-2 border-t border-black/[0.06] px-6 pt-4 sm:-mx-8 sm:px-8">
             <Button

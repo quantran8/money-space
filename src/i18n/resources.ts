@@ -300,7 +300,6 @@ export const resources = {
           columns: {
             source: 'Nguồn',
             owner: 'Người giữ',
-            role: 'Vai trò',
             updated: 'Cập nhật',
             balance: 'Số dư',
           },
@@ -923,6 +922,18 @@ export const resources = {
           description:
             'Thành viên, cách chia sẻ, quỹ dự phòng và dữ liệu chung — ở cùng một chỗ.',
         },
+        admin: {
+          toggle: 'Quản trị không gian',
+          invite: {
+            title: 'Mời thành viên',
+            description: 'Người được mời sẽ cùng nhìn bức tranh tài chính này.',
+          },
+          removeMember: {
+            title: 'Gỡ thành viên',
+            description: 'Người đó sẽ không còn thấy dữ liệu của nhà mình.',
+            pick: 'Chọn thành viên',
+          },
+        },
         merged: {
           householdName: 'Tên nhà mình',
           generalSettings: 'Thiết lập chung',
@@ -933,7 +944,6 @@ export const resources = {
           coverageMixed: 'Tính từ {{total}} nguồn · {{stale}} nguồn cần cập nhật',
           membersTitle: 'Thành viên & quyền',
           membersHelp: 'Khi có thêm thành viên, quyền xem được đặt rõ bằng text cho từng người.',
-          permissionNote: 'Quyền được áp dụng theo từng thành viên.',
           reserveCadence: 'Quỹ dự phòng & nhịp cập nhật',
           safetyFund: 'Quỹ dự phòng',
           safetyFundDescription: 'Mức nhà mình không muốn để số dư tụt xuống dưới khi tính tiền linh hoạt.',
@@ -1120,15 +1130,9 @@ export const resources = {
           column: {
             place: 'Nơi giữ',
             holder: 'Phụ trách',
-            role: 'Vai trò',
             updated: 'Cập nhật',
             balance: 'Số dư',
             balanceUnit: 'Số dư, tr',
-          },
-          role: {
-            usable_now: 'Chi tiêu chung',
-            not_immediately_usable: 'Tiết kiệm',
-            long_term: 'Dài hạn',
           },
         },
         activity: {
@@ -1631,8 +1635,6 @@ export const resources = {
           invitedCount: '{{count}} lời mời đang chờ',
           pending: 'Chờ xác nhận',
           active: 'Đang hoạt động',
-          role: 'Vai trò',
-          permission: 'Quyền xem',
         },
         quickInvite: {
           eyebrow: 'Mời người mới',
@@ -1643,11 +1645,10 @@ export const resources = {
           title: 'Gửi lời mời',
           email: 'Email',
           emailPlaceholder: 'vidu@email.com',
-          role: 'Vai trò',
-          rolePlaceholder: 'Chọn vai trò',
           helper:
             'Người được mời sẽ nhận email xác nhận. Bạn có thể điều chỉnh quyền xem của họ bất cứ lúc nào sau khi họ tham gia.',
           helperShort: 'Gửi lời mời qua email và chọn vai trò trước khi họ tham gia.',
+          action: 'Mời thành viên',
           submit: 'Gửi lời mời',
           submitting: 'Đang gửi...',
           justInvited: 'Vừa mời',
@@ -1658,15 +1659,6 @@ export const resources = {
           owner: 'có toàn quyền quản lý thành viên và dữ liệu.',
           partner: 'có thể thêm và sửa số liệu nhưng không đổi quyền của người khác.',
           viewer: 'chỉ nhìn được phần được chia sẻ, theo mức quyền bạn chọn.',
-        },
-        permissionLevels: {
-          eyebrow: 'Mức quyền',
-          title: 'Các mức quyền xem',
-          view_summary: 'Chỉ thấy tổng quan.',
-          view_grouped: 'Thấy theo nhóm tài sản hoặc khoản.',
-          view_detail: 'Thấy chi tiết những khoản được chia sẻ.',
-          edit_content: 'Có thể thêm và sửa dữ liệu.',
-          admin: 'Quản lý thành viên, quyền và dữ liệu.',
         },
         privacy: {
           eyebrow: 'Về quyền riêng tư',
@@ -1896,18 +1888,6 @@ export const resources = {
           travel: 'Du lịch',
           other: 'Khác',
         },
-        role: {
-          owner: 'Chủ hộ',
-          partner: 'Bạn đời',
-          viewer: 'Người xem',
-        },
-        permission: {
-          view_summary: 'Xem tổng quan',
-          view_grouped: 'Xem theo nhóm',
-          view_detail: 'Xem chi tiết',
-          edit_content: 'Chỉnh sửa nội dung',
-          admin: 'Toàn quyền',
-        },
       },
       validation: {
         required: 'Vui lòng nhập {{label}}',
@@ -2123,8 +2103,6 @@ export const resources = {
           optional: 'Tùy chọn',
           emailLabel: 'Email người được mời',
           emailPlaceholder: 'partner@example.com',
-          defaultRoleLabel: 'Vai trò mặc định',
-          defaultPermissionLabel: 'Quyền mặc định',
         },
         ownerNote: {
           title: 'Quyền của bạn',
@@ -2436,7 +2414,6 @@ export const resources = {
           columns: {
             source: 'Source',
             owner: 'Holder',
-            role: 'Role',
             updated: 'Updated',
             balance: 'Balance',
           },
@@ -3054,6 +3031,18 @@ export const resources = {
           description:
             'Members, sharing, the safety fund, and shared data — all in one place.',
         },
+        admin: {
+          toggle: 'Household administration',
+          invite: {
+            title: 'Invite a member',
+            description: 'They will see this financial picture with you.',
+          },
+          removeMember: {
+            title: 'Remove a member',
+            description: 'They will no longer see your household data.',
+            pick: 'Choose a member',
+          },
+        },
         merged: {
           householdName: 'Household name',
           generalSettings: 'General settings',
@@ -3064,7 +3053,6 @@ export const resources = {
           coverageMixed: 'From {{total}} sources · {{stale}} need an update',
           membersTitle: 'Members & permissions',
           membersHelp: 'As members join, each person’s access is stated clearly.',
-          permissionNote: 'Access is applied per member.',
           reserveCadence: 'Emergency fund & update cadence',
           safetyFund: 'Emergency fund',
           safetyFundDescription: 'The level the household does not want the balance to fall below when flexible money is calculated.',
@@ -3248,15 +3236,9 @@ export const resources = {
           column: {
             place: 'Held at',
             holder: 'Responsible',
-            role: 'Role',
             updated: 'Updated',
             balance: 'Balance',
             balanceUnit: 'Balance, M',
-          },
-          role: {
-            usable_now: 'Shared spending',
-            not_immediately_usable: 'Savings',
-            long_term: 'Long term',
           },
         },
         activity: {
@@ -3754,8 +3736,6 @@ export const resources = {
           invitedCount: '{{count}} pending invitations',
           pending: 'Pending',
           active: 'Active',
-          role: 'Role',
-          permission: 'Access level',
         },
         quickInvite: {
           eyebrow: 'Invite someone new',
@@ -3766,11 +3746,10 @@ export const resources = {
           title: 'Send invitation',
           email: 'Email',
           emailPlaceholder: 'example@email.com',
-          role: 'Role',
-          rolePlaceholder: 'Choose a role',
           helper:
             'The invited person will receive a confirmation email. You can change what they can see anytime after they join.',
           helperShort: 'Send an email invitation and choose their role before they join.',
+          action: 'Invite a member',
           submit: 'Send invitation',
           submitting: 'Sending...',
           justInvited: 'Just invited',
@@ -3781,15 +3760,6 @@ export const resources = {
           owner: 'can manage members and all household data.',
           partner: 'can add and edit records but cannot change other people\'s permissions.',
           viewer: 'only sees the parts you share, based on the access level you choose.',
-        },
-        permissionLevels: {
-          eyebrow: 'Access levels',
-          title: 'Access levels',
-          view_summary: 'Sees the overview only.',
-          view_grouped: 'Sees assets and payments by group.',
-          view_detail: 'Sees details of shared items.',
-          edit_content: 'Can add and edit data.',
-          admin: 'Manages members, permissions and data.',
         },
         privacy: {
           eyebrow: 'On privacy',
@@ -4015,18 +3985,6 @@ export const resources = {
           travel: 'Travel',
           other: 'Other',
         },
-        role: {
-          owner: 'Owner',
-          partner: 'Partner',
-          viewer: 'Viewer',
-        },
-        permission: {
-          view_summary: 'View overview',
-          view_grouped: 'View by group',
-          view_detail: 'View details',
-          edit_content: 'Edit content',
-          admin: 'Full access',
-        },
       },
       validation: {
         required: 'Please enter {{label}}',
@@ -4241,8 +4199,6 @@ export const resources = {
           optional: 'Optional',
           emailLabel: 'Invitee email',
           emailPlaceholder: 'partner@example.com',
-          defaultRoleLabel: 'Default role',
-          defaultPermissionLabel: 'Default permission',
         },
         ownerNote: {
           title: 'Your access',

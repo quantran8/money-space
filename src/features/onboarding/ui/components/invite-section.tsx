@@ -42,20 +42,12 @@ export function InviteSection({ register, error, invalid }: InviteSectionProps) 
         ) : null}
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl bg-[hsl(var(--card))] p-4">
-          <p className="text-xs font-medium text-ink2">
-            {t('onboarding.invite.defaultRoleLabel')}
-          </p>
-          <p className="mt-1 text-sm font-semibold">{t('options.role.partner')}</p>
-        </div>
-        <div className="rounded-2xl bg-[hsl(var(--card))] p-4">
-          <p className="text-xs font-medium text-ink2">
-            {t('onboarding.invite.defaultPermissionLabel')}
-          </p>
-          <p className="mt-1 text-sm font-semibold">{t('options.permission.view_detail')}</p>
-        </div>
-      </div>
+      {/*
+        The two cards that stood here advertised a role and an access level the
+        invitee would receive. Neither exists: whoever joins is an equal member.
+        One of them was already wrong — it promised `view_detail` while the
+        invite path actually granted `edit_content`.
+      */}
     </section>
   )
 }

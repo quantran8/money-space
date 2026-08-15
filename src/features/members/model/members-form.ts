@@ -1,32 +1,15 @@
 import { z } from 'zod'
 
-import type {
-  HouseholdRole,
-  MemberItem,
-  PermissionLevel,
-} from '@/features/members/model/members.types'
+import type { MemberItem } from '@/features/members/model/members.types'
 import { localizedEmailField } from '@/shared/lib/validation'
 
+/** Inviting someone is just their email now — there is no role to offer. */
 export type InviteForm = {
   email: string
-  role: Extract<HouseholdRole, 'partner' | 'viewer'>
 }
 
 export const defaultInviteFormValues: InviteForm = {
   email: '',
-  role: 'partner',
-}
-
-export const roleTone: Record<HouseholdRole, string> = {
-  owner: 'bg-[#1d1d1f] text-white',
-  partner: 'bg-[hsl(var(--secondary))] text-ink2',
-  viewer: 'bg-[hsl(var(--secondary))] text-ink2',
-}
-
-export const defaultPermissionForRole: Record<HouseholdRole, PermissionLevel> = {
-  owner: 'admin',
-  partner: 'edit_content',
-  viewer: 'view_summary',
 }
 
 export function makeInitials(nameOrEmail: string) {
@@ -45,6 +28,5 @@ export function buildInviteSchema(
       (value) => !members.some((member) => member.email === value.trim()),
       { message: t('validation.duplicateEmail') },
     ),
-    role: z.enum(['partner', 'viewer']),
   })
 }

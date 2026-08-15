@@ -1,19 +1,13 @@
-export type HouseholdRole = 'owner' | 'partner' | 'viewer'
-
-export type PermissionLevel =
-  | 'view_summary'
-  | 'view_grouped'
-  | 'view_detail'
-  | 'edit_content'
-  | 'admin'
-
+/**
+ * A person in the household. There is no role and no permission level: both
+ * partners have the same rights, and the only distinction anywhere is who
+ * created the household, which the client never needs to render.
+ */
 export type MemberItem = {
   id: string
   name: string
   email: string
   initials: string
-  role: HouseholdRole
-  permission: PermissionLevel
   joinedAt: string
   lastActive: string
   status: 'active' | 'invited'

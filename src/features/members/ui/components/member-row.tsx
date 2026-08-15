@@ -1,43 +1,32 @@
 import { useTranslation } from 'react-i18next'
 
-import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import type {
-  HouseholdRole,
-  MemberItem,
-  PermissionLevel,
-} from '@/features/members/model/members.types'
+import { StatusChip } from '@/components/ui/status-chip'
+import type { MemberItem } from '@/features/members/model/members.types'
 
 type MemberRowProps = {
   member: MemberItem
-  roleLabels: Record<HouseholdRole, string>
-  permissionLabels: Record<PermissionLevel, string>
-  isUpdating: boolean
-  onUpdateRole: (id: string, role: HouseholdRole) => void
-  onUpdatePermission: (id: string, permission: PermissionLevel) => void
-  onRemove: (id: string) => void
+  /** How many money sources this person is responsible for. */
+  holdsCount: number
 }
 
-export function MemberRow({
-  member,
-  roleLabels,
-  permissionLabels,
-  isUpdating,
-  onUpdateRole,
-  onUpdatePermission,
-  onRemove,
-}: MemberRowProps) {
+/**
+ * One person in the household.
+ *
+ * This used to be a permissions row: two Selects for role and access level,
+ * with the owner's hard-coded as read-only. None of that exists any more —
+ * both partners have the same rights, so there is nothing here to grant.
+ *
+ * What replaces it is the question the product actually cares about: not "who
+ * is allowed what" but "who is responsible for what". Removing a member and
+ * inviting one live in the household admin disclosure, away from the everyday
+ * view, because they change who is in the room rather than what is in it.
+ */
+export function MemberRow({ member, holdsCount }: MemberRowProps) {
   const { t } = useTranslation()
 
   return (
     <article className="rounded-sunk px-3 py-3 transition-colors hover:bg-sunk sm:px-4">
-      <div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr_.9fr_120px] lg:items-center">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="flex min-w-0 items-center gap-3">
           <div className="grid size-10 shrink-0 place-items-center rounded-full bg-sunk text-[12px] font-medium">
             {member.initials}
@@ -45,11 +34,6 @@ export function MemberRow({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="truncate text-[13px] font-medium">{member.name}</p>
-              {member.role === 'owner' ? (
-                <span className="rounded-full bg-sunk px-2 py-1 text-[10px]">
-                  {roleLabels[member.role]}
-                </span>
-              ) : null}
               {member.status === 'invited' ? (
                 <span className="rounded-full bg-attention-tint px-2 py-1 text-[10px] text-attention">
                   {t('members.list.pending')}
@@ -60,63 +44,15 @@ export function MemberRow({
           </div>
         </div>
 
-        <div>
-          <p className="label lg:hidden">{t('members.list.role')}</p>
-          {member.role === 'owner' ? (
-            <p className="mt-1.5 text-[13px] lg:mt-0">{roleLabels[member.role]}</p>
-          ) : (
-          <Select
-            value={member.role}
-            disabled={isUpdating}
-            onValueChange={(value) => onUpdateRole(member.id, value as HouseholdRole)}
-          >
-            <SelectTrigger className="h-9 text-[12px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(roleLabels) as HouseholdRole[]).map((role) => (
-                <SelectItem key={role} value={role}>
-                  {roleLabels[role]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          )}
-        </div>
-        <div className="space-y-1.5">
-          <p className="label lg:hidden">{t('members.list.permission')}</p>
-          {member.role === 'owner' ? (
-            <p className="mt-1.5 text-[13px] lg:mt-0">{permissionLabels[member.permission]}</p>
-          ) : (
-          <Select
-            value={member.permission}
-            disabled={isUpdating}
-            onValueChange={(value) => onUpdatePermission(member.id, value as PermissionLevel)}
-          >
-            <SelectTrigger className="h-9 text-[12px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(permissionLabels) as PermissionLevel[]).map((permission) => (
-                <SelectItem key={permission} value={permission}>
-                  {permissionLabels[permission]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between gap-3 lg:justify-end">
-          <span className="inline-flex items-center gap-2 text-[12px]">
-            <span className={member.status === 'active' ? 'size-1.5 rounded-full bg-accent' : 'size-1.5 rounded-full bg-attention'} />
-            {member.status === 'active' ? t('members.list.active') : t('members.list.pending')}
-          </span>
-          {member.role !== 'owner' ? (
-            <Button type="button" variant="ghost" size="sm" onClick={() => onRemove(member.id)} className="text-alert hover:bg-alert-tint hover:text-alert">
-              {t('common.remove')}
-            </Button>
-          ) : null}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:justify-end">
+          <p className="text-[12px] text-ink2">
+            {t('members.list.holdsSources', { count: holdsCount })}
+          </p>
+          <StatusChip tone={member.status === 'active' ? 'accent' : 'attention'}>
+            {member.status === 'active'
+              ? t('members.list.active')
+              : t('members.list.pending')}
+          </StatusChip>
         </div>
       </div>
     </article>

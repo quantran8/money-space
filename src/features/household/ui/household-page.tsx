@@ -1,13 +1,18 @@
-import { UserPlus } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
-import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { HouseholdOverviewCard } from '@/features/household/ui/components/household-overview-card'
+import { HouseholdAdminDisclosure } from '@/features/household/ui/components/household-admin-disclosure'
 import { HouseholdReserveCard } from '@/features/household/ui/components/household-reserve-card'
 import { useMembersPage } from '@/features/members/hooks/use-members-page'
 import { useSettingsPage } from '@/features/settings/hooks/use-settings-page'
+import { deleteHousehold } from '@/features/settings/api/settings.repository'
+import { useActiveHousehold } from '@/shared/hooks/use-active-household'
+import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
 import { DataCard } from '@/features/settings/ui/components/data-card'
 import { InviteFormDialog } from '@/features/members/ui/components/invite-form-dialog'
@@ -23,15 +28,14 @@ import { MembersListSection } from '@/features/members/ui/components/members-lis
  */
 export function HouseholdPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { activeHouseholdId } = useActiveHousehold()
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const {
     members,
     isLoading,
     invitedCount,
-    roleLabels,
-    permissionLabels,
-    isUpdating,
-    updateRole,
-    updatePermission,
+    holdsByMember,
     setRemoveId,
     form,
     isSubmitting,
@@ -59,12 +63,6 @@ export function HouseholdPage() {
         eyebrow={t('household.header.eyebrow')}
         title={t('household.header.title')}
         description={t('household.header.description')}
-        actions={
-          <Button onClick={openInvite}>
-            <UserPlus className="size-4" />
-            {t('members.invite.submit')}
-          </Button>
-        }
       />
 
       {!isSettingsLoading ? (
@@ -79,12 +77,8 @@ export function HouseholdPage() {
         members={members}
         isLoading={isLoading}
         invitedCount={invitedCount}
-        roleLabels={roleLabels}
-        permissionLabels={permissionLabels}
-        isUpdating={isUpdating}
-        onUpdateRole={updateRole}
-        onUpdatePermission={updatePermission}
-        onRemove={setRemoveId}
+        holdsByMember={holdsByMember}
+        onInvite={openInvite}
       />
 
       {!isSettingsLoading ? <HouseholdReserveCard form={settingsForm} /> : null}
@@ -94,12 +88,36 @@ export function HouseholdPage() {
 
       <DataCard />
 
+      <HouseholdAdminDisclosure
+        members={members}
+        onInvite={openInvite}
+        onRemoveMember={setRemoveId}
+        onDeleteHousehold={() => setConfirmDeleteOpen(true)}
+      />
+
       <InviteFormDialog
         open={formOpen}
         onOpenChange={handleFormOpenChange}
         form={form}
         isSubmitting={isSubmitting}
         onSubmit={submit}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={t('settings.data.delete')}
+        description={t('settings.data.deleteDescription')}
+        confirmLabel={t('settings.data.deleteAction')}
+        onConfirm={async () => {
+          if (!activeHouseholdId) return
+          try {
+            await deleteHousehold(activeHouseholdId)
+            navigate('/onboarding')
+          } catch (error) {
+            toast.error(getErrorMessage(error, t('settings.data.deleteAction')))
+          }
+        }}
       />
 
       <ConfirmDialog

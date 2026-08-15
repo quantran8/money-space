@@ -8,14 +8,10 @@ import { useMembers } from '@/features/members/hooks/use-members'
 import {
   buildInviteSchema,
   defaultInviteFormValues,
-  defaultPermissionForRole,
   makeInitials,
   type InviteForm,
 } from '@/features/members/model/members-form'
-import type {
-  HouseholdRole,
-  PermissionLevel,
-} from '@/features/members/model/members.types'
+import { useAssets } from '@/features/assets/hooks/use-assets'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 export function useMembersPage() {
@@ -25,18 +21,21 @@ export function useMembersPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [removeId, setRemoveId] = useState<string | null>(null)
 
-  const roleLabels: Record<HouseholdRole, string> = {
-    owner: t('options.role.owner'),
-    partner: t('options.role.partner'),
-    viewer: t('options.role.viewer'),
-  }
-  const permissionLabels: Record<PermissionLevel, string> = {
-    view_summary: t('options.permission.view_summary'),
-    view_grouped: t('options.permission.view_grouped'),
-    view_detail: t('options.permission.view_detail'),
-    edit_content: t('options.permission.edit_content'),
-    admin: t('options.permission.admin'),
-  }
+  /**
+   * How many money sources each person is responsible for.
+   *
+   * This replaces the role and access-level columns: the members list now
+   * answers "who is responsible for what" instead of "who is allowed what".
+   */
+  const { assets } = useAssets()
+  const holdsByMember = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const asset of assets) {
+      if (!asset.holderMemberId) continue
+      counts[asset.holderMemberId] = (counts[asset.holderMemberId] ?? 0) + 1
+    }
+    return counts
+  }, [assets])
 
   const activeCount = members.filter((member) => member.status === 'active').length
   const invitedCount = members.filter((member) => member.status === 'invited').length
@@ -72,8 +71,6 @@ export function useMembersPage() {
         name: email.split('@')[0],
         email,
         initials: makeInitials(email),
-        role: values.role,
-        permission: defaultPermissionForRole[values.role],
         status: 'invited',
       })
       toast.success('Da them thanh vien.')
@@ -81,23 +78,6 @@ export function useMembersPage() {
     } catch (error) {
       toast.error(getErrorMessage(error, 'Khong the them thanh vien.'))
     }
-  }
-
-  function updateRole(id: string, role: HouseholdRole) {
-    void updateMember
-      .mutateAsync({
-        memberId: id,
-        payload: { role, permission: defaultPermissionForRole[role] },
-      })
-      .then(() => toast.success('Da cap nhat vai tro thanh vien.'))
-      .catch((error) => toast.error(getErrorMessage(error, 'Khong the cap nhat vai tro.')))
-  }
-
-  function updatePermission(id: string, permission: PermissionLevel) {
-    void updateMember
-      .mutateAsync({ memberId: id, payload: { permission } })
-      .then(() => toast.success('Da cap nhat quyen thanh vien.'))
-      .catch((error) => toast.error(getErrorMessage(error, 'Khong the cap nhat quyen.')))
   }
 
   async function removeMember(id: string) {
@@ -116,12 +96,9 @@ export function useMembersPage() {
     isLoading,
     activeCount,
     invitedCount,
-    roleLabels,
-    permissionLabels,
+    holdsByMember,
     // list actions
     isUpdating: updateMember.isPending,
-    updateRole,
-    updatePermission,
     setRemoveId,
     // form
     form,

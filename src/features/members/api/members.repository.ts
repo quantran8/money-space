@@ -1,5 +1,5 @@
 import { apiRequest } from '@/shared/api/http'
-import type { HouseholdRole, MemberItem, PermissionLevel } from '@/features/members/model/members.types'
+import type { MemberItem } from '@/features/members/model/members.types'
 import type { HouseholdSummary } from '@/shared/hooks/use-active-household'
 
 type MemberListResponse = {
@@ -13,8 +13,6 @@ export type MemberPayload = {
   name: string
   email: string
   initials?: string
-  role: HouseholdRole
-  permission?: PermissionLevel
   joinedAt?: string
   lastActive?: string
   status?: 'active' | 'invited'
