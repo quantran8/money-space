@@ -1,31 +1,18 @@
-import { useMemo, useState, type ReactNode } from 'react'
-import { ChevronLeft, Pencil } from 'lucide-react'
+import { Calculator, Check, ChevronLeft, Pencil } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useDebtDetail, type DebtHistoryEntry } from '@/features/debts/hooks/use-debt-detail'
 import { useDebtsPage } from '@/features/debts/hooks/use-debts-page'
-import { formatDate, getStatusLabel, getStatusTone } from '@/features/debts/model/debts-form'
+import { formatDate, getStatusLabel } from '@/features/debts/model/debts-form'
 import { calcFromBackendEnum } from '@/features/debts/model/debts-interest'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
 import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
 import { formatVndShort } from '@/shared/lib/format-money'
-import { cn } from '@/shared/lib/utils'
-
-type TrendRange = 6 | 12 | 'all'
+import { useWhatIfStore } from '@/shared/stores/whatif-store'
 
 const FREQUENCY_LABELS: Record<string, string> = {
   none: 'Linh hoạt',
@@ -36,13 +23,20 @@ const FREQUENCY_LABELS: Record<string, string> = {
 
 const LENDER_LABELS: Record<DebtItem['lenderType'], string> = {
   bank_institution: 'Vay ngân hàng',
-  relative: 'Người thân',
+  relative: 'Vay người thân',
   other: 'Khoản vay khác',
 }
 
 const CALC_LABELS: Record<string, string> = {
-  fixed: 'Trả cố định',
-  reducing: 'Dư nợ giảm dần',
+  fixed: 'cố định',
+  reducing: 'dư nợ giảm dần',
+}
+
+type RepaymentCalendarItem = {
+  id: string
+  isoDate: string
+  amount: number
+  paid: boolean
 }
 
 function paymentDate(payment?: UpcomingPaymentItem) {
@@ -50,127 +44,98 @@ function paymentDate(payment?: UpcomingPaymentItem) {
   return payment.dueDate ?? payment.due
 }
 
-function daysUntil(dateValue: string) {
+function displayDate(value?: string) {
+  if (!value) return 'Chưa có'
+  return new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString('vi-VN')
+}
+
+function displayMonth(value?: string) {
+  if (!value) return 'Chưa chốt'
+  return new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString('vi-VN', {
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
+
+function displayUpdatedAt(value: string) {
+  const hasTime = value.includes('T')
+  const date = new Date(hasTime ? value : `${value}T00:00:00`)
+  if (Number.isNaN(date.getTime())) return formatDate(value)
+
+  const day = date.toLocaleDateString('vi-VN')
+  if (!hasTime) return day
+  const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+  return `${day} · ${time}`
+}
+
+function monthsUntil(value?: string) {
+  if (!value) return null
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const date = new Date(`${dateValue}T00:00:00`)
-  return Math.ceil((date.getTime() - today.getTime()) / 86_400_000)
+  const target = new Date(`${value.slice(0, 10)}T00:00:00`)
+  if (Number.isNaN(target.getTime())) return null
+  return Math.max(
+    0,
+    (target.getFullYear() - today.getFullYear()) * 12 + target.getMonth() - today.getMonth(),
+  )
 }
 
-function dueMeta(dateValue: string) {
-  const days = daysUntil(dateValue)
-  if (days === 0) return 'Hôm nay'
-  if (days === 1) return 'Ngày mai'
-  if (days <= 30) return `Còn ${days} ngày`
-  return new Date(`${dateValue}T00:00:00`).toLocaleDateString('vi-VN', { month: 'long' })
-}
+function MoneyValue({ value }: { value: number }) {
+  const formatted = formatVndShort(value)
+  const match = formatted.match(/^(.+)\s+(triệu|tỷ)$/)
 
-function TermRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="max-w-[65%] text-right text-sm font-semibold">{value}</span>
+    <div className="mt-4 flex items-end gap-2">
+      <span className="money-number text-[48px] leading-[.9] sm:text-[54px]">
+        {match?.[1] ?? formatted}
+      </span>
+      {match?.[2] ? <span className="pb-1 text-[20px] font-medium">{match[2]}</span> : null}
     </div>
   )
 }
 
-function DebtTrendChart({ debt, history }: { debt: DebtItem; history: DebtHistoryEntry[] }) {
-  const [range, setRange] = useState<TrendRange>(6)
-  const data = useMemo(() => {
-    const now = new Date()
-    const borrowed = new Date(`${debt.borrowedAt}T00:00:00`)
-    const allMonths = Math.max(
-      1,
-      (now.getFullYear() - borrowed.getFullYear()) * 12 + now.getMonth() - borrowed.getMonth() + 1,
-    )
-    const count = range === 'all' ? allMonths : range
-    return Array.from({ length: count }, (_, index) => {
-      const monthsAgo = count - 1 - index
-      const pointDate = new Date(now.getFullYear(), now.getMonth() - monthsAgo + 1, 0, 23, 59, 59)
-      if (index === count - 1) pointDate.setTime(now.getTime())
-      const value = history.reduce((balance, entry) => {
-        if (new Date(`${entry.isoDate}T00:00:00`) <= pointDate) return balance
-        if (entry.kind === 'repayment') return balance + entry.amount
-        if (entry.kind === 'borrow') return balance - entry.amount
-        return balance
-      }, debt.outstandingAmountValue)
-      return {
-        label: index === count - 1 ? 'Hiện tại' : `T${pointDate.getMonth() + 1}`,
-        value: Math.max(0, value),
-      }
-    })
-  }, [debt, history, range])
-
-  const first = data[0]?.value ?? debt.outstandingAmountValue
-  const change = debt.outstandingAmountValue - first
-
+function LoanInfo({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
-    <Card className="xl:col-span-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Dư nợ còn lại</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Số tiền còn phải trả sau mỗi lần ghi nhận thanh toán.</p>
-        </div>
-        <div className="inline-flex w-fit rounded-xl bg-muted p-1">
-          {([{ value: 6, label: '6 tháng' }, { value: 12, label: '1 năm' }, { value: 'all', label: 'Toàn bộ' }] as const).map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setRange(item.value)}
-              className={cn('rounded-lg px-3 py-1.5 text-xs font-medium transition', range === item.value ? 'bg-card shadow-sm' : 'text-muted-foreground')}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div>
+      <p className="text-[12px] text-ink3">{label}</p>
+      <p className={mono ? 'money-number mt-1.5 font-mono text-[13px]' : 'mt-1.5 text-[14px] font-medium'}>
+        {value}
+      </p>
+    </div>
+  )
+}
 
-      <div className="mt-6 flex items-end justify-between gap-4">
-        <div>
-          <p className="text-xs text-muted-foreground">Hiện tại</p>
-          <p className="money-number mt-1 text-2xl font-semibold">{formatVndShort(debt.outstandingAmountValue)}</p>
-        </div>
-        <p className={cn('text-sm font-medium', change <= 0 ? 'text-accent' : 'text-alert')}>
-          {change > 0 ? '+' : change < 0 ? '−' : ''}{formatVndShort(Math.abs(change))}
-          {range !== 'all' ? ` trong ${range} tháng` : ''}
-        </p>
-      </div>
+function buildCalendar(
+  repayments: DebtHistoryEntry[],
+  upcomingPayments: UpcomingPaymentItem[],
+): RepaymentCalendarItem[] {
+  const paid = repayments.map((entry) => ({
+    id: `paid-${entry.id}`,
+    isoDate: entry.isoDate.slice(0, 10),
+    amount: entry.amount,
+    paid: true,
+  }))
+  const upcoming = upcomingPayments.map((payment) => ({
+    id: `upcoming-${payment.id}`,
+    isoDate: paymentDate(payment)!.slice(0, 10),
+    amount: payment.amountValue ?? 0,
+    paid: false,
+  }))
 
-      <div className="mt-4 h-[280px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-            <defs>
-              <linearGradient id="debt-detail-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.16} />
-                <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.01} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} dy={7} minTickGap={20} />
-            <YAxis width={48} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={formatVndShort} />
-            <Tooltip formatter={(value) => [formatVndShort(Number(value)), 'Dư nợ']} contentStyle={{ borderRadius: 14, borderColor: 'hsl(var(--border))' }} />
-            <Area type="monotone" dataKey="value" stroke="hsl(var(--accent))" strokeWidth={3} fill="url(#debt-detail-fill)" isAnimationActive={false} activeDot={{ r: 5 }} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </Card>
+  return [...paid, ...upcoming].sort((left, right) =>
+    left.isoDate.localeCompare(right.isoDate),
   )
 }
 
 export function DebtDetailPage() {
   const { debtId } = useParams<{ debtId: string }>()
   const navigate = useNavigate()
-  const [showAllHistory, setShowAllHistory] = useState(false)
-  const [showAllUpcoming, setShowAllUpcoming] = useState(false)
+  const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
   const {
     debt,
     ownerName,
     receivedToAssetName,
     history,
-    borrows,
     repayments,
-    adjustments,
-    totalBorrowed,
     totalRepaid,
     upcomingPayments,
     isLoading,
@@ -207,160 +172,288 @@ export function DebtDetailPage() {
   } = useDebtsPage()
 
   if (isLoading && !debt) {
-    return <div className="h-[520px] animate-pulse rounded-[28px] bg-muted" />
+    return <div className="h-[520px] animate-pulse rounded-panel bg-panel" />
   }
 
   if (!debt) {
     return (
       <div className="space-y-6">
         <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/networth')}>
-          <ChevronLeft className="size-4" /> Danh sách khoản nợ
+          <ChevronLeft className="size-4" /> Tài sản & Nợ
         </Button>
         <Card className="py-10 text-center">
-          <p className="text-lg font-semibold">Không tìm thấy khoản nợ</p>
-          <p className="mt-1 text-sm text-muted-foreground">Khoản nợ này có thể đã bị xóa hoặc không tồn tại.</p>
+          <p className="text-lg font-medium">Không tìm thấy khoản nợ</p>
+          <p className="mt-1 text-sm text-ink2">
+            Khoản nợ này có thể đã bị xóa hoặc không tồn tại.
+          </p>
         </Card>
       </div>
     )
   }
 
   const repaid = Math.max(totalRepaid, debt.originalAmountValue - debt.outstandingAmountValue)
-  const progress = debt.originalAmountValue > 0 ? Math.min(100, Math.round((repaid / debt.originalAmountValue) * 100)) : 0
+  const progress =
+    debt.originalAmountValue > 0
+      ? Math.min(100, (repaid / debt.originalAmountValue) * 100)
+      : 0
   const nextPayment = upcomingPayments[0]
   const nextDate = paymentDate(nextPayment)
   const latestUpdate = history[0]?.isoDate ?? debt.borrowedAt
   const stages = debt.interestPeriods ?? []
   const calc = calcFromBackendEnum(debt.interestCalculation)
-  const visibleUpcoming = showAllUpcoming ? upcomingPayments : upcomingPayments.slice(0, 3)
-  const visibleRepayments = showAllHistory ? repayments : repayments.slice(0, 4)
+  const calendarItems = buildCalendar(repayments, upcomingPayments)
+  const latestRepayment = repayments[0]
+  const remainingMonths = monthsUntil(debt.expectedFinalDueDate)
+  const progressLabel = progress.toLocaleString('vi-VN', { maximumFractionDigits: 1 })
+  const paymentDay = nextDate
+    ? new Date(`${nextDate}T00:00:00`).getDate()
+    : debt.firstPaymentDate
+      ? new Date(`${debt.firstPaymentDate}T00:00:00`).getDate()
+      : null
 
-  function recordPayment() {
-    navigate('/events')
+  function tryEarlyRepayment() {
+    if (!debt) return
+    openWhatIf({
+      amount:
+        debt.fixedPaymentAmountValue && debt.fixedPaymentAmountValue > 0
+          ? debt.fixedPaymentAmountValue
+          : undefined,
+      plannedDate: nextDate,
+      source: 'other',
+    })
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="ghost" className="-ml-2 w-fit gap-1" onClick={() => navigate('/networth')}>
-          <ChevronLeft className="size-4" /> Danh sách khoản nợ
-        </Button>
-        <div className="flex flex-wrap gap-2">
-          {debt.status !== 'paid_off' ? <Button variant="secondary" onClick={recordPayment}>Ghi nhận đã trả</Button> : null}
-          <Button onClick={() => openEdit(debt.id)}><Pencil className="mr-2 size-4" /> Chỉnh sửa</Button>
-        </div>
-      </div>
+    <div className="space-y-4 pb-3">
+      <header className="px-0.5 pb-1">
+        <button
+          type="button"
+          className="-ml-2 inline-flex min-h-10 items-center gap-1.5 rounded-control px-2 text-[13px] text-accent hover:bg-accent-soft"
+          onClick={() => navigate('/networth')}
+        >
+          <ChevronLeft className="size-4" strokeWidth={1.75} />
+          Tài sản & Nợ
+        </button>
 
-      <section className="py-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-sm text-muted-foreground">Khoản nợ · {LENDER_LABELS[debt.lenderType]}</p>
-          <Badge className={getStatusTone(debt.status)}>{getStatusLabel(debt.status)}</Badge>
-        </div>
-        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="page-title text-3xl font-semibold tracking-[-0.04em] sm:text-4xl lg:text-[42px]">{debt.name}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {debt.lenderName || 'Chưa rõ bên cho vay'}{ownerName ? ` · ${ownerName} phụ trách` : ''}{debt.expectedFinalDueDate ? ` · Kết thúc ${formatDate(debt.expectedFinalDueDate)}` : ''}
-            </p>
-          </div>
-          <p className="text-sm text-muted-foreground">Cập nhật gần nhất: {formatDate(latestUpdate)}</p>
-        </div>
-      </section>
-
-      <section className="rounded-[28px] bg-[#1d1d1f] p-6 text-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] sm:p-8">
-        <div className="grid gap-8 xl:grid-cols-[1.2fr_1fr] xl:items-end">
-          <div>
-            <p className="text-sm font-medium text-white/45">Dư nợ còn lại</p>
-            <p className="money-number mt-4 text-5xl font-semibold tracking-[-0.055em] sm:text-6xl">{formatVndShort(debt.outstandingAmountValue)}</p>
-            <p className="mt-5 text-sm text-white/45">Đã trả <span className="font-medium text-white">{formatVndShort(repaid)}</span> trên tổng tiền vay ban đầu {formatVndShort(debt.originalAmountValue)}.</p>
-            <div className="mt-6 h-2.5 max-w-2xl overflow-hidden rounded-full bg-white/10">
-              <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
+        <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 text-[13px] text-ink2">
+              <span>Nợ · {LENDER_LABELS[debt.lenderType]}</span>
+              <span className="rounded-full bg-panel px-2.5 py-1 text-[11px] text-ink2">
+                {getStatusLabel(debt.status)}
+              </span>
             </div>
-            <div className="mt-2 flex max-w-2xl justify-between text-xs text-white/35"><span>Đã trả {progress}%</span><span>Còn lại {100 - progress}%</span></div>
+            <h1 className="page-title mt-2 truncate text-[27px] leading-tight sm:text-[30px]">
+              {debt.name}
+            </h1>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <HeroMetric label="Tiền vay ban đầu" value={formatVndShort(debt.originalAmountValue)} hint={`Nhận ngày ${formatDate(debt.borrowedAt)}`} />
-            <HeroMetric label="Kỳ trả định kỳ" value={formatVndShort(debt.fixedPaymentAmountValue ?? 0)} hint={FREQUENCY_LABELS[debt.paymentFrequency ?? 'none']} />
-            <HeroMetric label="Kỳ tiếp theo" value={nextDate ? new Date(`${nextDate}T00:00:00`).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : 'Chưa có'} hint={nextPayment?.status === 'normal' ? 'Đã chuẩn bị nguồn' : nextPayment ? 'Chờ xác nhận' : 'Chưa lên lịch'} />
+
+          <div className="flex flex-wrap gap-2">
+            {debt.status !== 'paid_off' ? (
+              <Button
+                variant="secondary"
+                className="h-10 px-4 text-[13px]"
+                onClick={tryEarlyRepayment}
+              >
+                <Calculator className="size-4" strokeWidth={1.75} />
+                Thử trả trước
+              </Button>
+            ) : null}
+            <Button className="h-10 px-4 text-[13px]" onClick={() => openEdit(debt.id)}>
+              <Pencil className="size-4" strokeWidth={1.75} />
+              Chỉnh sửa
+            </Button>
           </div>
         </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-12">
-        <DebtTrendChart debt={debt} history={history} />
-        <Card className="xl:col-span-4">
-          <h2 className="text-xl font-semibold tracking-tight">Điều khoản hiện tại</h2>
-          <div className="mt-5 divide-y divide-border">
-            <TermRow label="Bên cho vay" value={debt.lenderName || 'Chưa cập nhật'} />
-            <TermRow label="Lãi suất" value={debt.interestSummary || 'Không tính lãi'} />
-            <TermRow label="Cách trả" value={`${FREQUENCY_LABELS[debt.paymentFrequency ?? 'none']}${stages.length ? ` · ${CALC_LABELS[calc] ?? calc}` : ''}`} />
-            {nextDate ? <TermRow label="Ngày thanh toán" value={`Ngày ${new Date(`${nextDate}T00:00:00`).getDate()}`} /> : null}
-            <TermRow label="Ngày bắt đầu" value={formatDate(debt.borrowedAt)} />
-            <TermRow label="Ngày kết thúc" value={formatDate(debt.expectedFinalDueDate)} />
-            <TermRow label="Người phụ trách" value={ownerName || 'Chưa phân công'} />
-            <TermRow label="Tiền nhận vào" value={receivedToAssetName || 'Chưa cập nhật'} />
-          </div>
-        </Card>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-12">
-        <Card className="xl:col-span-5">
-          <div className="flex items-end justify-between gap-4">
-            <h2 className="text-xl font-semibold tracking-tight">Các kỳ sắp tới</h2>
-            {upcomingPayments.length > 3 ? <button type="button" onClick={() => setShowAllUpcoming((value) => !value)} className="text-sm font-medium text-muted-foreground hover:text-foreground">{showAllUpcoming ? 'Thu gọn' : 'Xem toàn bộ'}</button> : null}
-          </div>
-          <div className="mt-5 divide-y divide-border">
-            {visibleUpcoming.length === 0 ? <p className="py-8 text-sm text-muted-foreground">Chưa có kỳ trả nợ sắp tới.</p> : null}
-            {visibleUpcoming.map((payment) => {
-              const date = paymentDate(payment)!
-              return <div key={payment.id} className="grid gap-3 py-4 first:pt-0 last:pb-0 sm:grid-cols-[76px_1fr_110px] sm:items-center">
-                <div><p className="text-sm font-semibold">{new Date(`${date}T00:00:00`).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</p><p className="mt-1 text-xs text-muted-foreground">{dueMeta(date)}</p></div>
-                <div className="min-w-0"><p className="truncate text-sm font-medium">{payment.name}</p><p className={cn('mt-1 text-xs', payment.status === 'normal' ? 'text-accent' : 'text-muted-foreground')}>{payment.status === 'normal' ? 'Đã chuẩn bị nguồn' : payment.status === 'important' ? 'Cần ưu tiên' : 'Chờ xác nhận'}</p></div>
-                <p className="money-number text-sm font-semibold sm:text-right">{formatVndShort(payment.amountValue ?? 0)}</p>
-              </div>
-            })}
-          </div>
-        </Card>
-
-        <Card className="xl:col-span-7">
-          <div className="flex items-end justify-between gap-4">
-            <h2 className="text-xl font-semibold tracking-tight">Các khoản đã thanh toán</h2>
-            {repayments.length > 4 ? <button type="button" onClick={() => setShowAllHistory((value) => !value)} className="text-sm font-medium text-muted-foreground hover:text-foreground">{showAllHistory ? 'Thu gọn' : 'Xem tất cả'}</button> : null}
-          </div>
-          <div className="mt-5 divide-y divide-border">
-            {visibleRepayments.length === 0 ? <p className="py-8 text-sm text-muted-foreground">Chưa ghi nhận khoản thanh toán nào.</p> : null}
-            {visibleRepayments.map((entry) => <HistoryPaymentRow key={entry.id} entry={entry} ownerName={ownerName} sourceName={receivedToAssetName} />)}
-          </div>
-        </Card>
-      </section>
+      </header>
 
       <Card>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight">Đã nhận {formatVndShort(totalBorrowed || debt.originalAmountValue)}</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">Nhận vào {receivedToAssetName || 'nguồn tiền chưa xác định'} ngày {formatDate(debt.borrowedAt)}. Đây là sự kiện nhận tiền, không phải nguồn cố định của khoản nợ.</p>
-            {debt.note ? <p className="mt-2 text-sm leading-6 text-muted-foreground">Ghi chú: {debt.note}</p> : null}
-          </div>
-          <div className="sm:text-right"><p className="money-number text-sm font-semibold">{formatVndShort(totalBorrowed || debt.originalAmountValue)}</p><p className="mt-1 text-xs text-muted-foreground">{ownerName ? `Phụ trách: ${ownerName}` : `${borrows.length} lần nhận`}</p></div>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h2 className="section-title text-[16px]">Tổng quan</h2>
+          <p className="text-[12px] text-ink3">
+            Cập nhật gần nhất{' '}
+            <span className="money-number font-mono">{displayUpdatedAt(latestUpdate)}</span>
+          </p>
         </div>
-        {adjustments.length > 0 ? <p className="mt-4 border-t border-border pt-4 text-xs text-muted-foreground">Có {adjustments.length} lần điều chỉnh số dư được lưu trong lịch sử khoản nợ.</p> : null}
+
+        <div className="mt-7 grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-14">
+          <div>
+            <p className="label">Dư nợ còn lại</p>
+            <MoneyValue value={debt.outstandingAmountValue} />
+          </div>
+
+          <div className="lg:pb-0.5">
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="label">Tiến độ trả</p>
+              <p className="money-number text-[17px]">{progressLabel}%</p>
+            </div>
+            <div
+              className="mt-4 h-2 overflow-hidden rounded-full bg-sunk"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(progress)}
+              aria-label={`Đã trả ${progressLabel}% khoản vay`}
+            >
+              <div
+                className="h-full rounded-full bg-accent"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="mt-2.5 text-[12px] text-ink2">
+              Đã trả <span className="money-number font-medium text-ink">{formatVndShort(repaid)}</span>
+            </p>
+          </div>
+        </div>
       </Card>
 
-      <DebtFormDialog open={dialogOpen} onOpenChange={onOpenChange} editingId={editingId} control={control} register={register} errors={errors} isValid={isValid} isSavingDebt={isSavingDebt} setValue={setValue} selectedLenderType={selectedLenderType} showMoreDetails={showMoreDetails} setShowMoreDetails={setShowMoreDetails} receiveAssetOptions={receiveAssetOptions} memberOptions={memberOptions} repaymentEstimate={repaymentEstimate} termMonths={termMonths} onSubmit={submit} pasteAmountFromClipboard={pasteAmountFromClipboard} />
+      <Card>
+        <h2 className="section-title text-[16px]">Thông tin khoản vay</h2>
 
-      {updateModeOpen ? <DebtUpdateModeDialog open onOpenChange={(open) => { if (!open) cancelUpdateMode() }} originalAmountChanged={updateModeOriginalChanged} before={updateModeBefore} after={updateModeAfter} totalRepaid={updateModeTotalRepaid} isSubmitting={isSavingUpdateMode} onConfirm={confirmUpdateMode} /> : null}
+        <div className="mt-7 grid gap-7 sm:grid-cols-3 sm:gap-0">
+          <div className="pr-0 sm:pr-7">
+            <p className="label">Tất toán dự kiến</p>
+            <p className="money-number mt-3 font-mono text-[24px]">
+              {displayMonth(debt.expectedFinalDueDate)}
+            </p>
+            <p className="mt-2 text-[12px] text-ink2">Theo lịch trả hiện tại</p>
+          </div>
+
+          <div className="px-0 sm:border-l sm:border-hair sm:px-7">
+            <p className="label">Đã thanh toán</p>
+            <p className="money-number mt-3 text-[24px]">{repayments.length} kỳ</p>
+            <p className="mt-2 text-[12px] text-ink2">
+              {latestRepayment
+                ? `Kỳ gần nhất ${displayDate(latestRepayment.isoDate)}`
+                : 'Chưa có kỳ nào'}
+            </p>
+          </div>
+
+          <div className="px-0 sm:border-l sm:border-hair sm:px-7">
+            <p className="label">Còn lại</p>
+            <p className="money-number mt-3 text-[24px]">{upcomingPayments.length} kỳ</p>
+            <p className="mt-2 text-[12px] text-ink2">
+              {remainingMonths !== null ? `Khoảng ${remainingMonths} tháng` : 'Chưa chốt thời hạn'}
+            </p>
+          </div>
+        </div>
+
+        <div className="sunk mt-8 p-5 sm:p-6">
+          <div className="grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+            <LoanInfo label="Bên cho vay" value={debt.lenderName || 'Chưa cập nhật'} />
+            <LoanInfo label="Khoản vay ban đầu" value={formatVndShort(debt.originalAmountValue)} />
+            <LoanInfo label="Lãi suất" value={debt.interestSummary || 'Không tính lãi'} />
+            <LoanInfo
+              label="Cách trả"
+              value={`${FREQUENCY_LABELS[debt.paymentFrequency ?? 'none']}${
+                stages.length ? ` · ${CALC_LABELS[calc] ?? calc}` : ''
+              }`}
+            />
+            {paymentDay ? <LoanInfo label="Ngày thanh toán" value={`Ngày ${paymentDay}`} mono /> : null}
+            <LoanInfo label="Người phụ trách" value={ownerName || 'Chưa phân công'} />
+            <LoanInfo label="Nhận vào" value={receivedToAssetName || 'Chưa cập nhật'} />
+            <LoanInfo label="Ngày giải ngân" value={displayDate(debt.borrowedAt)} mono />
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="section-title text-[16px]">Các kỳ thanh toán</h2>
+          <button
+            type="button"
+            className="min-h-10 text-[13px] text-accent hover:underline"
+            onClick={() => navigate('/events')}
+          >
+            Xem nhật ký
+          </button>
+        </div>
+
+        {calendarItems.length > 0 ? (
+          <div className="sunk mt-7 p-2.5">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+              {calendarItems.map((item, index) => {
+                const isNext = !item.paid && !calendarItems.slice(0, index).some((entry) => !entry.paid)
+                return (
+                  <div
+                    key={item.id}
+                    className={
+                      item.paid
+                        ? 'relative min-h-[96px] rounded-[9px] bg-accent p-3.5 text-white'
+                        : 'relative min-h-[96px] rounded-[9px] bg-panel p-3.5'
+                    }
+                  >
+                    {item.paid ? (
+                      <Check
+                        className="absolute right-3 top-3 size-4 text-white/80"
+                        strokeWidth={1.75}
+                        aria-label="Đã thanh toán"
+                      />
+                    ) : isNext ? (
+                      <span
+                        className="absolute right-3 top-3 size-2 rounded-full bg-attention"
+                        aria-label="Kỳ tiếp theo"
+                      />
+                    ) : null}
+                    <p
+                      className={
+                        item.paid
+                          ? 'money-number font-mono text-[12px] text-white/80'
+                          : 'money-number font-mono text-[12px] text-ink2'
+                      }
+                    >
+                      {displayDate(item.isoDate)}
+                    </p>
+                    <p className="money-number mt-7 text-[17px]">
+                      {formatVndShort(item.amount)}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+          <p className="sunk mt-7 px-4 py-8 text-center text-[13px] text-ink2">
+            Chưa có lịch thanh toán cho khoản nợ này.
+          </p>
+        )}
+      </Card>
+
+      <DebtFormDialog
+        open={dialogOpen}
+        onOpenChange={onOpenChange}
+        editingId={editingId}
+        control={control}
+        register={register}
+        errors={errors}
+        isValid={isValid}
+        isSavingDebt={isSavingDebt}
+        setValue={setValue}
+        selectedLenderType={selectedLenderType}
+        showMoreDetails={showMoreDetails}
+        setShowMoreDetails={setShowMoreDetails}
+        receiveAssetOptions={receiveAssetOptions}
+        memberOptions={memberOptions}
+        repaymentEstimate={repaymentEstimate}
+        termMonths={termMonths}
+        onSubmit={submit}
+        pasteAmountFromClipboard={pasteAmountFromClipboard}
+      />
+
+      {updateModeOpen ? (
+        <DebtUpdateModeDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) cancelUpdateMode()
+          }}
+          originalAmountChanged={updateModeOriginalChanged}
+          before={updateModeBefore}
+          after={updateModeAfter}
+          totalRepaid={updateModeTotalRepaid}
+          isSubmitting={isSavingUpdateMode}
+          onConfirm={confirmUpdateMode}
+        />
+      ) : null}
     </div>
   )
-}
-
-function HeroMetric({ label, value, hint }: { label: string; value: string; hint: string }) {
-  return <div className="border-l border-white/10 pl-4"><p className="text-xs text-white/40">{label}</p><p className="money-number mt-3 text-xl font-semibold">{value}</p><p className="mt-1 text-xs text-white/30">{hint}</p></div>
-}
-
-function HistoryPaymentRow({ entry, ownerName, sourceName }: { entry: DebtHistoryEntry; ownerName?: string; sourceName?: string }) {
-  return <div className="grid gap-3 py-4 first:pt-0 last:pb-0 md:grid-cols-[110px_1fr_150px_120px] md:items-center">
-    <p className="text-xs text-muted-foreground">{formatDate(entry.isoDate)}</p>
-    <div className="min-w-0"><p className="truncate text-sm font-medium">{entry.title}</p><p className="mt-1 text-xs text-muted-foreground">{ownerName ? `${ownerName} ghi nhận` : 'Đã ghi nhận'}</p></div>
-    <p className="truncate text-sm text-muted-foreground">{sourceName || 'Nguồn thanh toán'}</p>
-    <p className="money-number text-sm font-semibold md:text-right">−{formatVndShort(entry.amount)}</p>
-  </div>
 }

@@ -10,7 +10,12 @@ import {
   YAxis,
 } from 'recharts'
 
-import { liquidityColors } from '@/shared/constants/colors'
+import {
+  chartAxis,
+  chartGrid,
+  chartSeparator,
+  liquidityColors,
+} from '@/shared/constants/colors'
 import { formatVndShort } from '@/shared/lib/format-money'
 import type { AssetLiquidity } from '@/features/assets/model/assets'
 import type { AssetValuePoint } from '@/features/assets/hooks/use-asset-detail'
@@ -44,14 +49,14 @@ export function AssetValueChart({ points, liquidity }: AssetValueChartProps) {
 
   if (data.length < 2) {
     return (
-      <div className="flex h-[240px] items-center justify-center rounded-3xl bg-sunk text-sm text-ink2">
+      <div className="flex h-[300px] items-center justify-center text-sm text-ink2">
         {t('assets.detail.chart.empty')}
       </div>
     )
   }
 
   return (
-    <div className="h-[240px] w-full">
+    <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
           <defs>
@@ -61,34 +66,34 @@ export function AssetValueChart({ points, liquidity }: AssetValueChartProps) {
             </linearGradient>
           </defs>
 
-          <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeWidth={1} />
+          <CartesianGrid vertical={false} stroke={chartGrid} strokeWidth={1} />
           <XAxis
             dataKey="day"
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+            tick={{ fontSize: 12, fill: chartAxis }}
             dy={6}
           />
           <YAxis
             width={44}
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+            tick={{ fontSize: 11, fill: chartAxis }}
             tickFormatter={(value: number) => formatVndShort(value)}
           />
           <Tooltip
-            cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+            cursor={{ stroke: chartGrid, strokeWidth: 1 }}
             content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null
               const point = payload[0].payload as (typeof data)[number]
               return (
-                <div className="rounded-[14px] border border-border bg-card px-3 py-2 text-sm shadow-md">
-                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">{label}</p>
+                <div className="rounded-panel bg-panel px-3 py-2 text-sm">
+                  <p className="mb-1.5 text-xs font-medium text-ink2">{label}</p>
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-ink2">
                       {t('assets.detail.chart.value')}
                     </span>
-                    <span className="money-number font-semibold text-foreground">
+                    <span className="money-number text-ink">
                       {formatVndShort(point.value)}
                     </span>
                   </div>
@@ -106,7 +111,7 @@ export function AssetValueChart({ points, liquidity }: AssetValueChartProps) {
             isAnimationActive={false}
             activeDot={{
               r: 4,
-              stroke: 'hsl(var(--card))',
+              stroke: chartSeparator,
               strokeWidth: 2,
               fill: color,
             }}

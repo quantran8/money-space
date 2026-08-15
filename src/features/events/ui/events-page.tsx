@@ -1,7 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
@@ -17,7 +16,6 @@ export function EventsPage() {
   const {
     sale,
     groupedRecords,
-    recordCounts,
     isLoading,
     payments,
     tab,
@@ -71,22 +69,24 @@ export function EventsPage() {
 
   return (
     <div className="space-y-4 pb-3">
-      <CompactPageHeader
-        eyebrow={t('events.history.eyebrow')}
-        title={t('events.history.title')}
-        actions={
+      <header className="flex items-center justify-between gap-4 px-1 py-1">
+        <div>
+          <h1 className="page-title text-[19px]">{t('events.history.title')}</h1>
+          <p className="mt-1 text-[12px] text-ink3">{t('events.history.description')}</p>
+        </div>
+        <div className="hidden sm:block">
           <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
-            <RefreshCw className="size-4" />
+            <RefreshCw className="size-4" strokeWidth={1.75} />
             {t('events.history.quickUpdate')}
           </Button>
-        }
-      />
+        </div>
+      </header>
 
       <EventsTimelineCard
         tab={tab}
         onTabChange={setTab}
         groupedRecords={groupedRecords}
-        recordCounts={recordCounts}
+        memberOptions={memberOptions}
         isLoading={isLoading}
         isSavingActual={isSavingActual}
         onMarkPaid={openMarkPaid}
@@ -98,6 +98,11 @@ export function EventsPage() {
         onToggleEventAttention={toggleEventAttention}
         onDeleteEvent={setDeleteEventId}
       />
+
+      <Button className="w-full sm:hidden" onClick={openCreate}>
+        <RefreshCw className="size-4" strokeWidth={1.75} />
+        {t('events.history.quickUpdate')}
+      </Button>
 
       <EventFormDialog
         open={formOpen}

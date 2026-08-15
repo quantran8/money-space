@@ -50,25 +50,43 @@ export function RecordCard({
   const amount = isUpcoming
     ? `-${formatVndShort(Math.abs(record.amount))}`
     : formatRecordAmount(record, formatVndShort)
+  const initial = actor.trim().charAt(0).toLocaleUpperCase() || 'M'
+  const relatedName = record.fromAssetName || record.toAssetName
+  const meta = isUpcoming
+    ? `${typeLabel} · ${record.displayDate}`
+    : relatedName
+      ? `${typeLabel} · ${relatedName}`
+      : typeLabel
 
   return (
-    <article className="grid gap-2 py-3 first:pt-0 last:pb-0 sm:grid-cols-[minmax(170px,1fr)_130px_120px_34px] sm:items-center sm:gap-4">
+    <article className="grid grid-cols-[36px_minmax(0,1fr)_auto_32px] items-start gap-x-3 rounded-control px-3 py-3 transition-colors hover:bg-sunk">
+      <div className="grid size-8 place-items-center rounded-full bg-sunk text-[11px] font-medium text-ink2">
+        {initial}
+      </div>
       <div className="min-w-0">
-        <h4 className="truncate text-[13px] font-medium">{record.title}</h4>
-        <p className="mt-1 truncate text-[11px] text-ink3">{actor}</p>
+        <h4 className="text-[14px] leading-5">
+          <span className="font-medium">{actor}</span>
+          <span className="text-ink3"> · </span>
+          {record.title}
+        </h4>
+        <p
+          className={cn(
+            'mt-1 truncate text-[12px]',
+            record.isAttentionNeeded || record.status === 'overdue'
+              ? 'text-attention'
+              : 'text-ink3',
+          )}
+        >
+          {meta}
+          {isUpcoming ? ` · ${t(`events.history.status.${record.status}`)}` : ''}
+        </p>
       </div>
-      <div>
-        <span className="rounded-full bg-sunk px-2.5 py-1 text-[11px] text-ink2">{typeLabel}</span>
-        {isUpcoming ? (
-          <p className="mt-1.5 text-[10px] text-attention">{t(`events.history.status.${record.status}`)}</p>
-        ) : null}
-      </div>
-      <p className={cn('num text-[14px] font-medium sm:text-right', isInflow && 'text-accent')}>
+      <p className={cn('num whitespace-nowrap pl-3 text-right text-[14px] font-medium', isInflow && 'text-accent')}>
         {amount}
       </p>
       <DropdownMenu>
         <DropdownMenuTrigger
-          className="grid size-8 place-items-center rounded-control text-ink3 transition hover:bg-sunk hover:text-ink"
+          className="grid size-8 place-items-center rounded-control text-ink3 transition hover:bg-panel hover:text-ink"
           aria-label={t('events.redesign.timeline.actions')}
         >
           <MoreVertical className="size-4" />
