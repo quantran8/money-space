@@ -43,7 +43,8 @@ When real-time is wired, replace these constants — they affect interest accrua
 - [[debts]] — debts / liabilities and interest maths
 - [[money-events]] — money events + upcoming payments (unified events timeline)
 - [[goals]] — financial goals and progress
-- [[members-and-permissions]] — roles, permissions, invites
+- [[members]] — equal members; the three creator-only lifecycle operations
+- [[sharing-levels]] — everything counts; `detail` vs `summary_only`
 - [[households-and-onboarding]] — household creation & onboarding
 - [[dashboard]] — overview / status buckets
 - [[snapshots-and-networth]] — net-worth history & attention items
@@ -60,4 +61,4 @@ When real-time is wired, replace these constants — they affect interest accrua
   (frontend-web repo root) are the authoritative domain-rules references, kept in
   sync with the Prisma schema.
 - **Authorization is app-layer** (NestJS guards), NOT Postgres RLS — DB-portable.
-  See [[members-and-permissions]].
+  See [[members]].

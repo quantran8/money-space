@@ -51,9 +51,9 @@ Each file is a focused Markdown doc. Link related files with `[[name]]` (the fil
 - [what-if.md](what-if.md) — spend simulation: consequence, never a verdict (§26D)
 - [protected-reserves.md](protected-reserves.md) — money set aside as a forecast constraint (§19C)
 - [data-freshness.md](data-freshness.md) — how much the numbers can be trusted (04 §12)
-- [asset-classification.md](asset-classification.md) — financial nature, holder, sharing levels (§11, §30)
+- [sharing-levels.md](sharing-levels.md) — one axis, two values; everything counts
 - [goals.md](goals.md) — financial goals & progress
-- [members-and-permissions.md](members-and-permissions.md) — roles, permissions, invites
+- [members.md](members.md) — equal members; the creator-only lifecycle operations, invites
 - [households-and-onboarding.md](households-and-onboarding.md) — household creation & onboarding
 - [dashboard.md](dashboard.md) — overview / status buckets
 - [snapshots-and-networth.md](snapshots-and-networth.md) — net-worth history & attention items

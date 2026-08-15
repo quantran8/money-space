@@ -1,6 +1,6 @@
 # Settings & sharing
 
-Household preferences, reminders, and the flexible privacy/sharing model. Related: [[members-and-permissions]], [[households-and-onboarding]].
+Household preferences, reminders, and the flexible privacy/sharing model. Related: [[members]], [[households-and-onboarding]].
 
 ## Overview
 
@@ -28,7 +28,7 @@ Two toggles:
 
 - `shareAssets` and `shareUpcoming`, each ∈ `SharingLevel = overview | grouped | detailed` — the spec's flexible view-permission model.
 - `hidePrivateNotes` toggle.
-- These map onto the per-entity `VisibilityLevel` and the member permission levels (see [[members-and-permissions]]).
+- These map onto the per-entity `VisibilityLevel` and the member permission levels (see [[members]]).
 
 ## Data controls
 

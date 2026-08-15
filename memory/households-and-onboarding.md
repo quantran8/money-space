@@ -1,6 +1,6 @@
 # Households & onboarding
 
-Creating the shared finance space and getting both partners in. Related: [[members-and-permissions]], [[auth]], [[settings-and-sharing]].
+Creating the shared finance space and getting both partners in. Related: [[members]], [[auth]], [[settings-and-sharing]].
 
 ## Overview
 
@@ -10,7 +10,7 @@ A `Household` is the aggregate root (see [[domain-overview]]). Onboarding create
 
 1. Upsert the owner's profile.
 2. Create the household.
-3. Create the creator as a member with role `owner` + permission `admin` (see [[members-and-permissions]]).
+3. Create the creator as a member with role `owner` + permission `admin` (see [[members]]).
 4. Optionally create a pending `HouseholdInvite` (7-day TTL, random token; defaults partner / view_detail).
 5. Write an `household.created` audit log with `{ invitedPartner }` metadata.
 
