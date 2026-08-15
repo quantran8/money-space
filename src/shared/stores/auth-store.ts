@@ -65,3 +65,27 @@ export function getAccessToken(): string | null {
 export function getRefreshToken(): string | null {
   return useAuthStore.getState().session?.refreshToken ?? null
 }
+
+/**
+ * Treat a token as expired this many seconds before it actually is, so a
+ * request that is about to be sent doesn't expire in flight (clock skew plus
+ * the round-trip itself).
+ */
+const EXPIRY_SKEW_SECONDS = 60
+
+/**
+ * Whether the persisted access token is expired, or close enough that it
+ * should be refreshed before the next request.
+ *
+ * The session is restored from localStorage on boot with no regard for age, so
+ * without this check the first request of every session-after-an-hour was a
+ * guaranteed 401 → refresh → retry — three serial round-trips in front of the
+ * whole page. `expiresAt` is Unix seconds, as Supabase issues it; a session
+ * without one is assumed usable and left to the 401 fallback.
+ */
+export function isAccessTokenExpiring(): boolean {
+  const session = useAuthStore.getState().session
+  if (!session) return false
+  if (session.expiresAt === null) return false
+  return Date.now() / 1000 >= session.expiresAt - EXPIRY_SKEW_SECONDS
+}

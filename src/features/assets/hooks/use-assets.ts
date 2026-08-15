@@ -66,8 +66,7 @@ export function useAssets() {
       queryKeys.events(activeHouseholdId),
       // An asset moves liquid money, so the flexible-money figure the forms
       // quote back (§22.7) is stale until this refetches.
-      ['households', activeHouseholdId, 'flexible-money'],
-      ['households', activeHouseholdId, 'forecast'],
+      queryKeys.forecastBundleAll(activeHouseholdId),
     ]
     for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey })
   }

@@ -44,10 +44,8 @@ export function useCashflowEvents(filters?: CashflowEventFilters) {
       queryKeys.cashflowEvents(activeHouseholdId),
       queryKeys.events(activeHouseholdId),
       queryKeys.dashboard(activeHouseholdId),
-      // Horizon-scoped keys: match on the prefix so every horizon drops.
-      ['households', activeHouseholdId, 'forecast'],
-      ['households', activeHouseholdId, 'flexible-money'],
-      ['households', activeHouseholdId, 'financial-state'],
+      // Horizon-scoped key: match on the prefix so every horizon drops.
+      queryKeys.forecastBundleAll(activeHouseholdId),
       queryKeys.attentionItems(activeHouseholdId),
     ]) {
       void queryClient.invalidateQueries({ queryKey })

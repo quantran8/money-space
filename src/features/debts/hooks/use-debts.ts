@@ -24,9 +24,9 @@ export function useDebts() {
       // event, so the events timeline (and the debt detail history) must refetch.
       queryKeys.events(activeHouseholdId),
       // A debt write moves the repayment schedule, which the forecast and the
-      // flexible-money figure are computed from.
-      ['households', activeHouseholdId, 'forecast'],
-      ['households', activeHouseholdId, 'flexible-money'],
+      // flexible-money figure are computed from. One prefix key covers every
+      // horizon and all three readings — they share a cache entry.
+      queryKeys.forecastBundleAll(activeHouseholdId),
     ]) {
       void queryClient.invalidateQueries({ queryKey })
     }

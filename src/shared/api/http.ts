@@ -33,6 +33,11 @@ export type ApiRequestInit = RequestInit & {
  */
 type AuthBridge = {
   getToken: () => string | null
+  /**
+   * The token to send, refreshed first if it has already expired. Concurrent
+   * callers share one refresh.
+   */
+  ensureFreshToken: () => Promise<string | null>
   refresh: () => Promise<boolean>
   onAuthLost: () => void
 }
@@ -73,7 +78,10 @@ export async function apiRequest<T>(
   const url = buildUrl(path, query)
   const useAuth = !init?.skipAuth
 
-  let token = useAuth ? (authBridge?.getToken() ?? null) : null
+  // Refresh up front when the stored token has already aged out, rather than
+  // spending a 401 to discover it. The retry below still covers a token the
+  // server rejects for any other reason.
+  let token = useAuth ? ((await authBridge?.ensureFreshToken()) ?? null) : null
   let response = await performFetch(url, init, token)
 
   // On 401, attempt a single silent refresh, then retry once.

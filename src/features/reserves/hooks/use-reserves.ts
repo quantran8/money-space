@@ -40,9 +40,7 @@ export function useReserves() {
     // NOT awaited — see the note in `use-assets.ts`.
     for (const queryKey of [
       queryKeys.reserves(activeHouseholdId),
-      ['households', activeHouseholdId, 'forecast'],
-      ['households', activeHouseholdId, 'flexible-money'],
-      ['households', activeHouseholdId, 'financial-state'],
+      queryKeys.forecastBundleAll(activeHouseholdId),
       queryKeys.dashboard(activeHouseholdId),
     ]) {
       void queryClient.invalidateQueries({ queryKey })

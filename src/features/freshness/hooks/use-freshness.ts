@@ -30,8 +30,7 @@ export function useFreshness() {
     for (const queryKey of [
       queryKeys.freshness(activeHouseholdId),
       queryKeys.assets(activeHouseholdId),
-      ['households', activeHouseholdId, 'forecast'],
-      ['households', activeHouseholdId, 'financial-state'],
+      queryKeys.forecastBundleAll(activeHouseholdId),
       queryKeys.dashboard(activeHouseholdId),
     ]) {
       void queryClient.invalidateQueries({ queryKey })

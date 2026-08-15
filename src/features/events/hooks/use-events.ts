@@ -39,8 +39,7 @@ export function useEvents(month?: string) {
       // (Prefix-matches the assets list, summary, snapshots and value-history.)
       queryKeys.assets(activeHouseholdId),
       // The forms quote flexible money back at the user (§22.7).
-      ['households', activeHouseholdId, 'flexible-money'],
-      ['households', activeHouseholdId, 'forecast'],
+      queryKeys.forecastBundleAll(activeHouseholdId),
     ]
     for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey })
   }

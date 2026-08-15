@@ -23,12 +23,21 @@ export const queryKeys = {
   /** Virtual occurrences expanded across a horizon — the Upcoming timeline. */
   cashflowOccurrences: (householdId: string, horizonDays: number) =>
     ['households', householdId, 'cashflow-events', 'occurrences', horizonDays] as const,
-  forecast: (householdId: string, horizonDays: number) =>
-    ['households', householdId, 'forecast', horizonDays] as const,
-  flexibleMoney: (householdId: string, horizonDays: number) =>
-    ['households', householdId, 'flexible-money', horizonDays] as const,
-  financialState: (householdId: string, horizonDays: number) =>
-    ['households', householdId, 'financial-state', horizonDays] as const,
+  /**
+   * Forecast + flexible money + financial state share ONE cache entry, because
+   * they share one request (`GET /forecast-bundle`) — the latter two are pure
+   * functions of the forecast. `useForecast`, `useFlexibleMoney` and
+   * `useFinancialState` all read this key and select their slice out of it.
+   */
+  forecastBundle: (householdId: string, horizonDays: number) =>
+    ['households', householdId, 'forecast-bundle', horizonDays] as const,
+  /**
+   * Prefix key covering every horizon. Anything that moves money — an asset, a
+   * debt, a cashflow event, a reserve, a money event, a freshness confirmation
+   * — should invalidate THIS, not a hand-listed subset of the three old keys.
+   */
+  forecastBundleAll: (householdId: string) =>
+    ['households', householdId, 'forecast-bundle'] as const,
   reserves: (householdId: string) => ['households', householdId, 'protected-reserves'] as const,
   freshness: (householdId: string) => ['households', householdId, 'data-freshness'] as const,
   events: (householdId: string, month?: string) =>
