@@ -22,7 +22,6 @@ export type AssumptionCode =
   | 'horizon_days'
   | 'estimated_incoming_excluded'
   | 'planned_outflows_included'
-  | 'private_records_excluded'
   | 'no_confirmed_inflow_in_horizon'
   | 'reserve_applied'
   | 'no_reserve_declared'
@@ -107,7 +106,6 @@ export type ForecastResult = {
     amount: number
     sourceEventId: string
   } | null
-  excludedPrivateRecordCount: number
   staleAssetIds: string[]
   usableNowAssetCount: number
   liveEventCount: number

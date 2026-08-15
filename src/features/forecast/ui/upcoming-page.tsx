@@ -96,14 +96,6 @@ export function UpcomingPage() {
 
       {forecast ? <AssumptionsNote assumptions={forecast.assumptions} /> : null}
 
-      {forecast && forecast.excludedPrivateRecordCount > 0 ? (
-        <p className="px-1 text-[12px] leading-5 text-ink3">
-          {t('upcoming.privateExcluded', {
-            count: forecast.excludedPrivateRecordCount,
-          })}
-        </p>
-      ) : null}
-
       <CashflowEventFormDialog
         open={cashflowForm.formOpen}
         onOpenChange={cashflowForm.handleFormOpenChange}

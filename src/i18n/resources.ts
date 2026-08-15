@@ -895,7 +895,6 @@ export const resources = {
           planned_outgoing: 'Khoản dự định',
           postponed: 'Đã dời ngày',
         },
-        privateExcluded: '{{count}} khoản riêng tư không nằm trong tính toán này.',
         assumptions: {
           title: 'Cách tính con số này',
           codes: {
@@ -904,7 +903,6 @@ export const resources = {
               'Tiền vào còn ước tính chưa được cộng vào số dư, để con số giữ ở mức thận trọng.',
             planned_outflows_included:
               'Các khoản dự định vẫn được trừ, vì tiền vẫn rời tài khoản.',
-            private_records_excluded: 'Các khoản riêng tư không nằm trong tính toán.',
             no_confirmed_inflow_in_horizon:
               'Chưa có khoản tiền vào nào đủ chắc chắn trong kỳ này.',
             reserve_applied: 'Đã tính mức sàn quỹ dự phòng {{value}}.',
@@ -3029,7 +3027,6 @@ export const resources = {
           planned_outgoing: 'Planned item',
           postponed: 'Date moved',
         },
-        privateExcluded: '{{count}} private records are not part of this calculation.',
         assumptions: {
           title: 'How this was calculated',
           codes: {
@@ -3038,7 +3035,6 @@ export const resources = {
               'Estimated money in is not added to the balance, keeping the figure conservative.',
             planned_outflows_included:
               'Planned items are still subtracted, because the money still leaves the account.',
-            private_records_excluded: 'Private records are not part of this calculation.',
             no_confirmed_inflow_in_horizon:
               'No sufficiently certain money in during this window.',
             reserve_applied: 'An emergency-fund floor of {{value}} was applied.',
