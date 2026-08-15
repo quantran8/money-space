@@ -4,7 +4,7 @@ import type {
   HouseholdRole,
   MemberItem,
   PermissionLevel,
-} from '@/features/members/model/members'
+} from '@/features/members/model/members.types'
 import { localizedEmailField } from '@/shared/lib/validation'
 
 export type InviteForm = {

@@ -15,7 +15,7 @@ import {
 import type {
   HouseholdRole,
   PermissionLevel,
-} from '@/features/members/model/members'
+} from '@/features/members/model/members.types'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 export function useMembersPage() {

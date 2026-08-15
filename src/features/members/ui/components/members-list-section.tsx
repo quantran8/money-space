@@ -7,7 +7,7 @@ import type {
   HouseholdRole,
   MemberItem,
   PermissionLevel,
-} from '@/features/members/model/members'
+} from '@/features/members/model/members.types'
 
 type MembersListSectionProps = {
   members: MemberItem[]
