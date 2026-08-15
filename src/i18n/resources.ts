@@ -2,6 +2,11 @@ export const resources = {
   vi: {
     translation: {
       common: {
+        relativeDay: {
+          today: 'hôm nay',
+          yesterday: 'hôm qua',
+          daysAgo: '{{count}} ngày trước',
+        },
         view: 'Xem',
         loading: 'Đang tải...',
         saveChanges: 'Lưu thay đổi',
@@ -111,7 +116,52 @@ export const resources = {
             good: 'Khá tốt',
             low: 'Cần bổ sung',
           },
-          assets: {
+          activity: {
+        header: {
+          eyebrow: 'Nhà mình',
+          title: 'Nhật ký',
+          description: 'Những thay đổi làm bức tranh chung khác đi.',
+        },
+        empty: 'Chưa có thay đổi nào được ghi.',
+        object: {
+          folded: 'một khoản đóng góp chung',
+        },
+        action: {
+          'asset.created': 'Thêm nguồn tiền "{{object}}"',
+          'asset.deleted': 'Gỡ nguồn tiền "{{object}}"',
+          'asset.value_updated': 'Cập nhật số dư "{{object}}"',
+          'asset.liquidity_changed': 'Đổi nhóm thanh khoản của "{{object}}"',
+          'asset.sold': 'Bán "{{object}}"',
+          'cashflow_event.added': 'Thêm khoản sắp tới "{{object}}"',
+          'cashflow_event.completed': 'Đánh dấu đã xong "{{object}}"',
+          'cashflow_event.cancelled': 'Huỷ khoản "{{object}}"',
+          'cashflow_event.postponed': 'Dời khoản "{{object}}"',
+          'protected_reserve.created': 'Lập quỹ an toàn "{{object}}"',
+          'protected_reserve.updated': 'Đổi quỹ an toàn "{{object}}"',
+          'protected_reserve.archived': 'Đóng quỹ an toàn "{{object}}"',
+          'goal.created': 'Đặt mục tiêu "{{object}}"',
+          'goal.target_changed': 'Đổi mục tiêu "{{object}}"',
+          'record.visibility_changed': 'Đổi mức chia sẻ "{{object}}"',
+          'household.created': 'Tạo không gian chung',
+          'household.deleted': 'Xoá không gian chung',
+          'household.member_joined': 'Tham gia nhà mình',
+          'household.member_removed': 'Gỡ một thành viên',
+          'household.invite_created': 'Gửi lời mời',
+          'household.invite_revoked': 'Thu hồi lời mời',
+          'household.steward_transferred': 'Chuyển quyền quản trị không gian',
+          'snapshot.created': 'Chốt một mốc bức tranh',
+          'debt.corrected': 'Chỉnh lại khoản nợ "{{object}}"',
+        },
+        impact: {
+          visibilityUnchanged: 'Vẫn tính vào tổng',
+          liquid: 'Tiền dùng ngay {{value}}',
+          net_worth: 'Tổng tài sản {{value}}',
+          flexible_money: 'Tiền linh hoạt {{value}}',
+          upcoming_outgoing: 'Khoản phải trả {{value}}',
+          protected_reserve: 'Quỹ an toàn {{value}}',
+        },
+      },
+      assets: {
             eyebrow: 'Tài sản',
             title: 'Tiền đang ở đâu?',
             viewAll: 'Xem tất cả',
@@ -270,6 +320,51 @@ export const resources = {
           },
         },
         footerNote: 'Các số liệu phản ánh toàn bộ dữ liệu nhà mình đã ghi trong Money Space.',
+      },
+      activity: {
+        header: {
+          eyebrow: 'Household',
+          title: 'Journal',
+          description: 'The changes that made the shared picture different.',
+        },
+        empty: 'No changes recorded yet.',
+        object: {
+          folded: 'a shared contribution',
+        },
+        action: {
+          'asset.created': 'Added the money source "{{object}}"',
+          'asset.deleted': 'Removed the money source "{{object}}"',
+          'asset.value_updated': 'Updated the balance of "{{object}}"',
+          'asset.liquidity_changed': 'Changed the liquidity bucket of "{{object}}"',
+          'asset.sold': 'Sold "{{object}}"',
+          'cashflow_event.added': 'Added the upcoming item "{{object}}"',
+          'cashflow_event.completed': 'Marked "{{object}}" done',
+          'cashflow_event.cancelled': 'Cancelled "{{object}}"',
+          'cashflow_event.postponed': 'Postponed "{{object}}"',
+          'protected_reserve.created': 'Set up the safety fund "{{object}}"',
+          'protected_reserve.updated': 'Changed the safety fund "{{object}}"',
+          'protected_reserve.archived': 'Closed the safety fund "{{object}}"',
+          'goal.created': 'Set the goal "{{object}}"',
+          'goal.target_changed': 'Changed the goal "{{object}}"',
+          'record.visibility_changed': 'Changed the sharing level of "{{object}}"',
+          'household.created': 'Created the shared space',
+          'household.deleted': 'Deleted the shared space',
+          'household.member_joined': 'Joined the household',
+          'household.member_removed': 'Removed a member',
+          'household.invite_created': 'Sent an invitation',
+          'household.invite_revoked': 'Revoked an invitation',
+          'household.steward_transferred': 'Handed over household administration',
+          'snapshot.created': 'Saved a snapshot of the picture',
+          'debt.corrected': 'Corrected the debt "{{object}}"',
+        },
+        impact: {
+          visibilityUnchanged: 'Still counted in the total',
+          liquid: 'Ready to use {{value}}',
+          net_worth: 'Total assets {{value}}',
+          flexible_money: 'Flexible money {{value}}',
+          upcoming_outgoing: 'Upcoming payments {{value}}',
+          protected_reserve: 'Safety fund {{value}}',
+        },
       },
       assets: {
         header: {
@@ -2119,6 +2214,11 @@ export const resources = {
   en: {
     translation: {
       common: {
+        relativeDay: {
+          today: 'today',
+          yesterday: 'yesterday',
+          daysAgo: '{{count}} days ago',
+        },
         view: 'View',
         loading: 'Loading...',
         saveChanges: 'Save changes',

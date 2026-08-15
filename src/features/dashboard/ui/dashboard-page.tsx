@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import { useDashboardPage } from '@/features/dashboard/hooks/use-dashboard-page'
+import { useActivity } from '@/features/activity/hooks/use-activity'
 import { ActivityLogSection } from '@/features/dashboard/ui/components/activity-log-section'
 import { AssetsSection } from '@/features/dashboard/ui/components/assets-section'
 import { DashboardSkeleton } from '@/features/dashboard/ui/components/dashboard-skeleton'
@@ -42,6 +43,9 @@ import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-sec
 export function DashboardPage() {
   const { t } = useTranslation()
   const state = useDashboardPage()
+  // The three most recent changes. Its own query so a slow journal never holds
+  // up the picture itself — the section renders its empty state meanwhile.
+  const { entries: recentActivity } = useActivity({ limit: 3 })
 
   if (!state.isReady) {
     return <DashboardSkeleton />
@@ -102,7 +106,7 @@ export function DashboardPage() {
       <MoneySourcesSection rows={sourceRows} totalCash={totalCash} />
 
       {/* No API feeds the log yet — the section renders its empty state. */}
-      <ActivityLogSection entries={[]} />
+      <ActivityLogSection entries={recentActivity} />
     </div>
   )
 }

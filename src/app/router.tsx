@@ -11,6 +11,7 @@ import { NetWorthPage } from '@/features/networth/ui/networth-page'
 import { EventsPage } from '@/features/events/ui/events-page'
 import { UpcomingPage } from '@/features/forecast/ui/upcoming-page'
 import { GoalsPage } from '@/features/goals/ui/goals-page'
+import { ActivityPage } from '@/features/activity/ui/activity-page'
 import { HouseholdPage } from '@/features/household/ui/household-page'
 import { GoalDetailPage } from '@/features/goals/ui/goal-detail-page'
 import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
@@ -70,6 +71,8 @@ export const router = createBrowserRouter([
       { path: 'goals', element: <GoalsPage /> },
       { path: 'goals/:goalId', element: <GoalDetailPage /> },
       { path: 'household', element: <HouseholdPage /> },
+      // Not a nav item — the bar is pinned at five (§14.9). Reached from Home.
+      { path: 'activity', element: <ActivityPage /> },
       // v3.1 redirects (Phase 10): the old routes are gone, not aliased.
       { path: 'payments', element: <Navigate to="/upcoming" replace /> },
       { path: 'members', element: <Navigate to="/household" replace /> },

@@ -47,6 +47,9 @@ export const queryKeys = {
   eventCategories: (householdId: string) =>
     ['households', householdId, 'event-categories'] as const,
   dashboard: (householdId: string) => ['households', householdId, 'dashboard'] as const,
+  /** The household journal. `limit` distinguishes Home's peek from the page. */
+  activity: (householdId: string, limit?: number) =>
+    ['households', householdId, 'activity', limit ?? 'all'] as const,
   attentionItems: (householdId: string) =>
     ['households', householdId, 'attention-items'] as const,
 } as const
