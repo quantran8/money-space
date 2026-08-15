@@ -193,7 +193,7 @@ export const resources = {
           upcomingMetric: 'Sắp trả',
           discussMetric: 'Cần bàn',
           assuranceTitle: 'Theo dữ liệu hiện có, nhà mình đang ổn.',
-          assuranceLine: 'Kết luận này chỉ dùng dữ liệu đang được chia sẻ.',
+          assuranceLine: 'Kết luận này dùng toàn bộ dữ liệu nhà mình đã ghi.',
         },
         metrics: {
           liquid: 'Dùng ngay',
@@ -269,7 +269,7 @@ export const resources = {
             empty: 'Chưa có hoạt động nào gần đây.',
           },
         },
-        footerNote: 'Các số liệu chỉ phản ánh dữ liệu đang được chia sẻ trong Money Space.',
+        footerNote: 'Các số liệu phản ánh toàn bộ dữ liệu nhà mình đã ghi trong Money Space.',
       },
       assets: {
         header: {
@@ -301,7 +301,6 @@ export const resources = {
             source: 'Nguồn',
             owner: 'Người giữ',
             role: 'Vai trò',
-            sharing: 'Chia sẻ',
             updated: 'Cập nhật',
             balance: 'Số dư',
           },
@@ -322,6 +321,9 @@ export const resources = {
           empty: 'Không có tài sản phù hợp.',
         },
         list: {
+          summaryOnly: {
+            title: 'Khoản đóng góp chung',
+          },
           eyebrow: 'Danh sách tài sản',
           title: 'Các khoản đang có',
           autoPriced: 'App tự tính giá',
@@ -356,13 +358,11 @@ export const resources = {
           snapshotCount: '{{count}} lần cập nhật',
         },
         form: {
-          financialNature: 'Đây là tiền của ai?',
           holder: 'Ai đang giữ?',
           holderPlaceholder: 'Chọn thành viên',
           holderNone: 'Chưa xác định',
-          sharing: 'Chia sẻ với nhà',
-          privacyOwner: 'Riêng tư của ai?',
-          privacyOwnerPlaceholder: 'Chọn thành viên',
+          visibility: 'Mức chia sẻ',
+          visibilityHint: 'Ai cũng có thể đổi mức này. Thay đổi sẽ hiện trong Nhật ký.',
           eyebrow: 'Thêm tài sản',
           title: 'Ghi một khoản mới',
           editEyebrow: 'Chỉnh sửa tài sản',
@@ -519,6 +519,11 @@ export const resources = {
             share: 'Tỷ trọng',
             shareNote: 'Trong tổng tài sản',
           },
+          summaryOnly: {
+            title: 'Khoản này đang chỉ đóng góp vào bức tranh chung',
+            body: 'Số tiền vẫn được tính vào tổng và vào dự báo. Đổi sang “Chia sẻ chi tiết” để cả hai cùng thấy nguồn tiền và người giữ — thay đổi sẽ hiện trong Nhật ký.',
+            action: 'Chuyển sang chia sẻ chi tiết',
+          },
           info: {
             eyebrow: 'Thông tin tài sản',
             title: 'Thông tin nắm giữ',
@@ -528,7 +533,6 @@ export const resources = {
             holding: 'Đang giữ',
             quantity: 'Số lượng',
             holder: 'Người phụ trách',
-            sharing: 'Chia sẻ',
             averagePurchasePrice: 'Giá mua trung bình',
             currentUnitPrice: 'Giá hiện tại mỗi đơn vị',
             costBasis: 'Tổng giá vốn',
@@ -941,8 +945,9 @@ export const resources = {
           newDataOnly: 'Chỉ áp dụng cho dữ liệu mới',
           categoryCount: '{{system}} hệ thống · {{custom}} riêng',
           householdData: 'Dữ liệu của nhà mình',
-          privacyTitle: 'Quyền riêng tư',
-          privacyDescription: 'Mỗi nguồn tiền có thể chọn hiện chi tiết, chỉ tính vào tổng hoặc riêng tư.',
+          sharingTitle: 'Mức chia sẻ',
+          sharingDescription:
+            'Mỗi nguồn tiền có thể chia sẻ chi tiết, hoặc chỉ đóng góp vào bức tranh chung. Mọi khoản đều được tính.',
           viewSources: 'Xem nguồn tiền',
         },
         assets: {
@@ -1621,13 +1626,6 @@ export const resources = {
           description:
             'Chọn vai trò và mức thông tin mỗi người có thể xem hoặc cập nhật.',
         },
-        strip: {
-          active: 'Đang tham gia',
-          invited: 'Đã mời',
-          defaultShare: 'Mức chia sẻ mặc định',
-          defaultShareValue: 'Theo nhóm',
-          lastChange: 'Thay đổi gần nhất',
-        },
         list: {
           eyebrow: 'Danh sách thành viên',
           title: '{{active}} đang tham gia · {{invited}} đã mời',
@@ -1688,11 +1686,6 @@ export const resources = {
           save: 'Lưu thay đổi',
           saved: 'Đã lưu cài đặt.',
         },
-        strip: {
-          household: 'Household',
-          rhythm: 'Nhịp cập nhật',
-          sharing: 'Mặc định chia sẻ',
-        },
         household: {
           eyebrow: 'Thông tin chung',
           title: 'Hồ sơ gia đình',
@@ -1705,18 +1698,6 @@ export const resources = {
           languagePlaceholder: 'Chọn ngôn ngữ',
           createdAt: 'Hộ được tạo ngày {{date}}. Đơn vị tiền áp dụng cho toàn bộ số liệu trong không gian này.',
         },
-        privacy: {
-          eyebrow: 'Quyền riêng tư',
-          title: 'Mức chia sẻ mặc định',
-          description:
-            'Áp dụng cho dữ liệu mới. Từng khoản vẫn có thể chỉnh riêng.',
-          assetsTitle: 'Tài sản mới',
-          assetsDescription: 'Người kia thấy theo nhóm, không thấy ghi chú nhạy cảm.',
-          upcomingTitle: 'Khoản sắp tới',
-          upcomingDescription: 'Hiện tên khoản, hạn trả, người phụ trách và trạng thái.',
-          notesTitle: 'Ẩn ghi chú riêng tư khỏi tổng quan',
-          notesDescription: 'Chỉ người tạo ghi chú mới xem được nội dung chi tiết.',
-        },
         reminders: {
           eyebrow: 'Nhắc nhở',
           title: 'Thông báo',
@@ -1724,8 +1705,6 @@ export const resources = {
           upcomingDescription: 'Nhắc trước ngày đến hạn các khoản phải trả.',
           updatesTitle: 'Cập nhật định kỳ',
           updatesDescription: 'Nhắc cả hai cập nhật snapshot theo nhịp đã chọn.',
-          accessTitle: 'Thay đổi quyền truy cập',
-          accessDescription: 'Khi một thành viên đổi vai trò hoặc quyền xem.',
         },
         data: {
           eyebrow: 'Dữ liệu',
@@ -1786,26 +1765,17 @@ export const resources = {
           joint: 'Cả hai cùng quản lý',
           unsure: 'Chưa rõ',
         },
-        // Backend stores 4 visibility levels; MVP UI exposes only 3 (§30).
-        // `grouped` stays here so an existing record still renders a label.
-        sharingLevel: {
-          detail: 'Hiện chi tiết',
-          grouped: 'Theo nhóm',
-          summary_only: 'Chỉ tính vào tổng',
-          private: 'Riêng tư',
+        // Two levels, one axis. Both descriptions say the money is counted —
+        // that reassurance is the point, and it is exactly what was missing
+        // while a level existed that quietly removed money from the total.
+        visibilityLevel: {
+          detail: 'Chia sẻ chi tiết',
+          summary_only: 'Chỉ đóng góp vào bức tranh chung',
         },
-        sharingLevelDescription: {
-          detail: 'Người kia thấy tên và số tiền.',
-          grouped: 'Người kia thấy theo nhóm, không thấy từng khoản.',
+        visibilityLevelDescription: {
+          detail: 'Người kia thấy nguồn tiền, số tiền và ai đang giữ.',
           summary_only:
-            'Khoản này được tính vào bức tranh chung nhưng không hiện chi tiết.',
-          private: 'Người kia không thấy và khoản này không tham gia tính toán chung.',
-        },
-        financialNature: {
-          household: 'Của nhà mình',
-          personal_included: 'Riêng nhưng tính vào chung',
-          managed_for_household: 'Giữ giùm nhà mình',
-          personal_private: 'Riêng, không tính vào chung',
+            'Người kia biết khoản này có và đang được tính vào tổng, nhưng danh sách chung không hiện chi tiết.',
         },
         direction: {
           incoming: 'Tiền vào',
@@ -1848,14 +1818,6 @@ export const resources = {
           weekly: 'Hằng tuần',
           biweekly: 'Hai tuần một lần',
           monthly: 'Hằng tháng',
-        },
-        sharing: {
-          detail: 'Hiện chi tiết',
-          summary_only: 'Chỉ tính vào tổng',
-          private: 'Riêng tư',
-          // Stored but not offered in the MVP picker — kept so a record already
-          // saved as `grouped` renders its label instead of an empty Select.
-          grouped: 'Theo nhóm',
         },
         language: {
           vi: 'Tiếng Việt',
@@ -2369,7 +2331,7 @@ export const resources = {
           upcomingMetric: 'Due soon',
           discussMetric: 'To discuss',
           assuranceTitle: 'Based on current data, your household is doing fine.',
-          assuranceLine: 'This conclusion only uses data currently being shared.',
+          assuranceLine: 'This conclusion uses everything your household has recorded.',
         },
         metrics: {
           liquid: 'Available now',
@@ -2445,7 +2407,7 @@ export const resources = {
             empty: 'No recent activity yet.',
           },
         },
-        footerNote: 'These figures only reflect data currently shared in Money Space.',
+        footerNote: 'These figures reflect everything your household has recorded in Money Space.',
       },
       assets: {
         header: {
@@ -2477,7 +2439,6 @@ export const resources = {
             source: 'Source',
             owner: 'Holder',
             role: 'Role',
-            sharing: 'Sharing',
             updated: 'Updated',
             balance: 'Balance',
           },
@@ -2498,6 +2459,9 @@ export const resources = {
           empty: 'No matching assets.',
         },
         list: {
+          summaryOnly: {
+            title: 'Contributes to the total',
+          },
           eyebrow: 'Asset list',
           title: 'Current holdings',
           autoPriced: 'Auto-priced',
@@ -2532,13 +2496,12 @@ export const resources = {
           snapshotCount: '{{count}} updates',
         },
         form: {
-          financialNature: 'Whose money is this?',
           holder: 'Who holds it?',
           holderPlaceholder: 'Choose a member',
           holderNone: 'Not specified',
-          sharing: 'Share with the household',
-          privacyOwner: 'Whose privacy?',
-          privacyOwnerPlaceholder: 'Choose a member',
+          visibility: 'Sharing level',
+          visibilityHint: 'Anyone can change this. The change appears in the journal.',
+
           eyebrow: 'Add asset',
           title: 'Log a new asset',
           editEyebrow: 'Edit asset',
@@ -2690,6 +2653,11 @@ export const resources = {
             share: 'Allocation',
             shareNote: 'Of total assets',
           },
+          summaryOnly: {
+            title: 'This is set to contribute to the shared picture only',
+            body: 'The amount is still counted in the total and the forecast. Switch to “Share the details” so both of you can see the source and who holds it — the change appears in the journal.',
+            action: 'Switch to sharing the details',
+          },
           info: {
             eyebrow: 'Asset information',
             title: 'Holding information',
@@ -2699,7 +2667,6 @@ export const resources = {
             holding: 'Holding',
             quantity: 'Quantity',
             holder: 'Person responsible',
-            sharing: 'Sharing',
             averagePurchasePrice: 'Average purchase price',
             currentUnitPrice: 'Current price per unit',
             costBasis: 'Total cost basis',
@@ -3111,8 +3078,9 @@ export const resources = {
           newDataOnly: 'Applies to new data only',
           categoryCount: '{{system}} system · {{custom}} custom',
           householdData: 'Household data',
-          privacyTitle: 'Privacy',
-          privacyDescription: 'Each money source can show details, count in totals only, or stay private.',
+          sharingTitle: 'Sharing level',
+          sharingDescription:
+            'Every money source can share its details, or just contribute to the shared picture. Everything is counted.',
           viewSources: 'View money sources',
         },
         assets: {
@@ -3783,13 +3751,6 @@ export const resources = {
           description:
             'Choose each person’s role and how much information they can view or update.',
         },
-        strip: {
-          active: 'Active',
-          invited: 'Invited',
-          defaultShare: 'Default sharing',
-          defaultShareValue: 'By group',
-          lastChange: 'Last change',
-        },
         list: {
           eyebrow: 'Member list',
           title: '{{active}} active · {{invited}} invited',
@@ -3850,11 +3811,6 @@ export const resources = {
           save: 'Save changes',
           saved: 'Settings saved.',
         },
-        strip: {
-          household: 'Household',
-          rhythm: 'Update rhythm',
-          sharing: 'Default sharing',
-        },
         household: {
           eyebrow: 'General information',
           title: 'Household profile',
@@ -3868,18 +3824,6 @@ export const resources = {
           createdAt:
             'This household was created on {{date}}. The selected currency applies to all figures in this space.',
         },
-        privacy: {
-          eyebrow: 'Privacy',
-          title: 'Default sharing level',
-          description:
-            'Applies to new data. You can still adjust individual items later.',
-          assetsTitle: 'New assets',
-          assetsDescription: 'The other person sees them grouped, without sensitive notes.',
-          upcomingTitle: 'Upcoming payments',
-          upcomingDescription: 'Show the name, due date, owner, and status.',
-          notesTitle: 'Hide private notes from the overview',
-          notesDescription: 'Only the note creator can see its full contents.',
-        },
         reminders: {
           eyebrow: 'Reminders',
           title: 'Notifications',
@@ -3887,8 +3831,6 @@ export const resources = {
           upcomingDescription: 'Remind us before due dates for payments that need to be covered.',
           updatesTitle: 'Recurring updates',
           updatesDescription: 'Remind both of us to refresh the snapshot on the chosen rhythm.',
-          accessTitle: 'Access changes',
-          accessDescription: 'When a member’s role or viewing permissions change.',
         },
         data: {
           eyebrow: 'Data',
@@ -3947,24 +3889,14 @@ export const resources = {
           joint: 'We manage it together',
           unsure: 'Not sure yet',
         },
-        sharingLevel: {
-          detail: 'Show details',
-          grouped: 'Grouped',
-          summary_only: 'Count in the total only',
-          private: 'Private',
+        visibilityLevel: {
+          detail: 'Share the details',
+          summary_only: 'Contribute to the shared picture only',
         },
-        sharingLevelDescription: {
-          detail: 'Your partner sees the name and the amount.',
-          grouped: 'Your partner sees it by group, not item by item.',
+        visibilityLevelDescription: {
+          detail: 'Your partner sees the source, the amount and who holds it.',
           summary_only:
-            'This counts toward the shared picture but the details stay hidden.',
-          private: 'Your partner does not see this and it stays out of shared calculations.',
-        },
-        financialNature: {
-          household: 'Ours',
-          personal_included: 'Personal, counted in the shared picture',
-          managed_for_household: 'Held on behalf of the household',
-          personal_private: 'Personal, not counted',
+            'Your partner knows this exists and is counted in the total, but the shared list does not show the details.',
         },
         direction: {
           incoming: 'Money in',
@@ -4007,14 +3939,6 @@ export const resources = {
           weekly: 'Weekly',
           biweekly: 'Every two weeks',
           monthly: 'Monthly',
-        },
-        sharing: {
-          detail: 'Show details',
-          summary_only: 'Count in the total only',
-          private: 'Private',
-          // Stored but not offered in the MVP picker — kept so a record already
-          // saved as `grouped` renders its label instead of an empty Select.
-          grouped: 'Grouped',
         },
         language: {
           vi: 'Tieng Viet',

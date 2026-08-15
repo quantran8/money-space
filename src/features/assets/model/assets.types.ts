@@ -114,11 +114,16 @@ export type Asset = {
   calculationTerm?: CalculationTerm
   currentValue?: number
   valueUpdatedAt?: string
-  /** Classification and sharing fields returned by the v3.1 API. */
-  financialNature?: import('@/features/assets/model/asset-classification').FinancialNature
+  /**
+   * How much of this the shared picture shows.
+   *
+   * Typed as the 2-value union even though a stored record may still carry a
+   * retired level: every read site passes it through `normalizeVisibility`
+   * first, which is the single boundary where 4 values become 2.
+   */
   visibilityLevel?: import('@/features/assets/model/asset-classification').VisibilityLevel
+  /** Who is responsible for the money. Not a privacy field. */
   holderMemberId?: string | null
-  privacyOwnerMemberId?: string | null
 }
 
 /** Price of one `unit` expressed in `quoteCurrency`. */

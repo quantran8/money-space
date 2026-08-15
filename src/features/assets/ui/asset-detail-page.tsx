@@ -10,6 +10,7 @@ import { useAssetsPage } from '@/features/assets/hooks/use-assets-page'
 import { canUpdatePriceManually } from '@/features/assets/model/assets'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
 import { AssetPriceUpdateDialog } from '@/features/assets/ui/components/asset-price-update-dialog'
+import { normalizeVisibility } from '@/features/assets/model/asset-classification'
 import { AssetValueChart } from '@/features/assets/ui/components/asset-value-chart'
 import { SavingWithdrawalPanel } from '@/features/assets/ui/components/saving-withdrawal-panel'
 import { formatDate } from '@/features/debts/model/debts-form'
@@ -191,6 +192,8 @@ export function AssetDetailPage() {
     ? members.find((member) => member.id === asset.holderMemberId)?.name
     : undefined
   const updatedAt = asset.valueUpdatedAt ? formatUpdatedAt(asset.valueUpdatedAt, locale) : null
+  // Folded for everyone, including whoever set it — see `VisibilityLevel`.
+  const isFolded = normalizeVisibility(asset.visibilityLevel) === 'summary_only'
 
   function handlePrimaryUpdate() {
     if (!asset) return
@@ -327,108 +330,126 @@ export function AssetDetailPage() {
         </div>
       </Card>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,.75fr)]">
+      {isFolded ? (
+        /*
+          A folded record has no detail view to show — that is the whole
+          point of the level — but the page is still reachable by deep
+          link, so it says so plainly and offers the one way out: switch
+          the record back to `detail`. Anyone may do that, and it is
+          logged, which is what makes the fold meaningful without a
+          permission behind it.
+        */
         <Card>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <h2 className="section-title text-[16px]">
-              {t(isBalanceAsset ? 'assets.detail.chart.balanceTitle' : 'assets.detail.chart.title')}
-            </h2>
-            <div className="sunk flex h-9 items-center p-1 text-[11px]">
-              {([1, 6, 12] as ChartRange[]).map((range) => (
-                <button
-                  key={range}
-                  type="button"
-                  className={cn(
-                    'h-7 rounded-[7px] px-3 transition-colors',
-                    chartRange === range ? 'bg-panel font-medium text-ink' : 'text-ink2',
-                  )}
-                  onClick={() => setChartRange(range)}
-                >
-                  {t(`assets.detail.chart.range${range}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="sunk mt-6 overflow-hidden p-4 sm:p-5">
-            <AssetValueChart points={filteredHistory} liquidity={asset.liquidity} />
-          </div>
+          <h2 className="section-title text-[16px]">
+            {t('assets.detail.summaryOnly.title')}
+          </h2>
+          <p className="mt-3 max-w-prose text-[13px] leading-6 text-ink2">
+            {t('assets.detail.summaryOnly.body')}
+          </p>
+          <Button className="mt-5 h-10 px-4 text-[13px]" onClick={() => openEdit(asset.id)}>
+            {t('assets.detail.summaryOnly.action')}
+          </Button>
         </Card>
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,.75fr)]">
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <h2 className="section-title text-[16px]">
+                {t(isBalanceAsset ? 'assets.detail.chart.balanceTitle' : 'assets.detail.chart.title')}
+              </h2>
+              <div className="sunk flex h-9 items-center p-1 text-[11px]">
+                {([1, 6, 12] as ChartRange[]).map((range) => (
+                  <button
+                    key={range}
+                    type="button"
+                    className={cn(
+                      'h-7 rounded-[7px] px-3 transition-colors',
+                      chartRange === range ? 'bg-panel font-medium text-ink' : 'text-ink2',
+                    )}
+                    onClick={() => setChartRange(range)}
+                  >
+                    {t(`assets.detail.chart.range${range}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="sunk mt-6 overflow-hidden p-4 sm:p-5">
+              <AssetValueChart points={filteredHistory} liquidity={asset.liquidity} />
+            </div>
+          </Card>
 
-        <Card>
-          <h2 className="section-title text-[16px]">{t('assets.detail.info.title')}</h2>
-          <dl className="mt-6 grid gap-1">
-            {position ? (
-              <>
+          <Card>
+            <h2 className="section-title text-[16px]">{t('assets.detail.info.title')}</h2>
+            <dl className="mt-6 grid gap-1">
+              {position ? (
+                <>
+                  <InfoRow
+                    emphasized
+                    label={t('assets.detail.info.quantity')}
+                    value={`${position.quantity.toLocaleString(locale)} ${position.unit}`}
+                  />
+                  {position.purchasePrice ? (
+                    <InfoRow
+                      label={t('assets.detail.info.averagePurchasePrice')}
+                      value={formatVndShort(position.purchasePrice)}
+                    />
+                  ) : null}
+                </>
+              ) : (
                 <InfoRow
                   emphasized
-                  label={t('assets.detail.info.quantity')}
-                  value={`${position.quantity.toLocaleString(locale)} ${position.unit}`}
+                  label={t('assets.detail.info.type')}
+                  value={t(`options.assetType.${asset.type}`)}
                 />
-                {position.purchasePrice ? (
-                  <InfoRow
-                    label={t('assets.detail.info.averagePurchasePrice')}
-                    value={formatVndShort(position.purchasePrice)}
-                  />
-                ) : null}
-              </>
-            ) : (
+              )}
               <InfoRow
-                emphasized
-                label={t('assets.detail.info.type')}
-                value={t(`options.assetType.${asset.type}`)}
+                label={t('assets.detail.info.holder')}
+                value={holderName ?? t('assets.demo.householdOwner')}
               />
-            )}
-            <InfoRow
-              label={t('assets.detail.info.holder')}
-              value={holderName ?? t('assets.demo.householdOwner')}
-            />
-            <InfoRow
-              label={t('assets.detail.info.sharing')}
-              value={t(`options.sharingLevel.${asset.visibilityLevel ?? 'detail'}`)}
-            />
-            {asset.areaSqm ? (
-              <InfoRow label={t('assets.detail.info.area')} value={`${asset.areaSqm} m²`} />
-            ) : null}
-            {asset.calculationTerm ? (
-              <>
-                <InfoRow
-                  label={t('assets.detail.info.interestRate')}
-                  value={`${asset.calculationTerm.interestRate}%`}
-                />
-                <InfoRow
-                  label={t('assets.detail.info.interestPayment')}
-                  value={t(`options.interestPayment.${asset.calculationTerm.interestPayment}`)}
-                />
-                {asset.calculationTerm.maturityDate ? (
+              {asset.areaSqm ? (
+                <InfoRow label={t('assets.detail.info.area')} value={`${asset.areaSqm} m²`} />
+              ) : null}
+              {asset.calculationTerm ? (
+                <>
                   <InfoRow
-                    label={t('assets.detail.info.maturity')}
-                    value={formatDate(asset.calculationTerm.maturityDate)}
+                    label={t('assets.detail.info.interestRate')}
+                    value={`${asset.calculationTerm.interestRate}%`}
                   />
-                ) : null}
-              </>
-            ) : null}
-            {!isBalanceAsset ? (
-              <InfoRow
-                label={t('assets.detail.info.priceSource')}
-                value={
-                  isAutoPriced
-                    ? t('assets.detail.info.automatic')
-                    : t('assets.detail.info.manual')
-                }
-              />
-            ) : null}
-            {isSold && asset.soldAt ? (
-              <InfoRow label={t('assets.detail.info.soldAt')} value={formatDate(asset.soldAt)} />
-            ) : null}
-            <div className="mt-2 px-4 py-3">
-              <dt className="text-[12px] text-ink2">{t('assets.detail.notes.eyebrow')}</dt>
-              <dd className="mt-2 text-[13px] leading-5 text-ink3">
-                {asset.note || t('common.noNote')}
-              </dd>
-            </div>
-          </dl>
-        </Card>
-      </div>
+                  <InfoRow
+                    label={t('assets.detail.info.interestPayment')}
+                    value={t(`options.interestPayment.${asset.calculationTerm.interestPayment}`)}
+                  />
+                  {asset.calculationTerm.maturityDate ? (
+                    <InfoRow
+                      label={t('assets.detail.info.maturity')}
+                      value={formatDate(asset.calculationTerm.maturityDate)}
+                    />
+                  ) : null}
+                </>
+              ) : null}
+              {!isBalanceAsset ? (
+                <InfoRow
+                  label={t('assets.detail.info.priceSource')}
+                  value={
+                    isAutoPriced
+                      ? t('assets.detail.info.automatic')
+                      : t('assets.detail.info.manual')
+                  }
+                />
+              ) : null}
+              {isSold && asset.soldAt ? (
+                <InfoRow label={t('assets.detail.info.soldAt')} value={formatDate(asset.soldAt)} />
+              ) : null}
+              <div className="mt-2 px-4 py-3">
+                <dt className="text-[12px] text-ink2">{t('assets.detail.notes.eyebrow')}</dt>
+                <dd className="mt-2 text-[13px] leading-5 text-ink3">
+                  {asset.note || t('common.noNote')}
+                </dd>
+              </div>
+            </dl>
+          </Card>
+        </div>
+      )}
 
       {asset.type === 'saving_deposit' &&
       asset.calculationTerm &&

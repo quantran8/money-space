@@ -36,10 +36,6 @@ export function useSettingsPage() {
     language: i18n.resolvedLanguage === 'en' ? 'en' : 'vi',
     reminderPayments: true,
     reminderUpdate: true,
-    reminderAccess: false,
-    shareAssets: 'grouped',
-    shareUpcoming: 'detail',
-    hidePrivateNotes: true,
   }), [household, i18n.resolvedLanguage])
 
   const form = useForm<Settings>({

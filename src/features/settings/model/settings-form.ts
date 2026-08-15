@@ -4,16 +4,20 @@ import { supportedLanguages } from '@/i18n/config'
 import type { AppLanguage } from '@/i18n/config'
 import { localizedRequiredText } from '@/shared/lib/validation'
 
-/**
- * Canonical §30 union — renamed in Phase 11 from `'overview' | 'grouped' |
- * 'detailed'`, which matched nothing on the backend (`detailed` was never a
- * valid value and `private` could not be expressed).
+/*
+ * There is deliberately no household-wide sharing default here any more.
  *
- * Safe to rename outright: these two fields are **not persisted**. The settings
- * save path sends only `currency`, so no stored value can be stranded by the
- * change.
+ * `shareAssets` / `shareUpcoming` / `hidePrivateNotes` were three controls that
+ * never persisted — `updateHouseholdConfig` PATCHes only `currency` — so the
+ * user's choice was silently discarded. In a product whose proposition is "you
+ * decide what to share", a sharing control that lies is the worst bug on offer.
+ *
+ * They were also the wrong shape: a household-scoped default is one partner
+ * setting a policy for both, which is structurally the asymmetry this model
+ * removes at the record level. Sharing is chosen per record, by whoever is
+ * looking at it. `DEFAULT_VISIBILITY_LEVEL` in `asset-classification.ts` is the
+ * only default a new record needs.
  */
-export type SharingLevel = import('@/features/assets/model/asset-classification').VisibilityLevel
 
 export type Settings = {
   householdName: string
@@ -22,14 +26,7 @@ export type Settings = {
   language: AppLanguage
   reminderPayments: boolean
   reminderUpdate: boolean
-  reminderAccess: boolean
-  shareAssets: SharingLevel
-  shareUpcoming: SharingLevel
-  hidePrivateNotes: boolean
 }
-
-/** The MVP picker exposes three of the four stored levels — see §30. */
-export const sharingLevels: SharingLevel[] = ['detail', 'summary_only', 'private']
 
 export function isCurrency(value: string): value is Settings['currency'] {
   return value === 'VND' || value === 'USD' || value === 'EUR'
@@ -47,9 +44,5 @@ export function buildSettingsSchema(t: (key: string, params?: Record<string, unk
     language: z.enum(supportedLanguages),
     reminderPayments: z.boolean(),
     reminderUpdate: z.boolean(),
-    reminderAccess: z.boolean(),
-    shareAssets: z.enum(['summary_only', 'grouped', 'detail', 'private']),
-    shareUpcoming: z.enum(['summary_only', 'grouped', 'detail', 'private']),
-    hidePrivateNotes: z.boolean(),
   })
 }

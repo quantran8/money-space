@@ -9,55 +9,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  FINANCIAL_NATURES,
-  MVP_VISIBILITY_LEVELS,
-  isSelectableVisibility,
-  requiresPrivacyOwner,
-  type VisibilityLevel,
-} from '@/features/assets/model/asset-classification'
+import { VISIBILITY_LEVELS } from '@/features/assets/model/asset-classification'
 import type { AssetForm } from '@/features/assets/model/assets-form'
 import { useMembers } from '@/features/members/hooks/use-members'
 
 /**
- * The §11/§30 classification field group, extracted so the asset dialog and the
- * onboarding "money sources" step render **the same fields** rather than two
- * drifting copies. This is the plan's biggest reuse win for Phase 11.
+ * Who is responsible for a money source, and how much of it the shared picture
+ * shows. Extracted so the asset dialog and the onboarding "money sources" step
+ * render **the same fields** rather than two drifting copies.
+ *
+ * Both fields default to something sensible and neither blocks a save, which is
+ * why the dialog keeps them inside its collapsed disclosure. Promoting the
+ * sharing level to the always-visible part of the form would turn every asset
+ * entry into a disclosure decision — the opposite of the product's posture.
  */
 export function AssetClassificationFields({ form }: { form: UseFormReturn<AssetForm> }) {
   const { t } = useTranslation()
-  const { control, watch } = form
+  const { control } = form
   const { members } = useMembers()
-
-  const visibilityLevel = watch('visibilityLevel')
-
-  // A record stored as `grouped` is valid but not offered in the MVP picker.
-  // Show its label read-only rather than an empty Select.
-  const showsReadOnlyVisibility = !isSelectableVisibility(visibilityLevel)
 
   return (
     <>
-      <Controller
-        control={control}
-        name="financialNature"
-        render={({ field }) => (
-          <EventField label={t('assets.form.financialNature')}>
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger className={eventSelectTriggerClass}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {FINANCIAL_NATURES.map((nature) => (
-                  <SelectItem key={nature} value={nature}>
-                    {t(`options.financialNature.${nature}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </EventField>
-        )}
-      />
-
       <Controller
         control={control}
         name="holderMemberId"
@@ -84,54 +56,41 @@ export function AssetClassificationFields({ form }: { form: UseFormReturn<AssetF
         control={control}
         name="visibilityLevel"
         render={({ field }) => (
-          <EventField label={t('assets.form.sharing')}>
-            {showsReadOnlyVisibility ? (
-              <p className="text-[17px] font-medium">
-                {t(`options.sharing.${field.value as VisibilityLevel}`)}
-              </p>
-            ) : (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className={eventSelectTriggerClass}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {MVP_VISIBILITY_LEVELS.map((level) => (
-                    <SelectItem key={level} value={level}>
-                      {t(`options.sharing.${level}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+          <EventField label={t('assets.form.visibility')}>
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className={eventSelectTriggerClass}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {VISIBILITY_LEVELS.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {t(`options.visibilityLevel.${level}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/*
+              The only copy that explains what the choice means for the other
+              person. Both descriptions say the money is counted either way —
+              that reassurance is the point, and it is what was missing while a
+              level existed that quietly removed money from the shared picture.
+            */}
+            <p className="mt-1.5 text-[13px] leading-5 text-[hsl(var(--muted-foreground))]">
+              {t(`options.visibilityLevelDescription.${field.value}`)}
+            </p>
+            {/*
+              §22.12 is deliberately NOT repeated beside the save button (see
+              the note in form-22.tsx) because it becomes noise once learned.
+              This field is the exception: with no permission system left,
+              "the change appears in the journal" is not a reminder, it IS the
+              accountability mechanism that replaced the permission grant.
+            */}
+            <p className="mt-1 text-[13px] leading-5 text-[hsl(var(--muted-foreground))]">
+              {t('assets.form.visibilityHint')}
+            </p>
           </EventField>
         )}
       />
-
-      {requiresPrivacyOwner(visibilityLevel) ? (
-        <Controller
-          control={control}
-          name="privacyOwnerMemberId"
-          render={({ field, fieldState }) => (
-            <EventField
-              label={t('assets.form.privacyOwner')}
-              error={fieldState.error?.message}
-            >
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className={eventSelectTriggerClass}>
-                  <SelectValue placeholder={t('assets.form.privacyOwnerPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {members.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.name || member.email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </EventField>
-          )}
-        />
-      ) : null}
     </>
   )
 }

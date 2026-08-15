@@ -153,16 +153,12 @@ export function HouseholdReserveCard({ form }: HouseholdReserveCardProps) {
                   render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
                 />
               </ReminderToggle>
-              <ReminderToggle
-                title={t('settings.reminders.accessTitle')}
-                description={t('settings.reminders.accessDescription')}
-              >
-                <Controller
-                  control={control}
-                  name="reminderAccess"
-                  render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
-                />
-              </ReminderToggle>
+              {/*
+                The "access changed" reminder is gone with the permission model
+                it reported on. Nothing grants or revokes access any more, and
+                the sharing level of a record is reported by the journal, not by
+                a reminder toggle that never persisted.
+              */}
             </div>
           </details>
         </div>

@@ -35,7 +35,13 @@ export type CashflowEventStatus =
 
 export type CashflowAttentionLevel = 'normal' | 'important' | 'urgent'
 
-export type CashflowVisibilityLevel = 'summary_only' | 'grouped' | 'detail' | 'private'
+/**
+ * Aliased, not redeclared. Cashflow has no reason to own a parallel union — the
+ * parallel copy is how it kept the retired four values after assets had already
+ * moved to two.
+ */
+export type CashflowVisibilityLevel =
+  import('@/features/assets/model/asset-classification').VisibilityLevel
 
 /** Mirrors the backend's `RecurrenceFrequency`. A one-off is `once`, not `none`. */
 export type CashflowRecurrence = 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
@@ -57,7 +63,6 @@ export type CashflowEvent = {
   attentionLevel: CashflowAttentionLevel
   visibilityLevel: CashflowVisibilityLevel
   ownerMemberId?: string | null
-  privacyOwnerMemberId?: string | null
   debtId?: string | null
   financialGoalId?: string | null
   plannedAssetId?: string | null

@@ -10,7 +10,6 @@ import { useMembersPage } from '@/features/members/hooks/use-members-page'
 import { useSettingsPage } from '@/features/settings/hooks/use-settings-page'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
 import { DataCard } from '@/features/settings/ui/components/data-card'
-import { SharingCard } from '@/features/settings/ui/components/sharing-card'
 import { InviteFormDialog } from '@/features/members/ui/components/invite-form-dialog'
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
 
@@ -90,7 +89,6 @@ export function HouseholdPage() {
 
       {!isSettingsLoading ? <HouseholdReserveCard form={settingsForm} /> : null}
 
-      {!isSettingsLoading ? <SharingCard form={settingsForm} /> : null}
 
       <CategoriesCard />
 
