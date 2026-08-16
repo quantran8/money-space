@@ -17,7 +17,7 @@
 §2.4   Divider bị loại gần như hoàn toàn, kể cả trong bảng.
 §4     Visual language viết lại: register “sổ cái hiện đại”, không phải “consumer minimal”.
 §5     Palette thay hoàn toàn. Ledger (lục ngân hàng) và Archive (đỏ rượu).
-§5.4   Attention amber tách khỏi protected reserve. Protected reserve về neutral.
+§5.4   Attention amber tách khỏi money composition. Composition bar về hai phần.
 §6     Token viết lại theo CSS variable + hai theme class.
 §7     Spacing/radius viết lại: section p-8, radius 14, gap 16.
 §10    Typography: Be Vietnam Pro + IBM Plex Mono thay system font stack.
@@ -41,7 +41,7 @@ App giúp household trả lời 5 câu hỏi:
 1. **Nhà mình đang có bao nhiêu?**
 2. **Tiền đang nằm ở đâu và ai đang phụ trách?**
 3. **Trong thời gian tới có những khoản nào sẽ vào hoặc ra?**
-4. **Sau các nghĩa vụ và quỹ cần bảo vệ, còn bao nhiêu tiền thực sự linh hoạt?**
+4. **Sau các nghĩa vụ đã biết, còn bao nhiêu tiền thực sự linh hoạt?**
 5. **Nếu chi khoản này hôm nay thì mục tiêu chung sẽ thay đổi thế nào?**
 
 Sản phẩm không tập trung vào việc ghi từng khoản thu chi nhỏ hằng ngày.
@@ -348,7 +348,7 @@ Có thể linh hoạt
 Helper chỉ tồn tại vì nó giải thích calculation:
 
 ```txt
-Sau các khoản đã biết trong thời gian tới và quỹ an toàn 40tr đã đặt.
+Sau các khoản đã biết trong thời gian tới.
 ```
 
 Supporting breakdown:
@@ -356,7 +356,6 @@ Supporting breakdown:
 ```txt
 Current liquid
 - required near-term outflow      ← gồm cả kỳ trả nợ sắp tới
-- protected reserve
 + sufficiently certain incoming
 ```
 
@@ -473,7 +472,7 @@ Good:
 
 ```txt
 Chỉ gồm các khoản đã biết.
-Sau các khoản đã biết và quỹ an toàn 40tr đã đặt.
+Sau các khoản đã biết trong thời gian tới.
 2 khoản nên cập nhật.
 Cập nhật 35 ngày trước.
 ```
@@ -558,7 +557,6 @@ Nhật ký chỉ ghi các **financial event** làm bức tranh thay đổi:
 ```txt
 Cập nhật số dư một nguồn tiền
 Thêm / sửa / xoá một khoản sắp tới
-Thay đổi quỹ an toàn
 Tạo / sửa / hoàn thành mục tiêu
 Thêm / thay đổi khoản nợ
 Ghi nhận một kịch bản What-if đã được cả hai xem
@@ -602,7 +600,7 @@ Cấu trúc bắt buộc quanh Flexible Money:
 
 ```txt
 1. Giá trị            54tr
-2. Cách tính          Sau các khoản đã biết và quỹ an toàn 40tr đã đặt.
+2. Cách tính          Sau các khoản đã biết trong thời gian tới.
 3. Phạm vi dữ liệu    Tính từ 5 nguồn · 3 mới trong tuần · 2 cần cập nhật
 4. Hệ quả nếu thiếu   Số trên chưa gồm thay đổi của VCB và tiền mặt.
 5. Action             Cập nhật nhanh
@@ -779,11 +777,12 @@ số tiền vào trong bảng dòng tiền
 
 ```txt
 Đã có nhiệm vụ    --committed    nhạt nhất
-Quỹ cần bảo vệ    --protect      trung
 Linh hoạt         --accent       bão hoà, cần đọc trước
 ```
 
-Quỹ cần bảo vệ ở trạng thái bình thường là **neutral**, không phải amber. Amber được giải phóng hoàn toàn cho `attention`. Nếu dự báo cho thấy quỹ bị chạm, lúc đó đoạn đó mới chuyển amber — và lúc đó nó thực sự cần user phản ứng.
+Composition bar có **hai** phần. Phần giữa — quỹ cần bảo vệ — mất cùng protected reserve; `--protect` vẫn còn nhưng chỉ phục vụ nhóm thanh khoản "Tiết kiệm" của tài sản, một khái niệm khác hẳn.
+
+Amber được giải phóng hoàn toàn cho `attention`. Sau khi bỏ reserve, forecast không còn tầng cảnh báo giữa: số dư dự kiến âm là đỏ, còn lại là neutral. Muốn dựng lại một dải amber thì phải có một mức do household tự khai để so — không tự đặt ngưỡng thay họ.
 
 Nợ không có hue riêng ở bất kỳ surface nào.
 
@@ -1089,7 +1088,7 @@ Weight tối thiểu 400.
 Line-height ≥ 1.4 body, ≥ 1.25 heading.
 tracking âm chỉ áp cho SỐ. Không áp cho chuỗi tiếng Việt.
 Mono uppercase tracking rộng chỉ dùng cho .label ngắn, không dùng cho câu.
-Test case bắt buộc: `Quỹ cần bảo vệ · Chưa đủ · Người phụ trách`
+Test case bắt buộc: `Tiết kiệm · Chưa đủ · Người phụ trách`
 ```
 
 ## 10.4. Money formatting
@@ -1193,7 +1192,6 @@ Bảng dòng tiền BẮT BUỘC có cột “Còn lại” chạy số dư lu�
     className="rounded-l-full bg-[var(--committed)]"
     style={{ flex: committed }}
   />
-  <div className="bg-[var(--protect)]" style={{ flex: protectedReserve }} />
   <div
     className="rounded-r-full bg-[var(--accent)]"
     style={{ flex: flexible }}
@@ -1290,11 +1288,11 @@ Thứ tự và nội dung giữ nguyên từ §9. Dưới đây là đặc tả 
 
 ```txt
 Hàng chip:      ● Nhà mình đang ổn        ● 2 nguồn cần cập nhật
-Cột trái:       .label “Sau nghĩa vụ và quỹ cần bảo vệ”
+Cột trái:       .label “Sau các khoản đã có nhiệm vụ”
                 48,2 · triệu linh hoạt        ← 64px
                 trên tổng 209,7 tr tiền mặt · giá trị ròng 1,81 tỷ
                 SourceCoverageStrip           ← §11.5
-Cột phải:       money composition bar + legend 3 dòng có %
+Cột phải:       money composition bar + legend 2 dòng có %
                 nút Thử một khoản chi
 ```
 
@@ -1310,7 +1308,7 @@ Trên mobile: chip → hero → coverage strip → composition. Không đẩy co
 ```txt
 Cột trái:   .label “Thấp nhất dự kiến”
             36,1 tr                        ← 30px
-            “Vào 24/08, vẫn trên quỹ cần bảo vệ 31,5 tr.”
+            “Vào 24/08, thấp hơn hôm nay 12,4 tr.”
             sunk block chứa đường dòng tiền, 3 mốc mono bên dưới
 Cột phải:   bảng 5 cột: Ngày · Khoản · Ai · Số tiền · Còn lại
             sunk block “Cuối kỳ dự kiến còn linh hoạt”
@@ -1347,7 +1345,7 @@ Cột impact là bắt buộc — nếu một loại thay đổi không mô tả
 
 ## 12.6. Mô phỏng
 
-Modal, không phải section. Nhập: tên khoản chi (trước), số tiền (sau), slider đồng bộ hai chiều. Kết quả 3 ô: linh hoạt còn lại · mục tiêu chậm bao lâu · quỹ cần bảo vệ có bị chạm không. Kết thúc bằng dòng phạm vi dữ liệu: “Tính trên dữ liệu hiện có; 2 nguồn chưa cập nhật.”
+Modal, không phải section. Nhập: tên khoản chi (trước), số tiền (sau), slider đồng bộ hai chiều. Kết quả 2 ô: điểm thấp nhất còn lại · mục tiêu chậm bao lâu. Kết thúc bằng dòng phạm vi dữ liệu: “Tính trên dữ liệu hiện có; 2 nguồn chưa cập nhật.”
 
 Actions: Gửi cho [tên] xem · Lưu thành kịch bản · Xem cách tính. Không verdict.
 
@@ -1494,7 +1492,6 @@ Groups:
 ```txt
 Thành viên
 Cách hai người quản lý tài chính
-Quỹ an toàn
 Sharing defaults
 Update frequency
 ```
@@ -1522,12 +1519,11 @@ Flow:
 2. Chọn cách hai người đang quản lý tiền
 3. Invite partner hoặc skip
 4. Add 2–3 money sources quan trọng
-5. Set protected reserve
-6. Add main incoming
-7. Add 1–3 outgoing gần nhất
-8. Create main goal
-9. Show first financial picture
-10. Prompt What-if nếu user có khoản đang cân nhắc
+5. Add main incoming
+6. Add 1–3 outgoing gần nhất
+7. Create main goal
+8. Show first financial picture
+9. Prompt What-if nếu user có khoản đang cân nhắc
 ```
 
 Không hỏi toàn bộ tài sản ngay. Không hỏi về nợ ở bước đầu — nợ thêm ở bước 7 dưới dạng khoản chi định kỳ, hoặc sau onboarding.
@@ -1722,7 +1718,6 @@ Nhà mình
 Sắp tới
 Dự kiến
 Có thể linh hoạt
-Quỹ an toàn
 Mục tiêu
 Theo tốc độ hiện tại
 Ảnh hưởng
@@ -1777,7 +1772,7 @@ Các khoản đã biết trong 30 ngày tới đều được cover.
 Watch:
 
 ```txt
-Có một thời điểm balance dự kiến xuống gần quỹ an toàn.
+Có một khoản chi lớn sắp tới so với tiền đang có.
 ```
 
 Incomplete:
@@ -1926,11 +1921,11 @@ Không verdict nên mua / không nên mua.
 ```txt
 ● Nhà mình đang ổn                          ● 2 nguồn cần cập nhật
 
-SAU NGHĨA VỤ VÀ QUỸ CẦN BẢO VỆ              ▬▬▬▬▬▬▬  ▬▬  ▬▬▬
+SAU CÁC KHOẢN ĐÃ CÓ NHIỆM VỤ                ▬▬▬▬▬▬▬▬▬  ▬▬▬
 48,2 triệu linh hoạt
-trên tổng 209,7 tr tiền mặt · ròng 1,81 tỷ  Đã có nhiệm vụ  62%  130,0 tr
-                                            Quỹ cần bảo vệ  15%   31,5 tr
-▬▬ ▬▬ ▬▬ ▬▬ ▬▬                              Linh hoạt       23%   48,2 tr
+trên tổng 209,7 tr tiền mặt · ròng 1,81 tỷ  Đã có nhiệm vụ  77%  161,5 tr
+                                            Linh hoạt       23%   48,2 tr
+▬▬ ▬▬ ▬▬ ▬▬ ▬▬
 Tính từ 5 nguồn · 3 mới trong tuần
 · 2 cần cập nhật          Cập nhật nhanh    [ Thử một khoản chi ]
 Số trên chưa gồm thay đổi của
@@ -1942,8 +1937,8 @@ Ba mươi ngày tới                                 13/08 — 12/09 · 4 kho�
 
 THẤP NHẤT DỰ KIẾN        NGÀY   KHOẢN                AI   SỐ TIỀN  CÒN LẠI
 36,1 tr                  24/08  Học phí               ·   −12,1     36,1
-Vào 24/08, vẫn trên      25/08  Lương An  cần xác nhận A   +32,0     68,1
-quỹ cần bảo vệ 31,5 tr.  05/09  Lương Bình            B   +21,5     89,6
+Vào 24/08, thấp hơn      25/08  Lương An  cần xác nhận A   +32,0     68,1
+hôm nay 12,1 tr.         05/09  Lương Bình            B   +21,5     89,6
                          10/09  Trả góp nhà           ·    −8,9     80,7
 [ đường dòng tiền ]
                          ┌ Cuối kỳ dự kiến còn linh hoạt      80,7 tr ┐
@@ -1963,7 +1958,7 @@ Tiền đang ở đâu                                       Xem nguồn tiền
 NƠI GIỮ                    PHỤ TRÁCH  VAI TRÒ         CẬP NHẬT       SỐ DƯ
 Techcombank · thanh toán   An         Chi tiêu chung  hôm nay      36,4 tr
 VPBank · thanh toán        Bình       Chi tiêu chung  hôm nay      18,9 tr
-Sổ tiết kiệm chung         Cả hai     Quỹ cần bảo vệ  đáo hạn 03/12 31,5 tr
+Sổ tiết kiệm chung         Cả hai     Tiết kiệm       đáo hạn 03/12 31,5 tr
 Quỹ mở & ETF               Cả hai     Dài hạn         34 ngày trước 118,7 tr
 Tiền mặt & ví điện tử      Cả hai     Chi tiêu chung  21 ngày trước  4,2 tr
 
@@ -2001,7 +1996,7 @@ TỔNG DƯ NỢ 1,46 TỶ
 <span className="num text-[64px] font-medium leading-[.86] tracking-[-.04em]">48,2</span>
 
 // Nhãn nhỏ
-<p className="label">Sau nghĩa vụ và quỹ cần bảo vệ</p>
+<p className="label">Sau các khoản đã có nhiệm vụ</p>
 
 // Primary CTA
 <button className="h-10 rounded-lg px-5 text-[14px] font-medium"
@@ -2062,7 +2057,7 @@ th:last-child {
 
 ## 22. Form Patterns
 
-Áp cho mọi màn tạo và sửa: mục tiêu, nguồn tiền, khoản sắp tới, khoản nợ, quỹ an toàn.
+Áp cho mọi màn tạo và sửa: mục tiêu, nguồn tiền, khoản sắp tới, khoản nợ.
 
 ## 22.0. Quy tắc điều phối — form không được đọc ra là màn nhập liệu
 
@@ -2208,7 +2203,7 @@ Mọi form tạo/sửa có ảnh hưởng tới dự báo đều phải hiện h
 
 ```txt
 Mục tiêu     khi nào đủ · chậm/sớm bao lâu · cần bao nhiêu mỗi tháng để đúng hẹn
-Khoản chi    thấp nhất trong kỳ đổi thế nào · quỹ an toàn có bị chạm không
+Khoản chi    thấp nhất trong kỳ đổi thế nào
 Nguồn tiền   tiền linh hoạt đổi bao nhiêu
 Nợ           tất toán dự kiến đổi thế nào
 ```
@@ -2303,7 +2298,7 @@ Mọi thao tác lưu đều sinh một entry Nhật ký (§2.14). Form phải n�
 Bình sẽ thấy trong Nhật ký
 ```
 
-Với thay đổi lớn — đổi mục tiêu chính, đổi quỹ an toàn, gỡ nguồn tiền chung — thêm lựa chọn `Gửi cho Bình xem` bên cạnh `Lưu`. Đây là cam kết “không giám sát lén” thể hiện theo chiều ngược lại: người thực hiện chủ động cho người kia biết.
+Với thay đổi lớn — đổi mục tiêu chính, gỡ nguồn tiền chung — thêm lựa chọn `Gửi cho Bình xem` bên cạnh `Lưu`. Đây là cam kết “không giám sát lén” thể hiện theo chiều ngược lại: người thực hiện chủ động cho người kia biết.
 
 ---
 

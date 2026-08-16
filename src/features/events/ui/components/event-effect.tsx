@@ -10,7 +10,6 @@ import {
   type RecordType,
 } from '@/features/events/model/events-form'
 import { useForecast } from '@/features/forecast/hooks/use-forecast'
-import { useReserves } from '@/features/reserves/hooks/use-reserves'
 
 /**
  * §22.7 — the consequence block, updating per keystroke, phrased as a sentence.
@@ -30,7 +29,6 @@ export function EventEffect({
 }) {
   const { t } = useTranslation()
   const { forecast } = useForecast()
-  const { emergencyFund } = useReserves()
 
   const rawAmount = useWatch({ control, name: 'amount' })
   const eventType = useWatch({ control, name: 'eventType' })
@@ -49,7 +47,6 @@ export function EventEffect({
     amount,
     direction,
     lowestProjectedBalance: forecast?.lowestProjectedBalance,
-    reserveAmount: emergencyFund,
     horizonDays: forecast?.horizonDays ?? 30,
     t,
   })

@@ -9,20 +9,44 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
 ## Rules / flow
 
 - **Discriminated form**: visible fields switch on the selected type's valuation mode. Per-mode conditional validation via `.superRefine`:
-  - `manual` → requires `value`.
+  - `manual` → requires `value`. For `cash` / `bank_account` the field is labelled **"Số dư"**, not "Giá trị ước tính": those hold a figure the user reads off an app, not an estimate.
   - `market_priced` → requires `symbol` + `quantity ≥ 0` + `purchasePrice` (original purchase price of 1 unit; see [[asset-valuation]]).
-  - `formula_calculated` → requires `principal` + `interestRate ≥ 0` + `startDate`.
+    - `stock` → `quantity` must be a **whole number** (a share is indivisible). The form drops anything after the decimal mark as it is typed; legacy fractional holdings still fail validation with an explicit message.
+    - `gold` → `unit` is chosen from a fixed list (`chỉ` / `lượng` / `gram`), not typed. Free text produced "chỉ" / "Chi" / "chi vang" for one unit. A stored unit outside the list survives as an extra option when editing.
+  - `formula_calculated` → requires `principal` + `startDate`, plus `interestRate ≥ 0` **unless the asset is an interest-free loan**.
+    - `loan_receivable` → interest is **opt-in** (`AssetForm.hasInterest`, default **off**): money lent to family or a friend usually carries no rate. With the toggle off, no rate or payment-schedule field is shown and the term is stored as `interestRate: 0` + `interestPayment: 'end_of_term'`. Re-opening a stored 0% loan turns the toggle back off.
+    - `loan_receivable` → `startDate` ("Ngày cho vay") is **required**; `maturityDate` ("Ngày đáo hạn") is **optional** — money lent to family often has no agreed due date, so the form must not block on one. Both fields stay in the main form section (not the disclosure) because the due date is what people reach for next. When a due date **is** given it must satisfy `maturityDate ≥ startDate`; a loan saved without one simply has `maturityDate: null` and cannot enter the forecast. Every other formula type also keeps `maturityDate` optional, but behind the disclosure.
 - `toAsset()` converts raw form → typed `Asset`, returning `null` on incomplete inputs. `fromAsset()` does the reverse (seed the form for **edit**).
 - **Edit / create share one form** (frontend-web): the same discriminated `AssetFormDialog`; edit re-seeds via `fromAsset` and PATCHes. Rows have an Edit/Delete actions menu.
+- **Counts towards flexible money**: a switch in the asset form, for **every**
+  type, both directions. It sends `countsAsFlexible` (the ONE liquidity input a
+  client may post); the server derives the bucket with
+  `liquidityForAsset(type, countsAsFlexible)` and stores it in `liquidity`.
+  - `true` → `usable_now` for any type (gold the household would genuinely sell).
+    `false` on cash/bank → `not_immediately_usable` (money held for someone
+    else), never `long_term`. `false` on a type that was never flexible changes
+    nothing.
+  - Defaults to the type's own bucket, and **resets to the new type's default
+    when the type changes** — a decision about cash says nothing about gold.
+  - The form reads the switch back from `asset.liquidity === 'usable_now'`, not
+    from the nullable flag: the bucket already folds in both the default and the
+    override.
+  - **The override is materialized into `liquidity`, never a second rule.** The
+    forecast's starting liquid balance, the dashboard, the bucket totals and
+    snapshots all keep reading that one column, so they cannot disagree — the
+    failure mode the backend's CLAUDE.md warns about. §22.7/§22.8 copy states
+    the consequence (`effectUsable` / `changeFlexibleOn|Off`).
 - **Liquidity summary**: assets are grouped/summed into 3 buckets — "Có thể dùng ngay" (`usable_now`), "Tiết kiệm" (`not_immediately_usable`), "Dài hạn" (`long_term`). `snapshotTotal` = sum of the three (`computeLiquidityTotals` on backend).
-  - **Do not label `not_immediately_usable` "dự phòng" / "reserve".** It used to be
-    "Quỹ cần bảo vệ" / "Protected reserve", which is the name of the household's
-    emergency fund ([[protected-reserves]]) — two unrelated numbers under one
-    word. The bucket is a classification of assets; the fund is a floor on the
-    forecast.
-  - Only `usable_now` feeds `currentSharedLiquidMoney`, so a fund parked in a
-    `saving_deposit` is already outside the spendable pool — see the
-    double-subtraction note in [[protected-reserves]].
+  - **Do not label `not_immediately_usable` "dự phòng" / "reserve".** It used to
+    be "Quỹ cần bảo vệ" / "Protected reserve" — the name the app also gave the
+    household's emergency fund, so two unrelated numbers wore one word. The
+    emergency fund has since been retired entirely, which makes the name free
+    again; do not take it. The bucket is a classification of assets, and calling
+    it "dự phòng" states a household intention that nobody recorded.
+  - Only `usable_now` feeds `currentSharedLiquidMoney`, so money parked in a
+    `saving_deposit` is already outside the spendable pool. Any future "set this
+    aside" feature must ride on that same column rather than subtracting a second
+    time somewhere else — that double subtraction is what sank the reserve.
 - **Delete** = soft-delete (`deletedAt`) + also delete the asset's valuations + unlink the asset from any money events.
 - **Status / lifecycle**: `status` (`active` | `sold` | `closed`, default `active`) + `soldAt`. Distinct from `deletedAt`: a **sold** asset is kept (quantity/value 0) for history, excluded from the liquidity buckets and net worth, but still listed (with a "Đã bán" badge; the list dropdown shows a "Bán" action for sellable, still-active assets). Selling is driven by an `asset_sale` money event — see [[asset-sale]].
 

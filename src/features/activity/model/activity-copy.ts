@@ -17,19 +17,13 @@ export function describeEntry(
 /**
  * The impact column — how the shared picture moved.
  *
- * A visibility change gets its own line rather than a signed amount, and it
- * leads with "still counted": the honest answer for that action is that the
- * picture did not move at all, and saying so is the whole reassurance. Without
- * it the entry reads like money left the household.
+ * Entries without a financial impact do not render an impact label.
  */
 export function describeImpact(
   entry: ActivityEntry,
   t: (key: string, params?: Record<string, unknown>) => string,
   formatSigned: (value: number) => string,
 ): string | null {
-  if (entry.action === 'record.visibility_changed') {
-    return t('activity.impact.visibilityUnchanged')
-  }
   if (!entry.impact) return null
   return t(`activity.impact.${entry.impact.metric}`, {
     value: formatSigned(entry.impact.delta),

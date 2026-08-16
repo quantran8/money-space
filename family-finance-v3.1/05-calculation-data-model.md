@@ -50,7 +50,6 @@ Flexible money:
 
 ```text
 Projected available money
-- Protected reserve
 ```
 
 Home nên dùng conservative logic:
@@ -59,9 +58,12 @@ Home nên dùng conservative logic:
 Flexible money today
 =
 Current liquid money
-- Protected reserve
 - Required outflows before next sufficiently-certain inflow
 ```
+
+Hai công thức này từng trừ thêm protected reserve. Reserve đã được gỡ bỏ, nên
+horizon form chính là `lowest projected balance` — không còn tên thứ hai cho
+cùng một con số.
 
 App phải cho user xem assumptions.
 
@@ -109,9 +111,7 @@ Nếu tiền được lấy trực tiếp từ amount đã dành cho goal:
 Simulation output:
 
 - Obligations covered?
-- Lowest projected balance.
-- Reserve protected?
-- Flexible money before/after.
+- Lowest projected balance before/after.
 - Goal date before/after.
 - Goal delay.
 - Assumptions used.
@@ -123,7 +123,6 @@ Simulation output:
 ## On Track
 
 - Required obligations covered.
-- Reserve protected.
 - Forecast không xuống mức critical.
 
 ## Watch
@@ -132,7 +131,6 @@ Một trong:
 
 - Flexible money thấp.
 - Large payment sắp tới.
-- Forecast gần reserve threshold.
 - Một số critical data chưa confirm.
 
 ## Tight
@@ -141,7 +139,6 @@ Một trong:
 
 - Required payment không được cover.
 - Lowest projected balance âm.
-- Reserve bị chạm đáng kể.
 
 ## Incomplete
 
@@ -230,15 +227,6 @@ Certainty:
 - Confirmed
 - Estimated
 
-## ProtectedReserve
-
-- id
-- household_id
-- name
-- amount
-- updated_at
-- note
-
 ## FinancialGoal
 
 - id
@@ -260,7 +248,6 @@ Certainty:
 - total_liquid
 - upcoming_income_horizon
 - upcoming_outgoing_horizon
-- protected_reserve
 - flexible_money
 - lowest_projected_balance
 - financial_state
@@ -282,5 +269,4 @@ Certainty:
 - goal_delay_days
 - lowest_projected_balance
 - obligations_covered
-- reserve_protected
 - created_at

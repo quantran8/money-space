@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 /**
- * Onboarding is 12 spec steps folded into 10 screens (04 §onboarding).
+ * Onboarding is the spec's steps folded into 9 screens (04 §onboarding).
  *
  * The step is **persisted** alongside the household id so a user who closes the
  * tab mid-setup resumes where they were rather than starting over — the wizard
@@ -13,7 +13,6 @@ export type OnboardingStep =
   | 'financial_mode'
   | 'invite'
   | 'money_sources'
-  | 'reserve'
   | 'recurring_income'
   | 'obligations'
   | 'main_goal'
@@ -25,7 +24,6 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   'financial_mode',
   'invite',
   'money_sources',
-  'reserve',
   'recurring_income',
   'obligations',
   'main_goal',
@@ -76,6 +74,22 @@ export const useAppStore = create<AppState>()(
         activeHouseholdId: state.activeHouseholdId,
         onboardingStep: state.onboardingStep,
       }),
+      /**
+       * Bumped when `'reserve'` was removed from the wizard. A stored step is
+       * read straight back into state, and the TS union is compile-time only —
+       * so a household left mid-setup on the retired step would land on
+       * `indexOf === -1`: an empty screen, a nonsense counter, Back dead, Next
+       * restarting at step 1, and `RequireHousehold` refusing to let them out.
+       * They are moved forward to the step that followed it, keeping progress.
+       */
+      version: 1,
+      migrate: (persisted, version) => {
+        const state = persisted as Partial<AppState> | null
+        if (state && version < 1 && (state.onboardingStep as string) === 'reserve') {
+          return { ...state, onboardingStep: 'recurring_income' } as AppState
+        }
+        return state as AppState
+      },
     },
   ),
 )

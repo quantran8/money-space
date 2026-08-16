@@ -6,6 +6,14 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Panel } from '@/components/ui/panel'
 import { useEventCategories } from '@/features/events/hooks/use-event-categories'
@@ -50,6 +58,14 @@ export function CategoriesCard() {
       toast.success(t('settings.categories.created'))
     } catch (error) {
       toast.error(getErrorMessage(error, t('settings.categories.createError')))
+    }
+  }
+
+  function handleAddOpenChange(open: boolean) {
+    setAddOpen(open)
+    if (!open) {
+      setNewCode('')
+      setNewLabel('')
     }
   }
 
@@ -111,7 +127,7 @@ export function CategoriesCard() {
               custom: categories.filter((category) => !category.isSystem).length,
             })}
           </span>
-          <Button type="button" variant="secondary" size="sm" onClick={() => setAddOpen((open) => !open)}>
+          <Button type="button" variant="secondary" size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="size-3.5" />
             {t('settings.categories.addAction')}
           </Button>
@@ -235,40 +251,50 @@ export function CategoriesCard() {
         })}
       </ul>
 
-      {addOpen ? (
-        <div className="sunk mt-5 space-y-3 p-4">
-        <p className="text-[13px] font-medium text-foreground">
-          {t('settings.categories.addTitle')}
-        </p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Input
-            value={newLabel}
-            onChange={(event) => setNewLabel(event.target.value)}
-            placeholder={t('settings.categories.namePlaceholder')}
-            aria-label={t('settings.categories.nameLabel')}
-          />
-          <Input
-            value={newCode}
-            onChange={(event) => setNewCode(event.target.value)}
-            placeholder={t('settings.categories.codePlaceholder')}
-            aria-label={t('settings.categories.codeLabel')}
-          />
-        </div>
-        <p className="text-[11px] text-ink2">
-          {t('settings.categories.codeHint')}
-        </p>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={handleAdd}
-          disabled={!canAdd || createCategory.isPending}
-        >
-          <Plus className="mr-2 size-4" />
-          {t('settings.categories.addAction')}
-        </Button>
-        </div>
-      ) : null}
+      <Dialog open={addOpen} onOpenChange={handleAddOpenChange}>
+        <DialogContent className="max-w-md gap-5">
+          <DialogHeader>
+            <DialogTitle>{t('settings.categories.addTitle')}</DialogTitle>
+            <DialogDescription>{t('settings.categories.codeHint')}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <label className="block">
+              <span className="label">{t('settings.categories.nameLabel')}</span>
+              <Input
+                value={newLabel}
+                onChange={(event) => setNewLabel(event.target.value)}
+                placeholder={t('settings.categories.namePlaceholder')}
+                className="mt-2"
+                autoFocus
+              />
+            </label>
+            <label className="block">
+              <span className="label">{t('settings.categories.codeLabel')}</span>
+              <Input
+                value={newCode}
+                onChange={(event) => setNewCode(event.target.value)}
+                placeholder={t('settings.categories.codePlaceholder')}
+                className="mt-2"
+              />
+            </label>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => handleAddOpenChange(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAdd}
+              disabled={!canAdd || createCategory.isPending}
+            >
+              <Plus className="size-4" />
+              {t('settings.categories.addAction')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmDialog
         open={deleteTarget !== null}

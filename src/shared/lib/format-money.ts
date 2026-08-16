@@ -115,6 +115,24 @@ export function formatVndScale(value: number, currency: DisplayCurrency = displa
 }
 
 /**
+ * The same scale as `formatVndScale`, split into number and unit.
+ *
+ * The v11 hero sets the figure at 64px and its unit at 28px, so the two need to
+ * be separate elements — but the split must not become a second money formatter
+ * that can drift from `formatVndScale`. It is derived from that function's own
+ * output instead, which is why an unsplittable form (whole đồng, or a foreign
+ * display currency) simply comes back with no unit.
+ */
+export function splitVndScale(
+  value: number,
+  currency: DisplayCurrency = displayCurrency,
+): { amount: string; unit?: string } {
+  const text = formatVndScale(value, currency)
+  const match = text.match(/^(.*) (tỷ|tr|triệu)$/)
+  return match ? { amount: match[1], unit: match[2] } : { amount: text }
+}
+
+/**
  * A money value for use INSIDE a table cell (design.md §10.4).
  *
  * The spec is explicit: *"Trong bảng: bỏ đơn vị ở từng ô, ghi ở header hoặc chú

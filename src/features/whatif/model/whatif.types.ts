@@ -14,7 +14,13 @@
 import type { CalculationAssumption } from '@/features/forecast/model/forecast.types'
 import type { GoalProjection } from '@/features/goals/model/goal-projection.types'
 
-export type WhatIfResultType = 'comfortable' | 'watch' | 'tight' | 'not_covered'
+/**
+ * `watch` is gone with the protected reserve: it fired only when the low point
+ * stayed positive but dipped under the reserve, and that condition no longer
+ * exists. Reviving it would mean inventing a threshold the household never gave
+ * us.
+ */
+export type WhatIfResultType = 'comfortable' | 'tight' | 'not_covered'
 
 export type WhatIfRequest = {
   /** Must be positive. */
@@ -34,11 +40,10 @@ export type WhatIfRequest = {
 
 export type WhatIfSideResult = {
   flexibleMoneyToday: number
-  flexibleMoneyHorizon: number
+  /** The horizon figure — what the household can spend without going negative. */
   lowestProjectedBalance: number
   lowestProjectedBalanceDate: string
   obligationsCovered: boolean
-  reserveProtected: boolean
   goal: GoalProjection | null
 }
 
@@ -48,12 +53,10 @@ export type WhatIfResult = {
   horizonDays: number
   input: WhatIfRequest
   obligationsCovered: boolean
-  reserveProtected: boolean
   before: WhatIfSideResult
   after: WhatIfSideResult
   delta: {
     flexibleMoneyToday: number
-    flexibleMoneyHorizon: number
     lowestProjectedBalance: number
     goalDelayMonths: number | null
     goalDelayDays: number | null
@@ -66,7 +69,6 @@ export type WhatIfResult = {
 /** Calm tone mapping. `not_covered` is the only one that earns red. */
 export const RESULT_TYPE_CLASS: Record<WhatIfResultType, string> = {
   comfortable: 'text-accent',
-  watch: 'text-ink2',
   tight: 'text-attention',
   not_covered: 'text-alert',
 }

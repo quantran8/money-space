@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Panel, PanelHeader, TotalRow } from '@/components/ui/panel'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import type {
   ForecastDay,
@@ -20,13 +20,11 @@ import {
   occurrenceMarkers,
   runningBalancesForDay,
 } from '@/features/forecast/model/forecast-presentation'
-import { formatVndCell, formatVndCellSigned, formatVndScale } from '@/shared/lib/format-money'
+import { formatVndCell, formatVndCellSigned } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
 type ForecastTimelineProps = {
   days: ForecastDay[]
-  protectedReserveAmount: number
-  endingProjectedBalance: number
   ownerNameByEventId?: Record<string, string | undefined>
   isLoading?: boolean
   isEmpty?: boolean
@@ -45,8 +43,6 @@ type TimelineRow = {
 
 export function ForecastTimeline({
   days,
-  protectedReserveAmount,
-  endingProjectedBalance,
   ownerNameByEventId = {},
   isLoading = false,
   isEmpty = false,
@@ -115,7 +111,6 @@ export function ForecastTimeline({
             key={occurrence.occurrenceKey}
             occurrence={occurrence}
             runningBalance={runningBalance}
-            protectedReserveAmount={protectedReserveAmount}
             ownerName={ownerNameByEventId[occurrence.sourceEventId]}
             onComplete={onComplete}
             onEdit={onEdit}
@@ -123,11 +118,6 @@ export function ForecastTimeline({
           />
         ))}
       </div>
-
-      <TotalRow
-        label={t('upcoming.timeline.ending')}
-        value={formatVndScale(endingProjectedBalance)}
-      />
     </Panel>
   )
 }
@@ -135,7 +125,6 @@ export function ForecastTimeline({
 function OccurrenceRow({
   occurrence,
   runningBalance,
-  protectedReserveAmount,
   ownerName,
   onComplete,
   onEdit,
@@ -143,7 +132,6 @@ function OccurrenceRow({
 }: {
   occurrence: ForecastOccurrence
   runningBalance?: number
-  protectedReserveAmount: number
   ownerName?: string
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
   onEdit?: (sourceEventId: string) => void
@@ -151,7 +139,7 @@ function OccurrenceRow({
 }) {
   const { t } = useTranslation()
   const isIncoming = occurrence.direction === 'incoming'
-  const tone = balanceTone(runningBalance ?? 0, protectedReserveAmount)
+  const tone = balanceTone(runningBalance ?? 0)
   const markers = occurrenceMarkers(occurrence).filter(
     (marker) => marker !== 'confirmed' && marker !== 'required',
   )

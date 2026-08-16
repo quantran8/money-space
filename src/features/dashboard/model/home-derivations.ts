@@ -9,10 +9,12 @@
  * NEGATIVE and are never clamped (forecast.types.ts). A negative number is the
  * signal the product exists to show.
  */
-import type { CoverageSource, CoverageState } from '@/components/ui/source-coverage-strip'
 import type { CompositionSegment } from '@/components/ui/money-composition-bar'
+import type { SourceFreshnessRow } from '@/components/ui/source-freshness-list'
 import type { Asset } from '@/features/assets/model/assets.types'
 import type { DebtItem } from '@/features/debts/model/debts.types'
+import type { GoalItem } from '@/features/goals/model/goals.types'
+import { goalAmount } from '@/features/goals/model/goals-form'
 import type { DataFreshnessResult, FreshnessItem } from '@/features/freshness/model/freshness.types'
 import type {
   ForecastOccurrence,
@@ -29,26 +31,37 @@ export type MoneyComposition = {
 }
 
 /**
- * Split current liquid money into committed → protected → flexible (§5.4).
+ * Split current liquid money into committed → flexible (§5.4).
  *
- * "Committed" is derived, not reported: it is whatever liquid money is neither
- * protected nor flexible, i.e. the near-term obligations already spoken for.
- * Deriving it keeps the three parts summing to the total by construction, so
- * the bar can never show a misleading gap.
+ * "Committed" is derived, not reported: it is whatever liquid money is not
+ * flexible, i.e. the near-term obligations already spoken for. Deriving it keeps
+ * the two parts summing to the total by construction, so the bar can never show
+ * a misleading gap.
  */
 export function buildMoneyComposition(
   flexibleMoney: FlexibleMoneyResult,
-  labels: { committed: string; protect: string; flexible: string },
+  labels: { committed: string; flexible: string },
 ): MoneyComposition {
   const totalLiquid = flexibleMoney.currentSharedLiquidMoney
-  const protectedReserve = Math.max(flexibleMoney.protectedReserveAmount, 0)
-  const flexible = flexibleMoney.flexibleMoneyHorizon
+  const flexible = flexibleMoney.lowestProjectedBalance
 
   // Never let a negative flexible figure inflate the committed slice.
-  const committed = Math.max(totalLiquid - protectedReserve - Math.max(flexible, 0), 0)
+  const committed = Math.max(totalLiquid - Math.max(flexible, 0), 0)
 
   const percent = (value: number) =>
     totalLiquid > 0 ? Math.round((Math.max(value, 0) / totalLiquid) * 100) : 0
+
+  /**
+   * A share that rounds to 0% or 100% must not READ as none or all — a
+   * household whose obligations are 0,17% of its money still has obligations,
+   * and rounding them away is the one direction this figure must not err in.
+   */
+  const percentLabel = (value: number) => {
+    const share = totalLiquid > 0 ? (Math.max(value, 0) / totalLiquid) * 100 : 0
+    if (share > 0 && share < 1) return '<1%'
+    if (share > 99 && share < 100) return '>99%'
+    return `${Math.round(share)}%`
+  }
 
   return {
     totalLiquid,
@@ -58,20 +71,15 @@ export function buildMoneyComposition(
         label: labels.committed,
         amount: committed,
         percent: percent(committed),
+        percentLabel: percentLabel(committed),
         tone: 'committed',
-      },
-      {
-        key: 'protect',
-        label: labels.protect,
-        amount: protectedReserve,
-        percent: percent(protectedReserve),
-        tone: 'protect',
       },
       {
         key: 'flexible',
         label: labels.flexible,
         amount: flexible,
         percent: percent(flexible),
+        percentLabel: percentLabel(flexible),
         tone: 'flexible',
       },
     ],
@@ -81,46 +89,65 @@ export function buildMoneyComposition(
 // --- §11.5 / §2.15 coverage --------------------------------------------------
 
 export type CoverageSummary = {
-  sources: CoverageSource[]
+  /** Oldest first, capped — the rest live on the Tài sản page. */
+  rows: SourceFreshnessRow[]
+  /** Sources feeding the hero, INCLUDING the ones past the cap. */
   total: number
-  freshCount: number
   staleCount: number
   hasStale: boolean
-  /** Names of the stale sources, for the "chưa gồm …" caveat. Max 2 + overflow. */
-  staleNames: string[]
+  /** Ids the "Cập nhật nhanh" action confirms as unchanged. All of them, not just the shown rows. */
+  staleIds: string[]
   oldestDays: number | null
 }
 
-const COVERAGE_STATE: Record<FreshnessItem['state'], CoverageState> = {
-  fresh: 'fresh',
-  // Aging has not crossed the household's own threshold, so it still counts as
-  // covered — flagging it would cry wolf on data the household considers current.
-  aging: 'fresh',
-  stale: 'stale',
-  unknown: 'never',
+/** Aging has not crossed the household's own threshold, so it still counts as covered. */
+function isStale(state: FreshnessItem['state']): boolean {
+  return state === 'stale' || state === 'unknown'
 }
 
 /**
- * One strip segment per money source, in the source list's own order — never
- * sorted by state, so the strip stays positionally stable between visits
- * (§11.5).
+ * The v11 coverage block: the money sources the hero is computed FROM, named and
+ * counted (§11.5, §2.15).
+ *
+ * Three deliberate narrowings from the v4.0 strip:
+ *  - **`usable_now` only, and nothing else.** This is the exact set the forecast
+ *    sums into its starting balance, so the block can name the sources AND show
+ *    what each contributes. It is not "cash": the household decides per asset
+ *    whether it counts (`countsAsFlexible` → the stored `liquidity` bucket), so
+ *    a bank account they set aside drops out of this list and a gold bar they
+ *    would sell appears in it. Filtering by type here — or by "not long-term",
+ *    which is what this did before — would quietly contradict that decision.
+ *  - **Amounts, not just names.** Each row's value comes from the same
+ *    `computeCurrentValue` the forecast sums, so the rows add up to the total
+ *    stated above them — which is what makes that number openable rather than
+ *    asserted.
+ *  - **Oldest first, capped at 4.** Sorting by age is what makes the block
+ *    actionable; past four rows it stops being a caveat and becomes the Tài sản
+ *    page, so the overflow links there instead of expanding in place.
  */
-export function buildCoverage(freshness: DataFreshnessResult): CoverageSummary {
-  const sources = freshness.items.map((item) => ({
-    id: item.assetId,
-    state: COVERAGE_STATE[item.state],
-  }))
+export function buildCoverage(freshness: DataFreshnessResult, limit = 4): CoverageSummary {
+  const counted = freshness.items.filter((item) => item.liquidity === 'usable_now')
 
-  const staleItems = freshness.items.filter((item) => COVERAGE_STATE[item.state] !== 'fresh')
+  const rows = counted
+    .map((item) => ({
+      id: item.assetId,
+      name: item.name,
+      value: item.currentValue,
+      days: item.daysSinceUpdate,
+      isStale: isStale(item.state),
+    }))
+    // Never-updated sources (null) are the oldest thing there is, so they lead.
+    .sort((a, b) => (b.days ?? Number.MAX_SAFE_INTEGER) - (a.days ?? Number.MAX_SAFE_INTEGER))
+
+  const staleIds = rows.filter((row) => row.isStale).map((row) => row.id)
 
   return {
-    sources,
-    total: freshness.items.length,
-    freshCount: sources.filter((source) => source.state === 'fresh').length,
-    staleCount: staleItems.length,
-    hasStale: staleItems.length > 0,
-    staleNames: staleItems.map((item) => item.name),
-    oldestDays: freshness.oldestDaysSinceUpdate,
+    rows: rows.slice(0, limit),
+    total: rows.length,
+    staleCount: staleIds.length,
+    hasStale: staleIds.length > 0,
+    staleIds,
+    oldestDays: rows[0]?.days ?? null,
   }
 }
 
@@ -153,7 +180,7 @@ export type TimelineRow = {
  */
 export function buildTimelineRows(
   forecast: ForecastResult,
-  limit = 4,
+  limit = 5,
 ): { rows: TimelineRow[]; totalCount: number } {
   let balance = forecast.startingLiquidBalance
 
@@ -184,29 +211,124 @@ function isUnconfirmed(occurrence: ForecastOccurrence): boolean {
   )
 }
 
+export type DeltaPoint = {
+  /** Position on the axis. Dates repeat (day 0 anchors on today), indices do not. */
+  index: number
+  date: string
+  /** Closing balance MINUS today's balance, in VND. Negative = lower than today. */
+  delta: number
+}
+
 /**
- * Sparkline points for the cash-flow line (§12.2). Closing balance per day —
- * a single series, because the household only needs to see the low point
- * (§2.8).
+ * The thirty-day line, drawn as CHANGE SINCE TODAY rather than as a balance
+ * (§12.2, §2.8).
+ *
+ * Plotting the balance itself gives a flat line pinned near the household's
+ * total, where a month of real movement is a rounding error — and it makes the
+ * chart's readability a function of how much money the household happens to
+ * have. Plotting the delta puts the zero line at today, so the shape is the
+ * same question every household is actually asking: does this month dip, and
+ * how far.
+ *
+ * The series is anchored with an explicit zero point at `asOfDate`, so the line
+ * starts on the baseline instead of starting at day 0's closing balance and
+ * leaving the reader to infer where "today" was.
  */
-export function buildBalanceLine(forecast: ForecastResult): {
-  points: { x: number; y: number }[]
+export function buildDeltaSeries(forecast: ForecastResult): {
+  points: DeltaPoint[]
+  /** Index into `points` of the low point, or -1. */
   lowestIndex: number
 } {
-  const balances = forecast.days.map((day) => day.closingBalance)
-  if (balances.length === 0) return { points: [], lowestIndex: -1 }
+  if (forecast.days.length === 0) return { points: [], lowestIndex: -1 }
 
-  const min = Math.min(...balances)
-  const max = Math.max(...balances)
-  const span = max - min || 1
+  const start = forecast.startingLiquidBalance
 
-  const points = balances.map((balance, index) => ({
-    x: balances.length > 1 ? (index / (balances.length - 1)) * 100 : 0,
-    // SVG y grows downward; invert so a higher balance sits higher.
-    y: 100 - ((balance - min) / span) * 100,
-  }))
+  const points: DeltaPoint[] = [
+    { index: 0, date: forecast.asOfDate, delta: 0 },
+    ...forecast.days.map((day, index) => ({
+      index: index + 1,
+      date: day.date,
+      delta: day.closingBalance - start,
+    })),
+  ]
 
-  return { points, lowestIndex: balances.indexOf(min) }
+  const lowest = points.reduce(
+    (low, point) => (point.delta < points[low].delta ? point.index : low),
+    0,
+  )
+
+  // A month that never dips below today has no low point worth marking.
+  return { points, lowestIndex: points[lowest].delta < 0 ? lowest : -1 }
+}
+
+// --- §12.3 goals -------------------------------------------------------------
+
+export type GoalTrack = {
+  id: string
+  name: string
+  current: number
+  target: number
+  /** 0–100, clamped. */
+  percent: number
+  /**
+   * Where progress must stand TODAY for the goal to land on its target date at
+   * the declared monthly contribution. Undefined when that cannot be derived.
+   */
+  requiredPercent?: number
+  /** The household's first goal — the one Home used to show on its own. */
+  isMain: boolean
+  /** Far enough behind the milestone to be worth a colour (§5.2). */
+  behind: boolean
+}
+
+/** Behind by less than this reads as normal month-to-month drift, not a signal. */
+const BEHIND_THRESHOLD_POINTS = 10
+
+/**
+ * Goal tracks with the "where we need to be today" milestone (§12.3).
+ *
+ * The milestone is derived ONLY from figures the household itself declared: the
+ * target, the target date, and the monthly contribution they set. Required today
+ * = target − (contribution × months left). Without a declared contribution or a
+ * target date there is no honest milestone, so the track simply has none —
+ * inferring a pace from past behaviour would present a guess as a fact (§2.16,
+ * goal-projection.types.ts).
+ *
+ * This replaces the single-goal block: one goal answered "how is that one
+ * going", but the household's real question at this altitude is which goal is
+ * off pace, and that only reads as a comparison.
+ */
+export function buildGoalTracks(goals: GoalItem[], limit = 3): GoalTrack[] {
+  return goals.slice(0, limit).map((goal, index) => {
+    const current = goalAmount(goal.currentAmount)
+    const target = goalAmount(goal.targetAmount)
+    const percent = target > 0 ? clampPercent((current / target) * 100) : 0
+
+    const projection = goal.projection
+    const monthly = projection?.plannedMonthlyContribution ?? goal.plannedMonthlyContribution ?? 0
+    const monthsLeft = projection?.monthsUntilTargetDate ?? null
+
+    const requiredPercent =
+      target > 0 && monthly > 0 && monthsLeft !== null && monthsLeft >= 0
+        ? clampPercent(((target - monthly * monthsLeft) / target) * 100)
+        : undefined
+
+    return {
+      id: goal.id,
+      name: goal.name,
+      current,
+      target,
+      percent,
+      requiredPercent,
+      isMain: index === 0,
+      behind:
+        requiredPercent !== undefined && percent < requiredPercent - BEHIND_THRESHOLD_POINTS,
+    }
+  })
+}
+
+function clampPercent(value: number): number {
+  return Math.min(100, Math.max(0, Math.round(value)))
 }
 
 // --- §9.1 assets | debts -----------------------------------------------------
@@ -345,55 +467,113 @@ export function buildDebtRows(
 
 // --- §12.4 money location ----------------------------------------------------
 
-export type MoneyLocationRow = {
+/**
+ * The split is "counted towards money we can use today" vs "held" — the same
+ * line §12.1 draws, so a source the household set aside cannot appear as cash
+ * here while being absent from the block that explains the hero. It is NOT a
+ * split by asset type: `usable_now` is the household's own decision per asset
+ * (see `countsAsFlexible` in features/assets).
+ */
+export type MoneyLocationGroupKey = 'usable_now' | 'held'
+
+export type MoneyLocationBar = {
   id: string
   name: string
-  /** Undefined until the API exposes a holder — the column renders empty. */
-  holder?: string
-  role: Asset['liquidity']
-  valueUpdatedAt?: string
-  daysSinceUpdate: number | null
-  isStale: boolean
   value: number
+  group: MoneyLocationGroupKey
+  /** Who is RESPONSIBLE for the source — never who spent from it (§0.2, §16.4). */
+  holder?: string
 }
 
-/**
- * Money-location rows, richest source first.
- *
- * The `Cập nhật` column is joined from the freshness result rather than read
- * off the asset, because staleness is defined by the household's own update
- * frequency — the same 20-day-old value is fine for one household and stale for
- * another.
- */
-export function buildMoneyLocationRows(
-  assets: Asset[],
-  freshness?: DataFreshnessResult,
-  limit = 5,
-): { rows: MoneyLocationRow[]; totalCash: number; totalCount: number } {
-  const freshnessById = new Map(freshness?.items.map((item) => [item.assetId, item]) ?? [])
+export type MoneyLocationGroup = {
+  key: MoneyLocationGroupKey
+  value: number
+  count: number
+}
 
+export type MoneyLocationMap = {
+  /** Counted first, held second — bars read top to bottom by usefulness today. */
+  groups: MoneyLocationGroup[]
+  /** The bars actually drawn: counted descending, then held descending. */
+  bars: MoneyLocationBar[]
+  total: number
+  /** Sources counted towards money usable today — the §12.1 figure. */
+  totalUsable: number
+  totalHeld: number
+  totalCount: number
+  /** Sources beyond the row cap. They live on the Tài sản page. */
+  hiddenCount: number
+}
+
+/** Past this many rows the section stops being a glance and becomes a page. */
+const MAX_BARS = 6
+
+/**
+ * `Tiền đang ở đâu` as ranked horizontal bars (§12.4).
+ *
+ * Bar length is the same proportional encoding an area map gives, so
+ * CONCENTRATION still reads at a glance — but every source keeps a full row, so
+ * its name and amount stay legible however small its share is. That is what an
+ * area map cannot do: below a couple of percent a cell has no room for its own
+ * label, which is exactly the case a household with one main account hits.
+ *
+ * The counted sources sort first and the held ones second, each descending, so
+ * liquidity is never inferred from a fill alone — the reader can stop at the
+ * first block and have the whole answer about money usable today. That claim
+ * only holds because the first group is exactly the `usable_now` set §12.1
+ * names; grouping by type (as "cash vs long-term" did) put a savings book the
+ * forecast never counts in the same block as the current account.
+ *
+ * Only positive values are drawn: a zero-value source has no length, and a
+ * negative one is not a place money is being held.
+ */
+export function buildMoneyLocationMap(
+  assets: Asset[],
+  holderNameById?: Map<string, string>,
+): MoneyLocationMap {
   const active = assets.filter((asset) => !asset.status || asset.status === 'active')
 
-  const rows = active
-    .map((asset) => {
-      const item = freshnessById.get(asset.id)
-      return {
-        id: asset.id,
-        name: asset.name,
-        role: asset.liquidity,
-        valueUpdatedAt: asset.valueUpdatedAt,
-        daysSinceUpdate: item?.daysSinceUpdate ?? null,
-        isStale: item ? item.state === 'stale' || item.state === 'unknown' : false,
-        value: asset.currentValue ?? 0,
-      }
-    })
+  const leaves = active
+    .map((asset) => ({
+      id: asset.id,
+      name: asset.name,
+      value: asset.currentValue ?? 0,
+      group: (asset.liquidity === 'usable_now' ? 'usable_now' : 'held') as MoneyLocationGroupKey,
+      holder: asset.holderMemberId
+        ? holderNameById?.get(asset.holderMemberId)
+        : undefined,
+    }))
+    .filter((leaf) => leaf.value > 0)
     .sort((a, b) => b.value - a.value)
 
-  // "Tổng tiền mặt" is liquid money only — long-term holdings are not cash and
-  // must not inflate this line (§12.4).
-  const totalCash = active
-    .filter((asset) => asset.liquidity !== 'long_term')
-    .reduce((sum, asset) => sum + (asset.currentValue ?? 0), 0)
+  const ordered = (['usable_now', 'held'] as const).flatMap((key) =>
+    leaves.filter((leaf) => leaf.group === key),
+  )
 
-  return { rows: rows.slice(0, limit), totalCash, totalCount: rows.length }
+  const groups: MoneyLocationGroup[] = (['usable_now', 'held'] as const)
+    .map((key) => {
+      const children = leaves.filter((leaf) => leaf.group === key)
+      return {
+        key,
+        value: children.reduce((sum, leaf) => sum + leaf.value, 0),
+        count: children.length,
+      }
+    })
+    .filter((group) => group.count > 0)
+
+  const totalUsable = groups.find((group) => group.key === 'usable_now')?.value ?? 0
+  const totalHeld = groups.find((group) => group.key === 'held')?.value ?? 0
+
+  return {
+    groups,
+    // Truncating by rank keeps the largest sources, which is what the totals
+    // beside the bars are made of — the group totals above always cover ALL
+    // sources, drawn or not, so the two never disagree.
+    bars: ordered.slice(0, MAX_BARS),
+    total: totalUsable + totalHeld,
+    totalUsable,
+    totalHeld,
+    totalCount: leaves.length,
+    hiddenCount: Math.max(ordered.length - MAX_BARS, 0),
+  }
 }

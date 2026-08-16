@@ -20,7 +20,6 @@ import {
   useFlexibleMoney,
 } from '@/features/forecast/hooks/use-forecast'
 import { useGoals } from '@/features/goals/hooks/use-goals'
-import { useReserves } from '@/features/reserves/hooks/use-reserves'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { parseRawMoney } from '@/shared/lib/number-format'
 
@@ -32,39 +31,7 @@ import { parseRawMoney } from '@/shared/lib/number-format'
  * implementation of them.
  */
 
-/** Step 5 — the household's emergency fund, a floor on the forecast (§19C). */
-export function ReserveStep() {
-  const { t } = useTranslation()
-  const { setEmergencyFund } = useReserves()
-  const [amount, setAmount] = useState('')
-
-  const value = parseRawMoney(amount)
-
-  return (
-    <>
-      <EventField label={t('reserve.form.amount')} htmlFor="onboarding-reserve">
-        <EventMoneyInput
-          id="onboarding-reserve"
-          value={amount}
-          onChange={setAmount}
-          placeholder="0"
-        />
-      </EventField>
-      <p className="text-sm leading-6 text-ink2">
-        {t('reserve.description')}
-      </p>
-      <SaveHint
-        canSave={Number.isFinite(value) && value > 0}
-        isSaving={setEmergencyFund.isPending}
-        onSave={async () => {
-          await setEmergencyFund.mutateAsync(value)
-        }}
-      />
-    </>
-  )
-}
-
-/** Steps 6 and 7 — recurring income, then obligations. Both are cashflow events. */
+/** Steps 5 and 6 — recurring income, then obligations. Both are cashflow events. */
 export function CashflowStep({ direction }: { direction: 'incoming' | 'outgoing' }) {
   const { t } = useTranslation()
   const { createCashflowEvent } = useCashflowEvents()
@@ -143,7 +110,7 @@ export function CashflowStep({ direction }: { direction: 'incoming' | 'outgoing'
   )
 }
 
-/** Step 8 — the household's main goal. */
+/** Step 7 — the household's main goal. */
 export function MainGoalStep() {
   const { t } = useTranslation()
   const { createGoal } = useGoals()
@@ -188,7 +155,7 @@ export function MainGoalStep() {
 }
 
 /**
- * Step 9 — the **Clarity Moment**: the household's first financial picture,
+ * Step 8 — the **Clarity Moment**: the household's first financial picture,
  * assembled from what they just entered. This is the payoff for the setup.
  */
 export function FirstPictureStep() {
@@ -208,7 +175,7 @@ export function FirstPictureStep() {
 }
 
 /**
- * Step 10 closes onboarding with a pointer to the single what-if entry point
+ * Step 9 closes onboarding with a pointer to the single what-if entry point
  * in the application sidebar.
  */
 export function FirstWhatIfStep() {

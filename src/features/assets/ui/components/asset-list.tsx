@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { normalizeVisibility } from '@/features/assets/model/asset-classification'
 import { computeCurrentValue, isSellableAssetType, type Asset } from '@/features/assets/model/assets'
 import type { MemberItem } from '@/features/members/model/members.types'
 import { formatVndCell } from '@/shared/lib/format-money'
@@ -53,53 +52,26 @@ export function AssetList({
           const isSold = asset.status === 'sold'
           const canSell = !isSold && isSellableAssetType(asset.type)
           const freshness = formatFreshness(asset.valueUpdatedAt, t)
-          // Folded for EVERYONE, including whoever set it — see the note on
-          // `VisibilityLevel`. The way to see the specifics is to switch the
-          // record back to `detail`, which anyone may do and which is logged.
-          const isFolded = normalizeVisibility(asset.visibilityLevel) === 'summary_only'
 
           return (
             <article
               key={asset.id}
               className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[1.5fr_.8fr_.8fr_1fr_.8fr_110px] lg:items-center"
             >
-              {isFolded ? (
-                // Not a button: the detail page has nothing to show for a
-                // folded record. `text-ink2` without `font-medium` so it reads
-                // as a placeholder rather than as the source's name.
-                <div className="min-w-0">
-                  <p className="truncate text-[13px] text-ink2">
-                    {t('assets.list.summaryOnly.title')}
-                  </p>
-                  <p className="mt-1 text-[11px] text-ink3">
-                    {t('options.visibilityLevel.summary_only')}
-                  </p>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onOpen?.(asset.id)}
-                  className="min-w-0 text-left"
-                >
-                  <p className="truncate text-[13px] font-medium">{asset.name}</p>
-                  <p className="mt-1 text-[11px] text-ink3">{t(`options.assetType.${asset.type}`)}</p>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => onOpen?.(asset.id)}
+                className="min-w-0 text-left"
+              >
+                <p className="truncate text-[13px] font-medium">{asset.name}</p>
+                <p className="mt-1 text-[11px] text-ink3">{t(`options.assetType.${asset.type}`)}</p>
+              </button>
 
-              {/* Holder is part of what `detail` promises, so it folds too. */}
               <p className="mt-2 text-[12px] text-ink2 lg:mt-0">
-                {isFolded
-                  ? '—'
-                  : asset.holderMemberId
-                    ? memberNameById.get(asset.holderMemberId) ?? t('assets.demo.householdOwner')
-                    : t('assets.demo.householdOwner')}
+                {asset.holderMemberId
+                  ? memberNameById.get(asset.holderMemberId) ?? t('assets.demo.householdOwner')
+                  : t('assets.demo.householdOwner')}
               </p>
-              {/*
-                Liquidity stays unfolded on purpose. Every calculated number
-                has to be explainable (§2.15); if a folded contribution had no
-                bucket, the "Dùng ngay" total would silently stop adding up.
-                It reveals a category, not a source.
-              */}
               <p className="mt-1 text-[12px] lg:mt-0">{t(`options.liquidity.${asset.liquidity}`)}</p>
               <p className={cn('mt-1 text-[12px] lg:mt-0', freshness.stale ? 'text-attention' : 'text-ink2')}>
                 {freshness.label}
@@ -109,15 +81,13 @@ export function AssetList({
               </p>
 
               <div className="col-start-2 row-start-2 row-span-4 flex items-start justify-end gap-1 lg:col-auto lg:row-auto">
-                {isFolded ? null : (
-                  <button
-                    type="button"
-                    onClick={() => onOpen?.(asset.id)}
-                    className="hidden text-[12px] font-medium text-accent xl:block"
-                  >
-                    {t('assets.demo.detail')}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => onOpen?.(asset.id)}
+                  className="hidden text-[12px] font-medium text-accent xl:block"
+                >
+                  {t('assets.demo.detail')}
+                </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="size-8" aria-label={t('common.actions')}>

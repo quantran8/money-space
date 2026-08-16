@@ -1,7 +1,7 @@
 # Forecast & flexible money
 
 The calculation surface behind Clarity and Foresight (spec §26A–D). Related:
-[[cashflow-events]], [[protected-reserves]], [[what-if]], [[goals]].
+[[cashflow-events]], [[what-if]], [[goals]].
 
 ## Overview
 
@@ -21,20 +21,27 @@ what the web client must respect.
   "Ngân sách được phép tiêu", not "Số tiền bạn nên tiêu".
 - **`estimated` incoming is displayed but not banked.** It must be visibly
   marked; presenting it as certain would break the conservative guarantee.
-- **Red is only for an actual projected shortfall** (balance < 0). Below the
-  protected reserve is orange. Encoded in `balanceTone`.
+- **Red is only for an actual projected shortfall** (balance < 0); everything
+  else is neutral. Encoded in `balanceTone`, which is now binary — the amber
+  "near the protected reserve" tier went with the reserve, and bringing a
+  warning band back would mean picking a threshold the household never gave us.
 - **The backend never sends prose.** Assumptions and reasons are machine codes;
   the client renders every sentence.
 
-## Three flexible-money figures — not interchangeable
+## Two flexible-money figures — not interchangeable
 
 | field | meaning |
 |---|---|
 | `flexibleMoneyToday` | §26B conservative form: free before the next sufficiently-certain inflow |
-| `flexibleMoneyHorizon` | spendable without breaching the reserve at ANY point in the horizon — **what what-if compares** |
-| `flexibleMoneyEndOfHorizon` | end-of-horizon variant; must be labelled with its assumption when shown |
+| `lowestProjectedBalance` | the horizon form: spendable without the balance ever going negative — **what what-if compares** |
 
-All three may be negative.
+Both may be negative.
+
+There were three. `flexibleMoneyHorizon` and `flexibleMoneyEndOfHorizon` existed
+only to subtract the protected reserve from `lowestProjectedBalance` and
+`endingProjectedBalance`; with the reserve retired they were those two numbers
+under a second name, so they were dropped from the API rather than kept as
+aliases.
 
 ## Financial state (§26D)
 

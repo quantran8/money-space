@@ -23,13 +23,12 @@
 3. Partner invite.
 4. Money sources.
 5. 3-level sharing.
-6. Protected reserve.
-7. Upcoming income.
-8. Upcoming obligations.
-9. 30-day forecast.
-10. Flexible money.
-11. One main financial goal.
-12. Goal projection.
+6. Upcoming income.
+7. Upcoming obligations.
+8. 30-day forecast.
+9. Flexible money.
+10. One main financial goal.
+11. Goal projection.
 13. What-if simulator.
 14. Share scenario.
 15. Update reminders.
@@ -85,12 +84,11 @@ và cuối cùng:
 4. Invite partner hoặc skip.
 5. Nhập money sources.
 6. Chọn holder và sharing level.
-7. Đặt protected reserve.
-8. Nhập recurring income chính.
-9. Nhập 1–3 upcoming obligations.
-10. Tạo main goal.
-11. App tạo first financial picture.
-12. Prompt first what-if.
+7. Nhập recurring income chính.
+8. Nhập 1–3 upcoming obligations.
+9. Tạo main goal.
+10. App tạo first financial picture.
+11. Prompt first what-if.
 
 ---
 
@@ -106,7 +104,7 @@ User lần đầu thấy:
 
 User chạy first meaningful what-if và thấy:
 
-> “Nếu chi X thì reserve/flexible money/goal thay đổi Y.”
+> “Nếu chi X thì flexible money/goal thay đổi Y.”
 
 Đây là activation mạnh hơn và liên hệ trực tiếp tới willingness to pay.
 
@@ -180,7 +178,6 @@ Bao gồm:
 - Money sources.
 - Holder.
 - Sharing.
-- Reserve.
 - Recurring income.
 - Reminder frequency.
 - Data freshness.
@@ -206,11 +203,14 @@ Không biến screen này thành settings-heavy admin panel.
 
 ## Result hierarchy
 
-1. Upcoming Safety.
-2. Reserve impact.
-3. Flexible Money before/after.
-4. Goal consequence.
-5. Assumptions.
+1. Upcoming Safety — lowest projected balance before/after, mức thay đổi, và
+   cảnh báo khi obligations không còn đủ nguồn.
+2. Goal consequence.
+3. Assumptions.
+
+Trước đây có 5 khối. “Reserve impact” mất cùng protected reserve, và “Flexible
+Money before/after” mất theo: nó hiển thị `flexibleMoneyHorizon`, vốn sau khi bỏ
+reserve chính là `lowestProjectedBalance` — đúng hai con số khối 1 đã nêu.
 
 Actions:
 

@@ -15,12 +15,13 @@ import type { CashflowEventPayload } from '@/features/cashflow/api/cashflow-even
  * and 9 retire the consumers that need it; new code uses `useCashflowEvents`.
  */
 
-/** The legacy `PaymentPayload`, unchanged, so call sites need no edits. */
+/** Legacy payment shape plus the real member relationship used by new forms. */
 export type LegacyPaymentPayload = {
   name: string
   amount: number
   dueDate: string
   owner?: string
+  ownerMemberId?: string
   debtId?: string
   status: LegacyPaymentStatus
 }
@@ -33,11 +34,12 @@ function toCashflowPayload(payload: Partial<LegacyPaymentPayload>): Partial<Cash
   if (payload.amount !== undefined) next.amount = payload.amount
   if (payload.dueDate !== undefined) next.expectedDate = payload.dueDate
   if (payload.debtId !== undefined) next.debtId = payload.debtId
+  if (payload.ownerMemberId !== undefined) next.ownerMemberId = payload.ownerMemberId
   if (payload.status !== undefined) {
     next.attentionLevel = legacyStatusToAttentionLevel(payload.status)
   }
-  // `owner` was a display NAME, not an id — there is no field to put it in.
-  // Dropped rather than guessed; the real owner picker lands with the Phase 6 form.
+  // `owner` is legacy display text. The real relationship is carried by
+  // `ownerMemberId`; never guess an id from a name.
   return next
 }
 

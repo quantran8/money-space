@@ -1,4 +1,4 @@
-import { RefreshCw, Save } from 'lucide-react'
+import { Save } from 'lucide-react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useFreshness } from '@/features/freshness/hooks/use-freshness'
 import type { Settings } from '@/features/settings/model/settings-form'
 import { useActiveHousehold } from '@/shared/hooks/use-active-household'
@@ -30,14 +29,9 @@ export function HouseholdOverviewCard({
 }: HouseholdOverviewCardProps) {
   const { t } = useTranslation()
   const { activeHousehold } = useActiveHousehold()
-  const { assets, isLoading: isAssetsLoading } = useAssets()
-  const { freshness, isLoading: isFreshnessLoading, confirmUnchanged } = useFreshness()
+  const { freshness, isLoading } = useFreshness()
   const { control } = form
-  const isLoading = isAssetsLoading || isFreshnessLoading
   const allFresh = freshness ? !freshness.needsAttention : false
-  const staleIds = freshness?.items
-    .filter((item) => item.state === 'stale')
-    .map((item) => item.assetId) ?? []
 
   return (
     <Panel>
@@ -58,51 +52,6 @@ export function HouseholdOverviewCard({
           <p className="mt-2 text-[30px] font-medium tracking-[-.03em]">
             {activeHousehold?.name ?? t('shell.householdName')}
           </p>
-          <p className="mt-3 text-[13px] leading-6 text-ink2">
-            {t('household.merged.sourceSummary', {
-              count: assets.length,
-              freshness: allFresh
-                ? t('household.merged.updatedThisWeek')
-                : t('household.merged.needsUpdate', { count: freshness?.counts.stale ?? 0 }),
-            })}
-          </p>
-
-          <div className="sunk mt-6 p-4">
-            <div className="flex items-center gap-1.5" aria-hidden="true">
-              {assets.length > 0
-                ? assets.map((asset) => {
-                    const state = freshness?.items.find((item) => item.assetId === asset.id)?.state
-                    return (
-                      <span
-                        key={asset.id}
-                        className={state === 'stale' ? 'h-1.5 flex-1 rounded-full bg-attention' : 'h-1.5 flex-1 rounded-full bg-ink'}
-                      />
-                    )
-                  })
-                : <span className="h-1.5 flex-1 rounded-full bg-hair" />}
-            </div>
-            <div className="mt-3.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[12px] text-ink2">
-                {allFresh
-                  ? t('household.merged.coverageFresh', { count: assets.length })
-                  : t('household.merged.coverageMixed', {
-                      total: assets.length,
-                      stale: freshness?.counts.stale ?? 0,
-                    })}
-              </p>
-              {freshness?.needsAttention ? (
-                <button
-                  type="button"
-                  disabled={confirmUnchanged.isPending}
-                  onClick={() => confirmUnchanged.mutate(staleIds)}
-                  className="flex shrink-0 items-center gap-1.5 text-left text-[12px] font-medium text-accent disabled:opacity-50"
-                >
-                  <RefreshCw className="size-3.5" />
-                  {t('home.coverage.action')}
-                </button>
-              ) : null}
-            </div>
-          </div>
         </div>
 
         <div>

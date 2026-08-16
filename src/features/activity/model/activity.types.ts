@@ -4,6 +4,12 @@
  * The server emits CODES; this app owns every word, the same contract the
  * forecast's `AssumptionCode` already follows. A server-rendered sentence could
  * not be translated or restyled, and the i18n mandate is hard.
+ *
+ * The `protected_reserve.*` codes are gone from this union because the backend
+ * can no longer emit them. Their COPY stays in `resources.ts`: `activity-copy`
+ * looks the key up dynamically, and audit rows written before the removal still
+ * carry those action strings — dropping the strings would render a raw key in
+ * somebody's history.
  */
 export type ActivityActionCode =
   | 'asset.created'
@@ -15,9 +21,6 @@ export type ActivityActionCode =
   | 'cashflow_event.completed'
   | 'cashflow_event.cancelled'
   | 'cashflow_event.postponed'
-  | 'protected_reserve.created'
-  | 'protected_reserve.updated'
-  | 'protected_reserve.archived'
   | 'goal.created'
   | 'goal.target_changed'
   | 'record.visibility_changed'
@@ -36,7 +39,6 @@ export type ActivityImpactMetric =
   | 'net_worth'
   | 'flexible_money'
   | 'upcoming_outgoing'
-  | 'protected_reserve'
 
 export type ActivityEntry = {
   id: string

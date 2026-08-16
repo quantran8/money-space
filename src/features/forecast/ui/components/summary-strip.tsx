@@ -13,10 +13,7 @@ import { cn } from '@/shared/lib/utils'
 export function SummaryStrip({ forecast }: { forecast: ForecastResult }) {
   const { t } = useTranslation()
 
-  const lowestTone = balanceTone(
-    forecast.lowestProjectedBalance,
-    forecast.protectedReserveAmount,
-  )
+  const lowestTone = balanceTone(forecast.lowestProjectedBalance)
 
   return (
     <Panel>
@@ -26,20 +23,7 @@ export function SummaryStrip({ forecast }: { forecast: ForecastResult }) {
       />
 
       <div className="mt-7 grid gap-5 sm:grid-cols-3 sm:gap-0">
-        <Metric
-          label={t('upcoming.summary.incoming')}
-          value={formatVndShort(forecast.totals.upcomingIncomeAmount)}
-          note={t('upcoming.summary.incomingNote')}
-          className="sm:pr-7"
-        />
-        <Metric
-          label={t('upcoming.summary.outgoing')}
-          value={formatVndShort(forecast.totals.upcomingOutgoingAmount)}
-          note={t('upcoming.summary.outgoingNote', {
-            required: formatVndShort(forecast.totals.requiredOutgoingAmount),
-          })}
-          className="sm:border-l sm:border-hair sm:px-7"
-        />
+        {/* Projected low leads: it is the primary read of this screen. */}
         <Metric
           label={t('upcoming.summary.lowest')}
           // Never clamped: a negative lowest balance is the point of the screen.
@@ -48,6 +32,20 @@ export function SummaryStrip({ forecast }: { forecast: ForecastResult }) {
             date: formatDayMonth(forecast.lowestProjectedBalanceDate),
           })}
           valueClassName={BALANCE_TONE_CLASS[lowestTone]}
+          className="sm:pr-7"
+        />
+        <Metric
+          label={t('upcoming.summary.incoming')}
+          value={formatVndShort(forecast.totals.upcomingIncomeAmount)}
+          note={t('upcoming.summary.incomingNote')}
+          className="sm:border-l sm:border-hair sm:px-7"
+        />
+        <Metric
+          label={t('upcoming.summary.outgoing')}
+          value={formatVndShort(forecast.totals.upcomingOutgoingAmount)}
+          note={t('upcoming.summary.outgoingNote', {
+            required: formatVndShort(forecast.totals.requiredOutgoingAmount),
+          })}
           className="sm:border-l sm:border-hair sm:pl-7"
         />
       </div>

@@ -20,7 +20,6 @@
 - Sắp tới.
 - Dự kiến.
 - Tiền linh hoạt.
-- Quỹ an toàn.
 - Đã được dành cho.
 - Người phụ trách.
 - Mục tiêu chung.
@@ -58,7 +57,7 @@
 
 > **Có thể linh hoạt: 54.000.000đ**
 
-> Sau khi tính các khoản sắp tới và quỹ an toàn đã đặt.
+> Sau khi tính các khoản sắp tới.
 
 ## What-if CTA
 
@@ -70,8 +69,6 @@
 
 > **Các khoản sắp tới vẫn được cover.**
 
-> Sau khoản chi này, quỹ an toàn vẫn được giữ.
-
 > Mục tiêu mua nhà dự kiến chậm khoảng 2 tháng.
 
 ## Tight Result
@@ -82,7 +79,7 @@
 
 ## Assumption
 
-> Kết quả dựa trên số dư, income, upcoming payments, reserve và goal hiện được khai báo. Đây là projection, không phải guarantee.
+> Kết quả dựa trên số dư, income, upcoming payments và goal hiện được khai báo. Đây là projection, không phải guarantee.
 
 ---
 
@@ -123,7 +120,6 @@ CÓ THỂ LINH HOẠT
 
 Current liquid         128m
 Needed soon            -34m
-Protected reserve      -40m
 
 
 [ THỬ MỘT KHOẢN CHI ]
@@ -203,11 +199,6 @@ Result:
 30 NGÀY TỚI
 
 ✓ Các khoản đã biết vẫn được cover
-
-
-QUỸ AN TOÀN
-
-✓ Reserve 40m vẫn được giữ
 
 
 TIỀN LINH HOẠT

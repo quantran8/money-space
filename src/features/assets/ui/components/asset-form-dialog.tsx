@@ -9,6 +9,7 @@ import {
   Disclosure,
   Field,
   MoneyField,
+  Segmented,
   TextField,
   TextareaField,
   fieldControlReset,
@@ -23,16 +24,23 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import {
   assetTypeOrder,
-  defaultLiquidityForType,
-  liquidityOrder,
+  flexibleByDefaultForAssetType,
   type Asset,
   type AssetType,
   type ValuationMode,
 } from '@/features/assets/model/assets'
 import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
-import { parseMoneyToVnd, type AssetForm } from '@/features/assets/model/assets-form'
+import {
+  goldUnits,
+  isInterestOptional,
+  isWholeQuantityType,
+  manualValueLabelKey,
+  parseMoneyToVnd,
+  type AssetForm,
+} from '@/features/assets/model/assets-form'
 import { useFlexibleMoney } from '@/features/forecast/hooks/use-forecast'
 import { formatMoney } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
@@ -72,15 +80,18 @@ export function AssetFormDialog({
   const [showMore, setShowMore] = useState(false)
   const {
     control,
+    getValues,
     register,
     formState: { errors },
   } = form
 
   const selectedType = useWatch({ control, name: 'type' })
-  const liquidity = useWatch({ control, name: 'liquidity' })
   const interestDestination = useWatch({ control, name: 'interestDestination' })
+  const hasInterest = useWatch({ control, name: 'hasInterest' })
   const isSaving = selectedType === 'saving_deposit'
-  const isRealEstate = selectedType === 'real_estate'
+  // Interest is opt-in only where it is genuinely optional (a loan); every other
+  // formula type is defined by its rate.
+  const earnsInterest = !isInterestOptional(selectedType) || hasInterest
 
   function handleOpenChange(nextOpen: boolean) {
     // Onboarding renders this dialog without a `key`, so it never remounts —
@@ -89,17 +100,19 @@ export function AssetFormDialog({
     onOpenChange(nextOpen)
   }
 
-  /**
-   * Type drives valuation mode AND the default liquidity bucket (§22.1: the app
-   * never asks what it can derive). This used to live in the step-1 tile grid;
-   * with the wizard gone it must fire here or liquidity stops pre-filling.
-   */
   function handleTypeChange(next: AssetType) {
     setValue('type', next, { shouldDirty: true, shouldValidate: true })
-    setValue('liquidity', defaultLiquidityForType(next), {
+    // Changing the type changes what the money IS, so the flexible-money answer
+    // starts over from that type's default rather than carrying over a decision
+    // made about a different kind of asset.
+    setValue('countsAsFlexible', flexibleByDefaultForAssetType(next), {
       shouldDirty: true,
-      shouldValidate: true,
     })
+    // The gold unit is a fixed choice, so it starts on the most common one
+    // rather than rendering a segmented control with nothing selected.
+    if (next === 'gold' && !getValues('unit')) {
+      setValue('unit', goldUnits[0], { shouldDirty: true })
+    }
   }
 
   return (
@@ -138,10 +151,8 @@ export function AssetFormDialog({
               </div>
             </Field>
 
-            {/* §22.1 — a market-priced holding is identified by its symbol, so
-                asking for a name too would mean typing "FPT" twice. The stored
-                name is derived in `resolveAssetName`; renaming stays available
-                in the disclosure for anyone who wants a custom label. */}
+            {/* A market-priced holding is identified and named by its symbol or
+                kind, so a second custom-name field would duplicate input. */}
             {mode !== 'market_priced' ? (
               <TextField
                 id="asset-name"
@@ -153,26 +164,42 @@ export function AssetFormDialog({
             ) : null}
 
             {mode === 'manual' ? (
-              <ManualFields
+              <ManualFields control={control} errors={errors} type={selectedType} t={t} />
+            ) : null}
+
+            {mode === 'market_priced' ? (
+              <MarketFields
                 control={control}
+                register={register}
                 errors={errors}
-                isRealEstate={isRealEstate}
+                type={selectedType}
                 t={t}
               />
             ) : null}
 
-            {mode === 'market_priced' ? (
-              <MarketFields control={control} register={register} errors={errors} t={t} />
+            {mode === 'formula_calculated' ? (
+              <FormulaFields
+                control={control}
+                errors={errors}
+                type={selectedType}
+                earnsInterest={earnsInterest}
+                t={t}
+              />
             ) : null}
 
-            {mode === 'formula_calculated' ? (
-              <FormulaFields control={control} errors={errors} t={t} />
-            ) : null}
+            {/* §22.1 — the household's own call on what "money we can use"
+                means. It moves the headline number, so it belongs in the main
+                section with the consequence sentence right under it. */}
+            <ToggleRow
+              id="asset-counts-as-flexible"
+              label={t('assets.form.countsAsFlexible')}
+              control={control}
+              name="countsAsFlexible"
+            />
 
             <AssetEffect
               control={control}
               mode={mode}
-              liquidity={liquidity}
               isEditing={isEditing}
               editingAsset={editingAsset}
               t={t}
@@ -184,54 +211,12 @@ export function AssetFormDialog({
               onToggle={() => setShowMore((current) => !current)}
               label={showMore ? t('assets.form.less') : t('assets.form.more')}
             >
-              <Field label={t('assets.form.group')} error={errors.liquidity?.message}>
-                <div className={fieldShell}>
-                  <Controller
-                    control={control}
-                    name="liquidity"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className={fieldControlReset}>
-                          <SelectValue placeholder={t('assets.form.groupPlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {liquidityOrder.map((item) => (
-                            <SelectItem key={item} value={item}>
-                              {t(`options.liquidity.${item}`)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-              </Field>
-
-              {mode === 'market_priced' ? (
-                <>
-                  {/* Empty → the symbol is used (`resolveAssetName`). Here for
-                      the user who holds the same ticker in two places. */}
-                  <TextField
-                    id="asset-name"
-                    label={t('assets.form.customName')}
-                    placeholder={t('assets.form.customNamePlaceholder')}
-                    error={errors.name?.message}
-                    {...register('name')}
-                  />
-                  <TextField
-                    id="asset-unit"
-                    label={t('assets.form.unit')}
-                    placeholder={t('assets.form.unitPlaceholder')}
-                    error={errors.unit?.message}
-                    {...register('unit')}
-                  />
-                </>
-              ) : null}
-
               {mode === 'formula_calculated' ? (
                 <FormulaExtraFields
                   control={control}
                   errors={errors}
+                  type={selectedType}
+                  earnsInterest={earnsInterest}
                   isSaving={isSaving}
                   interestDestination={interestDestination}
                   walletOptions={walletOptions}
@@ -247,7 +232,7 @@ export function AssetFormDialog({
                 {...register('note')}
               />
 
-              <AssetClassificationFields form={form} />
+              <AssetClassificationFields form={form} defaultToCurrentMember={!isEditing} />
             </Disclosure>
           </div>
 
@@ -303,19 +288,18 @@ type Errors = UseFormReturn<AssetForm>['formState']['errors']
 function AssetEffect({
   control,
   mode,
-  liquidity,
   isEditing,
   editingAsset,
   t,
 }: {
   control: Control
   mode: ValuationMode
-  liquidity: AssetForm['liquidity']
   isEditing: boolean
   editingAsset?: Asset
   t: Translate
 }) {
   const { flexibleMoney } = useFlexibleMoney()
+  const countsAsFlexible = useWatch({ control, name: 'countsAsFlexible' })
   const rawValue = useWatch({ control, name: 'value' })
   const rawPrincipal = useWatch({ control, name: 'principal' })
   const name = useWatch({ control, name: 'name' })
@@ -356,13 +340,21 @@ function AssetEffect({
         }),
       )
     }
+    // Flipping this moves money in and out of the household's headline figure,
+    // so it is exactly the kind of change §22.8 exists to state out loud.
+    if (countsAsFlexible !== (editingAsset.liquidity === 'usable_now')) {
+      changes.push(
+        t(countsAsFlexible ? 'assets.form.changeFlexibleOn' : 'assets.form.changeFlexibleOff'),
+      )
+    }
     if (changes.length === 0) return null
     return <EffectBlock>{changes.join(' ')}</EffectBlock>
   }
 
   if (!hasAmount) return null
 
-  if (liquidity !== 'usable_now' || !flexibleMoney) {
+  // The switch, not the type, decides which sentence is true here.
+  if (!countsAsFlexible || !flexibleMoney) {
     return <EffectBlock>{t('assets.form.effectOther', { amount: formatMoney(amount) })}</EffectBlock>
   }
 
@@ -370,9 +362,40 @@ function AssetEffect({
     <EffectBlock>
       {t('assets.form.effectUsable', {
         amount: formatMoney(amount),
-        flexible: formatMoney(flexibleMoney.flexibleMoneyHorizon + amount),
+        flexible: formatMoney(flexibleMoney.lowestProjectedBalance + amount),
       })}
     </EffectBlock>
+  )
+}
+
+/**
+ * A yes/no answer as a label + switch row. No helper line under it (§22.0):
+ * where the answer needs explaining, the §22.7 consequence sentence does it.
+ */
+function ToggleRow({
+  id,
+  label,
+  control,
+  name,
+}: {
+  id: string
+  label: string
+  control: Control
+  name: 'hasInterest' | 'countsAsFlexible'
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <label htmlFor={id} className="text-[13px] leading-[1.4] text-ink2">
+        {label}
+      </label>
+      <Controller
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <Switch id={id} checked={field.value} onCheckedChange={field.onChange} />
+        )}
+      />
+    </div>
   )
 }
 
@@ -395,14 +418,16 @@ function EffectBlock({ children }: { children: React.ReactNode }) {
 function ManualFields({
   control,
   errors,
-  isRealEstate,
+  type,
   t,
 }: {
   control: Control
   errors: Errors
-  isRealEstate: boolean
+  type: AssetType
   t: Translate
 }) {
+  const isRealEstate = type === 'real_estate'
+
   return (
     <>
       <Controller
@@ -411,7 +436,8 @@ function ManualFields({
         render={({ field }) => (
           <MoneyField
             id="asset-value"
-            label={t('assets.form.value')}
+            // Cash and a bank account have a balance, not an estimate.
+            label={t(manualValueLabelKey(type))}
             value={field.value}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -455,20 +481,24 @@ function MarketFields({
   control,
   register,
   errors,
+  type,
   t,
 }: {
   control: Control
   register: UseFormReturn<AssetForm>['register']
   errors: Errors
+  type: AssetType
   t: Translate
 }) {
+  const fieldPrefix = `assets.form.market.${type}`
+
   return (
     <>
-      <Field label={t('assets.form.symbol')} error={errors.symbol?.message}>
+      <Field label={t(`${fieldPrefix}.symbol`)} error={errors.symbol?.message}>
         <div className={cn(fieldShell, errors.symbol && 'border-alert')}>
           <input
             className="h-full w-full min-w-0 bg-transparent text-[16px] uppercase leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
-            placeholder={t('assets.form.symbolPlaceholder')}
+            placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
             autoCapitalize="characters"
             autoCorrect="off"
             spellCheck={false}
@@ -480,18 +510,28 @@ function MarketFields({
       <Controller
         control={control}
         name="quantity"
-        render={({ field }) => (
-          <DecimalField
-            id="asset-quantity"
-            label={t('assets.form.quantity')}
-            value={field.value}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            placeholder="0"
-            error={errors.quantity?.message}
-          />
-        )}
+        render={({ field }) => {
+          const wholeOnly = isWholeQuantityType(type)
+          return (
+            <DecimalField
+              id="asset-quantity"
+              label={t(`${fieldPrefix}.quantity`)}
+              value={field.value}
+              // A share is indivisible: the decimal part is dropped as it is
+              // typed rather than accepted and rejected later. A legacy
+              // fractional holding still shows as stored until it is edited,
+              // and the schema explains why it cannot be saved.
+              onChange={wholeOnly ? (raw) => field.onChange(raw.split(',')[0]) : field.onChange}
+              onBlur={field.onBlur}
+              placeholder="0"
+              suffix={wholeOnly ? t(`${fieldPrefix}.quantitySuffix`) : undefined}
+              error={errors.quantity?.message}
+            />
+          )
+        }}
       />
+
+      {type === 'gold' ? <GoldUnitField control={control} errors={errors} t={t} /> : null}
 
       <Controller
         control={control}
@@ -499,7 +539,7 @@ function MarketFields({
         render={({ field }) => (
           <MoneyField
             id="asset-purchase-price"
-            label={t('assets.form.purchasePrice')}
+            label={t(`${fieldPrefix}.purchasePrice`)}
             value={field.value}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -511,7 +551,12 @@ function MarketFields({
   )
 }
 
-function FormulaFields({
+/**
+ * Gold is held in a small, fixed set of units. As free text the same unit came
+ * back as "chỉ", "Chi" and "chi vang", which makes two holdings of the same
+ * thing look unrelated — so the choice is made from the list instead.
+ */
+function GoldUnitField({
   control,
   errors,
   t,
@@ -520,6 +565,45 @@ function FormulaFields({
   errors: Errors
   t: Translate
 }) {
+  return (
+    <Controller
+      control={control}
+      name="unit"
+      render={({ field }) => {
+        const options = goldUnits.map((unit) => ({
+          value: unit as string,
+          label: t(`assets.form.market.gold.unitOptions.${unit}`),
+        }))
+        // A record saved before the list existed keeps its own unit as an extra
+        // option, so opening it for edit never silently blanks the field.
+        if (field.value && !(goldUnits as readonly string[]).includes(field.value)) {
+          options.push({ value: field.value, label: field.value })
+        }
+        return (
+          <Field label={t('assets.form.market.gold.unit')} error={errors.unit?.message}>
+            <Segmented value={field.value} onChange={field.onChange} options={options} />
+          </Field>
+        )
+      }}
+    />
+  )
+}
+
+function FormulaFields({
+  control,
+  errors,
+  type,
+  earnsInterest,
+  t,
+}: {
+  control: Control
+  errors: Errors
+  type: AssetType
+  earnsInterest: boolean
+  t: Translate
+}) {
+  const isLoan = type === 'loan_receivable'
+
   return (
     <>
       <Controller
@@ -536,23 +620,11 @@ function FormulaFields({
           />
         )}
       />
-      <Controller
-        control={control}
-        name="interestRate"
-        render={({ field }) => (
-          <DecimalField
-            id="asset-interest-rate"
-            label={t('assets.form.interestRate')}
-            value={field.value}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            placeholder="4,8"
-            suffix="%/năm"
-            error={errors.interestRate?.message}
-          />
-        )}
-      />
-      <Field label={t('assets.form.startDate')} error={errors.startDate?.message}>
+
+      <Field
+        label={t(isLoan ? 'assets.form.loanStartDate' : 'assets.form.startDate')}
+        error={errors.startDate?.message}
+      >
         <div className={cn(fieldShell, errors.startDate && 'border-alert')}>
           <Controller
             control={control}
@@ -567,6 +639,56 @@ function FormulaFields({
           />
         </div>
       </Field>
+
+      {/* The due date is optional — many family loans have none — but it is the
+          field people reach for next, so it stays in the main section. */}
+      {isLoan ? (
+        <Field label={t('assets.form.maturityDate')} error={errors.maturityDate?.message}>
+          <div className={cn(fieldShell, errors.maturityDate && 'border-alert')}>
+            <Controller
+              control={control}
+              name="maturityDate"
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={cn(fieldControlReset, 'justify-start [&_svg]:hidden')}
+                />
+              )}
+            />
+          </div>
+        </Field>
+      ) : null}
+
+      {/* Money lent to family or a friend usually carries no interest, so a rate
+          field would be a question with no answer for most loans. */}
+      {isLoan ? (
+        <ToggleRow
+          id="asset-has-interest"
+          label={t('assets.form.hasInterest')}
+          control={control}
+          name="hasInterest"
+        />
+      ) : null}
+
+      {earnsInterest ? (
+        <Controller
+          control={control}
+          name="interestRate"
+          render={({ field }) => (
+            <DecimalField
+              id="asset-interest-rate"
+              label={t('assets.form.interestRate')}
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder="4,8"
+              suffix="%/năm"
+              error={errors.interestRate?.message}
+            />
+          )}
+        />
+      ) : null}
     </>
   )
 }
@@ -575,6 +697,8 @@ function FormulaFields({
 function FormulaExtraFields({
   control,
   errors,
+  type,
+  earnsInterest,
   isSaving,
   interestDestination,
   walletOptions,
@@ -582,50 +706,60 @@ function FormulaExtraFields({
 }: {
   control: Control
   errors: Errors
+  type: AssetType
+  earnsInterest: boolean
   isSaving: boolean
   interestDestination: AssetForm['interestDestination']
   walletOptions: WalletOption[]
   t: Translate
 }) {
+  // A loan already asks for its maturity date in the main section.
+  const isLoan = type === 'loan_receivable'
+
   return (
     <>
-      <Field label={t('assets.form.maturityDate')} error={errors.maturityDate?.message}>
-        <div className={fieldShell}>
-          <Controller
-            control={control}
-            name="maturityDate"
-            render={({ field }) => (
-              <DatePicker
-                value={field.value}
-                onChange={field.onChange}
-                className={cn(fieldControlReset, 'justify-start [&_svg]:hidden')}
-              />
-            )}
-          />
-        </div>
-      </Field>
+      {!isLoan ? (
+        <Field label={t('assets.form.maturityDate')} error={errors.maturityDate?.message}>
+          <div className={fieldShell}>
+            <Controller
+              control={control}
+              name="maturityDate"
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={cn(fieldControlReset, 'justify-start [&_svg]:hidden')}
+                />
+              )}
+            />
+          </div>
+        </Field>
+      ) : null}
 
-      <Field label={t('assets.form.interestPayment')} error={errors.interestPayment?.message}>
-        <div className={fieldShell}>
-          <Controller
-            control={control}
-            name="interestPayment"
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className={fieldControlReset}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="end_of_term">
-                    {t('options.interestPayment.end_of_term')}
-                  </SelectItem>
-                  <SelectItem value="monthly">{t('options.interestPayment.monthly')}</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-      </Field>
+      {/* No interest, no payment schedule to choose. */}
+      {earnsInterest ? (
+        <Field label={t('assets.form.interestPayment')} error={errors.interestPayment?.message}>
+          <div className={fieldShell}>
+            <Controller
+              control={control}
+              name="interestPayment"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className={fieldControlReset}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="end_of_term">
+                      {t('options.interestPayment.end_of_term')}
+                    </SelectItem>
+                    <SelectItem value="monthly">{t('options.interestPayment.monthly')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+        </Field>
+      ) : null}
 
       {isSaving ? (
         <>

@@ -12,7 +12,6 @@ snapshots
 assets
 debts
 cashflow_events
-protected_reserves
 financial_goals
 money_events
 attention_items
@@ -35,9 +34,6 @@ debts
 
 cashflow_events
 = dòng tiền dự kiến trong tương lai, gồm cả incoming và outgoing
-
-protected_reserves
-= phần tiền household muốn bảo vệ, không coi là discretionary money
 
 financial_goals
 = mục tiêu tài chính và các input cần để projection
@@ -111,7 +107,7 @@ Sửa xe 5M
 Nhận lương 35M
 Chuyển 20M sang tiết kiệm
 Mua thêm vàng 20M
-Góp 10M vào quỹ dự phòng
+Góp 10M vào mục tiêu chung
 ```
 
 ---
@@ -307,20 +303,6 @@ Không tạo riêng `upcoming_incomes` vì một timeline unified sẽ đơn gi�
 
 ---
 
-## 2.10. Thêm `protected_reserves`
-
-Flexible Money cần biết phần tiền household muốn bảo vệ.
-
-Ví dụ:
-
-```txt
-Emergency fund = 100M
-```
-
-Reserve là financial constraint, không nhất thiết là một account riêng.
-
----
-
 ## 2.11. Update `financial_goals` cho projection
 
 Goal cần có current state ngay từ onboarding và contribution rate để tính projected date / goal delay.
@@ -382,7 +364,6 @@ Thêm `privacy_owner_member_id` để không dùng `created_by` làm ownership c
 Snapshot v3.1 freeze thêm:
 
 ```txt
-protected_reserve_amount
 upcoming_income_amount
 upcoming_outgoing_amount
 lowest_projected_balance
@@ -390,7 +371,7 @@ flexible_money
 forecast_horizon_days
 ```
 
-Các giá trị realtime vẫn được tính từ current assets + cashflow events + reserve + goals. Snapshot chỉ dùng cho history.
+Các giá trị realtime vẫn được tính từ current assets + cashflow events + goals. Snapshot chỉ dùng cho history.
 
 ---
 
@@ -425,7 +406,6 @@ debts
 debt_interest_periods
 
 cashflow_events
-protected_reserves
 financial_goals
 
 money_events
@@ -475,7 +455,6 @@ asset_valuations
 snapshot_asset_values
 
 cashflow_events
-protected_reserves
 financial_goals
 
 money_events
@@ -541,7 +520,6 @@ households
    ├── debts
    ├── debt_interest_periods
    ├── cashflow_events
-   ├── protected_reserves
    ├── financial_goals
    ├── money_events
    ├── attention_items
@@ -585,7 +563,6 @@ Decision calculation:
 ```txt
 current assets
 + cashflow_events
-+ protected_reserves
 + financial_goals
 → ForecastCalculationService
 → FlexibleMoneyCalculationService
@@ -629,7 +606,6 @@ profiles 1 - n households.created_by
 profiles 1 - n snapshots.created_by
 profiles 1 - n assets.created_by
 profiles 1 - n cashflow_events.created_by
-profiles 1 - n protected_reserves.created_by
 profiles 1 - n financial_goals.created_by
 profiles 1 - n money_events.created_by
 profiles 1 - n audit_logs.actor_id
@@ -705,7 +681,6 @@ households 1 - n snapshot_asset_values
 households 1 - n debts
 households 1 - n debt_interest_periods
 households 1 - n cashflow_events
-households 1 - n protected_reserves
 households 1 - n money_events
 households 1 - n money_event_categories
 households 1 - n financial_goals
@@ -811,7 +786,7 @@ view_detail
 = xem chi tiết các khoản được chia sẻ
 
 edit_content
-= thêm/sửa tài sản, cash-flow dự kiến, reserve, mục tiêu, snapshot
+= thêm/sửa tài sản, cash-flow dự kiến, mục tiêu, snapshot
 
 admin
 = quản lý thành viên, quyền truy cập, household settings
@@ -908,7 +883,6 @@ Snapshot trả lời:
 ```txt
 Nhà mình tại thời điểm đó đang thế nào?
 Tiền thanh khoản là bao nhiêu?
-Reserve đã đặt là bao nhiêu?
 30 ngày sau snapshot có incoming/outgoing bao nhiêu?
 Lowest projected balance là bao nhiêu?
 Flexible money tại thời điểm snapshot là bao nhiêu?
@@ -928,7 +902,6 @@ total_savings                numeric not null default 0
 total_long_term_assets       numeric not null default 0
 total_debt                   numeric not null default 0
 
-protected_reserve_amount     numeric not null default 0
 forecast_horizon_days        integer not null default 30
 upcoming_income_amount       numeric not null default 0
 upcoming_outgoing_amount     numeric not null default 0
@@ -958,9 +931,9 @@ status
 - incomplete
 
 Gợi ý logic:
-- on_track: required cash-flow covered + reserve protected
-- watch: flexible money thấp / forecast gần reserve / data cần confirm
-- tight: projected balance âm hoặc reserve bị chạm đáng kể
+- on_track: required cash-flow covered + projected balance không âm
+- watch: flexible money thấp / large payment sắp tới / data cần confirm
+- tight: projected balance âm
 - incomplete: thiếu critical data
 
 source_mode
@@ -976,7 +949,6 @@ total_liquid >= 0
 total_savings >= 0
 total_long_term_assets >= 0
 total_debt >= 0
-protected_reserve_amount >= 0
 forecast_horizon_days > 0
 upcoming_income_amount >= 0
 upcoming_outgoing_amount >= 0
@@ -991,9 +963,6 @@ assets
 
 cashflow_events
 = các dòng tiền tương lai đang được forecast
-
-protected_reserves
-= constraint cần bảo vệ
 
 financial_goals
 = current goal state + contribution assumptions
@@ -2251,55 +2220,22 @@ household scope: unique(household_id, code)
 
 ---
 
-# 19C. Table: protected_reserves
+# 19C. `protected_reserves` — đã gỡ bỏ
 
-## Dùng để làm gì?
+Bảng này từng lưu mức sàn household muốn giữ khi tính Flexible Money:
+`flexible money = <liquid figure> − Σ active reserves`.
 
-Lưu financial constraint mà household muốn bảo vệ khi tính Flexible Money.
+Đã drop trong migration `20260816130000_drop_protected_reserves`, cùng enum
+`ReserveStatus` và cột `snapshots.protected_reserve_amount`.
 
-Reserve không nhất thiết là một account riêng.
+Lý do: đường ghi duy nhất còn sống là một bước onboarding; màn sửa/xoá không
+được mount ở đâu cả, nên `PATCH`/`DELETE` không có caller. Household nhập một
+lần rồi vĩnh viễn không sửa được, trong khi con số đó vẫn trừ thẳng vào figure
+Home hiển thị đầu tiên. Bảng cũng mang **cả** `deleted_at` lẫn status `archived`
+— hai cơ chế biến mất trên một dòng, thứ repo này cấm.
 
-Ví dụ:
-
-```txt
-Emergency fund
-100.000.000 VND
-```
-
-## Fields
-
-```txt
-id             uuid primary key
-household_id   uuid not null references households(id)
-
-name           text not null
-amount         numeric not null default 0
-status         text not null default 'active'
-note           text
-
-created_by     uuid references profiles(id)
-created_at     timestamptz not null default now()
-updated_by     uuid references profiles(id)
-updated_at     timestamptz
-deleted_at     timestamptz
-```
-
-## Enum
-
-```txt
-status:
-- active
-- archived
-```
-
-## Constraints
-
-```txt
-amount >= 0
-name <> ''
-```
-
-MVP UI có thể chỉ cho tạo một reserve chính, nhưng schema cho phép nhiều reserve để tránh migration sau này.
+Chỗ đúng cho "để riêng 100 triệu" là `financial_goals`: một goal không target
+date chính là một quỹ có tên, có số dư, có lịch sử — và sửa được.
 
 ---
 
@@ -2576,10 +2512,6 @@ cashflow_event.created
 cashflow_event.updated
 cashflow_event.completed
 
-reserve.created
-reserve.updated
-reserve.deleted
-
 money_event.created
 money_event.updated
 money_event.deleted
@@ -2761,7 +2693,6 @@ Khi user tạo snapshot:
    - formula_calculated: tính lại nếu cần
 3. App đọc:
    - debts
-   - active protected_reserves
    - cashflow_events trong forecast horizon
    - financial_goals cần projection
 4. ForecastCalculationService generate timeline theo ngày
@@ -2769,7 +2700,6 @@ Khi user tạo snapshot:
    - upcoming_income_amount
    - upcoming_outgoing_amount
    - lowest_projected_balance
-   - protected_reserve_amount
    - flexible_money
 6. App tính asset/debt totals
 7. Create snapshots
@@ -2799,7 +2729,6 @@ as_of_date
 horizon_days
 current liquid assets
 cashflow_events
-protected reserves
 ```
 
 ## Rule MVP
@@ -2829,7 +2758,7 @@ Concept:
 ```txt
 Flexible money
 = phần tiền household có thể cân nhắc sử dụng
-  sau khi bảo vệ obligations và reserve đã khai báo
+  sau khi bảo vệ các obligations đã khai báo
 ```
 
 Conservative MVP:
@@ -2838,7 +2767,6 @@ Conservative MVP:
 flexible_money_today
 =
 current_shared_liquid_money
-- protected_reserve
 - required_outflows_before_next_sufficiently_certain_inflow
 ```
 
@@ -2886,7 +2814,6 @@ Response:
 
 ```txt
 obligations_covered
-reserve_protected
 before_flexible_money
 after_flexible_money
 before_lowest_projected_balance
@@ -3045,7 +2972,7 @@ Có cash-flow outgoing bị overdue
 
 Dữ liệu chưa cập nhật quá lâu
 
-Lowest projected balance thấp hoặc reserve có nguy cơ bị chạm
+Lowest projected balance thấp
 
 User tạo attention_item liên quan tới một money_event
 
@@ -3227,7 +3154,7 @@ User chỉ được access dữ liệu nếu họ là member (còn active) của
 
 # 32. Indexes
 
-Recommended indexes cho schema v3.1. Các index của bảng cũ có thể đã tồn tại; các index cho `cashflow_events`, `protected_reserves`, `financial_goals.target_date` và `assets.financial_nature` cần được thêm trong migration tương ứng.
+Recommended indexes cho schema v3.1. Các index của bảng cũ có thể đã tồn tại; các index cho `cashflow_events`, `financial_goals.target_date` và `assets.financial_nature` cần được thêm trong migration tương ứng.
 
 Danh sách chính:
 
@@ -3270,7 +3197,6 @@ cashflow_events(household_id, direction, expected_date)
 cashflow_events(household_id, certainty)
 cashflow_events(household_id, owner_member_id)
 
-protected_reserves(household_id, status)
 
 money_events(household_id, event_date desc)
 money_events(household_id, event_type)
@@ -3325,9 +3251,6 @@ money_events
 
 attention_items
 → Khoản cần chú ý
-
-protected_reserves
-→ Quỹ cần bảo vệ
 
 financial_goals
 → Mục tiêu chung
@@ -3469,7 +3392,6 @@ assets
 asset_valuations
 
 cashflow_events
-protected_reserves
 financial_goals
 
 money_events
@@ -3535,9 +3457,6 @@ snapshot_asset_values
 cashflow_events
 = trong tương lai tiền nào dự kiến vào / ra
 
-protected_reserves
-= phần tiền nhà mình muốn bảo vệ
-
 financial_goals
 = nhà mình đang hướng tới điều gì, hiện có bao nhiêu và pace đóng góp thế nào
 
@@ -3558,7 +3477,7 @@ Calculation mental model:
 
 ```txt
 CURRENT STATE
-assets + debts + protected_reserves + financial_goals
+assets + debts + financial_goals
 
         ↓
 
@@ -3595,7 +3514,7 @@ Foresight:
 Biết tiền nào sắp vào/ra và household có thời điểm nào bị tight không.
 
 Decision:
-Preview một quyết định hôm nay sẽ ảnh hưởng Flexible Money, reserve và goal ra sao.
+Preview một quyết định hôm nay sẽ ảnh hưởng Flexible Money và goal ra sao.
 ```
 
 ---
@@ -3608,8 +3527,7 @@ Preview một quyết định hôm nay sẽ ảnh hưởng Flexible Money, reser
 1. Rename/refactor upcoming_payments → cashflow_events
 2. Add incoming + certainty + requirement + recurrence projection fields
 3. Rename money_events.upcoming_payment_id → cashflow_event_id
-4. Add protected_reserves
-5. Update financial_goals:
+4. Update financial_goals:
    - add current_amount
    - add current_amount_updated_at
    - deadline → target_date

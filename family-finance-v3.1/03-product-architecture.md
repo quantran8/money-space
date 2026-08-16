@@ -14,7 +14,6 @@ Bao gồm:
 - Ownership/holder.
 - Sharing.
 - Current balances.
-- Reserve.
 - Goals.
 - Data freshness.
 
@@ -46,8 +45,7 @@ Trả lời:
 Bao gồm:
 
 - What-if simulation.
-- Reserve impact.
-- Flexible money before/after.
+- Lowest projected balance before/after.
 - Goal delay.
 - Scenario sharing.
 
@@ -106,7 +104,6 @@ Chỉ yêu cầu:
 - Current money.
 - Upcoming income.
 - Upcoming obligation.
-- Reserve.
 - Goals.
 - Planned meaningful spending.
 
@@ -123,7 +120,7 @@ Không nói:
 
 > “Các khoản đã biết vẫn được cover.”
 
-> “Quỹ an toàn sẽ thấp hơn mức bạn đặt.”
+> “Số dư thấp nhất trong kỳ sẽ còn 12 triệu.”
 
 > “Goal dự kiến chậm khoảng 2 tháng.”
 
@@ -161,8 +158,9 @@ Ví dụ:
 - Savings account.
 - Một khoản tiền user muốn đưa vào household picture.
 
-> Quỹ dự phòng **không** phải một money source. Nó là một mức sàn trên forecast —
-> xem §5 "Protected Reserve". Tiền của quỹ vẫn nằm trong một money source có sẵn.
+> Một khoản để dành có tên — quỹ dự phòng, tiền cưới — **không** phải money
+> source riêng. Tiền của nó vẫn nằm trong một money source có sẵn; thứ cần khai
+> là ý định, và chỗ của ý định đó là **Financial Goal**.
 
 Fields:
 
@@ -263,33 +261,30 @@ Fields:
 - Status.
 - Related goal optional.
 
-## Protected Reserve
+## Protected Reserve — đã gỡ bỏ
 
-Mức household không muốn để số dư tụt xuống dưới.
+Từng là một **mức sàn trên forecast**: household khai mức không muốn để số dư
+tụt xuống dưới, và flexible money bị trừ đi mức đó.
 
-Ví dụ:
+Đã gỡ bỏ hoàn toàn. Lý do không phải là khái niệm sai, mà là nó **chưa bao giờ
+được nối dây**: chỗ duy nhất còn ghi là một bước trong onboarding, còn màn sửa
+thì không được mount ở đâu cả — nhập một lần rồi vĩnh viễn không đổi được, trong
+khi con số đó vẫn trừ thẳng vào figure Home hiển thị đầu tiên.
 
-> Quỹ dự phòng: 100 triệu.
+Chỗ đúng cho "nhà mình muốn để riêng 100 triệu" là **Financial Goal**: goal không
+target date chính là một quỹ có tên, có số dư và có lịch sử đóng góp — và nó
+sửa được.
 
-Đây là **sàn trên forecast**, không phải một account và cũng không phải hàng rào.
-Không có khoản tiền nào bị chuyển đi hay bị khoá — tiền vẫn tiêu được; app chỉ
-cho thấy trước khi số dư dự kiến chạm mức đó.
+Nếu sau này cần dựng lại một mức sàn, hai điều đã làm hỏng lần đầu vẫn còn
+nguyên giá trị:
 
-Hai hệ quả:
-
-- **Khoản sắp phải chi không được cộng vào đây.** Thuế, học phí… là Upcoming
+- **Khoản sắp phải chi không được cộng vào sàn.** Thuế, học phí… là Upcoming
   Obligation: forecast đã kéo số dư xuống đúng ngày đến hạn và chúng tự hết vai
   trò sau khi trả. Cộng vào sàn là trừ hai lần, và một con số khai tay thì không
   tự hết hạn.
 - **Không derive được.** Không dữ liệu nào nói household muốn giữ 100 triệu chứ
-  không phải 60 triệu — đó là một quyết định, nên phải được khai.
-
-Mỗi household chỉ có **một** mức. Nhiều khoản để riêng có tên là **Financial
-Goal** (goal không target date chính là một quỹ có tên, có số dư và có lịch sử
-đóng góp).
-
-UI chỉ dùng chữ **Quỹ dự phòng** — "Protected Reserve" là tên bảng, không phải
-từ vựng của user.
+  không phải 60 triệu — đó là một quyết định, nên phải được khai, nên phải sửa
+  được ở một màn hình có thật.
 
 ## Financial Goal
 

@@ -1,17 +1,13 @@
-import {
-  DEFAULT_VISIBILITY_LEVEL,
-  normalizeVisibility,
-  type VisibilityLevel,
-} from '@/features/assets/model/asset-classification'
 import { z } from 'zod'
 
 import {
   assetClassForType,
+  assetTypeForForm,
   assetTypeOrder,
   calculationTypeForType,
+  liquidityForAsset,
   valuationModeForType,
   type Asset,
-  type AssetLiquidity,
   type AssetType,
   type ValuationMode,
 } from '@/features/assets/model/assets'
@@ -30,7 +26,6 @@ export type AssetTotals = {
 export type AssetForm = {
   name: string
   type: AssetType
-  liquidity: AssetLiquidity
   note: string
   // manual
   value: string
@@ -43,15 +38,24 @@ export type AssetForm = {
   // formula-calculated
   principal: string
   interestRate: string
+  /**
+   * Only meaningful for `loan_receivable`: money lent to a friend usually earns
+   * nothing, so interest is opt-in rather than a field that must be zeroed out.
+   * Every other formula type always charges interest.
+   */
+  hasInterest: boolean
   startDate: string
   maturityDate: string
   interestPayment: 'end_of_term' | 'monthly'
   nonTermRate: string
   interestDestination: 'wallet' | 'principal'
   receivingWalletId: string
-  // --- classification ------------------------------------------------------
-  /** How much of this the shared picture shows. Never affects the totals. */
-  visibilityLevel: VisibilityLevel
+  /**
+   * Whether this money counts towards tiền linh hoạt. Starts from the type's
+   * default and is the user's to change: cash held for someone else is not
+   * spendable, and gold they would genuinely sell this month is.
+   */
+  countsAsFlexible: boolean
   /** Who is responsible for the money — distinct from who entered the record. */
   holderMemberId: string
 }
@@ -59,7 +63,6 @@ export type AssetForm = {
 export const defaultAssetFormValues: AssetForm = {
   name: '',
   type: 'cash',
-  liquidity: 'usable_now',
   note: '',
   value: '',
   areaSqm: '',
@@ -69,13 +72,15 @@ export const defaultAssetFormValues: AssetForm = {
   purchasePrice: '',
   principal: '',
   interestRate: '',
+  hasInterest: false,
   startDate: AS_OF,
   maturityDate: '',
   interestPayment: 'end_of_term',
   nonTermRate: '',
   interestDestination: 'principal',
   receivingWalletId: '',
-  visibilityLevel: DEFAULT_VISIBILITY_LEVEL,
+  // `cash` is the default type, and cash is spendable.
+  countsAsFlexible: true,
   holderMemberId: '',
 }
 
@@ -85,19 +90,55 @@ export function parseMoneyToVnd(raw: string): number {
 }
 
 /**
+ * Cash and a bank account hold a balance the user reads off an app — a known
+ * figure, not an estimate. Calling it "giá trị ước tính" invites them to guess
+ * at a number they already know exactly.
+ */
+const balanceLabelTypes: ReadonlySet<AssetType> = new Set<AssetType>(['cash', 'bank_account'])
+
+export function manualValueLabelKey(type: AssetType): string {
+  return balanceLabelTypes.has(type) ? 'assets.form.balance' : 'assets.form.value'
+}
+
+/**
+ * The units gold is actually held in here. A free-text field produced "chỉ",
+ * "Chi", "chi vang" for one and the same unit, which makes a holding
+ * incomparable with the next one.
+ */
+export const goldUnits = ['chỉ', 'lượng', 'gram'] as const
+
+/** Loans (and only loans) can be interest-free — see `AssetForm.hasInterest`. */
+export function isInterestOptional(type: AssetType): boolean {
+  return type === 'loan_receivable'
+}
+
+/** Whether the interest fields apply at all, given the type and the toggle. */
+export function chargesInterest(values: Pick<AssetForm, 'type' | 'hasInterest'>): boolean {
+  return !isInterestOptional(values.type) || values.hasInterest
+}
+
+/** A share is indivisible — quantities for stock are whole numbers only. */
+export function isWholeQuantityType(type: AssetType): boolean {
+  return type === 'stock'
+}
+
+/**
  * The display name for a market-priced holding.
  *
- * For stock / crypto / gold the symbol IS the name — asking for both makes the
- * user type "FPT" twice. `name` stays the display identity everywhere (list
- * rows, detail title, sale dialog), so it is derived here rather than dropped,
- * and the form hides the field for these types (§22.1: never ask for what the
- * app can derive). A name the user typed explicitly still wins.
+ * A market holding's identifier is also its display name. Asking for another
+ * name creates a hidden distinction with no product value, so market assets
+ * always derive it from the symbol/kind entered by the user.
  */
 export function resolveAssetName(values: AssetForm): string {
-  const typed = values.name.trim()
-  if (typed) return typed
   if (valuationModeForType(values.type) === 'market_priced') return values.symbol.trim().toUpperCase()
-  return typed
+  return values.name.trim()
+}
+
+function resolveMarketUnit(values: AssetForm): string {
+  const symbol = values.symbol.trim().toUpperCase()
+  if (values.type === 'stock') return 'cổ'
+  if (values.type === 'crypto' || values.type === 'foreign_currency') return symbol
+  return values.unit.trim()
 }
 
 /** Build an Asset from raw form values, or null if inputs are incomplete. */
@@ -107,10 +148,12 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
     id,
     name: resolveAssetName(values),
     type: values.type,
-    liquidity: values.liquidity,
+    countsAsFlexible: values.countsAsFlexible,
+    // Derived here too so the optimistic local asset lands in the same bucket
+    // the server will store it in.
+    liquidity: liquidityForAsset(values.type, values.countsAsFlexible),
     currency: 'VND',
     note: values.note.trim(),
-    visibilityLevel: values.visibilityLevel,
     holderMemberId: values.holderMemberId || null,
   }
 
@@ -136,9 +179,9 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
       valuationMode: 'market_priced',
       marketPosition: {
         assetClass,
-        symbol: values.symbol.trim(),
+        symbol: values.symbol.trim().toUpperCase(),
         quantity,
-        unit: values.unit.trim() || 'unit',
+        unit: resolveMarketUnit(values),
         quoteCurrency: 'VND',
         purchasePrice: Number.isFinite(purchasePrice) ? purchasePrice : undefined,
       },
@@ -148,7 +191,9 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
   // formula_calculated
   const calculationType = calculationTypeForType(values.type)
   const principal = parseMoneyToVnd(values.principal)
-  const rate = parseRawDecimal(values.interestRate)
+  // An interest-free loan is 0%, not a missing rate.
+  const earnsInterest = chargesInterest(values)
+  const rate = earnsInterest ? parseRawDecimal(values.interestRate) : 0
   if (!calculationType || !Number.isFinite(principal) || !Number.isFinite(rate) || !values.startDate)
     return null
   const nonTermRate = parseRawDecimal(values.nonTermRate)
@@ -163,7 +208,7 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
       interestRate: rate,
       startDate: values.startDate,
       maturityDate: values.maturityDate || null,
-      interestPayment: values.interestPayment,
+      interestPayment: earnsInterest ? values.interestPayment : 'end_of_term',
       nonTermRate: Number.isFinite(nonTermRate) ? nonTermRate : 0,
       interestDestination: values.interestDestination,
       receivingWalletId:
@@ -188,19 +233,14 @@ function decimalToRaw(value?: number): string {
 
 /** Build editable form values from an existing asset (edit mode). */
 export function fromAsset(asset: Asset): AssetForm {
-  // A stored name equal to the symbol was DERIVED, not typed (see
-  // `resolveAssetName`). Round-tripping it into the optional custom-name field
-  // would turn a derived name into an explicit one on the next save, so it
-  // comes back empty and stays derived.
-  const symbol = asset.marketPosition?.symbol ?? ''
-  const isDerivedName =
-    Boolean(symbol) && asset.name.trim().toUpperCase() === symbol.trim().toUpperCase()
+  // Market names are always derived from their identifier, so no hidden custom
+  // name is round-tripped through the form.
+  const isMarketPriced = asset.valuationMode === 'market_priced'
 
   return {
     ...defaultAssetFormValues,
-    name: isDerivedName ? '' : asset.name,
-    type: asset.type,
-    liquidity: asset.liquidity,
+    name: isMarketPriced ? '' : asset.name,
+    type: assetTypeForForm(asset.type),
     note: asset.note,
     value: moneyToRaw(asset.manualValue),
     areaSqm: decimalToRaw(asset.areaSqm),
@@ -210,14 +250,17 @@ export function fromAsset(asset: Asset): AssetForm {
     purchasePrice: moneyToRaw(asset.marketPosition?.purchasePrice),
     principal: moneyToRaw(asset.calculationTerm?.principalAmount),
     interestRate: decimalToRaw(asset.calculationTerm?.interestRate),
+    // A stored 0% loan reopens with the interest toggle off, the way it was saved.
+    hasInterest: (asset.calculationTerm?.interestRate ?? 0) > 0,
     startDate: asset.calculationTerm?.startDate ?? AS_OF,
     maturityDate: asset.calculationTerm?.maturityDate ?? '',
     interestPayment: asset.calculationTerm?.interestPayment ?? 'end_of_term',
     nonTermRate: decimalToRaw(asset.calculationTerm?.nonTermRate),
     interestDestination: asset.calculationTerm?.interestDestination ?? 'principal',
     receivingWalletId: asset.calculationTerm?.receivingWalletId ?? '',
-    // Through the normalizer: a stored record may still carry a retired level.
-    visibilityLevel: normalizeVisibility(asset.visibilityLevel),
+    // Read the bucket, not the override flag: `liquidity` already folds in both
+    // the type default and any decision the household made.
+    countsAsFlexible: asset.liquidity === 'usable_now',
     holderMemberId: asset.holderMemberId ?? '',
   }
 }
@@ -232,7 +275,6 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
       // `.superRefine` below rather than here, since it depends on `type`.
       name: localizedOptionalText(t, 120),
       type: z.enum(assetTypeOrder as [AssetType, ...AssetType[]]),
-      liquidity: z.enum(['usable_now', 'not_immediately_usable', 'long_term']),
       note: localizedOptionalText(t, 120),
       value: z.string().trim(),
       areaSqm: z.string().trim(),
@@ -242,16 +284,14 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
       purchasePrice: z.string().trim(),
       principal: z.string().trim(),
       interestRate: z.string().trim(),
+      hasInterest: z.boolean(),
       startDate: z.string().trim(),
       maturityDate: z.string().trim(),
       interestPayment: z.enum(['end_of_term', 'monthly']),
       nonTermRate: z.string().trim(),
       interestDestination: z.enum(['wallet', 'principal']),
       receivingWalletId: z.string().trim(),
-      // Two levels only. `fromAsset` runs stored values through
-      // `normalizeVisibility`, so a legacy `grouped`/`private` row arrives here
-      // already folded and still validates.
-      visibilityLevel: z.enum(['detail', 'summary_only']),
+      countsAsFlexible: z.boolean(),
       holderMemberId: z.string().trim(),
     })
     .superRefine((values, ctx) => {
@@ -271,7 +311,11 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
 
       if (mode === 'manual') {
         if (!values.value) {
-          ctx.addIssue({ path: ['value'], code: 'custom', message: required(t('assets.form.value')) })
+          ctx.addIssue({
+            path: ['value'],
+            code: 'custom',
+            message: required(t(manualValueLabelKey(values.type))),
+          })
         } else if (!moneyLike.test(values.value)) {
           ctx.addIssue({ path: ['value'], code: 'custom', message: invalidMoney })
         }
@@ -294,7 +338,7 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
           ctx.addIssue({
             path: ['symbol'],
             code: 'custom',
-            message: required(t('assets.form.symbol')),
+            message: required(t(`assets.form.market.${values.type}.symbol`)),
           })
         }
         const quantity = parseRawDecimal(values.quantity)
@@ -302,19 +346,32 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
           ctx.addIssue({
             path: ['quantity'],
             code: 'custom',
-            message: required(t('assets.form.quantity')),
+            message: required(t(`assets.form.market.${values.type}.quantity`)),
           })
         } else if (!Number.isFinite(quantity) || quantity < 0) {
           ctx.addIssue({ path: ['quantity'], code: 'custom', message: invalidMoney })
+        } else if (isWholeQuantityType(values.type) && !Number.isInteger(quantity)) {
+          ctx.addIssue({
+            path: ['quantity'],
+            code: 'custom',
+            message: t(`assets.form.market.${values.type}.quantityInteger`),
+          })
         }
         if (!values.purchasePrice) {
           ctx.addIssue({
             path: ['purchasePrice'],
             code: 'custom',
-            message: required(t('assets.form.purchasePrice')),
+            message: required(t(`assets.form.market.${values.type}.purchasePrice`)),
           })
         } else if (!moneyLike.test(values.purchasePrice)) {
           ctx.addIssue({ path: ['purchasePrice'], code: 'custom', message: invalidMoney })
+        }
+        if (values.type === 'gold' && !values.unit) {
+          ctx.addIssue({
+            path: ['unit'],
+            code: 'custom',
+            message: required(t('assets.form.market.gold.unit')),
+          })
         }
       }
 
@@ -328,8 +385,10 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
         } else if (!moneyLike.test(values.principal)) {
           ctx.addIssue({ path: ['principal'], code: 'custom', message: invalidMoney })
         }
-        const rate = parseRawDecimal(values.interestRate)
-        if (!values.interestRate || !Number.isFinite(rate) || rate < 0) {
+        // An interest-free loan has no rate to enter, so nothing to require.
+        const earnsInterest = chargesInterest(values)
+        const rate = earnsInterest ? parseRawDecimal(values.interestRate) : 0
+        if (earnsInterest && (!values.interestRate || !Number.isFinite(rate) || rate < 0)) {
           ctx.addIssue({
             path: ['interestRate'],
             code: 'custom',
@@ -338,6 +397,20 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
         }
         if (!values.startDate) {
           ctx.addIssue({ path: ['startDate'], code: 'custom', message: t('validation.requiredDate') })
+        }
+        // A due date is often not agreed up front when the money is lent to
+        // family, so it stays optional — only its order is checked when given.
+        if (
+          values.type === 'loan_receivable' &&
+          values.maturityDate &&
+          values.startDate &&
+          values.maturityDate < values.startDate
+        ) {
+          ctx.addIssue({
+            path: ['maturityDate'],
+            code: 'custom',
+            message: t('assets.form.maturityBeforeStart'),
+          })
         }
         // Non-term (early-withdrawal) rate is required for saving deposits.
         if (values.type === 'saving_deposit') {

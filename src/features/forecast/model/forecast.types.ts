@@ -23,8 +23,6 @@ export type AssumptionCode =
   | 'estimated_incoming_excluded'
   | 'planned_outflows_included'
   | 'no_confirmed_inflow_in_horizon'
-  | 'reserve_applied'
-  | 'no_reserve_declared'
   | 'overdue_events_clamped_to_today'
   | 'stale_asset_values'
   | 'same_day_outflows_ordered_first'
@@ -99,8 +97,6 @@ export type ForecastResult = {
   lowestProjectedBalanceDate: string
   endingProjectedBalance: number
   obligationsCovered: boolean
-  protectedReserveAmount: number
-  reserveProtected: boolean
   nextSufficientlyCertainInflow: {
     date: string
     amount: number
@@ -123,13 +119,10 @@ export type FinancialState = 'on_track' | 'watch' | 'tight' | 'incomplete'
 export type FinancialStateReason =
   | 'no_liquid_sources'
   | 'no_cashflow_events'
-  | 'no_reserve_declared'
   | 'required_payment_not_covered'
   | 'lowest_projected_balance_negative'
-  | 'reserve_significantly_breached'
   | 'flexible_money_low'
   | 'large_payment_upcoming'
-  | 'forecast_near_reserve'
   | 'unconfirmed_critical_data'
   | 'stale_data'
 
@@ -147,34 +140,32 @@ export type FinancialStateResult = {
  * NEVER label any of these a spending allowance (design §12.3) — not "Ngân sách
  * được phép tiêu", not "Số tiền bạn nên tiêu".
  *
- * There are THREE distinct figures and they are not interchangeable:
+ * There are TWO distinct figures and they are not interchangeable:
  *  - `flexibleMoneyToday` — the §26B conservative form: what is free before the
  *    next sufficiently-certain inflow arrives.
- *  - `flexibleMoneyHorizon` — spendable without breaching the reserve at ANY
- *    point in the horizon. **This is the one what-if compares before/after.**
- *  - `flexibleMoneyEndOfHorizon` — end-of-horizon variant; must be labelled
- *    with its assumption whenever it is shown.
+ *  - `lowestProjectedBalance` — the horizon form: what is free without the
+ *    balance ever going negative. **This is the one what-if compares
+ *    before/after.** It used to be re-exported as `flexibleMoneyHorizon` after
+ *    subtracting the protected reserve; with the reserve retired the two are
+ *    the same number, so only one name survives.
  *
- * All three MAY BE NEGATIVE.
+ * Both MAY BE NEGATIVE.
  */
 export type FlexibleMoneyResult = {
   asOfDate: string
   horizonDays: number
   currentSharedLiquidMoney: number
-  protectedReserveAmount: number
   /** §26B conservative form. MAY BE NEGATIVE. */
   flexibleMoneyToday: number
   requiredOutflowsBeforeNextInflow: number
   nextSufficientlyCertainInflow: { date: string; amount: number } | null
   /** The occurrence keys behind the subtraction, for "how was this computed". */
   consideredOutflowKeys: string[]
-  /** MAY BE NEGATIVE. What what-if compares. */
-  flexibleMoneyHorizon: number
-  /** MAY BE NEGATIVE. Label with its assumption when shown. */
-  flexibleMoneyEndOfHorizon: number
+  /** The horizon form. MAY BE NEGATIVE. What what-if compares. */
   lowestProjectedBalance: number
   lowestProjectedBalanceDate: string
+  /** MAY BE NEGATIVE. Label with its assumption when shown. */
+  endingProjectedBalance: number
   obligationsCovered: boolean
-  reserveProtected: boolean
   assumptions: CalculationAssumption[]
 }

@@ -6,8 +6,6 @@ import { toast } from 'sonner'
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { HouseholdOverviewCard } from '@/features/household/ui/components/household-overview-card'
-import { HouseholdAdminDisclosure } from '@/features/household/ui/components/household-admin-disclosure'
-import { HouseholdReserveCard } from '@/features/household/ui/components/household-reserve-card'
 import { useMembersPage } from '@/features/members/hooks/use-members-page'
 import { useSettingsPage } from '@/features/settings/hooks/use-settings-page'
 import { deleteHousehold } from '@/features/settings/api/settings.repository'
@@ -79,21 +77,12 @@ export function HouseholdPage() {
         invitedCount={invitedCount}
         holdsByMember={holdsByMember}
         onInvite={openInvite}
+        onRemoveMember={setRemoveId}
       />
-
-      {!isSettingsLoading ? <HouseholdReserveCard form={settingsForm} /> : null}
-
 
       <CategoriesCard />
 
-      <DataCard />
-
-      <HouseholdAdminDisclosure
-        members={members}
-        onInvite={openInvite}
-        onRemoveMember={setRemoveId}
-        onDeleteHousehold={() => setConfirmDeleteOpen(true)}
-      />
+      <DataCard onDelete={() => setConfirmDeleteOpen(true)} />
 
       <InviteFormDialog
         open={formOpen}

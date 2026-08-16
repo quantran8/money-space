@@ -29,8 +29,10 @@ import {
 } from '@/features/debts/model/debts-interest'
 import type { DebtItem, DebtStatus } from '@/features/debts/model/debts.types'
 import { useMembers } from '@/features/members/hooks/use-members'
+import { currentMemberId } from '@/features/members/model/members.types'
 import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
+import { useAuthStore } from '@/shared/stores/auth-store'
 
 export function useDebtsPage() {
   const { t } = useTranslation()
@@ -41,6 +43,8 @@ export function useDebtsPage() {
   const { payments, isLoading: isPaymentsLoading } = usePaymentsCompat()
   const { assets } = useAssets()
   const { members } = useMembers()
+  const userId = useAuthStore((state) => state.user?.id)
+  const creatorMemberId = currentMemberId(members, userId)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showMoreDetails, setShowMoreDetails] = useState(false)
@@ -235,12 +239,12 @@ export function useDebtsPage() {
 
     reset({
       ...defaultValues,
-      ownerMemberId: memberOptions[0]?.value ?? '',
+      ownerMemberId: creatorMemberId ?? '',
       // Creating a debt must not move money until the user explicitly enables
       // "Ghi nhận sự kiện nhận tiền" in step 2.
       receivedToAssetId: '',
     })
-  }, [dialogOpen, editingDebt, memberOptions, reset])
+  }, [creatorMemberId, dialogOpen, editingDebt, reset])
 
   function openCreate() {
     setEditingId(null)

@@ -12,21 +12,22 @@ import type {
  * Balance tone (§26, design §12).
  *
  * **Red is reserved for an actual projected shortfall** — a balance below zero.
- * Orange means "near the protected reserve": still solvent, worth a look.
- * Anything else is neutral. Escalating orange to red would turn a heads-up into
- * an alarm, which is exactly the tone the product forbids.
+ * Anything else is neutral; escalating a solvent balance to red would turn a
+ * heads-up into an alarm, which is exactly the tone the product forbids.
+ *
+ * There used to be a middle, amber tier: "near the protected reserve". It went
+ * with the reserve. Re-adding a warning band means choosing a threshold the
+ * household never stated, so this stays binary until there is a figure they
+ * actually gave us to compare against.
  */
-export type BalanceTone = 'shortfall' | 'near-reserve' | 'normal'
+export type BalanceTone = 'shortfall' | 'normal'
 
-export function balanceTone(balance: number, protectedReserveAmount: number): BalanceTone {
-  if (balance < 0) return 'shortfall'
-  if (protectedReserveAmount > 0 && balance < protectedReserveAmount) return 'near-reserve'
-  return 'normal'
+export function balanceTone(balance: number): BalanceTone {
+  return balance < 0 ? 'shortfall' : 'normal'
 }
 
 export const BALANCE_TONE_CLASS: Record<BalanceTone, string> = {
   shortfall: 'text-alert',
-  'near-reserve': 'text-attention',
   normal: 'text-ink2',
 }
 

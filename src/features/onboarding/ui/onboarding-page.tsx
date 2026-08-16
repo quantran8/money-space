@@ -12,13 +12,12 @@ import {
   FirstPictureStep,
   FirstWhatIfStep,
   MainGoalStep,
-  ReserveStep,
 } from '@/features/onboarding/ui/components/wizard-steps'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
 /**
- * Onboarding — 12 spec steps folded into 10 screens (04 §onboarding), resumable
+ * Onboarding — the spec's steps folded into 9 screens (04 §onboarding), resumable
  * via `{onboardingStep, householdId}` in the persisted household store.
  *
  * It ends on two deliberate beats: the **Clarity Moment** (the household's
@@ -105,8 +104,7 @@ export function OnboardingPage() {
                 </div>
               ) : null}
 
-              {wizard.step === 'reserve' ? <ReserveStep /> : null}
-              {wizard.step === 'recurring_income' ? (
+                  {wizard.step === 'recurring_income' ? (
                 <CashflowStep direction="incoming" />
               ) : null}
               {wizard.step === 'obligations' ? <CashflowStep direction="outgoing" /> : null}

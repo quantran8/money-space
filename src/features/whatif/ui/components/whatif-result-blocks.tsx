@@ -7,9 +7,15 @@ import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
 /**
- * The five result blocks, in the **mandated order** (§26D):
- *   Upcoming Safety → Reserve impact → Flexible before/after → Goal consequence
- *   → Assumptions.
+ * The result blocks, in the **mandated order** (§26D):
+ *   Upcoming Safety → Goal consequence → Assumptions.
+ *
+ * §26D used to mandate five. Two went with the protected reserve: "Reserve
+ * impact" had nothing left to report, and "Flexible before/after" was showing
+ * `lowestProjectedBalance` under a second name — the same two numbers as the
+ * block above it. So the first block absorbed what survived: the delta sentence
+ * and the "obligations not covered" line, which is about coverage, not the
+ * reserve, and would otherwise have been deleted along with its container.
  *
  * Every block reports CONSEQUENCE. None of them says whether to buy — no
  * "bạn nên / không nên mua", no recommendation, no verdict. `resultType` only
@@ -21,7 +27,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
 
   return (
     <div className="space-y-3">
-      {/* 1 — Upcoming Safety */}
+      {/* 1 — Upcoming Safety. NEVER labelled a spending allowance. */}
       <SubSection title={t('whatif.blocks.upcomingSafety')}>
         <Row
           label={t('whatif.lowestBalance')}
@@ -33,14 +39,10 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         <p className="mt-2 text-xs text-ink2">
           {t('whatif.lowestBalanceOn', { date: after.lowestProjectedBalanceDate })}
         </p>
-      </SubSection>
-
-      {/* 2 — Reserve impact */}
-      <SubSection title={t('whatif.blocks.reserveImpact')}>
-        <p className="text-sm">
-          {after.reserveProtected
-            ? t('whatif.reserve.intact')
-            : t('whatif.reserve.breached')}
+        <p className="mt-2 text-xs text-ink2">
+          {t('whatif.flexibleDelta', {
+            amount: formatVndShort(Math.abs(delta.lowestProjectedBalance)),
+          })}
         </p>
         {!after.obligationsCovered ? (
           <p className="mt-2 text-sm text-attention">
@@ -49,21 +51,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         ) : null}
       </SubSection>
 
-      {/* 3 — Flexible before/after. NEVER labelled a spending allowance. */}
-      <SubSection title={t('whatif.blocks.flexible')}>
-        <Row
-          label={t('whatif.flexibleHorizon')}
-          before={formatVndShort(before.flexibleMoneyHorizon)}
-          after={formatVndShort(after.flexibleMoneyHorizon)}
-        />
-        <p className="mt-2 text-xs text-ink2">
-          {t('whatif.flexibleDelta', {
-            amount: formatVndShort(Math.abs(delta.flexibleMoneyHorizon)),
-          })}
-        </p>
-      </SubSection>
-
-      {/* 4 — Goal consequence, only when a goal was in scope. */}
+      {/* 2 — Goal consequence, only when a goal was in scope. */}
       {after.goal ? (
         <SubSection title={t('whatif.blocks.goal')}>
           {delta.goalDelayMonths !== null && delta.goalDelayMonths !== 0 ? (
@@ -83,7 +71,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         </SubSection>
       ) : null}
 
-      {/* 5 — Assumptions */}
+      {/* 3 — Assumptions */}
       <AssumptionsNote assumptions={result.assumptions} />
     </div>
   )

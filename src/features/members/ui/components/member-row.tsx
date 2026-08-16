@@ -1,5 +1,7 @@
+import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { Button } from '@/components/ui/button'
 import { StatusChip } from '@/components/ui/status-chip'
 import type { MemberItem } from '@/features/members/model/members.types'
 
@@ -7,6 +9,7 @@ type MemberRowProps = {
   member: MemberItem
   /** How many money sources this person is responsible for. */
   holdsCount: number
+  onRemove: (memberId: string) => void
 }
 
 /**
@@ -17,11 +20,10 @@ type MemberRowProps = {
  * both partners have the same rights, so there is nothing here to grant.
  *
  * What replaces it is the question the product actually cares about: not "who
- * is allowed what" but "who is responsible for what". Removing a member and
- * inviting one live in the household admin disclosure, away from the everyday
- * view, because they change who is in the room rather than what is in it.
+ * is allowed what" but "who is responsible for what". The row also keeps its
+ * member-removal action close to the person it affects.
  */
-export function MemberRow({ member, holdsCount }: MemberRowProps) {
+export function MemberRow({ member, holdsCount, onRemove }: MemberRowProps) {
   const { t } = useTranslation()
 
   return (
@@ -45,14 +47,29 @@ export function MemberRow({ member, holdsCount }: MemberRowProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:justify-end">
-          <p className="text-[12px] text-ink2">
-            {t('members.list.holdsSources', { count: holdsCount })}
-          </p>
+          {holdsCount > 0 ? (
+            <p className="text-[12px] text-ink2">
+              {t('members.list.holdsSources', { count: holdsCount })}
+            </p>
+          ) : null}
           <StatusChip tone={member.status === 'active' ? 'accent' : 'attention'}>
             {member.status === 'active'
               ? t('members.list.active')
               : t('members.list.pending')}
           </StatusChip>
+          {member.status === 'active' ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-alert hover:bg-alert-tint hover:text-alert"
+              onClick={() => onRemove(member.id)}
+              aria-label={t('common.confirmDelete.description', { name: member.name || member.email })}
+            >
+              <Trash2 className="size-3.5" />
+              {t('common.remove')}
+            </Button>
+          ) : null}
         </div>
       </div>
     </article>

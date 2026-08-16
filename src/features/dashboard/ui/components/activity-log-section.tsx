@@ -55,11 +55,6 @@ export function ActivityLogSection({ entries }: { entries: ActivityEntry[] }) {
                   {actorInitials(entry)}
                 </span>
                 <span className="flex-1">{describeEntry(entry, t)}</span>
-                {/*
-                  A visibility change deliberately prints no amount: showing the
-                  record\'s value in the very entry that folded it would undo the
-                  fold, in the one place both partners are sure to look.
-                */}
                 {entry.amount === null ? null : (
                   <span className="num w-24 text-right text-ink2">
                     {formatVndScale(entry.amount)}

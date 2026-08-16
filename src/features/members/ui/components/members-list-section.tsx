@@ -13,6 +13,7 @@ type MembersListSectionProps = {
   /** Money sources each member is responsible for, keyed by member id. */
   holdsByMember: Record<string, number>
   onInvite: () => void
+  onRemoveMember: (memberId: string) => void
 }
 
 export function MembersListSection({
@@ -21,14 +22,12 @@ export function MembersListSection({
   invitedCount,
   holdsByMember,
   onInvite,
+  onRemoveMember,
 }: MembersListSectionProps) {
   const { t } = useTranslation()
 
-  /*
-   * Inviting lives in the household admin disclosure once the couple exists —
-   * it changes who is in the room, so it does not belong in the everyday view.
-   * A one-person household is the exception: hiding it there turns the app
-   * into a dead end at exactly the moment that forming the couple is the point.
+  /* A solo household gets a more prominent invitation prompt; once there are
+   * multiple members, the compact header action keeps the same flow available.
    */
   const isSolo = !isLoading && members.length < 2
 
@@ -36,7 +35,18 @@ export function MembersListSection({
     <Panel>
       <PanelHeader
         title={t('household.merged.membersTitle')}
-        meta={t('members.list.count', { count: members.length })}
+        action={
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[11px] text-ink3">
+              {t('members.list.count', { count: members.length })}
+            </span>
+            {!isLoading && !isSolo ? (
+              <Button type="button" variant="secondary" size="sm" onClick={onInvite}>
+                {t('members.invite.action')}
+              </Button>
+            ) : null}
+          </div>
+        }
       />
 
       <div className="mt-7 space-y-1">
@@ -49,6 +59,7 @@ export function MembersListSection({
               key={member.id}
               member={member}
               holdsCount={holdsByMember[member.id] ?? 0}
+              onRemove={onRemoveMember}
             />
           ))}
       </div>

@@ -122,16 +122,17 @@ export function useAssetsPage() {
         name: nextAsset.name,
         type: nextAsset.type,
         valuationMode: nextAsset.valuationMode,
-        liquidity: nextAsset.liquidity,
         currency: nextAsset.currency,
         note: nextAsset.note,
         areaSqm: nextAsset.areaSqm,
         manualValue: nextAsset.manualValue,
         marketPosition: nextAsset.marketPosition,
         calculationTerm: nextAsset.calculationTerm,
+        // The one liquidity input the server accepts: it derives the bucket
+        // from this, and every figure reads that same bucket.
+        countsAsFlexible: values.countsAsFlexible,
         // `holderMemberId` sends null rather than '' so the backend stores an
         // absent value.
-        visibilityLevel: values.visibilityLevel,
         holderMemberId: values.holderMemberId || null,
       }
 

@@ -7,7 +7,6 @@ import { useCashflowEvents } from '@/features/cashflow/hooks/use-cashflow-events
 import { useCashflowForm } from '@/features/cashflow/hooks/use-cashflow-form'
 import { useUpcomingPage } from '@/features/forecast/hooks/use-upcoming-page'
 import { ALLOWED_HORIZONS, type HorizonDays } from '@/features/forecast/model/forecast.types'
-import { AssumptionsNote } from '@/features/forecast/ui/components/assumptions-note'
 import { ForecastTimeline } from '@/features/forecast/ui/components/forecast-timeline'
 import { SummaryStrip } from '@/features/forecast/ui/components/summary-strip'
 import { useMembers } from '@/features/members/hooks/use-members'
@@ -76,8 +75,6 @@ export function UpcomingPage() {
 
       <ForecastTimeline
         days={days}
-        protectedReserveAmount={forecast?.protectedReserveAmount ?? 0}
-        endingProjectedBalance={forecast?.endingProjectedBalance ?? 0}
         ownerNameByEventId={ownerNameByEventId}
         isLoading={isLoading}
         isEmpty={isEmpty}
@@ -93,8 +90,6 @@ export function UpcomingPage() {
         onEdit={cashflowForm.openEdit}
         onDelete={cashflowForm.handleDelete}
       />
-
-      {forecast ? <AssumptionsNote assumptions={forecast.assumptions} /> : null}
 
       <CashflowEventFormDialog
         open={cashflowForm.formOpen}

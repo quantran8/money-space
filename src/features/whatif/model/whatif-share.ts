@@ -21,14 +21,11 @@ export function buildShareSummary(result: WhatIfResult, t: Translate): string {
       before: formatVndShort(before.lowestProjectedBalance),
       after: formatVndShort(after.lowestProjectedBalance),
     }),
-    t('whatif.share.flexible', {
-      before: formatVndShort(before.flexibleMoneyHorizon),
-      after: formatVndShort(after.flexibleMoneyHorizon),
-    }),
-    after.reserveProtected
-      ? t('whatif.reserve.intact')
-      : t('whatif.reserve.breached'),
   ]
+
+  if (!after.obligationsCovered) {
+    lines.push(t('whatif.obligations.notCovered'))
+  }
 
   if (delta.goalDelayMonths !== null && delta.goalDelayMonths !== 0) {
     lines.push(t('whatif.goal.delay', { count: Math.abs(delta.goalDelayMonths) }))

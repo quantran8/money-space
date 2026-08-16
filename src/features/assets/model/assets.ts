@@ -40,20 +40,31 @@ export type {
 export const assetTypeOrder: AssetType[] = [
   'cash',
   'bank_account',
-  'saving_deposit',
-  'certificate_of_deposit',
-  'bond',
-  'loan_receivable',
   'gold',
-  'stock',
-  'fund',
   'crypto',
-  'foreign_currency',
+  'stock',
   'real_estate',
-  'insurance',
-  'investment',
+  'loan_receivable',
+  'saving_deposit',
   'other',
+  'foreign_currency',
 ]
+
+/**
+ * Old records keep their original type in storage and history. When one is
+ * edited, fold retired choices into the closest type still offered by the form.
+ */
+const formAssetTypeByLegacyType: Partial<Record<AssetType, AssetType>> = {
+  certificate_of_deposit: 'saving_deposit',
+  bond: 'loan_receivable',
+  fund: 'stock',
+  insurance: 'other',
+  investment: 'other',
+}
+
+export function assetTypeForForm(type: AssetType): AssetType {
+  return formAssetTypeByLegacyType[type] ?? type
+}
 
 const valuationModeByType: Record<AssetType, ValuationMode> = {
   cash: 'manual',
@@ -73,8 +84,8 @@ const valuationModeByType: Record<AssetType, ValuationMode> = {
   other: 'manual',
 }
 
-/** Default liquidity bucket the app suggests for a given asset type. */
-const defaultLiquidityByType: Record<AssetType, AssetLiquidity> = {
+/** Canonical liquidity bucket derived from the asset type. */
+const liquidityByType: Record<AssetType, AssetLiquidity> = {
   cash: 'usable_now',
   bank_account: 'usable_now',
   saving_deposit: 'not_immediately_usable',
@@ -113,8 +124,34 @@ export function valuationModeForType(type: AssetType): ValuationMode {
   return valuationModeByType[type]
 }
 
-export function defaultLiquidityForType(type: AssetType): AssetLiquidity {
-  return defaultLiquidityByType[type]
+/** The bucket a type falls into when the household has not said otherwise. */
+export function liquidityForAssetType(type: AssetType): AssetLiquidity {
+  return liquidityByType[type]
+}
+
+/** Whether a type counts towards flexible money before the user decides. */
+export function flexibleByDefaultForAssetType(type: AssetType): boolean {
+  return liquidityByType[type] === 'usable_now'
+}
+
+/**
+ * The bucket, given the type and the household's explicit decision. Mirrors
+ * `liquidityForAsset` in the backend (`common/utils/money-space.utils.ts`) —
+ * the server owns the stored value; this keeps the optimistic local `Asset`
+ * (and the form's consequence sentence) in step with what will come back.
+ */
+export function liquidityForAsset(
+  type: AssetType,
+  countsAsFlexible?: boolean | null,
+): AssetLiquidity {
+  const derived = liquidityByType[type]
+  if (countsAsFlexible === true) return 'usable_now'
+  // Excluded cash is money the household has but does not count on — the
+  // middle bucket, never `long_term`.
+  if (countsAsFlexible === false && derived === 'usable_now') {
+    return 'not_immediately_usable'
+  }
+  return derived
 }
 
 export function assetClassForType(type: AssetType): AssetClass | undefined {

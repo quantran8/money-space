@@ -5,7 +5,6 @@ import type {
   CashflowDirection,
   CashflowEvent,
   CashflowRecurrence,
-  CashflowVisibilityLevel,
 } from '@/features/cashflow/model/cashflow.types'
 
 type CashflowEventListResponse = {
@@ -41,7 +40,6 @@ export type CashflowEventPayload = {
   financialGoalId?: string | null
   plannedAssetId?: string | null
   attentionLevel?: CashflowAttentionLevel
-  visibilityLevel?: CashflowVisibilityLevel
   note?: string
 }
 

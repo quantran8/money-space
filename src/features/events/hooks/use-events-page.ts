@@ -43,8 +43,10 @@ import {
   type UpcomingRecordForm,
 } from '@/features/events/model/events-form'
 import { useMembers } from '@/features/members/hooks/use-members'
+import { currentMemberId } from '@/features/members/model/members.types'
 import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
+import { useAuthStore } from '@/shared/stores/auth-store'
 
 export function useEventsPage() {
   const { t } = useTranslation()
@@ -53,6 +55,8 @@ export function useEventsPage() {
   const { payments: seedPayments, createPayment, updatePayment, deletePayment } = usePaymentsCompat()
   const { assets } = useAssets()
   const { members } = useMembers()
+  const userId = useAuthStore((state) => state.user?.id)
+  const creatorMemberId = currentMemberId(members, userId)
   // Thu/chi/net for the current month are the BACKEND's source of truth — read
   // them from the summary endpoint, never re-derive from the event list.
   const { data: eventsSummary, isLoading: isSummaryLoading } = useEventsSummary()
@@ -355,7 +359,7 @@ export function useEventsPage() {
 
       resetUpcoming({
         ...upcomingDefaults,
-        ownerMemberId: memberOptions[0]?.value ?? '',
+        ownerMemberId: creatorMemberId ?? '',
         expectedFromAssetId: sourceAssetOptions[0]?.value ?? '',
       })
       return
@@ -437,6 +441,7 @@ export function useEventsPage() {
   }, [
     assetOptions,
     assets,
+    creatorMemberId,
     defaultCategoryCode,
     editingEventId,
     editingPaymentId,
@@ -553,6 +558,7 @@ export function useEventsPage() {
       amount: Math.abs(parseAmountInput(values.amount)),
       dueDate: values.dueDate,
       owner: member?.name ?? asset?.name,
+      ownerMemberId: values.ownerMemberId || undefined,
       status: paymentStatus,
     }
 

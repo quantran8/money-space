@@ -26,8 +26,14 @@ export function useOnboardingWizard() {
   const goBack = useAppStore((state) => state.goBackOnboarding)
   const activeHouseholdId = useAppStore((state) => state.activeHouseholdId)
 
-  // A user who lands here with no step recorded starts at the beginning.
-  const currentStep: OnboardingStep = step ?? 'household'
+  // A user who lands here with no step recorded starts at the beginning. A step
+  // that is no longer in the list does too: the persisted value is written by an
+  // older build, so it can name a screen this one has never heard of, and an
+  // unrecognized step would leave `indexOf` at -1 — an empty body with a dead
+  // Back button. The store's `migrate` moves the known case forward; this is the
+  // floor under anything it doesn't know about.
+  const currentStep: OnboardingStep =
+    step && ONBOARDING_STEPS.includes(step) ? step : 'household'
   const index = ONBOARDING_STEPS.indexOf(currentStep)
 
   async function finish() {

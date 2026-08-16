@@ -1,8 +1,7 @@
 # What-if
 
 "If we spend this, what happens?" — the feature people pay for (spec §26D,
-05 §5). Related: [[forecast-and-flexible-money]], [[protected-reserves]],
-[[goals]].
+05 §5). Related: [[forecast-and-flexible-money]], [[goals]].
 
 ## Overview
 
@@ -30,11 +29,20 @@ driven by `shared/stores/whatif-store.ts`; openers live on Home, `/upcoming`,
 
 ## Mandated result-block order
 
-1. Upcoming Safety (lowest projected balance, before → after)
-2. Reserve impact
-3. Flexible money before/after (`flexibleMoneyHorizon`)
-4. Goal consequence (only when a goal was in scope)
-5. Assumptions
+1. Upcoming Safety — lowest projected balance before → after, the change, and
+   the "obligations not covered" line when it applies
+2. Goal consequence (only when a goal was in scope)
+3. Assumptions
+
+It was five. "Reserve impact" went with the protected reserve, and "Flexible
+money before/after" went with it: that block read `flexibleMoneyHorizon`, which
+after the removal is `lowestProjectedBalance` — the same two numbers block 1 was
+already showing. What survived (the delta sentence, the coverage warning) moved
+up into block 1 rather than being deleted with its container.
+
+`resultType` lost `watch` for the same reason: it fired only when the low point
+stayed positive but dipped under the reserve. Now `not_covered | tight |
+comfortable`.
 
 `takeFromGoal` distinguishes money coming out of what is already saved for the
 goal (`currentAmount` drops) from money that displaces future contributions.

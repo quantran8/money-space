@@ -30,7 +30,7 @@ export function FlexibleMoneySection({
     )
   }
 
-  const amount = flexibleMoney.flexibleMoneyHorizon
+  const amount = flexibleMoney.lowestProjectedBalance
   const isNegative = amount < 0
 
   return (

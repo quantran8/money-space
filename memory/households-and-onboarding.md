@@ -46,12 +46,19 @@ The active household id is kept in a zustand `household-store`; `use-my-househol
 
 ## v3.1 onboarding wizard (Phase 11)
 
-12 spec steps folded into **10 screens**, resumable via `{onboardingStep,
+The spec's steps folded into **9 screens**, resumable via `{onboardingStep,
 householdId}` persisted in `shared/stores/household-store.ts`.
 
-Order: household → financial mode → invite → money sources → reserve →
-recurring income → obligations → main goal → **first financial picture (Clarity
-Moment)** → **first what-if (Consequence Moment)**.
+Order: household → financial mode → invite → money sources → recurring income →
+obligations → main goal → **first financial picture (Clarity Moment)** →
+**first what-if (Consequence Moment)**.
+
+The persisted store is **versioned** (`version: 1`) because the list changed: a
+household left mid-setup on the retired `reserve` step would otherwise rehydrate
+onto a step that no longer exists — `indexOf === -1`, an empty wizard body, a
+dead Back button, and `RequireHousehold` refusing to let them out of onboarding.
+`migrate` moves them to the step that followed it. Any future change to
+`ONBOARDING_STEPS` must bump the version the same way.
 
 Rules that matter:
 

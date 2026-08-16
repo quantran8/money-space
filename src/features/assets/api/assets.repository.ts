@@ -64,7 +64,7 @@ export type AssetValuePoint = {
   value: number
 }
 
-export type AssetPayload = Omit<Asset, 'id'>
+export type AssetPayload = Omit<Asset, 'id' | 'liquidity'>
 
 export function listAssets(householdId: string) {
   return apiRequest<AssetListResponse>(`/api/households/${householdId}/assets`)

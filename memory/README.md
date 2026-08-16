@@ -49,7 +49,6 @@ Each file is a focused Markdown doc. Link related files with `[[name]]` (the fil
 - [cashflow-events.md](cashflow-events.md) — expected future money movements (v3.1; replaces upcoming payments)
 - [forecast-and-flexible-money.md](forecast-and-flexible-money.md) — running balance, flexible money, financial state (§26)
 - [what-if.md](what-if.md) — spend simulation: consequence, never a verdict (§26D)
-- [protected-reserves.md](protected-reserves.md) — money set aside as a forecast constraint (§19C)
 - [data-freshness.md](data-freshness.md) — how much the numbers can be trusted (04 §12)
 - [sharing-levels.md](sharing-levels.md) — one axis, two values; everything counts
 - [goals.md](goals.md) — financial goals & progress

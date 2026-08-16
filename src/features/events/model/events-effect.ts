@@ -3,11 +3,11 @@ import { formatMoney } from '@/shared/lib/format-money'
 /**
  * The §22.7 consequence sentence for a money event.
  *
- * §22.7 asks an expense form to answer two things: "thấp nhất trong kỳ đổi thế
- * nào" and "quỹ an toàn có bị chạm không". Both are derivable from the forecast
- * the app already holds, so this is computed locally rather than through a
- * what-if round-trip per keystroke — a network call on every character would
- * also re-run the events prefill effect and wipe what the user is typing.
+ * §22.7 asks an expense form to answer one thing: "thấp nhất trong kỳ đổi thế
+ * nào". It is derivable from the forecast the app already holds, so this is
+ * computed locally rather than through a what-if round-trip per keystroke — a
+ * network call on every character would also re-run the events prefill effect
+ * and wipe what the user is typing.
  *
  * It is an ESTIMATE of what saving would produce: the real number comes back
  * from the backend after the save. That is the honest register for a "what
@@ -21,14 +21,12 @@ export function buildEventEffect({
   amount,
   direction,
   lowestProjectedBalance,
-  reserveAmount,
   horizonDays,
   t,
 }: {
   amount: number
   direction: 'inflow' | 'outflow' | 'neutral'
   lowestProjectedBalance: number | undefined
-  reserveAmount: number
   horizonDays: number
   t: (key: string, params?: Record<string, unknown>) => string
 }): string | null {
@@ -49,18 +47,8 @@ export function buildEventEffect({
     })
   }
 
-  if (reserveAmount <= 0) {
-    return t('events.form.effectLowest', {
-      days: horizonDays,
-      lowest: formatMoney(nextLowest),
-    })
-  }
-
-  // Same comparison the dashboard already uses for the reserve line.
-  const breaches = nextLowest < reserveAmount
-  return t(breaches ? 'events.form.effectLowestBreach' : 'events.form.effectLowestSafe', {
+  return t('events.form.effectLowest', {
     days: horizonDays,
     lowest: formatMoney(nextLowest),
-    reserve: formatMoney(reserveAmount),
   })
 }

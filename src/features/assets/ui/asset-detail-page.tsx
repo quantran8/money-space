@@ -10,7 +10,6 @@ import { useAssetsPage } from '@/features/assets/hooks/use-assets-page'
 import { canUpdatePriceManually } from '@/features/assets/model/assets'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
 import { AssetPriceUpdateDialog } from '@/features/assets/ui/components/asset-price-update-dialog'
-import { normalizeVisibility } from '@/features/assets/model/asset-classification'
 import { AssetValueChart } from '@/features/assets/ui/components/asset-value-chart'
 import { SavingWithdrawalPanel } from '@/features/assets/ui/components/saving-withdrawal-panel'
 import { formatDate } from '@/features/debts/model/debts-form'
@@ -192,9 +191,6 @@ export function AssetDetailPage() {
     ? members.find((member) => member.id === asset.holderMemberId)?.name
     : undefined
   const updatedAt = asset.valueUpdatedAt ? formatUpdatedAt(asset.valueUpdatedAt, locale) : null
-  // Folded for everyone, including whoever set it — see `VisibilityLevel`.
-  const isFolded = normalizeVisibility(asset.visibilityLevel) === 'summary_only'
-
   function handlePrimaryUpdate() {
     if (!asset) return
     if (canUpdatePrice) setPriceDialogOpen(true)
@@ -330,28 +326,7 @@ export function AssetDetailPage() {
         </div>
       </Card>
 
-      {isFolded ? (
-        /*
-          A folded record has no detail view to show — that is the whole
-          point of the level — but the page is still reachable by deep
-          link, so it says so plainly and offers the one way out: switch
-          the record back to `detail`. Anyone may do that, and it is
-          logged, which is what makes the fold meaningful without a
-          permission behind it.
-        */
-        <Card>
-          <h2 className="section-title text-[16px]">
-            {t('assets.detail.summaryOnly.title')}
-          </h2>
-          <p className="mt-3 max-w-prose text-[13px] leading-6 text-ink2">
-            {t('assets.detail.summaryOnly.body')}
-          </p>
-          <Button className="mt-5 h-10 px-4 text-[13px]" onClick={() => openEdit(asset.id)}>
-            {t('assets.detail.summaryOnly.action')}
-          </Button>
-        </Card>
-      ) : (
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,.75fr)]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,.75fr)]">
           <Card>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <h2 className="section-title text-[16px]">
@@ -448,8 +423,7 @@ export function AssetDetailPage() {
               </div>
             </dl>
           </Card>
-        </div>
-      )}
+      </div>
 
       {asset.type === 'saving_deposit' &&
       asset.calculationTerm &&

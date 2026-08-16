@@ -9,7 +9,7 @@ App giúp household trả lời 5 câu hỏi:
 1. **Nhà mình đang có bao nhiêu?**
 2. **Tiền đang nằm ở đâu và ai đang phụ trách?**
 3. **Trong thời gian tới có những khoản nào sẽ vào hoặc ra?**
-4. **Sau các nghĩa vụ và quỹ cần bảo vệ, còn bao nhiêu tiền thực sự linh hoạt?**
+4. **Sau các nghĩa vụ đã biết, còn bao nhiêu tiền thực sự linh hoạt?**
 5. **Nếu chi khoản này hôm nay thì mục tiêu chung sẽ thay đổi thế nào?**
 
 Sản phẩm không tập trung vào việc ghi từng khoản thu chi nhỏ hằng ngày.

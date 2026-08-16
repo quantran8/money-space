@@ -98,6 +98,12 @@ export type Asset = {
   type: AssetType
   valuationMode: ValuationMode
   liquidity: AssetLiquidity
+  /**
+   * The household's explicit answer to "does this count towards tiền linh
+   * hoạt", or null/absent for "follow the type". `liquidity` above is derived
+   * from it server-side, so read THAT to know which bucket the asset is in.
+   */
+  countsAsFlexible?: boolean | null
   currency: string
   note: string
   /** Lifecycle status; defaults to `active`. A `sold` asset is kept for history. */
@@ -114,14 +120,6 @@ export type Asset = {
   calculationTerm?: CalculationTerm
   currentValue?: number
   valueUpdatedAt?: string
-  /**
-   * How much of this the shared picture shows.
-   *
-   * Typed as the 2-value union even though a stored record may still carry a
-   * retired level: every read site passes it through `normalizeVisibility`
-   * first, which is the single boundary where 4 values become 2.
-   */
-  visibilityLevel?: import('@/features/assets/model/asset-classification').VisibilityLevel
   /** Who is responsible for the money. Not a privacy field. */
   holderMemberId?: string | null
 }

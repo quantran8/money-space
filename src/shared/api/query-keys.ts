@@ -33,12 +33,11 @@ export const queryKeys = {
     ['households', householdId, 'forecast-bundle', horizonDays] as const,
   /**
    * Prefix key covering every horizon. Anything that moves money — an asset, a
-   * debt, a cashflow event, a reserve, a money event, a freshness confirmation
+   * debt, a cashflow event, a money event, a freshness confirmation
    * — should invalidate THIS, not a hand-listed subset of the three old keys.
    */
   forecastBundleAll: (householdId: string) =>
     ['households', householdId, 'forecast-bundle'] as const,
-  reserves: (householdId: string) => ['households', householdId, 'protected-reserves'] as const,
   freshness: (householdId: string) => ['households', householdId, 'data-freshness'] as const,
   events: (householdId: string, month?: string) =>
     ['households', householdId, 'events', month ?? 'all'] as const,
