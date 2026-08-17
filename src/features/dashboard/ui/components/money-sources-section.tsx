@@ -15,21 +15,27 @@ import {
 import { Label, Panel, PanelHeader, PanelSplit } from '@/components/ui/panel'
 import type {
   MoneyLocationBar,
-  MoneyLocationGroupKey,
   MoneyLocationMap,
 } from '@/features/dashboard/model/home-derivations'
+import { chartAxis } from '@/shared/constants/colors'
 import { formatVndCell, formatVndScale } from '@/shared/lib/format-money'
 
 /**
- * The two groups are separated by WEIGHT, not by hue (§5.4). Colour on this page
- * is reserved for what needs acting on, and where the money sits needs nothing —
- * it is a fact, not a signal. The palest fill is the long hold; cash, which is
- * what today's decision draws on, sits a step darker.
+ * One fill per bar, darkest first, stepping down the neutral ramp by RANK.
+ *
+ * Still weight, not hue (§5.4): the largest source carries the accent and each
+ * one below it recedes a step, so the eye lands on the concentration before it
+ * reads a single figure. Amber stays reserved for `attention`.
+ *
+ * Tokens rather than the literal hex in the mock, so the ramp follows the active
+ * palette (Ledger or Archive) instead of pinning Ledger's greens into the file.
+ * Past the ramp's length every remaining bar sits at the palest step — by then
+ * the rank is legible from length alone.
  */
-const GROUP_FILL: Record<MoneyLocationGroupKey, string> = {
-  usable_now: 'var(--protect)',
-  held: 'var(--committed)',
-}
+const RANK_FILL = ['var(--accent)', 'var(--ink2)', 'var(--protect)', 'var(--committed)']
+
+const fillForRank = (index: number): string =>
+  RANK_FILL[Math.min(index, RANK_FILL.length - 1)]
 
 /** Row pitch. Two lines of label (name + who is responsible) need this much. */
 const ROW_HEIGHT = 38
@@ -37,6 +43,8 @@ const ROW_HEIGHT = 38
 const NAME_WIDTH = 132
 /** Right lane for the amount, sized for the widest realistic figure. */
 const VALUE_WIDTH = 68
+/** The x-axis lane below the bars: ticks plus the unit caption. */
+const AXIS_HEIGHT = 34
 
 /**
  * Home section 4 — Tiền đang ở đâu (§12.4).
@@ -48,8 +56,13 @@ const VALUE_WIDTH = 68
  * keeps a full row: a source holding 0,03% still has its name and its amount at
  * full size, which is precisely the case an area map cannot label.
  *
- * The totals live beside the chart, not inside it, because an area or a length
- * is read as a proportion and the household still needs the figure.
+ * The total lives beside the chart, not inside it, because a length is read as a
+ * proportion and the household still needs the figure.
+ *
+ * v12 ranks the fills instead of grouping them, and gives the bars a real
+ * x-axis. The scale is what lets the row lengths be compared as quantities
+ * rather than just ordered, and once the fill steps down by rank the group
+ * legend beside the total had nothing left to explain, so it is gone.
  */
 export function MoneySourcesSection({ map }: { map: MoneyLocationMap }) {
   const { t } = useTranslation()
@@ -71,33 +84,20 @@ export function MoneySourcesSection({ map }: { map: MoneyLocationMap }) {
       {map.totalCount === 0 ? (
         <p className="mt-7 py-6 text-[13px] text-ink2">{t('home.moneyLocation.empty')}</p>
       ) : (
-        <PanelSplit className="lg:grid-cols-[minmax(0,300px)_1fr]">
+        <PanelSplit className="items-start lg:grid-cols-[220px_minmax(0,1fr)]">
+          {/* Total only. The group legend that used to sit here explained a fill
+              that no longer encodes a group — bars are now ranked by size, which
+              their length already says — so it had nothing left to decode. Which
+              sources count as usable is stated in §12.1, where the figure that
+              depends on it lives. */}
           <div>
             <Label>{t('home.location.totalValue')}</Label>
-            <p className="num mt-2 text-[30px] font-medium tracking-[-.03em]">
+            <p className="num mt-3 text-[32px] font-medium tracking-[-.03em]">
               {formatVndScale(map.total)}
             </p>
-
-            <dl className="mt-6 space-y-3 text-[13px]">
-              {map.groups.map((group) => (
-                <div key={group.key} className="flex items-center justify-between gap-4">
-                  <dt className="flex items-center gap-2 text-ink2">
-                    <span
-                      className="h-2.5 w-2.5 rounded-[3px]"
-                      style={{ background: GROUP_FILL[group.key] }}
-                    />
-                    {t(`home.location.group.${group.key}`, { count: group.count })}
-                  </dt>
-                  <dd className="num font-medium">{formatVndScale(group.value)}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
 
-          <div>
-            {/* §10.4: the unit is declared once here, so every bar's figure can
-                stay a bare number and the column compares cleanly. */}
-            <Label>{t('home.location.barsLabel')}</Label>
+          <div className="min-w-0">
             <MoneyLocationBars bars={map.bars} />
 
             {map.hiddenCount > 0 ? (
@@ -123,8 +123,8 @@ function MoneyLocationBars({ bars }: { bars: MoneyLocationBar[] }) {
 
   return (
     <div
-      className="mt-3 w-full"
-      style={{ height: bars.length * ROW_HEIGHT }}
+      className="w-full"
+      style={{ height: bars.length * ROW_HEIGHT + AXIS_HEIGHT }}
       role="img"
       aria-label={ariaLabel}
     >
@@ -135,7 +135,27 @@ function MoneyLocationBars({ bars }: { bars: MoneyLocationBar[] }) {
           margin={{ top: 0, right: VALUE_WIDTH, bottom: 0, left: 0 }}
           barCategoryGap={10}
         >
-          <XAxis type="number" hide domain={[0, 'dataMax']} />
+          {/* A real scale, not a hidden one. The per-bar figure answers "how
+              much is in this account"; the axis answers "how do these compare",
+              which is the question the ranking is drawn to raise. The unit is
+              declared once in the caption, so every figure stays a bare number
+              (§10.4). */}
+          <XAxis
+            type="number"
+            domain={[0, 'dataMax']}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: chartAxis, fontSize: 10 }}
+            tickFormatter={(value: number) => formatVndCell(value)}
+            height={AXIS_HEIGHT}
+            label={{
+              value: t('home.location.barsLabel'),
+              position: 'insideBottomRight',
+              offset: 0,
+              fill: chartAxis,
+              fontSize: 10,
+            }}
+          />
           {/* Keyed by id, not name: two sources may legitimately share a name,
               and a duplicate category would silently merge their rows. */}
           <YAxis
@@ -175,8 +195,8 @@ function MoneyLocationBars({ bars }: { bars: MoneyLocationBar[] }) {
             minPointSize={3}
             isAnimationActive={false}
           >
-            {bars.map((bar) => (
-              <Cell key={bar.id} fill={GROUP_FILL[bar.group]} />
+            {bars.map((bar, index) => (
+              <Cell key={bar.id} fill={fillForRank(index)} />
             ))}
             <LabelList
               dataKey="value"

@@ -25,6 +25,12 @@ export type CashflowEventForm = {
    */
   requirement: 'required' | 'planned'
   certainty: CashflowCertainty
+  /**
+   * Which wallet this will settle through. Optional — at planning time the
+   * household often does not know yet, and confirming asks for one then.
+   * Empty string = not chosen (a Select cannot hold `null`).
+   */
+  settlementAssetId: string
   note: string
 }
 
@@ -51,6 +57,7 @@ export function defaultCashflowFormValues(
     // `confirmed` matches the backend default. `estimated` is displayed but
     // never banked, so it must be a deliberate choice.
     certainty: 'confirmed',
+    settlementAssetId: '',
     note: '',
   }
 }
@@ -64,6 +71,9 @@ export function buildCashflowSchema(t: (key: string, params?: Record<string, unk
     recurrence: z.enum(['once', 'weekly', 'monthly', 'quarterly', 'yearly']),
     requirement: z.enum(['required', 'planned']),
     certainty: z.enum(['confirmed', 'estimated']),
+    // Optional by design — never block planning on a decision the household
+    // has not made yet. Completion is where it becomes required.
+    settlementAssetId: z.string(),
     note: localizedOptionalText(t, 120),
   })
 }

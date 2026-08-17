@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Controller, useWatch, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { EventField, eventSelectTriggerClass } from '@/components/ui/event-field'
+import { Field, fieldControlReset, fieldShell } from '@/components/ui/form-22'
 import {
   Select,
   SelectContent,
@@ -16,8 +16,14 @@ import { currentMemberId } from '@/features/members/model/members.types'
 import { useAuthStore } from '@/shared/stores/auth-store'
 
 /**
- * Who is responsible for a money source. Extracted so the asset dialog and the
- * onboarding "money sources" step render the same field.
+ * Who is RESPONSIBLE for a money source — never who spent from it (§0.2, §16.4).
+ *
+ * Built from the §22 field kit (`Field` + `fieldShell`), like every other field
+ * in the asset dialog. It used to use `EventField`, which put a mono uppercase
+ * `.label` inside a taller sunk block — so this one row sat at a different
+ * height, with a different label case and a different control size, from the
+ * fields directly above it. §22.4 names that label style specifically as the
+ * thing a form must not use.
  */
 export function AssetClassificationFields({
   form,
@@ -40,14 +46,14 @@ export function AssetClassificationFields({
   }, [creatorMemberId, defaultToCurrentMember, holderMemberId, setValue])
 
   return (
-    <>
-      <Controller
-        control={control}
-        name="holderMemberId"
-        render={({ field }) => (
-          <EventField label={t('assets.form.holder')}>
+    <Controller
+      control={control}
+      name="holderMemberId"
+      render={({ field }) => (
+        <Field label={t('assets.form.holder')}>
+          <div className={fieldShell}>
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger className={eventSelectTriggerClass}>
+              <SelectTrigger className={fieldControlReset}>
                 <SelectValue placeholder={t('assets.form.holderPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -58,9 +64,9 @@ export function AssetClassificationFields({
                 ))}
               </SelectContent>
             </Select>
-          </EventField>
-        )}
-      />
-    </>
+          </div>
+        </Field>
+      )}
+    />
   )
 }

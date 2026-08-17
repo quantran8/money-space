@@ -21,7 +21,7 @@ export type EventPayload = {
   direction?: 'inflow' | 'outflow' | 'neutral'
   fromAssetId?: string
   toAssetId?: string
-  upcomingPaymentId?: string
+  cashflowEventId?: string
   debtId?: string
   financialGoalId?: string
 }

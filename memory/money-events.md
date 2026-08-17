@@ -1,23 +1,44 @@
-# Money events & upcoming payments (Events feature)
+# Money events (Events feature)
 
-The central ledger. Recorded financial events **and** upcoming money movements live in one unified timeline. The old standalone Payments page now **redirects to `/events`**. Related: [[assets]], [[debts]], [[goals]], [[dashboard]], [[cashflow-events]].
+The central ledger: **money that has already moved**. The old standalone
+Payments page **redirects to `/events`**. Related: [[assets]], [[debts]],
+[[goals]], [[dashboard]], [[cashflow-events]].
 
-> **v3.1 status.** "Upcoming payments" are now **cashflow events** — see
-> [[cashflow-events]]. The `upcoming_payments` model and its API are gone;
-> `money_events.upcomingPaymentId` is now `cashflowEventId`. As of Phase 5 the
-> `/events` page still reads them through a transitional compat shim
-> (`features/cashflow/hooks/use-payments-compat.ts`), so the `upcoming_payment`
-> source type described below is **legacy framing kept alive on purpose** until
-> Phases 6/9 rebuild these screens.
+> **v3.1 status — shim removed.** "Upcoming payments" are now **cashflow
+> events** ([[cashflow-events]]); the `upcoming_payments` model and its API are
+> gone. The transitional compat shim (`use-payments-compat.ts` +
+> `legacy-payment-shim.ts`) has been **deleted**, along with the
+> `upcoming_record-form`. `/events` and `/debts` now read `CashflowEvent`
+> directly.
 
-## Overview
+## The ledger / forecast split
 
-Two record source types unified into `FinancialRecordItem`:
+`/events` shows **recorded** movements. `/upcoming` shows **expected** ones and
+owns their whole lifecycle (complete / postpone / cancel). The two are never
+merged into one timeline — a forecast row and a recorded row are different
+kinds of fact, and mixing them was what the shim forced.
 
-- `upcoming_payment` — planned.
-- `money_event` — actual, the central transaction log.
+Consequences the client must respect:
 
-`MoneyEvent` fields: type, category, amount, currency, eventDate, direction, `note` (description), and optional links to fromAsset, toAsset, upcomingPayment, debt, financialGoal, snapshot.
+- `FinancialRecordItem` has **no `sourceType`** — every row is a money event.
+- `/events` has **no "upcoming" tab** and no create/edit form for expected
+  money. Its quick-action picker keeps an "upcoming" entry that **navigates to
+  `/upcoming`** (like `debt_borrow` → `/networth`), rather than writing one.
+- Marking an expected payment as paid happens on `/upcoming` via
+  `POST …/complete`. The old `/events` "mark paid" flow — create a money event,
+  then **DELETE** the payment — was wrong twice over: it bypassed the
+  server-side completion transaction, and for a recurring event it destroyed
+  the whole series instead of advancing `expectedDate`.
+
+`MoneyEvent` fields: type, category, amount, currency, eventDate, direction,
+`note` (description), and optional links to fromAsset, toAsset, cashflowEvent,
+debt, financialGoal, snapshot.
+
+**`cashflowEventId`** (formerly `upcomingPaymentId`, now renamed client-side to
+match the backend) records which expected movement this event settled. The
+backend DTO accepts both spellings and prefers `cashflowEventId`. It is
+deliberately **not copied when duplicating** an event — only one money event can
+settle a given cashflow event.
 
 **No `title` field.** The free-text `title` was dropped from money events — the
 **note** is now the descriptive label and `category` is the classification. The
@@ -27,9 +48,8 @@ payment_paid when the user leaves it blank, e.g. `Chuyển từ … sang …`, `
 …`). Everywhere the UI used to show `title` (events timeline / `record-card` /
 data table, dashboard recents, debt & asset history rows) it now shows the note,
 falling back to the translated category label when the note is empty. The
-timeline's `FinancialRecordItem` keeps a derived `title` (payment name for
-upcoming payments; note-or-category for events) purely as the display label — it
-is not a stored event field.
+timeline's `FinancialRecordItem` keeps a derived `title` (note-or-category)
+purely as the display label — it is not a stored event field.
 
 **`category` is REQUIRED and a free-form CODE**, not a fixed enum — backed by the
 `money_event_categories` table (seeded system rows with `household_id IS NULL` +
@@ -86,7 +106,6 @@ disbursement instead reuses `debt_update` with explicit `direction: 'inflow'`.
 - **Requires a source asset** (`eventRequiresFromAsset`): expense, transfer, payment_paid, goal_contribution, asset_purchase, asset_sale.
 - **Requires a destination asset** (`eventRequiresToAsset`): income, transfer, asset_purchase, asset_sale.
 - **from ≠ to** for transfer / asset_purchase / asset_sale.
-- `payment_paid` **must link** to an upcoming payment.
 - `goal_contribution` **must link** to a goal.
 - Amount must be **> 0**.
 
@@ -136,25 +155,29 @@ backend, **not** re-computed on the client. `useEventsSummary` calls
   debit a wallet) — neutral means it doesn't change the household's total money,
   so it stays out of thu/chi even when a wallet balance changed.
 - `use-events-page` feeds these into the `summary` object (defaults to 0 while
-  loading). `upcomingIn7Days*` and `attentionCount` stay client-derived from the
-  payments / timeline lists (the summary endpoint doesn't cover them).
+  loading). `attentionCount` stays client-derived from the timeline list (the
+  summary endpoint doesn't cover it). The upcoming-in-30-days figures were
+  removed — expected money belongs to `/upcoming`.
 - Query key `['households', id, 'events', 'summary', month]`. Event
   create/update/delete invalidate the `['households', id, 'events']` prefix so
   both the list and the summary refetch.
 
-## Upcoming payments
+## Upcoming payments — moved out
 
-- `UpcomingPayment`: name, amount, dueDate, frequency, `autoCreateNext` flag, owner member, optional `debtId` link, status, attention level/flag.
-- **Payment status state machine** (`PaymentStatus`): unpaid → paid / pending_confirmation / postponed / overdue.
-- **Status derivation** (`getPaymentRecordStatus`): past due date → `overdue`; pending → `pending_confirmation`; else `unpaid`.
-- **Recurring rule** (`buildUpcomingSchema`): `autoCreateNext` can only be enabled when `frequency ≠ once`. Recording a payment captures `paidAt`, `paidBy`, `paidAmount`, `paidFromAssetId`.
-- **Source wallet required** (`buildUpcomingSchema`): `expectedFromAssetId` is required ("Vui lòng chọn ví nguồn"). It's an always-visible field in `upcoming-record-form.tsx` (not inside the "Thêm chi tiết" collapsible) and defaults to the first wallet on open.
+Expected movements are **cashflow events** and live entirely in
+[[cashflow-events]] / `/upcoming`. The `UpcomingPayment` model, its status state
+machine, and the `/events` upcoming form are gone; nothing on this page creates
+or edits money that has not moved yet.
 
 ## Recording a repayment reduces the linked debt
 
 Marking a debt-linked upcoming payment as paid ("Đánh dấu đã trả" on a "Tra no: ..." reminder) must reduce that debt's remaining balance:
 
-- **Frontend** (`onSubmitActual` in `use-events-page.ts`): the `payment_paid` event payload copies the paid payment's `debtId` (via `relatedPayment.debtId`). The `LocalUpcomingPayment` type + `toUpcomingPaymentSeed` mapper carry `debtId` through from the API.
+- **Frontend**: completing a debt-linked cashflow event on `/upcoming`
+  (`POST …/complete`) is what records the repayment — the backend creates the
+  money event carrying the `debtId`. On `/events`, `onSubmitActual` only
+  preserves an existing `debtId` when **editing** an already-recorded
+  repayment; it no longer sources one from a payment being marked paid.
 - **Cache**: `useEvents` create/update/delete mutations invalidate the **debts** query (plus events + dashboard) so the debts view refetches the new outstanding.
 - **Where the balance actually changes**: the **backend** decrements `outstandingAmount` by the event amount, floored at 0, in the same transaction as the event insert — only for debt-linked **outflow** events (the borrow inflow is excluded). See [[debts]] and the backend memory. The frontend does not compute the new outstanding itself.
 

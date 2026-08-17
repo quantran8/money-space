@@ -96,27 +96,50 @@ export function ForecastTimeline({
         meta={t('upcoming.timeline.count', { count: rows.length })}
       />
 
-      <div className="mt-7 hidden grid-cols-[84px_minmax(220px,1fr)_116px_128px_128px_32px] px-3 lg:grid">
-        <p className="label">{t('upcoming.timeline.columns.date')}</p>
-        <p className="label">{t('upcoming.timeline.columns.item')}</p>
-        <p className="label">{t('upcoming.timeline.columns.owner')}</p>
-        <p className="label text-right">{t('upcoming.timeline.columns.amount')}</p>
-        <p className="label text-right">{t('upcoming.timeline.columns.remaining')}</p>
-        <span />
-      </div>
+      {/* A real table from `lg` up, where the five columns fit: the header row
+          then labels the columns once instead of every row restating them.
+          Below `lg` the same data stacks (see `OccurrenceRow`) rather than
+          scrolling sideways — `Còn lại` is the column this screen exists for,
+          and a horizontal scroll is exactly what hides it on a phone. */}
+      <div className="mt-7">
+        <table className="w-full lg:table-fixed">
+          <thead className="hidden lg:table-header-group">
+            <tr className="label">
+              <th scope="col" className="w-[84px] pb-3 text-left font-normal">
+                {t('upcoming.timeline.columns.date')}
+              </th>
+              <th scope="col" className="pb-3 pr-8 text-left font-normal">
+                {t('upcoming.timeline.columns.item')}
+              </th>
+              <th scope="col" className="w-[116px] pb-3 pr-8 text-left font-normal">
+                {t('upcoming.timeline.columns.owner')}
+              </th>
+              <th scope="col" className="w-[128px] pb-3 pr-8 text-right font-normal">
+                {t('upcoming.timeline.columns.amount')}
+              </th>
+              <th scope="col" className="w-[128px] pb-3 pr-5 text-right font-normal">
+                {t('upcoming.timeline.columns.remaining')}
+              </th>
+              <th scope="col" className="w-[32px] pb-3">
+                <span className="sr-only">{t('upcoming.rowActions.label')}</span>
+              </th>
+            </tr>
+          </thead>
 
-      <div className="mt-2 space-y-1">
-        {rows.map(({ occurrence, runningBalance }) => (
-          <OccurrenceRow
-            key={occurrence.occurrenceKey}
-            occurrence={occurrence}
-            runningBalance={runningBalance}
-            ownerName={ownerNameByEventId[occurrence.sourceEventId]}
-            onComplete={onComplete}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ))}
+          <tbody className="block lg:table-row-group">
+            {rows.map(({ occurrence, runningBalance }) => (
+              <OccurrenceRow
+                key={occurrence.occurrenceKey}
+                occurrence={occurrence}
+                runningBalance={runningBalance}
+                ownerName={ownerNameByEventId[occurrence.sourceEventId]}
+                onComplete={onComplete}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
     </Panel>
   )
@@ -145,80 +168,90 @@ function OccurrenceRow({
   )
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[84px_minmax(220px,1fr)_116px_128px_128px_32px] lg:items-center lg:py-2.5">
-      <p className="col-start-1 row-start-1 font-mono text-[11px] text-ink3 lg:col-auto lg:row-auto">
+    <tr className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:table-row lg:px-0 lg:py-0">
+      <td className="col-start-1 row-start-1 font-mono text-[12px] text-ink3 lg:rounded-l-[8px] lg:py-3 lg:pl-3 lg:align-middle">
         {formatDayMonth(occurrence.date)}
-      </p>
+      </td>
 
-      <div className="col-start-1 row-start-2 mt-1 min-w-0 lg:col-auto lg:row-auto lg:mt-0">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="truncate text-[13px] font-medium">{occurrence.name}</span>
+      <td className="col-start-1 row-start-2 mt-1 min-w-0 lg:mt-0 lg:py-3 lg:pr-8 lg:align-middle">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <span className="truncate text-[13px] font-medium lg:text-[14px]">
+            {occurrence.name}
+          </span>
+          {/* A filled chip, not bare text: a marker is a state the row is IN,
+              and at 10px unfilled it read as an afterthought trailing the name
+              rather than as something qualifying it. */}
           {markers.map((marker) => (
-            <span key={marker} className="font-mono text-[10px] text-attention">
+            <span
+              key={marker}
+              className="inline-flex shrink-0 items-center rounded-[6px] bg-attention-tint px-2 py-1 text-[10px] font-medium text-attention"
+            >
               {t(`upcoming.markers.${marker}`)}
             </span>
           ))}
         </div>
-      </div>
+      </td>
 
-      <p className="col-start-1 row-start-3 mt-2 text-[12px] text-ink2 lg:col-auto lg:row-auto lg:mt-0">
+      <td className="col-start-1 row-start-3 mt-2 text-[12px] text-ink2 lg:mt-0 lg:py-3 lg:pr-8 lg:align-middle lg:text-[13px]">
         {ownerName ?? t('upcoming.timeline.householdOwner')}
-      </p>
+      </td>
 
-      <p
+      <td
         className={cn(
-          'num col-start-2 row-start-2 mt-1 text-right text-[14px] font-medium lg:col-auto lg:row-auto lg:mt-0',
+          'num col-start-2 row-start-2 mt-1 text-right text-[14px] font-medium lg:mt-0 lg:py-3 lg:pr-8 lg:align-middle',
           isIncoming && 'text-accent',
         )}
       >
         {formatVndCellSigned(isIncoming ? occurrence.amount : -occurrence.amount)}
-      </p>
+      </td>
 
-      <p
+      <td
         className={cn(
-          'num col-start-2 row-start-3 mt-2 text-right text-[12px] text-ink2 lg:col-auto lg:row-auto lg:mt-0 lg:text-[14px]',
+          'num col-start-2 row-start-3 mt-2 text-right text-[12px] text-ink2 lg:mt-0 lg:py-3 lg:pr-5 lg:align-middle lg:text-[14px]',
           runningBalance !== undefined && BALANCE_TONE_CLASS[tone],
         )}
       >
         {runningBalance === undefined ? '—' : formatVndCell(runningBalance)}
-      </p>
+      </td>
 
-      {onComplete || onEdit || onDelete ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={t('upcoming.rowActions.label')}
-            className="col-start-2 row-start-1 flex size-8 items-center justify-center justify-self-end rounded-full text-ink3 outline-none transition hover:bg-panel hover:text-ink lg:col-auto lg:row-auto"
-          >
-            <MoreHorizontal className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {onComplete ? (
-              <DropdownMenuItem
-                onClick={() => onComplete(occurrence.sourceEventId, occurrence.date)}
-              >
-                <Check className="mr-2 size-4" />
-                {t('upcoming.rowActions.complete')}
-              </DropdownMenuItem>
-            ) : null}
-            {onEdit ? (
-              <DropdownMenuItem onClick={() => onEdit(occurrence.sourceEventId)}>
-                <Pencil className="mr-2 size-4" />
-                {t('upcoming.rowActions.edit')}
-              </DropdownMenuItem>
-            ) : null}
-            {onDelete ? (
-              <DropdownMenuItem
-                className="text-alert focus:text-alert"
-                onClick={() => onDelete(occurrence.sourceEventId)}
-              >
-                <Trash2 className="mr-2 size-4" />
-                {t('upcoming.rowActions.delete')}
-              </DropdownMenuItem>
-            ) : null}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : null}
-    </div>
+      <td className="col-start-2 row-start-1 justify-self-end lg:rounded-r-[8px] lg:py-3 lg:pr-3 lg:text-right lg:align-middle">
+        {onComplete || onEdit || onDelete ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label={t('upcoming.rowActions.label')}
+              className="flex size-8 items-center justify-center rounded-full text-ink3 outline-none transition hover:bg-panel hover:text-ink lg:ml-auto"
+            >
+              <MoreHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onComplete ? (
+                <DropdownMenuItem
+                  onClick={() => onComplete(occurrence.sourceEventId, occurrence.date)}
+                >
+                  <Check className="mr-2 size-4" />
+                  {t('upcoming.rowActions.complete')}
+                </DropdownMenuItem>
+              ) : null}
+              {onEdit ? (
+                <DropdownMenuItem onClick={() => onEdit(occurrence.sourceEventId)}>
+                  <Pencil className="mr-2 size-4" />
+                  {t('upcoming.rowActions.edit')}
+                </DropdownMenuItem>
+              ) : null}
+              {onDelete ? (
+                <DropdownMenuItem
+                  className="text-alert focus:text-alert"
+                  onClick={() => onDelete(occurrence.sourceEventId)}
+                >
+                  <Trash2 className="mr-2 size-4" />
+                  {t('upcoming.rowActions.delete')}
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+      </td>
+    </tr>
   )
 }
 

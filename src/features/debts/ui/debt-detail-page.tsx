@@ -10,7 +10,7 @@ import { calcFromBackendEnum } from '@/features/debts/model/debts-interest'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
-import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
+import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { useWhatIfStore } from '@/shared/stores/whatif-store'
 
@@ -37,11 +37,6 @@ type RepaymentCalendarItem = {
   isoDate: string
   amount: number
   paid: boolean
-}
-
-function paymentDate(payment?: UpcomingPaymentItem) {
-  if (!payment) return undefined
-  return payment.dueDate ?? payment.due
 }
 
 function displayDate(value?: string) {
@@ -106,7 +101,7 @@ function LoanInfo({ label, value, mono = false }: { label: string; value: string
 
 function buildCalendar(
   repayments: DebtHistoryEntry[],
-  upcomingPayments: UpcomingPaymentItem[],
+  upcomingPayments: CashflowEvent[],
 ): RepaymentCalendarItem[] {
   const paid = repayments.map((entry) => ({
     id: `paid-${entry.id}`,
@@ -116,8 +111,8 @@ function buildCalendar(
   }))
   const upcoming = upcomingPayments.map((payment) => ({
     id: `upcoming-${payment.id}`,
-    isoDate: paymentDate(payment)!.slice(0, 10),
-    amount: payment.amountValue ?? 0,
+    isoDate: payment.expectedDate.slice(0, 10),
+    amount: payment.amount,
     paid: false,
   }))
 
@@ -197,7 +192,7 @@ export function DebtDetailPage() {
       ? Math.min(100, (repaid / debt.originalAmountValue) * 100)
       : 0
   const nextPayment = upcomingPayments[0]
-  const nextDate = paymentDate(nextPayment)
+  const nextDate = nextPayment?.expectedDate
   const latestUpdate = history[0]?.isoDate ?? debt.borrowedAt
   const stages = debt.interestPeriods ?? []
   const calc = calcFromBackendEnum(debt.interestCalculation)

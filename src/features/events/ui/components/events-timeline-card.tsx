@@ -22,11 +22,6 @@ type EventsTimelineCardProps = {
   groupedRecords: Array<[string, FinancialRecordItem[]]>
   memberOptions: Option[]
   isLoading?: boolean
-  isSavingActual: boolean
-  onMarkPaid: (id: string) => void
-  onPostponePayment: (id: string) => void
-  onEditPayment: (id: string) => void
-  onTogglePaymentAttention: (id: string) => void
   onEditEvent: (id: string) => void
   onDuplicateEvent: (id: string) => void
   onToggleEventAttention: (id: string) => void
@@ -59,11 +54,6 @@ export function EventsTimelineCard({
   groupedRecords,
   memberOptions,
   isLoading = false,
-  isSavingActual,
-  onMarkPaid,
-  onPostponePayment,
-  onEditPayment,
-  onTogglePaymentAttention,
   onEditEvent,
   onDuplicateEvent,
   onToggleEventAttention,
@@ -104,11 +94,6 @@ export function EventsTimelineCard({
   )
 
   const recordProps = {
-    isSavingActual,
-    onMarkPaid,
-    onPostponePayment,
-    onEditPayment,
-    onTogglePaymentAttention,
     onEditEvent,
     onDuplicateEvent,
     onToggleEventAttention,
@@ -179,7 +164,6 @@ export function EventsTimelineCard({
             options={[
               { value: 'all', label: t('events.history.allChanges') },
               { value: 'source', label: t('events.history.sourceChanges') },
-              { value: 'upcoming', label: t('events.history.upcomingChanges') },
               { value: 'goal', label: t('events.history.goalChanges') },
               { value: 'debt', label: t('events.history.debtChanges') },
             ]}
@@ -203,7 +187,7 @@ export function EventsTimelineCard({
                 <div className="space-y-1">
                   {items.map((record) => (
                     <RecordCard
-                      key={`${record.sourceType}-${record.id}`}
+                      key={record.id}
                       record={record}
                       {...recordProps}
                     />

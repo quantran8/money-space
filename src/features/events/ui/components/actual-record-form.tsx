@@ -29,7 +29,6 @@ import { Switch } from '@/components/ui/switch'
 import { EventEffect } from '@/features/events/ui/components/event-effect'
 import type {
   ActualRecordForm as ActualRecordFormValues,
-  LocalUpcomingPayment,
   QuickAction,
 } from '@/features/events/model/events-form'
 import { cn } from '@/shared/lib/utils'
@@ -45,9 +44,6 @@ type ActualRecordFormProps = {
   quickAction: QuickAction
   isRevaluation?: boolean
   isEditing?: boolean
-  markPaidPaymentId: string | null
-  selectedUpcomingForMarkPaid?: LocalUpcomingPayment
-  payments: LocalUpcomingPayment[]
   assetOptions: Option[]
   sourceAssetOptions: Option[]
   categoryOptions: Option[]
@@ -66,9 +62,6 @@ export function ActualRecordForm({
   quickAction,
   isRevaluation = false,
   isEditing = false,
-  markPaidPaymentId,
-  selectedUpcomingForMarkPaid,
-  payments,
   assetOptions,
   sourceAssetOptions,
   categoryOptions,
@@ -219,12 +212,6 @@ export function ActualRecordForm({
         </Field>
       ) : null}
 
-      {quickAction === 'payment_paid' && selectedUpcomingForMarkPaid ? (
-        <p className="rounded-[10px] bg-sunk px-4 py-3 text-[13px] leading-[1.6] text-ink2">
-          {t('events.form.markPaidFor', { name: selectedUpcomingForMarkPaid.name })}
-        </p>
-      ) : null}
-
       {/* §22.7 — the consequence, in one sentence, per keystroke. */}
       {!isRevaluation ? (
         <EventEffect control={control} quickAction={quickAction} isEditing={isEditing} />
@@ -262,33 +249,6 @@ export function ActualRecordForm({
                 />
               </div>
             </Field>
-
-            {quickAction === 'expense' && !markPaidPaymentId ? (
-              <Field label={t('events.history.types.upcoming')}>
-                <div className={fieldShell}>
-                  <Controller
-                    control={control}
-                    name="upcomingPaymentId"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className={fieldControlReset}>
-                          <SelectValue placeholder={t('events.form.optional')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {payments
-                            .filter((payment) => payment.status !== 'paid')
-                            .map((payment) => (
-                              <SelectItem key={payment.id} value={payment.id}>
-                                {payment.name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-              </Field>
-            ) : null}
 
             {quickAction === 'goal_contribution' ? (
               <Field label={t('events.form.receiveInto')}>

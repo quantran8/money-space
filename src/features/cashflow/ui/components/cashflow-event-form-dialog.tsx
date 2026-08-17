@@ -25,6 +25,8 @@ import {
   RECURRENCE_OPTIONS,
   type CashflowEventForm,
 } from '@/features/cashflow/model/cashflow-form'
+import { useAssets } from '@/features/assets/hooks/use-assets'
+import { canSettleCashflow } from '@/features/assets/model/assets'
 import { cn } from '@/shared/lib/utils'
 
 type CashflowEventFormDialogProps = {
@@ -89,6 +91,9 @@ export function CashflowEventFormDialog({
 
   const direction = watch('direction')
   const certainty = watch('certainty')
+  const { assets } = useAssets()
+  // Only wallets the API will accept — flexible money that holds a balance.
+  const settlementOptions = assets.filter(canSettleCashflow)
   const isOutgoing = direction === 'outgoing'
 
   function handleOpenChange(nextOpen: boolean) {
@@ -299,6 +304,52 @@ export function CashflowEventFormDialog({
                       <p className="px-1 text-[12px] leading-5 text-ink2">
                         {t('upcoming.form.estimatedIncomingHint')}
                       </p>
+                    ) : null}
+
+                    {/* Optional here on purpose: at planning time the household
+                        often does not know which account this lands in yet.
+                        Confirming asks for one when it is still empty. */}
+                    {settlementOptions.length > 0 ? (
+                      <>
+                        <CashflowField
+                          label={t(
+                            isOutgoing
+                              ? 'upcoming.complete.walletOut'
+                              : 'upcoming.complete.walletIn',
+                          )}
+                        >
+                          <div className={controlClass}>
+                            <Controller
+                              control={control}
+                              name="settlementAssetId"
+                              render={({ field }) => (
+                                <Select
+                                  value={field.value}
+                                  onValueChange={field.onChange}
+                                >
+                                  <SelectTrigger className={selectClass}>
+                                    <SelectValue
+                                      placeholder={t(
+                                        'upcoming.complete.walletPlaceholder',
+                                      )}
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {settlementOptions.map((asset) => (
+                                      <SelectItem key={asset.id} value={asset.id}>
+                                        {asset.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            />
+                          </div>
+                        </CashflowField>
+                        <p className="px-1 text-[12px] leading-5 text-ink2">
+                          {t('upcoming.complete.walletHint')}
+                        </p>
+                      </>
                     ) : null}
 
                     <CashflowField

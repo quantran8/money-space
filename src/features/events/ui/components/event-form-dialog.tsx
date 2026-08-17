@@ -6,6 +6,7 @@ import type {
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
+
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -15,12 +16,9 @@ import {
 } from '@/components/ui/responsive-dialog'
 import { ActualRecordForm } from '@/features/events/ui/components/actual-record-form'
 import { QuickActionPicker } from '@/features/events/ui/components/quick-action-picker'
-import { UpcomingRecordForm } from '@/features/events/ui/components/upcoming-record-form'
 import type {
   ActualRecordForm as ActualRecordFormValues,
-  LocalUpcomingPayment,
   QuickAction,
-  UpcomingRecordForm as UpcomingRecordFormValues,
 } from '@/features/events/model/events-form'
 
 type Option = { value: string; label: string }
@@ -38,24 +36,14 @@ type EventFormDialogProps = {
   onBack: () => void
   onBorrowMoney: () => void
   onSellAsset: () => void
+  onPlanUpcoming: () => void
   showMoreDetails: boolean
   onToggleMoreDetails: () => void
-  markPaidPaymentId: string | null
-  selectedUpcomingForMarkPaid?: LocalUpcomingPayment
-  payments: LocalUpcomingPayment[]
   assetOptions: Option[]
   /** Wallets eligible as a money source (cash / bank account only). Used for the
    *  "nguồn tiền" selects; destination selects still use the full assetOptions. */
   sourceAssetOptions: Option[]
-  memberOptions: Option[]
   categoryOptions: Option[]
-  // upcoming form
-  upcomingControl: Control<UpcomingRecordFormValues>
-  registerUpcoming: UseFormRegister<UpcomingRecordFormValues>
-  upcomingErrors: FieldErrors<UpcomingRecordFormValues>
-  handleUpcomingSubmit: UseFormHandleSubmit<UpcomingRecordFormValues>
-  onSubmitUpcoming: (values: UpcomingRecordFormValues) => void
-  isSavingUpcoming: boolean
   // actual form
   actualControl: Control<ActualRecordFormValues>
   registerActual: UseFormRegister<ActualRecordFormValues>
@@ -80,21 +68,12 @@ export function EventFormDialog({
   onBack,
   onBorrowMoney,
   onSellAsset,
+  onPlanUpcoming,
   showMoreDetails,
   onToggleMoreDetails,
-  markPaidPaymentId,
-  selectedUpcomingForMarkPaid,
-  payments,
   assetOptions,
   sourceAssetOptions,
-  memberOptions,
   categoryOptions,
-  upcomingControl,
-  registerUpcoming,
-  upcomingErrors,
-  handleUpcomingSubmit,
-  onSubmitUpcoming,
-  isSavingUpcoming,
   actualControl,
   registerActual,
   actualErrors,
@@ -143,21 +122,7 @@ export function EventFormDialog({
               onSelect={onSelectQuickAction}
               onBorrowMoney={onBorrowMoney}
               onSellAsset={onSellAsset}
-            />
-          ) : quickAction === 'upcoming' ? (
-            <UpcomingRecordForm
-              control={upcomingControl}
-              register={registerUpcoming}
-              errors={upcomingErrors}
-              handleSubmit={handleUpcomingSubmit}
-              onSubmit={onSubmitUpcoming}
-              showMoreDetails={showMoreDetails}
-              onToggleMoreDetails={onToggleMoreDetails}
-              memberOptions={memberOptions}
-              sourceAssetOptions={sourceAssetOptions}
-              isEditing={isEditing}
-              isSaving={isSavingUpcoming}
-              onCancel={() => onOpenChange(false)}
+              onPlanUpcoming={onPlanUpcoming}
             />
           ) : (
             <ActualRecordForm
@@ -169,9 +134,6 @@ export function EventFormDialog({
               quickAction={quickAction}
               isRevaluation={isRevaluation}
               isEditing={isEditing}
-              markPaidPaymentId={markPaidPaymentId}
-              selectedUpcomingForMarkPaid={selectedUpcomingForMarkPaid}
-              payments={payments}
               assetOptions={assetOptions}
               sourceAssetOptions={sourceAssetOptions}
               categoryOptions={categoryOptions}

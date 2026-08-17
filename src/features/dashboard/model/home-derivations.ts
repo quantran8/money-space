@@ -89,9 +89,8 @@ export function buildMoneyComposition(
 // --- §11.5 / §2.15 coverage --------------------------------------------------
 
 export type CoverageSummary = {
-  /** Oldest first, capped — the rest live on the Tài sản page. */
+  /** Every source feeding the hero, oldest first. */
   rows: SourceFreshnessRow[]
-  /** Sources feeding the hero, INCLUDING the ones past the cap. */
   total: number
   staleCount: number
   hasStale: boolean
@@ -121,11 +120,13 @@ function isStale(state: FreshnessItem['state']): boolean {
  *    `computeCurrentValue` the forecast sums, so the rows add up to the total
  *    stated above them — which is what makes that number openable rather than
  *    asserted.
- *  - **Oldest first, capped at 4.** Sorting by age is what makes the block
- *    actionable; past four rows it stops being a caveat and becomes the Tài sản
- *    page, so the overflow links there instead of expanding in place.
+ *  - **Oldest first, uncapped.** Sorting by age is what makes the block
+ *    actionable. The rows used to stop at four and link to the Tài sản page for
+ *    the rest, because the list was always open and pushed §12.2 down; now that
+ *    it opens on demand (§11.5) every source is named here, so the rows visibly
+ *    add up to the total stated above them.
  */
-export function buildCoverage(freshness: DataFreshnessResult, limit = 4): CoverageSummary {
+export function buildCoverage(freshness: DataFreshnessResult): CoverageSummary {
   const counted = freshness.items.filter((item) => item.liquidity === 'usable_now')
 
   const rows = counted
@@ -142,7 +143,7 @@ export function buildCoverage(freshness: DataFreshnessResult, limit = 4): Covera
   const staleIds = rows.filter((row) => row.isStale).map((row) => row.id)
 
   return {
-    rows: rows.slice(0, limit),
+    rows,
     total: rows.length,
     staleCount: staleIds.length,
     hasStale: staleIds.length > 0,
@@ -209,6 +210,116 @@ function isUnconfirmed(occurrence: ForecastOccurrence): boolean {
     occurrence.status === 'pending_confirmation' ||
     (occurrence.direction === 'incoming' && occurrence.certainty === 'estimated')
   )
+}
+
+// --- overdue, awaiting the household's own action -----------------------------
+
+export type OverdueRow = {
+  key: string
+  sourceEventId: string
+  /**
+   * The day the occurrence is LISTED under — day 0. This is what the complete
+   * action must send as its idempotency key, NOT `dueDate`.
+   */
+  date: string
+  /**
+   * The day it actually fell due, joined from the source event's
+   * `expectedDate`. Undefined when that event is not loaded — the row then
+   * shows no date rather than falling back to `date`, which is today and would
+   * read as "due today" for something that is overdue.
+   */
+  dueDate?: string
+  /** Whole days between `dueDate` and today. Undefined without a `dueDate`. */
+  daysOverdue?: number
+  name: string
+  /** Signed for display: outgoing is negative. */
+  signedAmount: number
+}
+
+export type OverdueSummary = {
+  rows: OverdueRow[]
+  totalCount: number
+  /** Net effect on the balance if every one of them is confirmed as done. */
+  netAmount: number
+  /** Age of the oldest item, for the block's own summary. */
+  oldestDays?: number
+}
+
+/**
+ * Occurrences that came due before today and have not been acted on.
+ *
+ * The forecast collapses a missed series into ONE occurrence on day 0 (backend
+ * `recurrence.ts`) and flags it `wasClampedFromPast`. It stays counted: an
+ * unpaid bill is still owed, so it remains inside `startingLiquidBalance` and
+ * everything projected from it.
+ *
+ * What never happens automatically is RESOLVING one — that is always a button
+ * somebody presses (§18). So the household has to be told these are sitting
+ * there, otherwise a figure that already includes them reads as settled.
+ *
+ * This is a notice, not a verdict: it names what is waiting and what it comes
+ * to, and leaves the deciding to the two people reading it (§16).
+ *
+ * **When it fell due comes from the source event, not the occurrence.** The
+ * backend overwrites the occurrence's own date with `asOfDate` when it clamps
+ * (`recurrence.ts`), so `occurrence.date` is today for every row here and says
+ * nothing about how long the item has been waiting. `expectedDate` on the event
+ * is the real due date, so callers pass the events in to have it joined on.
+ * Rows sort oldest first once that join succeeds.
+ */
+export function buildOverdue(
+  forecast: ForecastResult,
+  events: { id: string; expectedDate: string }[] = [],
+  limit = 4,
+): OverdueSummary {
+  const expectedById = new Map(events.map((event) => [event.id, event.expectedDate]))
+
+  const overdue = forecast.days
+    .flatMap((day) => day.occurrences)
+    .filter((occurrence) => occurrence.wasClampedFromPast)
+
+  const rows: OverdueRow[] = overdue.map((occurrence) => {
+    const dueDate = expectedById.get(occurrence.sourceEventId)
+    // Only count a date that really is in the past. A completed-then-advanced
+    // event can sit in the future while its clamped occurrence is still listed.
+    const overdueBy =
+      dueDate && dueDate < forecast.asOfDate
+        ? daysBetween(dueDate, forecast.asOfDate)
+        : undefined
+
+    return {
+      key: occurrence.occurrenceKey,
+      sourceEventId: occurrence.sourceEventId,
+      date: occurrence.date,
+      dueDate: overdueBy === undefined ? undefined : dueDate,
+      daysOverdue: overdueBy,
+      name: occurrence.name,
+      signedAmount:
+        occurrence.direction === 'incoming' ? occurrence.amount : -occurrence.amount,
+    }
+  })
+
+  // Oldest first. Rows with no joined date keep their forecast order at the end.
+  const sorted = [...rows].sort(
+    (a, b) => (b.daysOverdue ?? -1) - (a.daysOverdue ?? -1),
+  )
+
+  const ages = sorted
+    .map((row) => row.daysOverdue)
+    .filter((days): days is number => days !== undefined)
+
+  return {
+    rows: sorted.slice(0, limit),
+    totalCount: sorted.length,
+    netAmount: sorted.reduce((sum, row) => sum + row.signedAmount, 0),
+    oldestDays: ages.length > 0 ? Math.max(...ages) : undefined,
+  }
+}
+
+/** Whole days from `from` to `to`, both ISO dates. */
+function daysBetween(from: string, to: string): number {
+  const ms = Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)
+  return Math.max(0, Math.round(ms / 86_400_000))
 }
 
 export type DeltaPoint = {
@@ -517,12 +628,16 @@ const MAX_BARS = 6
  * area map cannot do: below a couple of percent a cell has no room for its own
  * label, which is exactly the case a household with one main account hits.
  *
- * The counted sources sort first and the held ones second, each descending, so
- * liquidity is never inferred from a fill alone — the reader can stop at the
- * first block and have the whole answer about money usable today. That claim
- * only holds because the first group is exactly the `usable_now` set §12.1
- * names; grouping by type (as "cash vs long-term" did) put a savings book the
- * forecast never counts in the same block as the current account.
+ * Sources rank by value, largest first, with no liquidity split. The bars used
+ * to run counted-then-held so the reader could stop at the first block and have
+ * the whole answer about money usable today — but that answer now lives in
+ * §12.1, which states the usable total and names every source feeding it. Here
+ * the question is where the money SITS, and one continuous ranking answers it
+ * without asking the reader to hold two orderings at once.
+ *
+ * `groups` is still derived, and still splits on the household's own per-asset
+ * decision rather than on asset type — `totalUsable` must keep agreeing with
+ * §12.1, whether or not a caller draws the split.
  *
  * Only positive values are drawn: a zero-value source has no length, and a
  * negative one is not a place money is being held.
@@ -546,9 +661,14 @@ export function buildMoneyLocationMap(
     .filter((leaf) => leaf.value > 0)
     .sort((a, b) => b.value - a.value)
 
-  const ordered = (['usable_now', 'held'] as const).flatMap((key) =>
-    leaves.filter((leaf) => leaf.group === key),
-  )
+  // Ranked by value alone, NOT grouped by liquidity first.
+  //
+  // The bars used to sort usable-now before held, because the fill encoded the
+  // group and the reader could stop at the first block. Since §12.4 now steps
+  // the fill down by RANK, a split order would put the darkest fill on the
+  // largest usable source rather than the largest source — so a 30tr holding
+  // would read as smaller than a 2tr account. One order, one meaning.
+  const ordered = leaves
 
   const groups: MoneyLocationGroup[] = (['usable_now', 'held'] as const)
     .map((key) => {

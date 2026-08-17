@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useCashflowEvents } from '@/features/cashflow/hooks/use-cashflow-events'
+import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
 import { useDashboardPage } from '@/features/dashboard/hooks/use-dashboard-page'
 import { buildCoverage } from '@/features/dashboard/model/home-derivations'
 import { DashboardSkeleton } from '@/features/dashboard/ui/components/dashboard-skeleton'
@@ -36,13 +39,36 @@ import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-sec
 export function DashboardPage() {
   const { t } = useTranslation()
   const state = useDashboardPage()
+  // Before the early return — hooks cannot be called conditionally.
+  const { cashflowEvents, completeCashflowEvent } = useCashflowEvents()
+  /**
+   * The occurrence awaiting a wallet choice. Confirming MOVES MONEY, so it
+   * cannot fire straight from the row — without a wallet the API has nothing
+   * to debit or credit and the balance would not change (§18).
+   */
+  const [completing, setCompleting] = useState<{
+    eventId: string
+    occurrenceDate: string
+    name: string
+    amount: number
+    direction: 'incoming' | 'outgoing'
+    settlementAssetId?: string | null
+  } | null>(null)
 
   if (!state.isReady) {
     return <DashboardSkeleton />
   }
 
-  const { forecast, flexibleMoney, freshness, goalTracks, goals, moneyLocation, confirmUnchanged } =
-    state
+  const {
+    forecast,
+    flexibleMoney,
+    freshness,
+    goalTracks,
+    goals,
+    moneyLocation,
+    assets,
+    confirmUnchanged,
+  } = state
 
   /** Quick update confirms the stale CASH sources are unchanged (§14.5). */
   const handleQuickUpdate = () => {
@@ -63,13 +89,59 @@ export function DashboardPage() {
         onQuickUpdate={handleQuickUpdate}
       />
 
-      {forecast ? <UpcomingSection forecast={forecast} /> : null}
+      {forecast ? (
+        <UpcomingSection
+          forecast={forecast}
+          cashflowEvents={cashflowEvents}
+          completingEventId={
+            completeCashflowEvent.isPending ? completing?.eventId : null
+          }
+          onCompleteOverdue={(eventId, occurrenceDate) => {
+            const source = cashflowEvents.find((event) => event.id === eventId)
+            if (!source) return
+            setCompleting({
+              eventId,
+              occurrenceDate,
+              name: source.name,
+              amount: source.amount,
+              direction: source.direction,
+              settlementAssetId: source.settlementAssetId,
+            })
+          }}
+        />
+      ) : null}
 
       {goalTracks.length > 0 ? (
         <GoalsSection tracks={goalTracks} goalCount={goals.length} />
       ) : null}
 
       <MoneySourcesSection map={moneyLocation} />
+
+      {completing ? (
+        <CompleteCashflowDialog
+          open
+          onOpenChange={(next) => {
+            if (!next) setCompleting(null)
+          }}
+          eventName={completing.name}
+          amount={completing.amount}
+          direction={completing.direction}
+          defaultAssetId={completing.settlementAssetId}
+          assets={assets}
+          isSubmitting={completeCashflowEvent.isPending}
+          onConfirm={(assetId) => {
+            completeCashflowEvent.mutate(
+              {
+                eventId: completing.eventId,
+                // `occurrenceDate` is the idempotency key — a double-tap must
+                // not advance a recurring series twice (§18).
+                payload: { occurrenceDate: completing.occurrenceDate, assetId },
+              },
+              { onSuccess: () => setCompleting(null) },
+            )
+          }}
+        />
+      ) : null}
     </div>
   )
 }

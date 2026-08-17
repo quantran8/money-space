@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import { Label, Panel, PanelHeader } from '@/components/ui/panel'
-import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
+import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import type { DebtSummary } from '@/features/debts/model/debts-form'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 import { formatMonthYear, formatVndScale } from '@/shared/lib/format-money'
@@ -9,7 +9,7 @@ import { formatMonthYear, formatVndScale } from '@/shared/lib/format-money'
 type DebtsSummaryStripProps = {
   summary: DebtSummary
   debts: DebtItem[]
-  payments: UpcomingPaymentItem[]
+  payments: CashflowEvent[]
 }
 
 function daysFromNow(date?: string) {
@@ -25,10 +25,10 @@ export function DebtsSummaryStrip({ summary, debts, payments }: DebtsSummaryStri
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
   const activeDebts = debts.filter((debt) => debt.status === 'active' || debt.status === 'overdue')
   const upcoming = payments.filter((payment) => {
-    const days = daysFromNow(payment.dueDate ?? payment.due)
+    const days = daysFromNow(payment.expectedDate)
     return Boolean(payment.debtId) && days >= 0 && days <= 30
   })
-  const upcomingAmount = upcoming.reduce((sum, payment) => sum + (payment.amountValue ?? 0), 0)
+  const upcomingAmount = upcoming.reduce((sum, payment) => sum + payment.amount, 0)
   const farthestDate = activeDebts
     .map((debt) => debt.expectedFinalDueDate)
     .filter((date): date is string => Boolean(date))

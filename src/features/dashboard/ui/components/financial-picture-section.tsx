@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
 import { MoneyCompositionBar } from '@/components/ui/money-composition-bar'
 import { Label, Panel, PanelSplit } from '@/components/ui/panel'
@@ -25,6 +24,12 @@ import { cn } from '@/shared/lib/utils'
  * against, and both axes they carried are now shown as facts instead: staleness
  * is named source by source in the block below, and the state of the month is
  * the low point in §12.2, which says what happens and when.
+ *
+ * v12 collapses that source block to a single summary line that can be opened
+ * into a full table. The block still declares the same two facts up front — how
+ * many sources the hero is made of, and how old the oldest one is — but the
+ * per-source rows no longer sit between the hero and §12.2, so every source can
+ * be named instead of the four oldest with a link away for the rest.
  */
 export function FinancialPictureSection({
   flexibleMoney,
@@ -89,41 +94,6 @@ export function FinancialPictureSection({
           <p className="mt-3 text-[13px] leading-5 text-ink2">
             {t('home.picture.totals', { cash: formatVndScale(composition.totalLiquid) })}
           </p>
-
-          {coverage && coverage.total > 0 ? (
-            <SourceFreshnessList
-              rows={coverage.rows}
-              formatAge={formatAge}
-              formatValue={formatVndScale}
-              summary={
-                coverage.oldestDays === null
-                  ? t('home.coverage.summaryNoAge', { count: coverage.total })
-                  : t('home.coverage.summary', {
-                      count: coverage.total,
-                      days: coverage.oldestDays,
-                    })
-              }
-              action={
-                coverage.hasStale ? (
-                  <button
-                    type="button"
-                    onClick={onQuickUpdate}
-                    className="text-[13px] font-medium text-accent"
-                  >
-                    {t('home.coverage.action')}
-                  </button>
-                ) : undefined
-              }
-              overflow={
-                coverage.total > coverage.rows.length ? (
-                  <Link to="/networth" className="text-[13px] font-medium text-accent">
-                    {t('home.coverage.more', { count: coverage.total - coverage.rows.length })}
-                  </Link>
-                ) : undefined
-              }
-              footnote={t('home.coverage.excluded')}
-            />
-          ) : null}
         </div>
 
         <div>
@@ -137,6 +107,62 @@ export function FinancialPictureSection({
           />
         </div>
       </PanelSplit>
+
+      {/* Full section width, BELOW the split: these sources feed both columns —
+          the hero and the composition bar alike — so scoping the block to the
+          left column would understate what it qualifies (§2.15). */}
+      {coverage && coverage.total > 0 ? (
+        <SourceFreshnessList
+          rows={coverage.rows}
+          formatAge={formatAge}
+          formatValue={formatVndScale}
+          // Built from parts rather than one interpolated string: the count
+          // and the age are the two facts the line exists to state, and each
+          // is weighted on its own (§10.5).
+          summary={
+            <>
+              <span className="font-medium text-ink">
+                {t('home.coverage.sourceCount', { count: coverage.total })}
+              </span>
+              {coverage.oldestDays !== null ? (
+                <>
+                  <span className="mx-1.5 text-ink3">·</span>
+                  {t('home.coverage.oldest')}{' '}
+                  {/* Amber only once the oldest source is past the
+                      household's OWN threshold (§5.2, §25). */}
+                  <span
+                    className={cn(
+                      'font-medium',
+                      coverage.hasStale ? 'text-attention' : 'text-ink',
+                    )}
+                  >
+                    {formatAge(coverage.oldestDays)}
+                  </span>
+                </>
+              ) : null}
+            </>
+          }
+          labels={{
+            show: t('home.coverage.show'),
+            hide: t('home.coverage.hide'),
+            source: t('home.coverage.columns.source'),
+            updated: t('home.coverage.columns.updated'),
+            amount: t('home.coverage.columns.amount'),
+          }}
+          action={
+            coverage.hasStale ? (
+              <button
+                type="button"
+                onClick={onQuickUpdate}
+                className="text-[13px] font-medium text-accent"
+              >
+                {t('home.coverage.action')}
+              </button>
+            ) : undefined
+          }
+          footnote={t('home.coverage.excluded')}
+        />
+      ) : null}
     </Panel>
   )
 }

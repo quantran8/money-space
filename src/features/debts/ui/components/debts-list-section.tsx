@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import { Panel } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Asset } from '@/features/assets/model/assets.types'
-import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
+import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 import { DebtListItem } from '@/features/debts/ui/components/debt-list-item'
 import type { MemberItem } from '@/features/members/model/members.types'
@@ -15,7 +15,7 @@ type DebtsListSectionProps = {
   debts: DebtItem[]
   members: MemberItem[]
   assets: Asset[]
-  payments: UpcomingPaymentItem[]
+  payments: CashflowEvent[]
   isLoading: boolean
   isUpdating: boolean
   onEdit: (id: string) => void
@@ -50,8 +50,8 @@ export function DebtsListSection({
     now.setHours(0, 0, 0, 0)
     return payments
       .filter((payment) => payment.debtId === debtId)
-      .filter((payment) => new Date(`${payment.dueDate ?? payment.due}T00:00:00`) >= now)
-      .sort((a, b) => (a.dueDate ?? a.due).localeCompare(b.dueDate ?? b.due))[0]
+      .filter((payment) => new Date(`${payment.expectedDate}T00:00:00`) >= now)
+      .sort((a, b) => a.expectedDate.localeCompare(b.expectedDate))[0]
   }
 
   const missingScheduleCount = debts.filter((debt) => !nextPaymentFor(debt.id)).length

@@ -13,12 +13,8 @@ import { useEventsSummary } from '@/features/events/hooks/use-events-summary'
 import {
   actualDefaults,
   areEventsEqual,
-  arePaymentsEqual,
   buildActualSchema,
-  buildUpcomingSchema,
-  differenceInDays,
   formatAmountInput,
-  formatShortDate,
   getDirectionFromEventType,
   getQuickActionFromEventType,
   getTimelineGroupKey,
@@ -27,24 +23,17 @@ import {
   isEditableEventType,
   isQuickActualAction,
   parseAmountInput,
-  startOfDay,
   toMoneyEventSeed,
-  toUpcomingPaymentSeed,
-  TODAY,
-  upcomingDefaults,
   type ActualRecordForm,
   type FinancialRecordItem,
   type LocalMoneyEvent,
-  type LocalUpcomingPayment,
   type QuickAction,
   type RecordTab,
   type RecordType,
   type TimelineGroupKey,
-  type UpcomingRecordForm,
 } from '@/features/events/model/events-form'
 import { useMembers } from '@/features/members/hooks/use-members'
 import { currentMemberId } from '@/features/members/model/members.types'
-import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { useAuthStore } from '@/shared/stores/auth-store'
 
@@ -52,7 +41,6 @@ export function useEventsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { events: seedEvents, isLoading: isEventsLoading, createEvent, updateEvent, deleteEvent: deleteEventMutation } = useEvents()
-  const { payments: seedPayments, createPayment, updatePayment, deletePayment } = usePaymentsCompat()
   const { assets } = useAssets()
   const { members } = useMembers()
   const userId = useAuthStore((state) => state.user?.id)
@@ -69,24 +57,16 @@ export function useEventsPage() {
   const sale = useAssetSale()
 
   const sourceEvents = useMemo(() => seedEvents.map(toMoneyEventSeed), [seedEvents])
-  const sourcePayments = useMemo(
-    () => seedPayments.map((payment, index) => toUpcomingPaymentSeed(payment, index, assets, members)),
-    [assets, members, seedPayments],
-  )
 
   const [events, setEvents] = useState<LocalMoneyEvent[]>(sourceEvents)
-  const [payments, setPayments] = useState<LocalUpcomingPayment[]>([])
   const [tab, setTab] = useState<RecordTab>('all')
   const [query, setQuery] = useState('')
   const [formOpen, setFormOpen] = useState(false)
   const [quickAction, setQuickAction] = useState<QuickAction | null>(null)
   const [showMoreDetails, setShowMoreDetails] = useState(false)
-  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
-  const [markPaidPaymentId, setMarkPaidPaymentId] = useState<string | null>(null)
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null)
-  const isSavingUpcoming = createPayment.isPending || updatePayment.isPending
-  const isSavingActual = createEvent.isPending || updateEvent.isPending || deletePayment.isPending
+  const isSavingActual = createEvent.isPending || updateEvent.isPending
 
   // Money events move money in/out of a WALLET (cash or bank account), never a
   // non-liquid holding like stock/real-estate. Every asset picker on the events
@@ -134,25 +114,7 @@ export function useEventsPage() {
     [categories],
   )
 
-  const upcomingSchema = useMemo(() => buildUpcomingSchema(), [])
   const actualSchema = useMemo(() => buildActualSchema(), [])
-
-  const {
-    control: upcomingControl,
-    register: registerUpcoming,
-    reset: resetUpcoming,
-    handleSubmit: handleUpcomingSubmit,
-    formState: { errors: upcomingErrors, isDirty: isUpcomingDirty },
-  } = useForm<UpcomingRecordForm>({
-    resolver: zodResolver(upcomingSchema),
-    defaultValues: upcomingDefaults,
-    // §22.10 — the submit button is never disabled, so validation happens on
-    // submit and errors say what is missing. Re-validating on change is what
-    // clears an error the moment the user starts fixing that field.
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
-    shouldFocusError: true,
-  })
 
   const {
     control: actualControl,
@@ -168,32 +130,15 @@ export function useEventsPage() {
     shouldFocusError: true,
   })
 
+  /**
+   * This page is the LEDGER — money that has already moved. Expected movements
+   * are cashflow events and live on `/upcoming`, which owns their timeline and
+   * their complete/postpone/cancel lifecycle. Never merge the two here: a
+   * forecast row and a recorded row are different kinds of fact.
+   */
   const timelineRecords = useMemo<FinancialRecordItem[]>(() => {
-    const activeUpcoming = payments
-      .filter((payment) => payment.status !== 'paid')
-      .map((payment) => ({
-        id: payment.id,
-        sourceType: 'upcoming_payment' as const,
-        canEdit: true,
-        title: payment.name,
-        amount: payment.amount,
-        currency: payment.currency,
-        date: payment.dueDate,
-        displayDate: formatShortDate(payment.dueDate),
-        status: payment.status,
-        attentionLevel: payment.attentionLevel,
-        isAttentionNeeded: payment.isAttentionNeeded,
-        ownerMemberId: payment.ownerMemberId,
-        ownerName: payment.ownerName,
-        fromAssetId: payment.expectedFromAssetId,
-        fromAssetName: payment.expectedFromAssetName,
-        frequency: payment.frequency,
-        note: payment.note,
-      }))
-
     const actualRecords = events.map((event) => ({
       id: event.id,
-      sourceType: 'money_event' as const,
       // Display label: the note now stands in for the dropped title; when a
       // record has no note, fall back to its translated category label so the
       // row is never blank.
@@ -222,38 +167,30 @@ export function useEventsPage() {
       fromAssetName: event.fromAssetName,
       toAssetId: event.toAssetId,
       toAssetName: event.toAssetName,
-      upcomingPaymentId: event.upcomingPaymentId,
+      cashflowEventId: event.cashflowEventId,
       financialGoalId: event.financialGoalId,
       debtId: event.debtId,
       note: event.note,
     }))
 
-    const records = [...activeUpcoming, ...actualRecords]
-    return records.sort((left, right) => {
+    return actualRecords.sort((left, right) => {
       const leftGroup = getTimelineGroupKey(left)
       const rightGroup = getTimelineGroupKey(right)
       if (leftGroup !== rightGroup) {
         return getTimelineGroupOrder(leftGroup) - getTimelineGroupOrder(rightGroup)
       }
-      if (left.sourceType === 'upcoming_payment' && right.sourceType === 'upcoming_payment') {
-        return left.date.localeCompare(right.date)
-      }
+      // Newest first — a ledger reads backwards from now.
       return right.date.localeCompare(left.date)
     })
-  }, [events, payments, seedEvents, t])
+  }, [events, seedEvents, t])
 
   const filteredRecords = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return timelineRecords.filter((record) => {
       const isGoal = Boolean(record.financialGoalId) || record.eventType === 'goal_contribution'
       const isDebt = Boolean(record.debtId) || record.eventType === 'debt_update'
-      const isSource =
-        record.sourceType === 'money_event' &&
-        !isGoal &&
-        !isDebt &&
-        Boolean(record.fromAssetId || record.toAssetId)
+      const isSource = !isGoal && !isDebt && Boolean(record.fromAssetId || record.toAssetId)
       if (tab === 'source' && !isSource) return false
-      if (tab === 'upcoming' && record.sourceType !== 'upcoming_payment') return false
       if (tab === 'goal' && !isGoal) return false
       if (tab === 'debt' && !isDebt) return false
       if (!needle) return true
@@ -282,14 +219,12 @@ export function useEventsPage() {
   const recordCounts = useMemo(
     () => ({
       source: timelineRecords.filter((record) =>
-        record.sourceType === 'money_event' &&
         !record.financialGoalId &&
         !record.debtId &&
         record.eventType !== 'goal_contribution' &&
         record.eventType !== 'debt_update' &&
         Boolean(record.fromAssetId || record.toAssetId),
       ).length,
-      upcoming: timelineRecords.filter((record) => record.sourceType === 'upcoming_payment').length,
       goal: timelineRecords.filter(
         (record) => Boolean(record.financialGoalId) || record.eventType === 'goal_contribution',
       ).length,
@@ -301,69 +236,32 @@ export function useEventsPage() {
   )
 
   const summary = useMemo(() => {
-    const upcomingIn30Days = payments.filter((payment) => {
-      if (payment.status === 'paid') return false
-      const days = differenceInDays(TODAY, payment.dueDate)
-      return days >= 0 && days <= 30
-    })
     const attentionCount = timelineRecords.filter(isAttentionRecord).length
     // thu/chi/net + recorded count come from the backend summary (source of
-    // truth); default to 0 while it loads. Upcoming-in-7-days and attention are
-    // payment/attention concerns the backend summary doesn't cover, so they stay
-    // derived from the loaded lists here.
+    // truth); default to 0 while it loads. Attention is a concern the backend
+    // summary doesn't cover, so it stays derived from the loaded list here.
+    // What is still EXPECTED to move belongs to the forecast, not this ledger —
+    // `/upcoming` owns those figures.
     return {
-      upcomingIn30DaysCount: upcomingIn30Days.length,
-      upcomingIn30DaysAmount: upcomingIn30Days.reduce((sum, payment) => sum + payment.amount, 0),
       recordedThisMonth: eventsSummary?.recordedCount ?? 0,
       attentionCount,
       totalIncome: eventsSummary?.totalIncome ?? 0,
       totalOutcome: eventsSummary?.totalOutcome ?? 0,
       netChange: eventsSummary?.netChange ?? 0,
     }
-  }, [eventsSummary, payments, timelineRecords])
+  }, [eventsSummary, timelineRecords])
 
   useEffect(() => {
     setEvents((current) => (areEventsEqual(current, sourceEvents) ? current : sourceEvents))
   }, [sourceEvents])
 
   useEffect(() => {
-    setPayments((current) => (arePaymentsEqual(current, sourcePayments) ? current : sourcePayments))
-  }, [sourcePayments])
-
-  useEffect(() => {
     if (!formOpen) return
-    // This effect depends on `events` / `payments` / `assets`, so a background
-    // refetch while the dialog is open would re-run it and overwrite whatever
-    // the user has typed. Once the form is dirty, their input wins (§23: a
-    // form must never silently discard what the user entered).
-    if (quickAction === 'upcoming' ? isUpcomingDirty : isActualDirty) return
-
-    if (quickAction === 'upcoming') {
-      if (editingPaymentId) {
-        const payment = payments.find((item) => item.id === editingPaymentId)
-        if (!payment) return
-        resetUpcoming({
-          name: payment.name,
-          amount: formatAmountInput(payment.amount),
-          dueDate: payment.dueDate,
-          frequency: payment.frequency ?? 'once',
-          ownerMemberId: payment.ownerMemberId ?? '',
-          expectedFromAssetId: payment.expectedFromAssetId ?? '',
-          attentionLevel: payment.attentionLevel,
-          isAttentionNeeded: payment.isAttentionNeeded,
-          note: payment.note ?? '',
-          autoCreateNext: payment.autoCreateNext ?? false,
-        })
-        return
-      }
-
-      resetUpcoming({
-        ...upcomingDefaults,
-        ownerMemberId: creatorMemberId ?? '',
-        expectedFromAssetId: sourceAssetOptions[0]?.value ?? '',
-      })
-      return
-    }
+    // This effect depends on `events` / `assets`, so a background refetch while
+    // the dialog is open would re-run it and overwrite whatever the user has
+    // typed. Once the form is dirty, their input wins (§23: a form must never
+    // silently discard what the user entered).
+    if (isActualDirty) return
 
     if (!isQuickActualAction(quickAction)) return
 
@@ -390,32 +288,12 @@ export function useEventsPage() {
         direction: event.direction,
         fromAssetId: event.fromAssetId ?? '',
         toAssetId: event.toAssetId ?? '',
-        upcomingPaymentId: event.upcomingPaymentId ?? '',
+        cashflowEventId: event.cashflowEventId ?? '',
         financialGoalId: event.financialGoalId ?? '',
         attentionLevel: event.attentionLevel,
         isAttentionNeeded: event.isAttentionNeeded,
         note: event.note ?? '',
         revaluationDirection: revaluationDiff < 0 ? 'decrease' : 'increase',
-      })
-      return
-    }
-
-    if (markPaidPaymentId) {
-      const payment = payments.find((item) => item.id === markPaidPaymentId)
-      if (!payment) return
-      resetActual({
-        ...actualDefaults,
-        amount: formatAmountInput(payment.amount),
-        eventDate: TODAY,
-        eventType: 'payment_paid',
-        direction: 'outflow',
-        fromAssetId: payment.expectedFromAssetId ?? '',
-        upcomingPaymentId: payment.id,
-        attentionLevel: payment.attentionLevel,
-        isAttentionNeeded: payment.isAttentionNeeded,
-        // The label that used to live in `title` ("Đã trả …") now goes into the
-        // note (title was dropped), preserving the payment's own note after it.
-        note: payment.note ? `Đã trả ${payment.name} — ${payment.note}` : `Đã trả ${payment.name}`,
       })
       return
     }
@@ -444,25 +322,18 @@ export function useEventsPage() {
     creatorMemberId,
     defaultCategoryCode,
     editingEventId,
-    editingPaymentId,
     events,
     formOpen,
     isActualDirty,
-    isUpcomingDirty,
-    markPaidPaymentId,
     memberOptions,
-    payments,
     quickAction,
     resetActual,
-    resetUpcoming,
     seedEvents,
     sourceAssetOptions,
   ])
 
   function openCreate() {
-    setEditingPaymentId(null)
     setEditingEventId(null)
-    setMarkPaidPaymentId(null)
     setQuickAction(null)
     setShowMoreDetails(false)
     setFormOpen(true)
@@ -478,13 +349,14 @@ export function useEventsPage() {
     navigate('/networth')
   }
 
-  function openEditPayment(paymentId: string) {
-    setEditingPaymentId(paymentId)
-    setEditingEventId(null)
-    setMarkPaidPaymentId(null)
-    setQuickAction('upcoming')
-    setShowMoreDetails(true)
-    setFormOpen(true)
+  /**
+   * Planning money that has NOT moved yet is a cashflow event, which lives on
+   * `/upcoming` together with its complete/postpone/cancel lifecycle. Hand the
+   * user over rather than writing an expected movement from the ledger page.
+   */
+  function openPlanUpcoming() {
+    handleFormOpenChange(false)
+    navigate('/upcoming')
   }
 
   function openEditEvent(eventId: string) {
@@ -515,20 +387,9 @@ export function useEventsPage() {
     }
     const event = events.find((item) => item.id === eventId)
     setEditingEventId(eventId)
-    setEditingPaymentId(null)
-    setMarkPaidPaymentId(null)
     // A revaluation edits as a neutral "expense-like" form but simplified; the
     // form hides wallet + details when editingEventType is asset_update.
     setQuickAction(event ? getQuickActionFromEventType(event.eventType) : 'expense')
-    setShowMoreDetails(false)
-    setFormOpen(true)
-  }
-
-  function openMarkPaid(paymentId: string) {
-    setMarkPaidPaymentId(paymentId)
-    setEditingPaymentId(null)
-    setEditingEventId(null)
-    setQuickAction('payment_paid')
     setShowMoreDetails(false)
     setFormOpen(true)
   }
@@ -538,41 +399,7 @@ export function useEventsPage() {
     if (!open) {
       setQuickAction(null)
       setShowMoreDetails(false)
-      setEditingPaymentId(null)
       setEditingEventId(null)
-      setMarkPaidPaymentId(null)
-    }
-  }
-
-  async function onSubmitUpcoming(values: UpcomingRecordForm) {
-    const asset = assets.find((item) => item.id === values.expectedFromAssetId)
-    const member = members.find((item) => item.id === values.ownerMemberId)
-    const paymentStatus: 'important' | 'normal' | 'pending' =
-      values.attentionLevel === 'urgent'
-        ? 'pending'
-        : values.isAttentionNeeded || values.attentionLevel === 'important'
-          ? 'important'
-          : 'normal'
-    const payload = {
-      name: values.name.trim(),
-      amount: Math.abs(parseAmountInput(values.amount)),
-      dueDate: values.dueDate,
-      owner: member?.name ?? asset?.name,
-      ownerMemberId: values.ownerMemberId || undefined,
-      status: paymentStatus,
-    }
-
-    try {
-      if (editingPaymentId) {
-        await updatePayment.mutateAsync({ paymentId: editingPaymentId, payload })
-        toast.success('Cap nhat record sap toi thanh cong.')
-      } else {
-        await createPayment.mutateAsync(payload)
-        toast.success('Tao record sap toi thanh cong.')
-      }
-      handleFormOpenChange(false)
-    } catch (error) {
-      toast.error(getErrorMessage(error, editingPaymentId ? 'Khong the cap nhat record sap toi.' : 'Khong the tao record sap toi.'))
     }
   }
 
@@ -590,8 +417,7 @@ export function useEventsPage() {
       ? seedEvents.find((item) => item.id === editingEventId)
       : undefined
     const isRevaluationEdit = editingRaw?.type === 'asset_update'
-    const resolvedAction: Exclude<QuickAction, 'upcoming'> =
-      quickAction && quickAction !== 'upcoming' ? quickAction : 'expense'
+    const resolvedAction: QuickAction = quickAction ?? 'expense'
     // Revaluation edit: send `asset_update` with amount = the new **signed diff**
     // (magnitude × tăng/giảm sign) and the linked asset on `toAssetId`. The
     // backend shifts the asset's running balance by (newDiff − oldDiff) and
@@ -633,14 +459,11 @@ export function useEventsPage() {
     const amount = Math.abs(parseAmountInput(values.amount))
     const fromAsset = assets.find((item) => item.id === values.fromAssetId)
     const toAsset = assets.find((item) => item.id === values.toAssetId)
-    const relatedPayment = markPaidPaymentId
-      ? payments.find((item) => item.id === markPaidPaymentId)
-      : undefined
     // `title` was dropped; the note now carries the event's description. When the
     // user leaves the note blank, auto-generate a descriptive one for the types
-    // that used to get an auto-title (transfer / goal_contribution /
-    // payment_paid). Expense/income keep the user's note (or the empty-note
-    // placeholder). On edit, the user's note wins; only create auto-generates.
+    // that used to get an auto-title (transfer / goal_contribution).
+    // Expense/income keep the user's note (or the empty-note placeholder). On
+    // edit, the user's note wins; only create auto-generates.
     const userNote = values.note.trim()
     const autoNote = editingEvent
       ? userNote || editingEvent.note || t('common.noAdditionalNote')
@@ -649,9 +472,7 @@ export function useEventsPage() {
           ? `Chuyển từ ${fromAsset.name} sang ${toAsset.name}`
           : resolvedAction === 'goal_contribution'
             ? `Góp vào ${values.financialGoalId.trim() || 'mục tiêu chung'}`
-            : resolvedAction === 'payment_paid'
-              ? `Đã trả ${relatedPayment?.name ?? ''}`.trim()
-              : t('common.noAdditionalNote'))
+            : t('common.noAdditionalNote'))
     const payload = {
       amount,
       isoDate: values.eventDate,
@@ -660,11 +481,9 @@ export function useEventsPage() {
       category: values.category.trim() || 'other',
       fromAssetId: values.fromAssetId || undefined,
       toAssetId: values.toAssetId || undefined,
-      upcomingPaymentId: values.upcomingPaymentId || undefined,
       // Carry the linked debt through so the backend still reduces the right
-      // debt's balance: from the marked-paid payment on create, or from the
-      // event being edited (a debt repayment keeps its debtId).
-      debtId: relatedPayment?.debtId || editingEvent?.debtId || undefined,
+      // debt's balance (a debt repayment keeps its debtId across an edit).
+      debtId: editingEvent?.debtId || undefined,
       // Preserve sale specifics on edit so an edited asset_sale keeps its fee and
       // sold qty/value (the position reversal on the backend needs them).
       feeAmount: editingEvent?.feeAmount,
@@ -675,14 +494,6 @@ export function useEventsPage() {
     }
 
     try {
-      if (markPaidPaymentId) {
-        await createEvent.mutateAsync(payload)
-        await deletePayment.mutateAsync(markPaidPaymentId)
-        toast.success('Da ghi nhan khoan da tra.')
-        handleFormOpenChange(false)
-        return
-      }
-
       if (editingEventId) {
         await updateEvent.mutateAsync({ eventId: editingEventId, payload })
         toast.success('Cap nhat record thanh cong.')
@@ -694,23 +505,6 @@ export function useEventsPage() {
     } catch (error) {
       toast.error(getErrorMessage(error, editingEventId ? 'Khong the cap nhat record.' : 'Khong the tao record.'))
     }
-  }
-
-  function togglePaymentAttention(paymentId: string) {
-    setPayments((current) =>
-      current.map((payment) =>
-        payment.id === paymentId
-          ? {
-              ...payment,
-              isAttentionNeeded: !payment.isAttentionNeeded,
-              attentionLevel:
-                payment.isAttentionNeeded && payment.attentionLevel !== 'urgent'
-                  ? 'normal'
-                  : 'important',
-            }
-          : payment,
-      ),
-    )
   }
 
   function toggleEventAttention(eventId: string) {
@@ -730,26 +524,6 @@ export function useEventsPage() {
     )
   }
 
-  function postponePayment(paymentId: string) {
-    const payment = payments.find((item) => item.id === paymentId)
-    if (!payment) return
-    const nextDueDate = new Date(
-      startOfDay(payment.dueDate).setDate(startOfDay(payment.dueDate).getDate() + 7),
-    )
-      .toISOString()
-      .slice(0, 10)
-    void updatePayment
-      .mutateAsync({
-        paymentId,
-        payload: {
-          dueDate: nextDueDate,
-          status: payment.attentionLevel === 'normal' ? 'important' : 'pending',
-        },
-      })
-      .then(() => toast.success('Da doi ngay xu ly.'))
-      .catch((error) => toast.error(getErrorMessage(error, 'Khong the doi ngay xu ly.')))
-  }
-
   function duplicateEvent(eventId: string) {
     const event = events.find((item) => item.id === eventId)
     if (!event) return
@@ -762,7 +536,8 @@ export function useEventsPage() {
         category: event.category,
         fromAssetId: event.fromAssetId,
         toAssetId: event.toAssetId,
-        upcomingPaymentId: event.upcomingPaymentId,
+        // The cashflow link is deliberately NOT copied: it records which expected
+        // movement this event settled, and only one event can settle it.
         financialGoalId: event.financialGoalId,
         note: event.note ? `${event.note} (copy)` : '(copy)',
       })
@@ -781,9 +556,6 @@ export function useEventsPage() {
   }
 
   const deletingEvent = deleteEventId ? events.find((event) => event.id === deleteEventId) : undefined
-  const selectedUpcomingForMarkPaid = markPaidPaymentId
-    ? payments.find((payment) => payment.id === markPaidPaymentId)
-    : undefined
   // Raw type of the event currently being edited — drives the edit-specific
   // dialog title (undefined when creating).
   const editingEventType = editingEventId
@@ -798,7 +570,6 @@ export function useEventsPage() {
     groupedRecords,
     recordCounts,
     isLoading,
-    payments,
     // toolbar state
     tab,
     setTab,
@@ -811,12 +582,9 @@ export function useEventsPage() {
     editingEventType,
     showMoreDetails,
     setShowMoreDetails,
-    markPaidPaymentId,
     deleteEventId,
     setDeleteEventId,
     deletingEvent,
-    selectedUpcomingForMarkPaid,
-    isSavingUpcoming,
     isSavingActual,
     isDeleting: deleteEventMutation.isPending,
     // options
@@ -825,10 +593,6 @@ export function useEventsPage() {
     memberOptions,
     categoryOptions,
     // forms
-    upcomingControl,
-    registerUpcoming,
-    handleUpcomingSubmit,
-    upcomingErrors,
     actualControl,
     registerActual,
     handleActualSubmit,
@@ -837,15 +601,11 @@ export function useEventsPage() {
     openCreate,
     openBorrowMoney,
     openSellAsset,
-    openEditPayment,
+    openPlanUpcoming,
     openEditEvent,
-    openMarkPaid,
     handleFormOpenChange,
-    onSubmitUpcoming,
     onSubmitActual,
-    togglePaymentAttention,
     toggleEventAttention,
-    postponePayment,
     duplicateEvent,
     handleDeleteEvent,
   }

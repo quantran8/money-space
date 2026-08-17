@@ -37,6 +37,36 @@ export type {
 // Type ⇒ valuation mode / liquidity metadata (§23, §34)
 // ---------------------------------------------------------------------------
 
+/**
+ * Assets that hold a spendable cash balance the app can move.
+ *
+ * `creditManualAsset` / `debitManualAsset` on the backend return early for
+ * every other type — a stock or a gold bar is valued from a price, not from a
+ * stored balance — so pointing a settlement at one moves nothing.
+ */
+const WALLET_ASSET_TYPES: AssetType[] = ['cash', 'bank_account']
+
+/**
+ * Can this asset settle a cashflow event — i.e. does confirming against it
+ * actually move a balance?
+ *
+ * Two conditions, and both are the backend's (`assertSettlementAsset`):
+ * it must count as flexible money (`usable_now`, the household's own answer to
+ * "is this spendable"), and it must be a wallet type. Kept here so the picker
+ * offers exactly what the API will accept rather than surfacing a 400.
+ */
+export function canSettleCashflow(asset: {
+  type: AssetType
+  liquidity: AssetLiquidity
+  status?: string | null
+}): boolean {
+  return (
+    (!asset.status || asset.status === 'active') &&
+    asset.liquidity === 'usable_now' &&
+    WALLET_ASSET_TYPES.includes(asset.type)
+  )
+}
+
 export const assetTypeOrder: AssetType[] = [
   'cash',
   'bank_account',

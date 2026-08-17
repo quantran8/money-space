@@ -5,7 +5,7 @@ import { useDebts } from '@/features/debts/hooks/use-debts'
 import { useEvents } from '@/features/events/hooks/use-events'
 import { useMembers } from '@/features/members/hooks/use-members'
 import type { MoneyEventItem } from '@/features/events/model/events.types'
-import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat'
+import { useCashflowEvents } from '@/features/cashflow/hooks/use-cashflow-events'
 
 /** One row in a debt's repayment/borrow timeline, derived from money events. */
 export type DebtHistoryEntry = {
@@ -33,7 +33,12 @@ export function useDebtDetail(debtId: string | undefined) {
   const { events, isLoading: isLoadingEvents } = useEvents()
   const { members } = useMembers()
   const { assets } = useAssets()
-  const { payments, isLoading: isLoadingPayments } = usePaymentsCompat()
+  // Only money still owed on this debt belongs on the schedule, so filter the
+  // list server-side to live outgoing events.
+  const { cashflowEvents: payments, isLoading: isLoadingPayments } = useCashflowEvents({
+    direction: 'outgoing',
+    status: 'live',
+  })
 
   const debt = useMemo(
     () => (debtId ? debts.find((item) => item.id === debtId) : undefined),
@@ -109,12 +114,10 @@ export function useDebtDetail(debtId: string | undefined) {
     return payments
       .filter((payment) => payment.debtId === debtId)
       .filter((payment) => {
-        const due = new Date(`${payment.dueDate ?? payment.due}T00:00:00`)
+        const due = new Date(`${payment.expectedDate}T00:00:00`)
         return !Number.isNaN(due.getTime()) && due >= today
       })
-      .sort((left, right) =>
-        (left.dueDate ?? left.due).localeCompare(right.dueDate ?? right.due),
-      )
+      .sort((left, right) => left.expectedDate.localeCompare(right.expectedDate))
   }, [debtId, payments])
 
   return {

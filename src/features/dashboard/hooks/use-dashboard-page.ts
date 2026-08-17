@@ -47,6 +47,8 @@ export function useDashboardPage() {
     forecast,
     flexibleMoney,
     freshness,
+    /** Needed to pick the wallet a confirmed cashflow event moves through. */
+    assets,
     moneyLocation: buildMoneyLocationMap(assets, holderNameById),
     /** Quick update = confirm the stale sources are unchanged (§14.5). */
     confirmUnchanged,

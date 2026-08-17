@@ -386,7 +386,6 @@ export const resources = {
           sourcesDescription: 'Ai đang giữ và nguồn tiền được cập nhật lần cuối khi nào.',
           search: 'Tìm nguồn tiền…',
           filter: 'Lọc nguồn tiền',
-          total: 'Tổng tài sản đang tính',
           householdOwner: 'Cả nhà',
           detail: 'Chi tiết',
           columns: {
@@ -906,6 +905,21 @@ export const resources = {
           edit: 'Sửa',
           delete: 'Xoá',
         },
+        // Xác nhận là lúc tiền thật sự chuyển, nên phải biết chuyển qua ví nào
+        // — thiếu ví thì số dư không đổi chỗ nào cả.
+        complete: {
+          title: 'Xác nhận đã xong',
+          description: '{{name}} · {{amount}}',
+          walletIn: 'Tiền vào ví nào?',
+          walletOut: 'Tiền ra từ ví nào?',
+          walletPlaceholder: 'Chọn ví',
+          walletHint:
+            'Chọn trước để lúc xác nhận không phải chọn lại. Có thể để trống.',
+          noWallet:
+            'Chưa có ví nào được tính vào tiền linh hoạt. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng trước đã.',
+          submit: 'Xác nhận',
+          submitting: 'Đang lưu…',
+        },
         form: {
           eyebrow: 'Khoản sắp tới',
           editEyebrow: 'Sửa khoản sắp tới',
@@ -984,7 +998,7 @@ export const resources = {
           estimated: 'Ước tính',
           required: 'Cố định',
           planned: 'Dự định',
-          overdue: 'Quá hạn, tính vào hôm nay',
+          overdue: 'Quá hạn',
           estimated_incoming: 'Chưa tính vào số dư',
           planned_outgoing: 'Khoản dự định',
           postponed: 'Đã dời ngày',
@@ -999,8 +1013,10 @@ export const resources = {
               'Các khoản dự định vẫn được trừ, vì tiền vẫn rời tài khoản.',
             no_confirmed_inflow_in_horizon:
               'Chưa có khoản tiền vào nào đủ chắc chắn trong kỳ này.',
+            // Khoản quá hạn chỉ được LIỆT KÊ ở hôm nay để nhà mình thấy, việc
+            // đánh dấu đã xong là do nhà mình bấm — app không tự làm thay.
             overdue_events_clamped_to_today:
-              'Khoản quá hạn được tính vào hôm nay, mỗi khoản một lần.',
+              'Khoản quá hạn được xếp vào hôm nay để nhà mình thấy, mỗi khoản một lần.',
             stale_asset_values:
               '{{count}} nguồn tiền lâu chưa cập nhật, số dư có thể chưa sát.',
             same_day_outflows_ordered_first:
@@ -1120,9 +1136,17 @@ export const resources = {
         coverage: {
           // §11.5 — always visible, never a confidence percentage. The block
           // declares its own scope so "Cập nhật nhanh" reads as these sources.
-          summary: '{{count}} khoản đang tính · cũ nhất {{days}} ngày',
-          summaryNoAge: '{{count}} khoản đang tính',
-          more: 'Xem thêm {{count}} khoản',
+          // Tuổi dữ liệu viết theo lối nói thường ("6 ngày trước", "hôm qua"),
+          // giống hệt cột trong bảng, để hai chỗ đọc lên là một.
+          sourceCount: '{{count}} nguồn',
+          oldest: 'cũ nhất',
+          show: 'Hiện chi tiết',
+          hide: 'Ẩn chi tiết',
+          columns: {
+            source: 'Nguồn',
+            updated: 'Cập nhật',
+            amount: 'Số tiền',
+          },
           // Trước đây câu này liệt kê theo loại tài sản. Từ khi mỗi khoản có
           // công tắc riêng, chỉ có lựa chọn của nhà mình mới nói đúng.
           excluded: 'Đây là những khoản nhà mình đánh dấu là dùng được.',
@@ -1137,9 +1161,25 @@ export const resources = {
           sourcesNeedUpdate: '{{count}} nguồn cần cập nhật',
           allFresh: 'Dữ liệu đang mới',
         },
+        // Tên của cả khối: gồm phần quá hạn và phần 30 ngày tới.
+        cashflow: {
+          title: 'Dòng tiền',
+        },
         upcoming: {
-          title: 'Ba mươi ngày tới',
+          title: '30 ngày tới',
           meta: '{{range}} · {{count}} khoản',
+          overdue: {
+            title: 'Quá hạn',
+            count: '{{count}} khoản',
+            summary: '{{count}} khoản · cũ nhất {{days}} ngày',
+            // Nói đúng ba điều: đã tính vào số bên dưới, vẫn đang chờ, và chỉ
+            // nhà mình mới xác nhận được. Không trách, không giục.
+            note: 'Đã qua ngày dự kiến và vẫn đang được tính vào các số bên dưới. Các khoản này ở đây tới khi nhà mình xác nhận.',
+            markDone: 'Xác nhận',
+            marking: 'Đang lưu…',
+            viewAll: 'Xem tất cả',
+            more: 'Còn {{count}} khoản nữa.',
+          },
           lowestLabel: 'Thấp nhất dự kiến',
           // The figure itself is set apart, so the sentence stops before it.
           lowestNoteDipBefore: 'Vào {{date}}, thấp hơn hôm nay',
@@ -1238,7 +1278,9 @@ export const resources = {
             held: 'Đang giữ · {{count}} khoản',
           },
           groupAria: '{{group}}, {{value}}, lớn nhất là {{largest}}',
-          barsLabel: 'Số dư · tr',
+          // Chú thích trục x. Đơn vị ghi một lần ở đây, nên mỗi cột chỉ là số
+          // trần (§10.4).
+          barsLabel: 'Số dư (tr)',
           barAria: '{{name}} {{value}}',
           hidden: 'Còn {{count}} nguồn nữa, xem ở trang Tài sản.',
           noHolder: '·',
@@ -1510,24 +1552,12 @@ export const resources = {
           allPeople: 'Tất cả',
           allChanges: 'Tất cả thay đổi',
           sourceChanges: 'Nguồn tiền',
-          upcomingChanges: 'Sắp tới',
           goalChanges: 'Mục tiêu',
           debtChanges: 'Nợ',
           showing: 'Hiển thị {{from}}–{{to}} trong {{total}} thay đổi',
           pagination: 'Phân trang',
           previous: 'Trước',
           next: 'Tiếp',
-          types: {
-            upcoming: 'Sắp tới',
-          },
-          status: {
-            unpaid: 'Chưa xử lý',
-            paid: 'Đã trả',
-            overdue: 'Quá hạn',
-            recorded: 'Đã ghi nhận',
-            pending_confirmation: 'Chờ xác nhận',
-            postponed: 'Đã dời lại',
-          },
           filters: {
             all: 'Tất cả',
             source: 'Nguồn tiền · {{count}}',
@@ -1585,8 +1615,6 @@ export const resources = {
             },
           },
           actions: {
-            paid: 'Đã trả',
-            postpone: 'Dời ngày',
             attention: 'Cần chú ý',
             duplicate: 'Nhân bản',
           },
@@ -1714,7 +1742,6 @@ export const resources = {
           transferTo: 'Đến',
           contributeFrom: 'Nguồn góp',
           goal: 'Mục tiêu',
-          markPaidFor: 'Đang ghi nhận khoản đã trả cho “{{name}}”.',
           revaluationIncrease: 'Tăng giá trị',
           revaluationDecrease: 'Giảm giá trị',
           // §22.7 — one sentence, computed client-side from the forecast.
@@ -2507,7 +2534,6 @@ export const resources = {
           sourcesDescription: 'Who holds each source and when it was last updated.',
           search: 'Search money sources…',
           filter: 'Filter money sources',
-          total: 'Total included assets',
           householdOwner: 'Household',
           detail: 'Details',
           columns: {
@@ -3022,6 +3048,19 @@ export const resources = {
           edit: 'Edit',
           delete: 'Remove',
         },
+        complete: {
+          title: 'Confirm as done',
+          description: '{{name}} · {{amount}}',
+          walletIn: 'Which wallet received it?',
+          walletOut: 'Which wallet did it come from?',
+          walletPlaceholder: 'Choose a wallet',
+          walletHint:
+            'Choosing now saves a step when you confirm. You can leave it empty.',
+          noWallet:
+            'No wallet counts as flexible money yet. Add a cash or bank account first.',
+          submit: 'Confirm',
+          submitting: 'Saving…',
+        },
         form: {
           eyebrow: 'Upcoming item',
           editEyebrow: 'Edit upcoming item',
@@ -3100,7 +3139,7 @@ export const resources = {
           estimated: 'Estimated',
           required: 'Fixed',
           planned: 'Planned',
-          overdue: 'Overdue, counted today',
+          overdue: 'Overdue',
           estimated_incoming: 'Not counted in the balance',
           planned_outgoing: 'Planned item',
           postponed: 'Date moved',
@@ -3115,7 +3154,8 @@ export const resources = {
               'Planned items are still subtracted, because the money still leaves the account.',
             no_confirmed_inflow_in_horizon:
               'No sufficiently certain money in during this window.',
-            overdue_events_clamped_to_today: 'Overdue items are counted on today, once each.',
+            overdue_events_clamped_to_today:
+              'Overdue items are listed under today so you can see them, once each.',
             stale_asset_values:
               '{{count}} sources have not been updated in a while, so the balance may not be exact.',
             same_day_outflows_ordered_first:
@@ -3230,9 +3270,17 @@ export const resources = {
           },
         },
         coverage: {
-          summary: '{{count}} sources counted · oldest {{days}} days',
-          summaryNoAge: '{{count}} sources counted',
-          more: 'See {{count}} more',
+          // i18next pluralises on `count`, so English needs both forms.
+          sourceCount_one: '{{count}} source',
+          sourceCount_other: '{{count}} sources',
+          oldest: 'oldest',
+          show: 'Show details',
+          hide: 'Hide details',
+          columns: {
+            source: 'Source',
+            updated: 'Updated',
+            amount: 'Amount',
+          },
           excluded: 'These are the sources you marked as usable.',
           action: 'Quick update',
           empty: 'No money sources to calculate from yet.',
@@ -3245,9 +3293,22 @@ export const resources = {
           sourcesNeedUpdate: '{{count}} sources need an update',
           allFresh: 'Data is current',
         },
+        cashflow: {
+          title: 'Cash flow',
+        },
         upcoming: {
-          title: 'The next thirty days',
+          title: 'Next 30 days',
           meta: '{{range}} · {{count}} items',
+          overdue: {
+            title: 'Overdue',
+            count: '{{count}} items',
+            summary: '{{count}} items · oldest {{days}} days',
+            note: 'Past their expected date and still counted in the figures below. They stay here until you confirm them.',
+            markDone: 'Confirm',
+            marking: 'Saving…',
+            viewAll: 'See all',
+            more: '{{count}} more.',
+          },
           lowestLabel: 'Lowest projected',
           lowestNoteDipBefore: 'On {{date}}, lower than today by',
           lowestNoteNoDip: 'On {{date}}, no lower than today.',
@@ -3340,7 +3401,7 @@ export const resources = {
             held: 'Held · {{count}} sources',
           },
           groupAria: '{{group}}, {{value}}, largest is {{largest}}',
-          barsLabel: 'Balance · M',
+          barsLabel: 'Balance (M)',
           barAria: '{{name}} {{value}}',
           hidden_one: '1 more source, see the Assets page.',
           hidden_other: '{{count}} more sources, see the Assets page.',
@@ -3611,24 +3672,12 @@ export const resources = {
           allPeople: 'Everyone',
           allChanges: 'All changes',
           sourceChanges: 'Money sources',
-          upcomingChanges: 'Upcoming',
           goalChanges: 'Goals',
           debtChanges: 'Debt',
           showing: 'Showing {{from}}–{{to}} of {{total}} changes',
           pagination: 'Pagination',
           previous: 'Previous',
           next: 'Next',
-          types: {
-            upcoming: 'Upcoming',
-          },
-          status: {
-            unpaid: 'Unpaid',
-            paid: 'Paid',
-            overdue: 'Overdue',
-            recorded: 'Recorded',
-            pending_confirmation: 'Awaiting confirmation',
-            postponed: 'Postponed',
-          },
           filters: {
             all: 'All',
             source: 'Money sources · {{count}}',
@@ -3686,8 +3735,6 @@ export const resources = {
             },
           },
           actions: {
-            paid: 'Mark paid',
-            postpone: 'Postpone',
             attention: 'Needs attention',
             duplicate: 'Duplicate',
           },
@@ -3815,7 +3862,6 @@ export const resources = {
           transferTo: 'To',
           contributeFrom: 'Contribute from',
           goal: 'Goal',
-          markPaidFor: 'Recording a payment for "{{name}}".',
           revaluationIncrease: 'Value went up',
           revaluationDecrease: 'Value went down',
           effectLowest: 'After this, the lowest point in the next {{days}} days is {{lowest}}.',

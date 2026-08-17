@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
+import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import { formatDate } from '@/features/debts/model/debts-form'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 import { formatVndCell, formatVndScale } from '@/shared/lib/format-money'
@@ -17,7 +17,7 @@ import { formatVndCell, formatVndScale } from '@/shared/lib/format-money'
 type DebtListItemProps = {
   debt: DebtItem
   ownerName?: string
-  nextPayment?: UpcomingPaymentItem
+  nextPayment?: CashflowEvent
   isUpdating: boolean
   onEdit: (id: string) => void
   onMarkPaidOff: (id: string) => void
@@ -36,7 +36,7 @@ export function DebtListItem({
   onDelete,
 }: DebtListItemProps) {
   const { t } = useTranslation()
-  const dueDate = nextPayment ? nextPayment.dueDate ?? nextPayment.due : undefined
+  const dueDate = nextPayment?.expectedDate
 
   return (
     <article className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[1.2fr_1fr_.8fr_1.15fr_.65fr_.8fr_1fr_90px] lg:items-center">
@@ -52,7 +52,7 @@ export function DebtListItem({
         {nextPayment ? (
           <>
             <p>{formatDate(dueDate)}</p>
-            <p className="mt-1 text-[11px] text-ink3">{formatVndScale(nextPayment.amountValue ?? 0)}</p>
+            <p className="mt-1 text-[11px] text-ink3">{formatVndScale(nextPayment.amount)}</p>
           </>
         ) : (
           <p className="text-attention">{t('debts.demo.unconfirmed')}</p>

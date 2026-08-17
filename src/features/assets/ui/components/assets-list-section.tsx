@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { Panel, TotalRow } from '@/components/ui/panel'
+import { Panel } from '@/components/ui/panel'
 import {
   Select,
   SelectContent,
@@ -11,9 +11,8 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AssetList } from '@/features/assets/ui/components/asset-list'
-import { computeCurrentValue, liquidityOrder, type Asset, type AssetLiquidity } from '@/features/assets/model/assets'
+import { liquidityOrder, type Asset, type AssetLiquidity } from '@/features/assets/model/assets'
 import type { MemberItem } from '@/features/members/model/members.types'
-import { formatVndScale } from '@/shared/lib/format-money'
 
 type AssetsListSectionProps = {
   assets: Asset[]
@@ -45,7 +44,6 @@ export function AssetsListSection({
   onDelete,
 }: AssetsListSectionProps) {
   const { t } = useTranslation()
-  const total = assets.reduce((sum, asset) => sum + (computeCurrentValue(asset, asOf) ?? 0), 0)
 
   return (
     <Panel>
@@ -104,10 +102,6 @@ export function AssetsListSection({
           {t('assets.toolbar.empty')}
         </p>
       )}
-
-      {!isLoading && assets.length > 0 ? (
-        <TotalRow label={t('assets.demo.total')} value={formatVndScale(total)} />
-      ) : null}
     </Panel>
   )
 }

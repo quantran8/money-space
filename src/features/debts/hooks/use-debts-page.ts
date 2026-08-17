@@ -30,7 +30,7 @@ import {
 import type { DebtItem, DebtStatus } from '@/features/debts/model/debts.types'
 import { useMembers } from '@/features/members/hooks/use-members'
 import { currentMemberId } from '@/features/members/model/members.types'
-import { usePaymentsCompat } from '@/features/cashflow/hooks/use-payments-compat'
+import { useCashflowEvents } from '@/features/cashflow/hooks/use-cashflow-events'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { useAuthStore } from '@/shared/stores/auth-store'
 
@@ -40,7 +40,12 @@ export function useDebtsPage() {
   const navigate = useNavigate()
   const { debts, createDebt, updateDebt, deleteDebt, isLoading } = useDebts()
   const { events } = useEvents()
-  const { payments, isLoading: isPaymentsLoading } = usePaymentsCompat()
+  // The debts page only ever shows money still going out on a debt, so the
+  // list is narrowed server-side to live outgoing events.
+  const { cashflowEvents: payments, isLoading: isPaymentsLoading } = useCashflowEvents({
+    direction: 'outgoing',
+    status: 'live',
+  })
   const { assets } = useAssets()
   const { members } = useMembers()
   const userId = useAuthStore((state) => state.user?.id)

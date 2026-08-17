@@ -48,6 +48,16 @@ Recurrence is `once | weekly | monthly | quarterly | yearly`. There is no
 - **`complete` is idempotency-guarded by `occurrenceDate`.** Send it (or omit it
   and accept the record's current date); a double-tap must not advance a series
   twice.
+- **`complete` MUST carry an `assetId`** — which wallet the money moved through.
+  The API rejects a completion without one (falling back to the event's own
+  `settlementAssetId` first). This is not ceremony: with no asset the server's
+  `applyWalletEffects` debits and credits nothing, so confirming "lương 20tr"
+  left every balance untouched while the item looked settled.
+  - Offer only assets passing `canSettleCashflow` (`features/assets/model/assets.ts`):
+    `liquidity === 'usable_now'` **and** type `cash`/`bank_account`. That mirrors
+    the server check, so the picker cannot produce a 400.
+  - `settlementAssetId` on the event is **optional at create** (planning often
+    predates the decision) and pre-selected in the confirm dialog when set.
 - Any cashflow write invalidates the **forecast, flexible-money,
   financial-state, dashboard, events and attention** query families — not just
   the cashflow list.
@@ -80,13 +90,20 @@ Recurrence is `once | weekly | monthly | quarterly | yearly`. There is no
 `postpone` and `cancel` are implemented in the repository but not yet surfaced
 in any UI.
 
-**Transitional (Phase 5 only, delete when Phases 6/9 land):**
+**Compat shim: removed.** `model/legacy-payment-shim.ts` and
+`hooks/use-payments-compat.ts` are **deleted**. Every consumer now reads
+`CashflowEvent` through `useCashflowEvents` directly:
 
-- `model/legacy-payment-shim.ts` + `hooks/use-payments-compat.ts` — map a
-  `CashflowEvent` onto the pre-v3.1 payment shape so `/events`, `/debts` and the
-  dashboard survived the deletion of `features/payments/` in one commit. The
-  compat hook requests `{ direction: 'outgoing', status: 'live' }`, which is
-  what `/upcoming-payments` used to return. **Do not build on these.**
+- `/debts` (`use-debts-page`, `use-debt-detail`, and the four debts UI
+  components) filter with `{ direction: 'outgoing', status: 'live' }` — the same
+  narrowing the shim did, now stated at the call site.
+- `/events` no longer reads cashflow events at all; see [[money-events]] for the
+  ledger / forecast split and why its "upcoming" tab is gone.
+
+When rendering a cashflow row, derive urgency from `attentionLevel` plus
+`status` — never from a three-way `important | normal | pending` triple. That
+legacy triple conflated urgency with lifecycle, which is exactly why
+`pending_confirmation` is the only genuine lifecycle case among them.
 
 **backend**: `src/modules/cashflow-events/`, `src/common/utils/recurrence.ts`.
 

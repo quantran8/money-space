@@ -11,7 +11,7 @@ export type RecordStatus =
   | 'recorded'
   | 'pending_confirmation'
   | 'postponed'
-export type RecordTab = 'all' | 'source' | 'upcoming' | 'goal' | 'debt'
+export type RecordTab = 'all' | 'source' | 'goal' | 'debt'
 export type RecordDirection = 'inflow' | 'outflow' | 'neutral'
 export type QuickAction =
   | 'upcoming'
@@ -33,25 +33,6 @@ export type RecordType =
   | 'adjustment'
   | 'other'
 
-export type LocalUpcomingPayment = {
-  id: string
-  name: string
-  amount: number
-  currency: string
-  dueDate: string
-  status: RecordStatus
-  attentionLevel: AttentionLevel
-  isAttentionNeeded: boolean
-  expectedFromAssetId?: string
-  expectedFromAssetName?: string
-  ownerMemberId?: string
-  ownerName?: string
-  frequency?: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
-  note?: string
-  autoCreateNext?: boolean
-  debtId?: string
-}
-
 export type LocalMoneyEvent = {
   id: string
   amount: number
@@ -68,7 +49,7 @@ export type LocalMoneyEvent = {
   fromAssetName?: string
   toAssetId?: string
   toAssetName?: string
-  upcomingPaymentId?: string
+  cashflowEventId?: string
   financialGoalId?: string
   note?: string
   // Type-specific fields carried through so an edit can preserve them instead of
@@ -80,12 +61,14 @@ export type LocalMoneyEvent = {
   debtId?: string
 }
 
+/**
+ * One row on the `/events` ledger. Every row is a RECORDED money event —
+ * expected movements are cashflow events and belong to `/upcoming`.
+ */
 export type FinancialRecordItem = {
   id: string
-  sourceType: 'upcoming_payment' | 'money_event'
   /** Whether this record can be edited in-place (false for system / dedicated-
-   *  flow money events — see {@link isEditableEventType}). Upcoming payments are
-   *  always editable. */
+   *  flow money events — see {@link isEditableEventType}). */
   canEdit?: boolean
   /** Display label for the timeline row. For an upcoming payment it's the
    *  payment name; for a money event it's the note (title was dropped), falling
@@ -106,7 +89,7 @@ export type FinancialRecordItem = {
   fromAssetName?: string
   toAssetId?: string
   toAssetName?: string
-  upcomingPaymentId?: string
+  cashflowEventId?: string
   financialGoalId?: string
   debtId?: string
   ownerMemberId?: string
@@ -117,19 +100,6 @@ export type FinancialRecordItem = {
 
 export type TimelineGroupKey = 'upcoming' | 'today' | 'week' | 'month' | 'older'
 
-export type UpcomingRecordForm = {
-  name: string
-  amount: string
-  dueDate: string
-  frequency: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
-  ownerMemberId: string
-  expectedFromAssetId: string
-  attentionLevel: AttentionLevel
-  isAttentionNeeded: boolean
-  note: string
-  autoCreateNext: boolean
-}
-
 export type ActualRecordForm = {
   amount: string
   eventDate: string
@@ -138,7 +108,7 @@ export type ActualRecordForm = {
   direction: RecordDirection
   fromAssetId: string
   toAssetId: string
-  upcomingPaymentId: string
+  cashflowEventId: string
   financialGoalId: string
   attentionLevel: AttentionLevel
   isAttentionNeeded: boolean
@@ -165,19 +135,6 @@ function todayIsoDate() {
 
 export const TODAY = todayIsoDate()
 
-export const upcomingDefaults: UpcomingRecordForm = {
-  name: '',
-  amount: '',
-  dueDate: TODAY,
-  frequency: 'once',
-  ownerMemberId: '',
-  expectedFromAssetId: '',
-  attentionLevel: 'normal',
-  isAttentionNeeded: false,
-  note: '',
-  autoCreateNext: false,
-}
-
 export const actualDefaults: ActualRecordForm = {
   amount: '',
   eventDate: TODAY,
@@ -188,7 +145,7 @@ export const actualDefaults: ActualRecordForm = {
   direction: 'outflow',
   fromAssetId: '',
   toAssetId: '',
-  upcomingPaymentId: '',
+  cashflowEventId: '',
   financialGoalId: '',
   attentionLevel: 'normal',
   isAttentionNeeded: false,
@@ -309,64 +266,6 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
   }
 }
 
-export function getPaymentAttentionLevel(status: 'important' | 'normal' | 'pending'): AttentionLevel {
-  if (status === 'important') return 'important'
-  if (status === 'pending') return 'urgent'
-  return 'normal'
-}
-
-export function getPaymentRecordStatus(dueDate: string, status: 'important' | 'normal' | 'pending'): RecordStatus {
-  if (differenceInDays(dueDate, TODAY) < 0) return 'overdue'
-  if (status === 'pending') return 'pending_confirmation'
-  return 'unpaid'
-}
-
-export function toUpcomingPaymentSeed(
-  payment: {
-    id: string
-    name: string
-    amount: string
-    amountValue?: number
-    due: string
-    status: 'important' | 'normal' | 'pending'
-    owner?: string
-    debtId?: string
-  },
-  index: number,
-  assets: Array<{ id: string; name: string }>,
-  members: Array<{ id: string; name: string }>,
-): LocalUpcomingPayment {
-  const asset = assets[index % Math.max(assets.length, 1)]
-  const owner = members[index % Math.max(members.length, 1)]
-  const isIsoDate = /^\d{4}-\d{2}-\d{2}$/.test(payment.due)
-  const dueMonth = shortMonthNames.indexOf(payment.due.split(' ')[1] ?? 'Jul') + 1
-  const legacyDueDate = `2026-${String(dueMonth > 0 ? dueMonth : 7).padStart(2, '0')}-${String(
-    Number(payment.due.split(' ')[0] ?? '10'),
-  ).padStart(2, '0')}`
-  const dueDate = isIsoDate ? payment.due : legacyDueDate
-  return {
-    id: payment.id,
-    name: payment.name,
-    amount: payment.amountValue ?? 0,
-    currency: 'VND',
-    dueDate,
-    status: getPaymentRecordStatus(dueDate, payment.status),
-    attentionLevel: getPaymentAttentionLevel(payment.status),
-    isAttentionNeeded: payment.status !== 'normal',
-    expectedFromAssetId: asset?.id,
-    expectedFromAssetName: asset?.name,
-    ownerMemberId: owner?.id,
-    ownerName: payment.owner || owner?.name,
-    frequency: index === 1 ? 'monthly' : 'once',
-    note:
-      payment.status === 'pending'
-        ? 'Cần cả hai cùng chốt lại số tiền trước khi xử lý.'
-        : 'Khoản đã lên kế hoạch để chủ động chuẩn bị tiền.',
-    autoCreateNext: index === 1,
-    debtId: payment.debtId,
-  }
-}
-
 export function areEventsEqual(left: LocalMoneyEvent[], right: LocalMoneyEvent[]) {
   if (left.length !== right.length) return false
   return left.every((item, index) => {
@@ -382,24 +281,8 @@ export function areEventsEqual(left: LocalMoneyEvent[], right: LocalMoneyEvent[]
   })
 }
 
-export function arePaymentsEqual(left: LocalUpcomingPayment[], right: LocalUpcomingPayment[]) {
-  if (left.length !== right.length) return false
-  return left.every((item, index) => {
-    const other = right[index]
-    return (
-      item.id === other.id &&
-      item.name === other.name &&
-      item.amount === other.amount &&
-      item.dueDate === other.dueDate &&
-      item.status === other.status &&
-      item.ownerName === other.ownerName &&
-      item.expectedFromAssetId === other.expectedFromAssetId
-    )
-  })
-}
 
 export function getTimelineGroupKey(record: FinancialRecordItem): TimelineGroupKey {
-  if (record.sourceType === 'upcoming_payment') return 'upcoming'
   if (record.date === TODAY) return 'today'
   if (isInCurrentWeek(record.date)) return 'week'
   if (isSameMonthAsToday(record.date)) return 'month'
@@ -411,7 +294,6 @@ export function getTimelineGroupOrder(key: TimelineGroupKey) {
 }
 
 export function getTimelineTypeLabel(record: FinancialRecordItem) {
-  if (record.sourceType === 'upcoming_payment') return 'Payment'
   switch (record.eventType) {
     case 'income':
       return 'Income'
@@ -443,7 +325,6 @@ export function getTimelineTypeLabel(record: FinancialRecordItem) {
  * "Planned".
  */
 export function getTimelineRowTypeLabel(record: FinancialRecordItem) {
-  if (record.sourceType === 'upcoming_payment') return 'Planned'
   switch (record.eventType) {
     case 'income':
       return 'Money in'
@@ -526,7 +407,6 @@ export function getRecordAmountTone(record: FinancialRecordItem) {
   // Inflow / neutral records (income, asset sale, revaluation) read green;
   // money out reads orange — matching the timeline row's arrow colors.
   if (record.direction === 'outflow') return 'text-attention'
-  if (record.sourceType === 'upcoming_payment') return 'text-foreground'
   return 'text-accent'
 }
 
@@ -545,14 +425,6 @@ export function getTimelineGroupLabel(key: TimelineGroupKey) {
   }
 }
 
-export function getUpcomingDescription(record: FinancialRecordItem) {
-  const days = differenceInDays(TODAY, record.date)
-  if (record.status === 'overdue') {
-    return `Đến hạn ${record.displayDate} · đang cần xem lại`
-  }
-  if (days === 0) return `Đến hạn hôm nay · ${record.displayDate}`
-  return `Đến hạn ${record.displayDate} · còn ${days} ngày`
-}
 
 export function isQuickActualAction(
   action: QuickAction | null,
@@ -662,7 +534,7 @@ export function buildActualSchema() {
       direction: z.enum(['inflow', 'outflow', 'neutral']),
       fromAssetId: z.string(),
       toAssetId: z.string(),
-      upcomingPaymentId: z.string(),
+      cashflowEventId: z.string(),
       financialGoalId: z.string(),
       attentionLevel: z.enum(['normal', 'important', 'urgent']),
       isAttentionNeeded: z.boolean(),
@@ -716,13 +588,6 @@ export function buildActualSchema() {
           code: z.ZodIssueCode.custom,
           path: ['toAssetId'],
           message: 'Asset nguồn và đích cần khác nhau.',
-        })
-      }
-      if (value.eventType === 'payment_paid' && !value.upcomingPaymentId) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['upcomingPaymentId'],
-          message: 'Cần liên kết với một khoản sắp tới.',
         })
       }
       if (value.eventType === 'goal_contribution' && !value.financialGoalId.trim()) {

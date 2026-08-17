@@ -32,7 +32,7 @@ export type MoneyEventItem = {
   assetName?: string
   fromAssetId?: string
   toAssetId?: string
-  upcomingPaymentId?: string
+  cashflowEventId?: string
   financialGoalId?: string
   debtId?: string
 }

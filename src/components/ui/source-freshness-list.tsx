@@ -1,26 +1,36 @@
+import { AnimatePresence, motion } from 'motion/react'
 import * as React from 'react'
 
+import { easeOut } from '@/components/ui/motion'
 import { Sunk } from '@/components/ui/panel'
 import { cn } from '@/shared/lib/utils'
 
 /**
  * SourceFreshnessList (§11.5, §2.15).
  *
- * The money sources a figure is computed FROM, named one per line, oldest
- * first. This is the second thing a household reads on Home (§1.1): the hero,
- * the low point and the state are all outputs of the same inputs, so if an
- * input is old all three are old and nothing else on the page would say so.
+ * The money sources a figure is computed FROM. This is the second thing a
+ * household reads on Home (§1.1): the hero, the low point and the state are all
+ * outputs of the same inputs, so if an input is old all three are old and
+ * nothing else on the page would say so.
  *
- * It replaces the v4.0 segment strip. The strip could say *how many* sources
- * needed a look but never *which* — so the household had to leave the page to
- * find out, and the block that was meant to qualify the number instead just
- * unsettled it. Naming the sources makes it act on the spot, which is also what
- * lets the action live here at BLOCK level: "Cập nhật nhanh" plainly means these
- * sources, not everything in the app.
+ * v12 collapses the per-source rows behind one summary line — "8 nguồn · cũ
+ * nhất 6 ngày trước" — and opens them as a TABLE (nguồn → cập nhật → số tiền).
+ * Two things follow from that:
+ *  - **Freshness gets its own column**, so ages line up down the block and the
+ *    oldest source is found by scanning one column instead of comparing labels
+ *    strung after each name.
+ *  - **No row cap.** The list only had to be capped at 4 because it was always
+ *    open and pushed §12.2 below the fold; collapsed by default, it can name
+ *    every source, which is what makes the total above it verifiable rather
+ *    than asserted. Nothing links away to finish the list.
+ *  - **The open/close is animated.** Opening the block moves everything below
+ *    it down by most of a screen, and an instant jump of that size reads as the
+ *    page reloading rather than as this block growing. The height transition is
+ *    what ties the new rows to the summary line they came from.
  *
- * It renders even when everything is fresh: this is CONTEXT for the number
- * above it, not a warning (§25). It never shows a confidence percentage — that
- * would be a made-up number (§2.15).
+ * The summary line renders even when everything is fresh: this is CONTEXT for
+ * the number above it, not a warning (§25). It never shows a confidence
+ * percentage — that would be a made-up number (§2.15).
  */
 export type SourceFreshnessRow = {
   id: string
@@ -38,75 +48,129 @@ export function SourceFreshnessList({
   summary,
   action,
   footnote,
-  overflow,
+  labels,
   formatAge,
   formatValue,
   className,
 }: {
   rows: SourceFreshnessRow[]
-  /** "4 nguồn tiền mặt · cũ nhất 35 ngày" — the block declares its own scope. */
+  /** "8 nguồn · cũ nhất 6 ngày trước" — the block declares its own scope. */
   summary: React.ReactNode
   action?: React.ReactNode
   /** What this figure deliberately leaves out. */
   footnote?: React.ReactNode
-  /** Link to the page that owns the full list, when there are more sources. */
-  overflow?: React.ReactNode
+  /** Toggle copy and column headers — all copy is the caller's (§10.4). */
+  labels: {
+    show: string
+    hide: string
+    source: string
+    updated: string
+    amount: string
+  }
   formatAge: (days: number | null) => string
   /** Required for `row.value` to render — money formatting is the caller's (§10.4). */
   formatValue?: (value: number) => string
   className?: string
 }) {
+  const [isOpen, setIsOpen] = React.useState(false)
+
   return (
-    <Sunk className={cn('mt-6 p-4', className)}>
-      <div className="flex items-center justify-between gap-3">
-        <p className="label">{summary}</p>
-        {action ? <span className="shrink-0">{action}</span> : null}
+    <Sunk className={cn('mt-6', className)}>
+      <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+        <p className="text-[13px] leading-5 text-ink2">{summary}</p>
+
+        <span className="flex shrink-0 items-center gap-3">
+          {action}
+          {/* No `aria-controls`: the table is unmounted while collapsed, and
+              pointing at an absent id is a dangling reference. `aria-expanded`
+              already states the toggle's own state, which is what a screen
+              reader needs here. */}
+          <button
+            type="button"
+            onClick={() => setIsOpen((open) => !open)}
+            aria-expanded={isOpen}
+            className="text-[13px] font-medium text-accent"
+          >
+            {isOpen ? labels.hide : labels.show}
+          </button>
+        </span>
       </div>
 
-      <ul className="mt-3.5 space-y-2.5">
-        {rows.map((row) => (
-          <li
-            key={row.id}
-            className={cn(
-              'flex items-center justify-between gap-3 text-[13px]',
-              !row.isStale && 'text-ink2',
-            )}
+      {/* A table, not a list: the age column is what makes the oldest source
+          findable at a glance, and it only lines up as a column.
+
+          Height is animated so the rows unroll from under the summary rather
+          than snapping in and shifting §12.2 down by a screenful with no
+          explanation of where the jump came from. `overflow-hidden` is what
+          clips them mid-transition; opacity trails slightly behind the height
+          so the text is not readable while it is still moving. */}
+      <AnimatePresence initial={false}>
+        {isOpen ? (
+          <motion.div
+            key="details"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{
+              height: { duration: 0.24, ease: easeOut },
+              opacity: { duration: 0.16, ease: easeOut },
+            }}
+            className="overflow-hidden"
           >
-            <span className="flex min-w-0 items-center gap-2">
-              {/* Always rendered, so every name starts on the same optical line
-                  and the dot reads as a mark rather than as an indent. */}
-              <span
-                className={cn(
-                  'h-1.5 w-1.5 shrink-0 rounded-full',
-                  row.isStale ? 'bg-attention' : 'bg-transparent',
-                )}
-              />
-              <span className="truncate">{row.name}</span>
-            </span>
-            {/* Amount first, age second: what the source contributes is the
-                fact, how old it is qualifies it. */}
-            <span className="flex shrink-0 items-baseline gap-2">
-              {row.value !== undefined && formatValue ? (
-                <span className="num text-[13px] font-medium text-ink">
-                  {formatValue(row.value)}
-                </span>
+            <div className="px-4 pb-4">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="label">
+                    <th scope="col" className="pb-2.5 text-left font-normal">
+                      {labels.source}
+                    </th>
+                    <th scope="col" className="pb-2.5 text-left font-normal">
+                      {labels.updated}
+                    </th>
+                    {formatValue ? (
+                      <th scope="col" className="pb-2.5 text-right font-normal">
+                        {labels.amount}
+                      </th>
+                    ) : null}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.id} className="hover:bg-panel">
+                      <th
+                        scope="row"
+                        className="rounded-l-[8px] py-2.5 pr-4 text-left font-medium"
+                      >
+                        {row.name}
+                      </th>
+                      <td
+                        className={cn(
+                          'py-2.5 pr-4 font-mono text-[11px]',
+                          row.isStale ? 'font-medium text-attention' : 'text-ink2',
+                          // Only the last cell of a row carries the right radius.
+                          !formatValue && 'rounded-r-[8px] text-right',
+                        )}
+                      >
+                        {formatAge(row.days)}
+                      </td>
+                      {formatValue ? (
+                        <td className="num rounded-r-[8px] py-2.5 text-right text-ink2">
+                          {row.value !== undefined ? formatValue(row.value) : null}
+                        </td>
+                      ) : null}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {footnote ? (
+                <p className="mt-3.5 text-[12px] leading-5 text-ink3">{footnote}</p>
               ) : null}
-              <span
-                className={cn(
-                  'font-mono text-[11px]',
-                  row.isStale ? 'text-attention' : 'text-ink3',
-                )}
-              >
-                {formatAge(row.days)}
-              </span>
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {overflow ? <div className="mt-3">{overflow}</div> : null}
-
-      {footnote ? <p className="mt-3.5 text-[12px] leading-5 text-ink3">{footnote}</p> : null}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </Sunk>
   )
 }

@@ -57,6 +57,13 @@ export type CashflowEvent = {
   debtId?: string | null
   financialGoalId?: string | null
   plannedAssetId?: string | null
+  /**
+   * The wallet this event settles through — debited when outgoing, credited
+   * when incoming. Optional while planning; confirming falls back to it and
+   * asks for one when it is null, because a confirmation with no wallet moves
+   * no balance at all. Must be a `usable_now` cash/bank asset.
+   */
+  settlementAssetId?: string | null
   note?: string
   lastCompletedAt?: string | null
   lastCompletedById?: string | null

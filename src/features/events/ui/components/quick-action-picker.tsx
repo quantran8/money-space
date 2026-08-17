@@ -3,12 +3,15 @@ import { useTranslation } from 'react-i18next'
 import type { QuickAction } from '@/features/events/model/events-form'
 
 /** Picker entries include the real quick actions plus secondary navigations. */
-type PickerKey = QuickAction | 'sell_asset'
+type PickerKey = QuickAction | 'sell_asset' | 'upcoming'
 
 type QuickActionPickerProps = {
   onSelect: (action: QuickAction) => void
   onBorrowMoney: () => void
   onSellAsset: () => void
+  /** Leaves for `/upcoming` — an expected movement is a cashflow event, which
+   *  this ledger page does not own. */
+  onPlanUpcoming: () => void
 }
 
 const ACTIONS: PickerKey[] = [
@@ -33,6 +36,7 @@ export function QuickActionPicker({
   onSelect,
   onBorrowMoney,
   onSellAsset,
+  onPlanUpcoming,
 }: QuickActionPickerProps) {
   const { t } = useTranslation()
 
@@ -49,6 +53,10 @@ export function QuickActionPicker({
             }
             if (action === 'sell_asset') {
               onSellAsset()
+              return
+            }
+            if (action === 'upcoming') {
+              onPlanUpcoming()
               return
             }
             onSelect(action)

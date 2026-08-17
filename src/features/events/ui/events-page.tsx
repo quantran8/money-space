@@ -17,7 +17,6 @@ export function EventsPage() {
     sale,
     groupedRecords,
     isLoading,
-    payments,
     tab,
     setTab,
     formOpen,
@@ -26,22 +25,15 @@ export function EventsPage() {
     editingEventType,
     showMoreDetails,
     setShowMoreDetails,
-    markPaidPaymentId,
     deleteEventId,
     setDeleteEventId,
     deletingEvent,
-    selectedUpcomingForMarkPaid,
-    isSavingUpcoming,
     isSavingActual,
     isDeleting,
     assetOptions,
     sourceAssetOptions,
     memberOptions,
     categoryOptions,
-    upcomingControl,
-    registerUpcoming,
-    handleUpcomingSubmit,
-    upcomingErrors,
     actualControl,
     registerActual,
     handleActualSubmit,
@@ -49,15 +41,11 @@ export function EventsPage() {
     openCreate,
     openBorrowMoney,
     openSellAsset,
-    openEditPayment,
+    openPlanUpcoming,
     openEditEvent,
-    openMarkPaid,
     handleFormOpenChange,
-    onSubmitUpcoming,
     onSubmitActual,
-    togglePaymentAttention,
     toggleEventAttention,
-    postponePayment,
     duplicateEvent,
     handleDeleteEvent,
   } = useEventsPage()
@@ -88,11 +76,6 @@ export function EventsPage() {
         groupedRecords={groupedRecords}
         memberOptions={memberOptions}
         isLoading={isLoading}
-        isSavingActual={isSavingActual}
-        onMarkPaid={openMarkPaid}
-        onPostponePayment={postponePayment}
-        onEditPayment={openEditPayment}
-        onTogglePaymentAttention={togglePaymentAttention}
         onEditEvent={openEditEvent}
         onDuplicateEvent={duplicateEvent}
         onToggleEventAttention={toggleEventAttention}
@@ -116,21 +99,12 @@ export function EventsPage() {
         }}
         onBorrowMoney={openBorrowMoney}
         onSellAsset={openSellAsset}
+        onPlanUpcoming={openPlanUpcoming}
         showMoreDetails={showMoreDetails}
         onToggleMoreDetails={() => setShowMoreDetails((current) => !current)}
-        markPaidPaymentId={markPaidPaymentId}
-        selectedUpcomingForMarkPaid={selectedUpcomingForMarkPaid}
-        payments={payments}
         assetOptions={assetOptions}
         sourceAssetOptions={sourceAssetOptions}
-        memberOptions={memberOptions}
         categoryOptions={categoryOptions}
-        upcomingControl={upcomingControl}
-        registerUpcoming={registerUpcoming}
-        upcomingErrors={upcomingErrors}
-        handleUpcomingSubmit={handleUpcomingSubmit}
-        onSubmitUpcoming={onSubmitUpcoming}
-        isSavingUpcoming={isSavingUpcoming}
         actualControl={actualControl}
         registerActual={registerActual}
         actualErrors={actualErrors}

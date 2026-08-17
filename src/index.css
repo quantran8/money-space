@@ -23,6 +23,7 @@
   --color-hair: var(--hair);
   --color-accent-soft: var(--accent-soft);
   --color-attention: var(--attention);
+  --color-attention-soft: var(--attention-soft);
   --color-alert: var(--alert);
   --color-committed: var(--committed);
   --color-protect: var(--protect);
@@ -87,6 +88,10 @@
     --accent: #0a6b47;
     --accent-soft: #e3efea;
     --attention: #b07a1e;
+    /* The amber counterpart to `--accent-soft`. Opaque, unlike
+       `--attention-tint`, so a block filled with it can sit on either the panel
+       or the sunk surface and read the same. */
+    --attention-soft: #f6eddc;
     --alert: #b23a26;
     --committed: #d2d6da;
     --protect: #a9b0b8;
@@ -124,6 +129,7 @@
     --accent: #8c2f39;
     --accent-soft: #f4e8e8;
     --attention: #9a6a16;
+    --attention-soft: #f3e8d3;
     --alert: #a8391f;
     --committed: #dcd3c4;
     --protect: #b5aa98;

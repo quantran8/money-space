@@ -13,21 +13,31 @@ import {
 import { Card } from '@/components/ui/card'
 import type { DebtItem } from '@/features/debts/model/debts.types'
 import type { MoneyEventItem } from '@/features/events/model/events.types'
-import type { LegacyPaymentItem as UpcomingPaymentItem } from '@/features/cashflow/model/legacy-payment-shim'
+import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
 type DebtsInsightsSectionProps = {
   debts: DebtItem[]
   events: MoneyEventItem[]
-  payments: UpcomingPaymentItem[]
+  payments: CashflowEvent[]
   isLoading: boolean
 }
 
-function parseDue(payment: UpcomingPaymentItem) {
-  const value = payment.dueDate ?? payment.due
-  const date = new Date(`${value}T00:00:00`)
+function parseDue(payment: CashflowEvent) {
+  const date = new Date(`${payment.expectedDate}T00:00:00`)
   return Number.isNaN(date.getTime()) ? null : date
+}
+
+/**
+ * The readiness line the row shows. `pending_confirmation` is the one genuine
+ * lifecycle case; otherwise urgency comes from `attentionLevel` (and `overdue`,
+ * which always needs priority) — the pre-v3.1 status triple mixed the two.
+ */
+function readiness(payment: CashflowEvent): 'ready' | 'priority' | 'awaiting' {
+  if (payment.status === 'pending_confirmation') return 'awaiting'
+  if (payment.status === 'overdue') return 'priority'
+  return payment.attentionLevel === 'normal' ? 'ready' : 'priority'
 }
 
 function dueLabel(date: Date) {
@@ -55,7 +65,7 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
     today.setHours(0, 0, 0, 0)
     return payments
       .map((payment) => ({ payment, due: parseDue(payment) }))
-      .filter((entry): entry is { payment: UpcomingPaymentItem; due: Date } =>
+      .filter((entry): entry is { payment: CashflowEvent; due: Date } =>
         Boolean(entry.payment.debtId && entry.due && entry.due >= today),
       )
       .sort((a, b) => a.due.getTime() - b.due.getTime())
@@ -110,11 +120,15 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{payment.name}</p>
-                <p className={cn('mt-1 text-xs', payment.status === 'normal' ? 'text-accent' : 'text-muted-foreground')}>
-                  {payment.status === 'normal' ? 'Đã chuẩn bị nguồn' : payment.status === 'important' ? 'Cần ưu tiên' : 'Chờ xác nhận'}
+                <p className={cn('mt-1 text-xs', readiness(payment) === 'ready' ? 'text-accent' : 'text-muted-foreground')}>
+                  {readiness(payment) === 'ready'
+                    ? 'Đã chuẩn bị nguồn'
+                    : readiness(payment) === 'priority'
+                      ? 'Cần ưu tiên'
+                      : 'Chờ xác nhận'}
                 </p>
               </div>
-              <p className="money-number text-sm font-semibold sm:text-right">{formatVndShort(payment.amountValue ?? 0)}</p>
+              <p className="money-number text-sm font-semibold sm:text-right">{formatVndShort(payment.amount)}</p>
             </div>
           ))}
         </div>

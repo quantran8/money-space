@@ -39,6 +39,8 @@ export type CashflowEventPayload = {
   debtId?: string | null
   financialGoalId?: string | null
   plannedAssetId?: string | null
+  /** Optional wallet this event settles through. See `CashflowEvent`. */
+  settlementAssetId?: string | null
   attentionLevel?: CashflowAttentionLevel
   note?: string
 }

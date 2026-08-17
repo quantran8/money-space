@@ -58,6 +58,7 @@ export function useCashflowForm() {
         // Incoming carries `null`; the form needs a concrete value to render.
         requirement: editingEvent.requirement ?? 'required',
         certainty: editingEvent.certainty,
+        settlementAssetId: editingEvent.settlementAssetId ?? '',
         note: editingEvent.note ?? '',
       })
       return
@@ -90,6 +91,8 @@ export function useCashflowForm() {
         expectedDate: values.expectedDate,
         recurrence: values.recurrence,
         certainty: values.certainty,
+        // `null` clears it on edit; `''` from the Select means "not chosen".
+        settlementAssetId: values.settlementAssetId || null,
         note: values.note.trim() || undefined,
         // Omitted entirely for incoming — the backend forces it to null and
         // sending a value would be a lie about what was asked.

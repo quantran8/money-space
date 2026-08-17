@@ -1,3 +1,4 @@
+import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
@@ -14,8 +15,10 @@ import {
 import { Label, Panel, PanelHeader, PanelSplit, Sunk } from '@/components/ui/panel'
 import {
   buildDeltaSeries,
+  buildOverdue,
   buildTimelineRows,
   type DeltaPoint,
+  type OverdueSummary,
   type TimelineRow,
 } from '@/features/dashboard/model/home-derivations'
 import type { ForecastResult } from '@/features/forecast/model/forecast.types'
@@ -40,11 +43,25 @@ const MIN_EVENTS_FOR_CHART = 6
  * whether the next month works. The table's `Còn lại` column carries the
  * running balance — that column is what turns a list of events into a sequence.
  */
-export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
+export function UpcomingSection({
+  forecast,
+  cashflowEvents = [],
+  onCompleteOverdue,
+  completingEventId,
+}: {
+  forecast: ForecastResult
+  /** Source events, joined for an overdue row's real due date (`expectedDate`). */
+  cashflowEvents?: { id: string; expectedDate: string }[]
+  /** Marks one overdue occurrence resolved. The ONLY way it leaves the list. */
+  onCompleteOverdue?: (sourceEventId: string, occurrenceDate: string) => void
+  /** The overdue row currently being confirmed, for its button's spinner. */
+  completingEventId?: string | null
+}) {
   const { t } = useTranslation()
 
   const { rows, totalCount } = buildTimelineRows(forecast)
   const { points, lowestIndex } = buildDeltaSeries(forecast)
+  const overdue = buildOverdue(forecast, cashflowEvents)
 
   const lowest = forecast.lowestProjectedBalance
   const dip = forecast.startingLiquidBalance - lowest
@@ -54,21 +71,45 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
   return (
     <Panel>
       <PanelHeader
-        title={t('home.upcoming.title')}
-        meta={t('home.upcoming.meta', {
-          range: `${formatDayMonth(forecast.asOfDate)} — ${formatDayMonth(forecast.horizonEndDate)}`,
-          count: totalCount,
-        })}
+        title={t('home.cashflow.title')}
+        action={
+          <Link
+            to="/upcoming"
+            className="inline-flex min-h-11 shrink-0 items-center text-[13px] font-medium text-accent"
+          >
+            {t('home.upcoming.viewTimeline')}
+          </Link>
+        }
       />
 
-      <PanelSplit>
-        <div>
-          <Label>{t('home.upcoming.lowestLabel')}</Label>
+      {/* First and full width, because it is the only thing here that is
+          waiting on somebody. Everything below is a projection; this is a fact
+          about right now, and it is already inside those projections (§18). */}
+      <OverdueBlock
+        overdue={overdue}
+        onComplete={onCompleteOverdue}
+        pendingId={completingEventId}
+      />
+
+      <div className="mt-9">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h3 className="text-[14px] font-medium">{t('home.upcoming.title')}</h3>
+          <p className="font-mono text-[11px] text-ink3">
+            {t('home.upcoming.meta', {
+              range: `${formatDayMonth(forecast.asOfDate)} — ${formatDayMonth(forecast.horizonEndDate)}`,
+              count: totalCount,
+            })}
+          </p>
+        </div>
+
+        <PanelSplit className="mt-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+          <div>
+            <Label>{t('home.upcoming.lowestLabel')}</Label>
 
           {/* MAY BE NEGATIVE — never clamped. */}
           <p
             className={cn(
-              'num mt-2 text-[30px] font-medium tracking-[-.03em]',
+              'num mt-3 text-[30px] font-medium tracking-[-.03em]',
               lowest < 0 && 'text-alert',
             )}
           >
@@ -172,19 +213,145 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
             </>
           )}
 
-          <div className="mt-4">
-            <Link
-              to="/upcoming"
-              className="inline-flex min-h-11 items-center text-[13px] font-medium text-accent"
-            >
-              {totalCount > rows.length
-                ? t('home.upcoming.more', { count: totalCount - rows.length })
-                : t('home.upcoming.viewTimeline')}
-            </Link>
-          </div>
+          {/* Only when the table is actually truncated — "Xem timeline" already
+              sits in the section header, so an unconditional link here would be
+              the same destination offered twice. */}
+          {totalCount > rows.length ? (
+            <div className="mt-4">
+              <Link
+                to="/upcoming"
+                className="inline-flex min-h-11 items-center text-[13px] font-medium text-accent"
+              >
+                {t('home.upcoming.more', { count: totalCount - rows.length })}
+              </Link>
+            </div>
+          ) : null}
         </div>
-      </PanelSplit>
+        </PanelSplit>
+      </div>
     </Panel>
+  )
+}
+
+/**
+ * Overdue items, inside §12.2 rather than as a section of their own.
+ *
+ * They belong here because they are the same sequence: an item that came due
+ * before today has not gone anywhere — it is still owed, still inside
+ * `startingLiquidBalance` and everything projected from it, and it keeps
+ * counting toward what is upcoming. Splitting it into a separate panel would
+ * imply a second, parallel pot of money.
+ *
+ * What the product never does is resolve one automatically. Marking an item
+ * done is always a button somebody presses (§18), which is exactly why this
+ * block has to exist: without it the lowest-balance figure above reads as
+ * settled when part of it is still waiting on the household.
+ *
+ * Amber, never red (§5.2, §25). Nothing here is a shortfall, and a household
+ * can have perfectly good reasons an item is still open — the block states what
+ * is waiting and what it comes to, and never says what anyone should do.
+ * It renders nothing at all when there is nothing waiting.
+ */
+function OverdueBlock({
+  overdue,
+  onComplete,
+  pendingId,
+}: {
+  overdue: OverdueSummary
+  onComplete?: (sourceEventId: string, occurrenceDate: string) => void
+  /** The row currently being confirmed, so only ITS button shows a spinner. */
+  pendingId?: string | null
+}) {
+  const { t } = useTranslation()
+
+  if (overdue.totalCount === 0) return null
+
+  return (
+    <section className="mt-7 rounded-sunk bg-attention-soft px-4 py-4 sm:px-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <p className="label text-attention">{t('home.upcoming.overdue.title')}</p>
+          <p className="text-[13px] font-medium text-attention">
+            {overdue.oldestDays === undefined
+              ? t('home.upcoming.overdue.count', { count: overdue.totalCount })
+              : t('home.upcoming.overdue.summary', {
+                  count: overdue.totalCount,
+                  days: overdue.oldestDays,
+                })}
+          </p>
+        </div>
+
+        <Link
+          to="/upcoming"
+          className="shrink-0 text-[13px] font-medium text-attention transition-opacity hover:opacity-70"
+        >
+          {t('home.upcoming.overdue.viewAll')}
+        </Link>
+      </div>
+
+      <p className="mt-2.5 text-[12px] leading-5 text-ink2">
+        {t('home.upcoming.overdue.note')}
+      </p>
+
+      <ul className="mt-3 space-y-1">
+        {overdue.rows.map((row) => (
+          <li
+            key={row.key}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 rounded-control px-2 py-2.5 sm:grid-cols-[72px_minmax(0,1fr)_auto_auto]"
+          >
+            {/* When it FELL DUE, not the day it is listed under. Absent when
+                the source event is not loaded — better no date than today's. */}
+            <span className="order-1 font-mono text-[11px] text-attention sm:order-none">
+              {row.dueDate ? formatDayMonth(row.dueDate) : ''}
+            </span>
+
+            <span className="order-3 col-span-2 truncate text-[13px] font-medium sm:order-none sm:col-span-1">
+              {row.name}
+            </span>
+
+            <span
+              className={cn(
+                'num order-2 text-right text-[13px] font-medium sm:order-none',
+                row.signedAmount > 0 && 'text-accent',
+              )}
+            >
+              {formatVndCellSigned(row.signedAmount)} {t('units.million')}
+            </span>
+
+            {onComplete ? (
+              // A real button, not a text link: this is the one action the
+              // block exists to offer, and at link weight it read as a caption
+              // beside the amount.
+              <button
+                type="button"
+                // `row.date` — day 0 — is the idempotency key the API expects,
+                // NOT `row.dueDate`, which is only what we show (§18).
+                onClick={() => onComplete(row.sourceEventId, row.date)}
+                disabled={pendingId === row.sourceEventId}
+                className="order-4 inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 justify-self-end rounded-control bg-attention px-3 text-[12px] font-medium text-panel transition-opacity hover:opacity-90 disabled:opacity-60 sm:order-none"
+              >
+                {pendingId === row.sourceEventId ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" />
+                    {t('home.upcoming.overdue.marking')}
+                  </>
+                ) : (
+                  t('home.upcoming.overdue.markDone')
+                )}
+              </button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+
+      {overdue.totalCount > overdue.rows.length ? (
+        <p className="mt-3 px-2 text-[12px] text-ink2">
+          {t('home.upcoming.overdue.more', {
+            count: overdue.totalCount - overdue.rows.length,
+          })}
+        </p>
+      ) : null}
+    </section>
   )
 }
 

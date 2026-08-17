@@ -27,6 +27,15 @@ what the web client must respect.
   warning band back would mean picking a threshold the household never gave us.
 - **The backend never sends prose.** Assumptions and reasons are machine codes;
   the client renders every sentence.
+- **Nothing is ever resolved on the household's behalf.** An overdue occurrence
+  (`wasClampedFromPast`) is listed under day 0 and **stays counted** — it is
+  still owed, so it remains inside `startingLiquidBalance` and everything
+  projected from it, and it keeps accumulating into what is upcoming. What never
+  happens automatically is marking it DONE: that is always a button somebody
+  presses (`completeCashflowEvent`, §18). Because the amount is already inside
+  the figures while still being unresolved, the UI must SAY so — hence the
+  "Chưa xử lý" block inside §12.2. Copy must never claim an overdue item was
+  "tính vào hôm nay" / "counted today", which reads as settled.
 
 ## Two flexible-money figures — not interchangeable
 
