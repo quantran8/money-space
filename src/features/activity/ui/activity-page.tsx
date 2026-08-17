@@ -30,11 +30,7 @@ export function ActivityPage() {
 
   return (
     <div className="space-y-4 pb-3">
-      <CompactPageHeader
-        eyebrow={t('activity.header.eyebrow')}
-        title={t('activity.header.title')}
-        description={t('activity.header.description')}
-      />
+      <CompactPageHeader title={t('activity.header.title')} />
 
       <Panel>
         {isLoading ? (

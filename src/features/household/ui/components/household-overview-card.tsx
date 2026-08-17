@@ -1,8 +1,6 @@
-import { Save } from 'lucide-react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { Button } from '@/components/ui/button'
 import { Panel } from '@/components/ui/panel'
 import {
   Select,
@@ -18,15 +16,10 @@ import { useActiveHousehold } from '@/shared/hooks/use-active-household'
 
 type HouseholdOverviewCardProps = {
   form: UseFormReturn<Settings>
-  isSaving: boolean
-  onSave: () => void
 }
 
-export function HouseholdOverviewCard({
-  form,
-  isSaving,
-  onSave,
-}: HouseholdOverviewCardProps) {
+/** Saving lives beside the page title — see `HouseholdPage`. */
+export function HouseholdOverviewCard({ form }: HouseholdOverviewCardProps) {
   const { t } = useTranslation()
   const { activeHousehold } = useActiveHousehold()
   const { freshness, isLoading } = useFreshness()
@@ -97,17 +90,6 @@ export function HouseholdOverviewCard({
                 )}
               />
             </SettingSelect>
-          </div>
-          <div className="mt-5 flex justify-end">
-            <Button
-              type="button"
-              size="sm"
-              disabled={isSaving}
-              onClick={onSave}
-            >
-              <Save className="size-4" />
-              {t('settings.header.save')}
-            </Button>
           </div>
         </div>
       </div>

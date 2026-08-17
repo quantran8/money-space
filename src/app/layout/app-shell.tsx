@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { motion } from 'motion/react'
 import {
@@ -6,6 +6,7 @@ import {
   CalendarDays,
   CircleDollarSign,
   LayoutGrid,
+  LogOut,
   Menu,
   Target,
   Users,
@@ -21,6 +22,7 @@ import { WhatIfSheet } from '@/features/whatif/ui/whatif-sheet'
 import type { ComponentType } from 'react'
 
 import { pageTransition, pageVariants } from '@/components/ui/motion'
+import { useLogout } from '@/features/auth/hooks/use-logout'
 import { useMembers } from '@/features/members/hooks/use-members'
 import { useActiveHousehold } from '@/shared/hooks/use-active-household'
 import { cn } from '@/shared/lib/utils'
@@ -172,6 +174,36 @@ function HouseholdFooter() {
 }
 
 /**
+ * The foot of both sidebars: who this household is, and the one way out of the
+ * app. Sign-out is not confirmed — nothing is lost by it, and a confirm dialog
+ * on a reversible action is friction, not safety.
+ */
+function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation()
+  const logout = useLogout()
+
+  return (
+    <div className="pt-6">
+      <div className="px-3">
+        <HouseholdFooter />
+      </div>
+
+      <button
+        type="button"
+        className="nav-item mt-3 w-full"
+        onClick={() => {
+          onNavigate?.()
+          void logout()
+        }}
+      >
+        <LogOut className="size-4 shrink-0" strokeWidth={1.75} />
+        <span className="truncate">{t('shell.logout')}</span>
+      </button>
+    </div>
+  )
+}
+
+/**
  * App shell (§8, §13).
  *
  * The sidebar sits DIRECTLY on `--app` with no surface and no right border —
@@ -182,9 +214,21 @@ export function AppShell() {
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
+  const scrollRef = useRef<HTMLElement>(null)
+
+  // `<main>` is the scroll container now, and it is NOT remounted between
+  // routes — without this, opening a page from halfway down a long list would
+  // land on it already scrolled. The inner `motion.div` remounts; this element
+  // does not.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 })
+  }, [location.pathname])
 
   return (
-    <div className="flex min-h-screen">
+    // `h-dvh` + `overflow-hidden`: the shell owns the viewport and the sidebar
+    // never scrolls with the page. `dvh` rather than `vh` so the mobile address
+    // bar can't push the bottom nav out of reach.
+    <div className="flex h-dvh overflow-hidden">
       <aside className="hidden w-[240px] shrink-0 flex-col px-4 py-5 lg:flex">
         <div className="flex items-center gap-2.5 px-3 pb-5">
           <span
@@ -198,14 +242,16 @@ export function AppShell() {
 
         <SimulateButton onClick={() => openWhatIf({ source: 'other' })} />
 
-        <NavGroups />
-
-        <div className="mt-auto px-3 pt-6">
-          <HouseholdFooter />
+        {/* Only the nav scrolls if it outgrows the viewport — the logo, the
+            what-if CTA and the footer stay put. */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <NavGroups />
         </div>
+
+        <SidebarFooter />
       </aside>
 
-      <main className="min-w-0 flex-1">
+      <main ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto">
         <Dialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
           <header className="sticky top-0 z-30 flex items-center gap-3 bg-app/90 px-5 py-3 backdrop-blur-xl lg:hidden">
             <span
@@ -258,11 +304,11 @@ export function AppShell() {
                 />
               </div>
 
-              <NavGroups onNavigate={() => setDrawerOpen(false)} />
-
-              <div className="mt-auto px-3 pt-6">
-                <HouseholdFooter />
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <NavGroups onNavigate={() => setDrawerOpen(false)} />
               </div>
+
+              <SidebarFooter onNavigate={() => setDrawerOpen(false)} />
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>

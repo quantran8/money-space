@@ -13,6 +13,7 @@ import { UpcomingPage } from '@/features/forecast/ui/upcoming-page'
 import { GoalsPage } from '@/features/goals/ui/goals-page'
 import { ActivityPage } from '@/features/activity/ui/activity-page'
 import { HouseholdPage } from '@/features/household/ui/household-page'
+import { JoinPage } from '@/features/invites/ui/join-page'
 import { GoalDetailPage } from '@/features/goals/ui/goal-detail-page'
 import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
 import { RequireHousehold } from '@/features/onboarding/ui/require-household'
@@ -41,6 +42,21 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <OnboardingPage />
+      </RequireAuth>
+    ),
+  },
+  /**
+   * Where a scanned invite QR lands: `/join?household=…&token=…`.
+   *
+   * Authenticated but deliberately OUTSIDE `RequireHousehold`. Whoever scans an
+   * invite usually has no household yet, and that gate would push them into the
+   * create-a-household wizard — the exact opposite of joining one.
+   */
+  {
+    path: '/join',
+    element: (
+      <RequireAuth>
+        <JoinPage />
       </RequireAuth>
     ),
   },

@@ -1,11 +1,14 @@
+import { Save } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
+import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { HouseholdOverviewCard } from '@/features/household/ui/components/household-overview-card'
+import { useHouseholdInvite } from '@/features/invites/hooks/use-household-invite'
 import { useMembersPage } from '@/features/members/hooks/use-members-page'
 import { useSettingsPage } from '@/features/settings/hooks/use-settings-page'
 import { deleteHousehold } from '@/features/settings/api/settings.repository'
@@ -13,7 +16,7 @@ import { useActiveHousehold } from '@/shared/hooks/use-active-household'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
 import { DataCard } from '@/features/settings/ui/components/data-card'
-import { InviteFormDialog } from '@/features/members/ui/components/invite-form-dialog'
+import { InviteQrDialog } from '@/features/invites/ui/components/invite-qr-dialog'
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
 
 /**
@@ -27,25 +30,30 @@ import { MembersListSection } from '@/features/members/ui/components/members-lis
 export function HouseholdPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { activeHouseholdId } = useActiveHousehold()
+  const { activeHouseholdId, activeHousehold } = useActiveHousehold()
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const {
     members,
     isLoading,
     invitedCount,
     holdsByMember,
+    ownerMemberId,
+    viewerMemberId,
+    isViewerOwner,
     setRemoveId,
-    form,
-    isSubmitting,
-    submit,
-    formOpen,
-    openInvite,
-    handleFormOpenChange,
     removeId,
     removingMember,
+    isLeaving,
     isRemoving,
     removeMember,
   } = useMembersPage()
+
+  /**
+   * Adding a member is a QR code now, not an email form: the two people are
+   * normally in the same room, and a mail round-trip was the slowest possible
+   * way to close that gap.
+   */
+  const invite = useHouseholdInvite()
 
   // Sharing defaults + reminders moved here from /settings (Phase 10).
   const {
@@ -57,26 +65,37 @@ export function HouseholdPage() {
 
   return (
     <div className="space-y-4">
+      {/* Saving sits level with the title, not at the bottom of the settings
+          card: the two selects below are the only thing it commits, and a
+          button buried inside one card of five reads as that card's footer. */}
       <CompactPageHeader
-        eyebrow={t('household.header.eyebrow')}
         title={t('household.header.title')}
-        description={t('household.header.description')}
+        actions={
+          !isSettingsLoading ? (
+            <Button
+              type="button"
+              className="h-10 px-4 text-[13px]"
+              disabled={settingsSaving}
+              onClick={() => void submitSettings()}
+            >
+              <Save className="size-4" strokeWidth={1.75} />
+              {t('settings.header.save')}
+            </Button>
+          ) : null
+        }
       />
 
-      {!isSettingsLoading ? (
-        <HouseholdOverviewCard
-          form={settingsForm}
-          isSaving={settingsSaving}
-          onSave={() => void submitSettings()}
-        />
-      ) : null}
+      {!isSettingsLoading ? <HouseholdOverviewCard form={settingsForm} /> : null}
 
       <MembersListSection
         members={members}
         isLoading={isLoading}
         invitedCount={invitedCount}
         holdsByMember={holdsByMember}
-        onInvite={openInvite}
+        ownerMemberId={ownerMemberId}
+        viewerMemberId={viewerMemberId}
+        isViewerOwner={isViewerOwner}
+        onInvite={invite.openQr}
         onRemoveMember={setRemoveId}
       />
 
@@ -84,12 +103,17 @@ export function HouseholdPage() {
 
       <DataCard onDelete={() => setConfirmDeleteOpen(true)} />
 
-      <InviteFormDialog
-        open={formOpen}
-        onOpenChange={handleFormOpenChange}
-        form={form}
-        isSubmitting={isSubmitting}
-        onSubmit={submit}
+      <InviteQrDialog
+        open={invite.open}
+        onOpenChange={invite.handleOpenChange}
+        householdName={activeHousehold?.name}
+        invite={invite.invite}
+        joinUrl={invite.joinUrl}
+        isPreparing={invite.isPreparing}
+        error={invite.error}
+        isRenewing={invite.isRenewing}
+        onRenew={() => void invite.renew()}
+        onCopyLink={() => void invite.copyLink()}
       />
 
       <ConfirmDialog
@@ -109,16 +133,29 @@ export function HouseholdPage() {
         }}
       />
 
+      {/* Leaving and removing run through the same endpoint, so they share this
+          dialog — but not its words: one ends your own access, the other ends
+          someone else's. After leaving there is no household left to render, so
+          the page hands over to onboarding rather than bouncing off a 404. */}
       <ConfirmDialog
         open={removeId !== null}
         onOpenChange={(open) => !open && setRemoveId(null)}
-        title={t('common.confirmDelete.title')}
-        description={t('common.confirmDelete.description', {
-          name: removingMember?.name ?? removingMember?.email ?? '',
-        })}
-        confirmLabel={t('common.remove')}
+        title={isLeaving ? t('members.list.leaveConfirm.title') : t('common.confirmDelete.title')}
+        description={
+          isLeaving
+            ? t('members.list.leaveConfirm.description')
+            : t('common.confirmDelete.description', {
+                name: removingMember?.name ?? removingMember?.email ?? '',
+              })
+        }
+        confirmLabel={isLeaving ? t('members.list.leave') : t('common.remove')}
         confirmDisabled={isRemoving}
-        onConfirm={() => (removeId ? removeMember(removeId) : undefined)}
+        onConfirm={async () => {
+          if (!removeId) return
+          const leaving = isLeaving
+          await removeMember(removeId)
+          if (leaving) navigate('/onboarding')
+        }}
       />
     </div>
   )

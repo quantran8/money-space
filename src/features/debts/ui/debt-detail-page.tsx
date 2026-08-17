@@ -1,36 +1,18 @@
 import { Calculator, Check, ChevronLeft, Pencil } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useDebtDetail, type DebtHistoryEntry } from '@/features/debts/hooks/use-debt-detail'
 import { useDebtsPage } from '@/features/debts/hooks/use-debts-page'
-import { formatDate, getStatusLabel } from '@/features/debts/model/debts-form'
+import { formatDate } from '@/features/debts/model/debts-form'
 import { calcFromBackendEnum } from '@/features/debts/model/debts-interest'
-import type { DebtItem } from '@/features/debts/model/debts.types'
 import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
 import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { useWhatIfStore } from '@/shared/stores/whatif-store'
-
-const FREQUENCY_LABELS: Record<string, string> = {
-  none: 'Linh hoạt',
-  monthly: 'Hàng tháng',
-  quarterly: 'Hàng quý',
-  yearly: 'Hàng năm',
-}
-
-const LENDER_LABELS: Record<DebtItem['lenderType'], string> = {
-  bank_institution: 'Vay ngân hàng',
-  relative: 'Vay người thân',
-  other: 'Khoản vay khác',
-}
-
-const CALC_LABELS: Record<string, string> = {
-  fixed: 'cố định',
-  reducing: 'dư nợ giảm dần',
-}
 
 type RepaymentCalendarItem = {
   id: string
@@ -39,27 +21,27 @@ type RepaymentCalendarItem = {
   paid: boolean
 }
 
-function displayDate(value?: string) {
-  if (!value) return 'Chưa có'
-  return new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString('vi-VN')
+function displayDate(value: string | undefined, locale: string, fallback: string) {
+  if (!value) return fallback
+  return new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString(locale)
 }
 
-function displayMonth(value?: string) {
-  if (!value) return 'Chưa chốt'
-  return new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString('vi-VN', {
+function displayMonth(value: string | undefined, locale: string, fallback: string) {
+  if (!value) return fallback
+  return new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString(locale, {
     month: '2-digit',
     year: 'numeric',
   })
 }
 
-function displayUpdatedAt(value: string) {
+function displayUpdatedAt(value: string, locale: string) {
   const hasTime = value.includes('T')
   const date = new Date(hasTime ? value : `${value}T00:00:00`)
   if (Number.isNaN(date.getTime())) return formatDate(value)
 
-  const day = date.toLocaleDateString('vi-VN')
+  const day = date.toLocaleDateString(locale)
   if (!hasTime) return day
-  const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+  const time = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
   return `${day} · ${time}`
 }
 
@@ -124,6 +106,8 @@ function buildCalendar(
 export function DebtDetailPage() {
   const { debtId } = useParams<{ debtId: string }>()
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
+  const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
   const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
   const {
     debt,
@@ -174,13 +158,11 @@ export function DebtDetailPage() {
     return (
       <div className="space-y-6">
         <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/networth')}>
-          <ChevronLeft className="size-4" /> Tài sản & Nợ
+          <ChevronLeft className="size-4" /> {t('debts.detail.back')}
         </Button>
         <Card className="py-10 text-center">
-          <p className="text-lg font-medium">Không tìm thấy khoản nợ</p>
-          <p className="mt-1 text-sm text-ink2">
-            Khoản nợ này có thể đã bị xóa hoặc không tồn tại.
-          </p>
+          <p className="text-lg font-medium">{t('debts.detail.notFoundTitle')}</p>
+          <p className="mt-1 text-sm text-ink2">{t('debts.detail.notFoundBody')}</p>
         </Card>
       </div>
     )
@@ -199,7 +181,13 @@ export function DebtDetailPage() {
   const calendarItems = buildCalendar(repayments, upcomingPayments)
   const latestRepayment = repayments[0]
   const remainingMonths = monthsUntil(debt.expectedFinalDueDate)
-  const progressLabel = progress.toLocaleString('vi-VN', { maximumFractionDigits: 1 })
+  const progressLabel = progress.toLocaleString(locale, { maximumFractionDigits: 1 })
+  // "Hàng tháng · dư nợ giảm dần" — the calculation half only means something
+  // once the debt actually has interest stages.
+  const frequencyLabel = t(`debts.form.frequency.${debt.paymentFrequency ?? 'none'}`)
+  const repaymentMethod = stages.length
+    ? `${frequencyLabel} · ${t(`debts.detail.calc.${calc}`, { defaultValue: calc })}`
+    : frequencyLabel
   const paymentDay = nextDate
     ? new Date(`${nextDate}T00:00:00`).getDate()
     : debt.firstPaymentDate
@@ -227,15 +215,14 @@ export function DebtDetailPage() {
           onClick={() => navigate('/networth')}
         >
           <ChevronLeft className="size-4" strokeWidth={1.75} />
-          Tài sản & Nợ
+          {t('debts.detail.back')}
         </button>
 
         <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-[13px] text-ink2">
-              <span>Nợ · {LENDER_LABELS[debt.lenderType]}</span>
               <span className="rounded-full bg-panel px-2.5 py-1 text-[11px] text-ink2">
-                {getStatusLabel(debt.status)}
+                {t(`options.debtStatus.${debt.status}`)}
               </span>
             </div>
             <h1 className="page-title mt-2 truncate text-[27px] leading-tight sm:text-[30px]">
@@ -251,12 +238,12 @@ export function DebtDetailPage() {
                 onClick={tryEarlyRepayment}
               >
                 <Calculator className="size-4" strokeWidth={1.75} />
-                Thử trả trước
+                {t('debts.detail.tryEarlyRepayment')}
               </Button>
             ) : null}
             <Button className="h-10 px-4 text-[13px]" onClick={() => openEdit(debt.id)}>
               <Pencil className="size-4" strokeWidth={1.75} />
-              Chỉnh sửa
+              {t('common.edit')}
             </Button>
           </div>
         </div>
@@ -264,22 +251,24 @@ export function DebtDetailPage() {
 
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h2 className="section-title text-[16px]">Tổng quan</h2>
+          <h2 className="section-title text-[16px]">{t('debts.detail.overview.title')}</h2>
           <p className="text-[12px] text-ink3">
-            Cập nhật gần nhất{' '}
-            <span className="money-number font-mono">{displayUpdatedAt(latestUpdate)}</span>
+            {t('debts.detail.overview.updatedAt')}{' '}
+            <span className="money-number font-mono">
+              {displayUpdatedAt(latestUpdate, locale)}
+            </span>
           </p>
         </div>
 
         <div className="mt-7 grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-14">
           <div>
-            <p className="label">Dư nợ còn lại</p>
+            <p className="label">{t('debts.detail.overview.outstanding')}</p>
             <MoneyValue value={debt.outstandingAmountValue} />
           </div>
 
           <div className="lg:pb-0.5">
             <div className="flex items-baseline justify-between gap-4">
-              <p className="label">Tiến độ trả</p>
+              <p className="label">{t('debts.detail.overview.progress')}</p>
               <p className="money-number text-[17px]">{progressLabel}%</p>
             </div>
             <div
@@ -288,7 +277,7 @@ export function DebtDetailPage() {
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(progress)}
-              aria-label={`Đã trả ${progressLabel}% khoản vay`}
+              aria-label={t('debts.detail.overview.progressAria', { percent: progressLabel })}
             >
               <div
                 className="h-full rounded-full bg-accent"
@@ -296,71 +285,100 @@ export function DebtDetailPage() {
               />
             </div>
             <p className="mt-2.5 text-[12px] text-ink2">
-              Đã trả <span className="money-number font-medium text-ink">{formatVndShort(repaid)}</span>
+              {t('debts.detail.overview.repaid')}{' '}
+              <span className="money-number font-medium text-ink">{formatVndShort(repaid)}</span>
             </p>
           </div>
         </div>
       </Card>
 
       <Card>
-        <h2 className="section-title text-[16px]">Thông tin khoản vay</h2>
+        <h2 className="section-title text-[16px]">{t('debts.detail.loan.title')}</h2>
 
         <div className="mt-7 grid gap-7 sm:grid-cols-3 sm:gap-0">
           <div className="pr-0 sm:pr-7">
-            <p className="label">Tất toán dự kiến</p>
+            <p className="label">{t('debts.detail.loan.payoff')}</p>
             <p className="money-number mt-3 font-mono text-[24px]">
-              {displayMonth(debt.expectedFinalDueDate)}
+              {displayMonth(debt.expectedFinalDueDate, locale, t('debts.detail.noMonth'))}
             </p>
-            <p className="mt-2 text-[12px] text-ink2">Theo lịch trả hiện tại</p>
+            <p className="mt-2 text-[12px] text-ink2">{t('debts.detail.loan.payoffNote')}</p>
           </div>
 
           <div className="px-0 sm:border-l sm:border-hair sm:px-7">
-            <p className="label">Đã thanh toán</p>
-            <p className="money-number mt-3 text-[24px]">{repayments.length} kỳ</p>
+            <p className="label">{t('debts.detail.loan.paid')}</p>
+            <p className="money-number mt-3 text-[24px]">
+              {t('debts.detail.loan.installments', { count: repayments.length })}
+            </p>
             <p className="mt-2 text-[12px] text-ink2">
               {latestRepayment
-                ? `Kỳ gần nhất ${displayDate(latestRepayment.isoDate)}`
-                : 'Chưa có kỳ nào'}
+                ? t('debts.detail.loan.latestInstallment', {
+                    date: displayDate(latestRepayment.isoDate, locale, t('debts.detail.noValue')),
+                  })
+                : t('debts.detail.loan.noInstallment')}
             </p>
           </div>
 
           <div className="px-0 sm:border-l sm:border-hair sm:px-7">
-            <p className="label">Còn lại</p>
-            <p className="money-number mt-3 text-[24px]">{upcomingPayments.length} kỳ</p>
+            <p className="label">{t('debts.detail.loan.remaining')}</p>
+            <p className="money-number mt-3 text-[24px]">
+              {t('debts.detail.loan.installments', { count: upcomingPayments.length })}
+            </p>
             <p className="mt-2 text-[12px] text-ink2">
-              {remainingMonths !== null ? `Khoảng ${remainingMonths} tháng` : 'Chưa chốt thời hạn'}
+              {remainingMonths !== null
+                ? t('debts.detail.loan.remainingMonths', { count: remainingMonths })
+                : t('debts.detail.loan.noTerm')}
             </p>
           </div>
         </div>
 
         <div className="sunk mt-8 p-5 sm:p-6">
           <div className="grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-            <LoanInfo label="Bên cho vay" value={debt.lenderName || 'Chưa cập nhật'} />
-            <LoanInfo label="Khoản vay ban đầu" value={formatVndShort(debt.originalAmountValue)} />
-            <LoanInfo label="Lãi suất" value={debt.interestSummary || 'Không tính lãi'} />
             <LoanInfo
-              label="Cách trả"
-              value={`${FREQUENCY_LABELS[debt.paymentFrequency ?? 'none']}${
-                stages.length ? ` · ${CALC_LABELS[calc] ?? calc}` : ''
-              }`}
+              label={t('debts.detail.loan.lender')}
+              value={debt.lenderName || t('debts.detail.loan.notUpdated')}
             />
-            {paymentDay ? <LoanInfo label="Ngày thanh toán" value={`Ngày ${paymentDay}`} mono /> : null}
-            <LoanInfo label="Người phụ trách" value={ownerName || 'Chưa phân công'} />
-            <LoanInfo label="Nhận vào" value={receivedToAssetName || 'Chưa cập nhật'} />
-            <LoanInfo label="Ngày giải ngân" value={displayDate(debt.borrowedAt)} mono />
+            <LoanInfo
+              label={t('debts.detail.loan.originalAmount')}
+              value={formatVndShort(debt.originalAmountValue)}
+            />
+            <LoanInfo
+              label={t('debts.detail.loan.interest')}
+              value={debt.interestSummary || t('debts.detail.loan.noInterest')}
+            />
+            <LoanInfo label={t('debts.detail.loan.method')} value={repaymentMethod} />
+            {paymentDay ? (
+              <LoanInfo
+                label={t('debts.detail.loan.paymentDay')}
+                value={t('debts.detail.loan.paymentDayValue', { day: paymentDay })}
+                mono
+              />
+            ) : null}
+            <LoanInfo
+              label={t('debts.detail.loan.owner')}
+              value={ownerName || t('debts.detail.loan.unassigned')}
+            />
+            <LoanInfo
+              label={t('debts.detail.loan.receivedInto')}
+              value={receivedToAssetName || t('debts.detail.loan.notUpdated')}
+            />
+            <LoanInfo
+              label={t('debts.detail.loan.disbursedAt')}
+              value={displayDate(debt.borrowedAt, locale, t('debts.detail.noValue'))}
+              mono
+            />
           </div>
         </div>
       </Card>
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="section-title text-[16px]">Các kỳ thanh toán</h2>
+          <h2 className="section-title text-[16px]">{t('debts.detail.schedule.title')}</h2>
           <button
             type="button"
             className="min-h-10 text-[13px] text-accent hover:underline"
             onClick={() => navigate('/events')}
           >
-            Xem nhật ký
+            {t('debts.detail.schedule.viewJournal')}
           </button>
         </div>
 
@@ -382,12 +400,12 @@ export function DebtDetailPage() {
                       <Check
                         className="absolute right-3 top-3 size-4 text-white/80"
                         strokeWidth={1.75}
-                        aria-label="Đã thanh toán"
+                        aria-label={t('debts.detail.schedule.paid')}
                       />
                     ) : isNext ? (
                       <span
                         className="absolute right-3 top-3 size-2 rounded-full bg-attention"
-                        aria-label="Kỳ tiếp theo"
+                        aria-label={t('debts.detail.schedule.next')}
                       />
                     ) : null}
                     <p
@@ -397,7 +415,7 @@ export function DebtDetailPage() {
                           : 'money-number font-mono text-[12px] text-ink2'
                       }
                     >
-                      {displayDate(item.isoDate)}
+                      {displayDate(item.isoDate, locale, t('debts.detail.noValue'))}
                     </p>
                     <p className="money-number mt-7 text-[17px]">
                       {formatVndShort(item.amount)}
@@ -409,7 +427,7 @@ export function DebtDetailPage() {
           </div>
         ) : (
           <p className="sunk mt-7 px-4 py-8 text-center text-[13px] text-ink2">
-            Chưa có lịch thanh toán cho khoản nợ này.
+            {t('debts.detail.schedule.empty')}
           </p>
         )}
       </Card>

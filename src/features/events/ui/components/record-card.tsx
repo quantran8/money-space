@@ -43,15 +43,16 @@ export function RecordCard({
 
   return (
     <article className="grid grid-cols-[36px_minmax(0,1fr)_auto_32px] items-start gap-x-3 rounded-control px-3 py-3 transition-colors hover:bg-sunk">
-      <div className="grid size-8 place-items-center rounded-full bg-sunk text-[11px] font-medium text-ink2">
+      {/* The actor lives in the avatar alone — repeating it in the title line
+          just pushed the thing that actually happened off to the right. */}
+      <div
+        className="grid size-8 place-items-center rounded-full bg-sunk text-[11px] font-medium text-ink2"
+        title={actor}
+      >
         {initial}
       </div>
       <div className="min-w-0">
-        <h4 className="text-[14px] leading-5">
-          <span className="font-medium">{actor}</span>
-          <span className="text-ink3"> · </span>
-          {record.title}
-        </h4>
+        <h4 className="text-[14px] leading-5">{record.title}</h4>
         <p
           className={cn(
             'mt-1 truncate text-[12px]',

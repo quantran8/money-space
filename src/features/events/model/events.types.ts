@@ -35,4 +35,15 @@ export type MoneyEventItem = {
   cashflowEventId?: string
   financialGoalId?: string
   debtId?: string
+  /**
+   * Auth profile id of whoever recorded the event. Resolve it against the
+   * household's members (`MemberItem.profileId`) to name them — the API sends
+   * no name, so a creator who has left the household goes unnamed instead of
+   * being reported under a stale one.
+   *
+   * System-generated events (saving-interest accrual) have no acting member and
+   * fall back to the household creator server-side, so this is only trustworthy
+   * for events a person actually recorded.
+   */
+  createdById?: string
 }

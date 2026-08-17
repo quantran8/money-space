@@ -12,6 +12,12 @@ type MembersListSectionProps = {
   invitedCount: number
   /** Money sources each member is responsible for, keyed by member id. */
   holdsByMember: Record<string, number>
+  /** Member id of whoever created the household; that row cannot be removed. */
+  ownerMemberId?: string
+  /** Member id of the signed-in person; the only row they can act on. */
+  viewerMemberId?: string
+  /** True when the signed-in person created the household. */
+  isViewerOwner: boolean
   onInvite: () => void
   onRemoveMember: (memberId: string) => void
 }
@@ -21,6 +27,9 @@ export function MembersListSection({
   isLoading,
   invitedCount,
   holdsByMember,
+  ownerMemberId,
+  viewerMemberId,
+  isViewerOwner,
   onInvite,
   onRemoveMember,
 }: MembersListSectionProps) {
@@ -59,6 +68,9 @@ export function MembersListSection({
               key={member.id}
               member={member}
               holdsCount={holdsByMember[member.id] ?? 0}
+              isOwner={member.id === ownerMemberId}
+              isSelf={member.id === viewerMemberId}
+              canRemoveOthers={isViewerOwner}
               onRemove={onRemoveMember}
             />
           ))}
@@ -71,15 +83,13 @@ export function MembersListSection({
             {t('members.invite.action')}
           </Button>
         </div>
-      ) : (
+      ) : invitedCount > 0 ? (
         <div className="sunk mt-5 px-4 py-3.5">
           <p className="text-[12px] leading-5 text-ink2">
-            {invitedCount > 0
-              ? t('members.list.invitedCount', { count: invitedCount })
-              : t('household.merged.membersHelp')}
+            {t('members.list.invitedCount', { count: invitedCount })}
           </p>
         </div>
-      )}
+      ) : null}
     </Panel>
   )
 }

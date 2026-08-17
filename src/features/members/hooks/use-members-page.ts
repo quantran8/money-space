@@ -1,24 +1,31 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { useMembers } from '@/features/members/hooks/use-members'
-import {
-  buildInviteSchema,
-  defaultInviteFormValues,
-  makeInitials,
-  type InviteForm,
-} from '@/features/members/model/members-form'
+import { currentMemberId } from '@/features/members/model/members.types'
 import { useAssets } from '@/features/assets/hooks/use-assets'
+import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
+import { useAppStore } from '@/shared/stores/household-store'
+import { useAuthStore } from '@/shared/stores/auth-store'
 
+/**
+ * State for the members list.
+ *
+ * There is no invite form here any more. Adding someone is a QR code
+ * (`useHouseholdInvite`), which means the new member arrives through
+ * `POST /api/invites/:token/accept` with their own identity attached — rather
+ * than as a placeholder row created from an email the inviter typed for them.
+ */
 export function useMembersPage() {
   const { t } = useTranslation()
-  const { members, createMember, updateMember, deleteMember, isLoading } = useMembers()
+  const { members, household, updateMember, deleteMember, isLoading } = useMembers()
+  const userId = useAuthStore((state) => state.user?.id)
+  const queryClient = useQueryClient()
+  const setActiveHouseholdId = useAppStore((state) => state.setActiveHouseholdId)
 
-  const [formOpen, setFormOpen] = useState(false)
   const [removeId, setRemoveId] = useState<string | null>(null)
 
   /**
@@ -37,55 +44,55 @@ export function useMembersPage() {
     return counts
   }, [assets])
 
+  /**
+   * Who may remove whom.
+   *
+   * The creator's row is what the backend's household guard resolves against,
+   * so `DELETE /members/:id` refuses it outright — offering the action on that
+   * row could only ever produce an error toast. Handing the role over is a
+   * separate flow (`POST /households/:id/transfer-steward`).
+   *
+   * Everyone else gets one door out and it is their own: a non-creator can
+   * leave, and cannot remove the other person. Taking someone else out of the
+   * shared picture is the creator's call, not something either partner can do
+   * to the other.
+   */
+  const ownerMemberId = household?.createdBy
+    ? members.find((member) => member.profileId === household.createdBy)?.id
+    : undefined
+  const viewerMemberId = currentMemberId(members, userId)
+  const isViewerOwner = !!ownerMemberId && ownerMemberId === viewerMemberId
+
   const activeCount = members.filter((member) => member.status === 'active').length
   const invitedCount = members.filter((member) => member.status === 'invited').length
-
-  const inviteSchema = useMemo(() => buildInviteSchema(t, members), [members, t])
-
-  const form = useForm<InviteForm>({
-    resolver: zodResolver(inviteSchema),
-    defaultValues: defaultInviteFormValues,
-    mode: 'onChange',
-  })
-
-  const { reset, handleSubmit } = form
 
   const removingMember = removeId
     ? members.find((member) => member.id === removeId)
     : undefined
 
-  function openInvite() {
-    reset(defaultInviteFormValues)
-    setFormOpen(true)
-  }
-
-  function handleFormOpenChange(open: boolean) {
-    setFormOpen(open)
-    if (!open) reset(defaultInviteFormValues)
-  }
-
-  async function handleInvite(values: InviteForm) {
-    try {
-      const email = values.email.trim()
-      await createMember.mutateAsync({
-        name: email.split('@')[0],
-        email,
-        initials: makeInitials(email),
-        status: 'invited',
-      })
-      toast.success('Da them thanh vien.')
-      handleFormOpenChange(false)
-    } catch (error) {
-      toast.error(getErrorMessage(error, 'Khong the them thanh vien.'))
-    }
-  }
+  /** True when the pending removal is the signed-in member leaving. */
+  const isLeaving = !!removeId && removeId === viewerMemberId
 
   async function removeMember(id: string) {
+    const leaving = id === viewerMemberId
     try {
       await deleteMember.mutateAsync(id)
-      toast.success('Da xoa thanh vien.')
+      if (leaving) {
+        // The membership row is what made this household visible, so the stored
+        // id and the cached list both have to go before the caller navigates —
+        // `RequireHousehold` reads that list, and a stale one would send the
+        // user straight back into a household they just left.
+        setActiveHouseholdId(null)
+        await queryClient.invalidateQueries({ queryKey: queryKeys.households })
+      }
+      toast.success(leaving ? t('members.list.left') : t('members.list.removed'))
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Khong the xoa thanh vien.'))
+      toast.error(
+        getErrorMessage(
+          error,
+          leaving ? t('members.list.leaveFailed') : t('members.list.removeFailed'),
+        ),
+      )
       throw error
     }
   }
@@ -97,19 +104,15 @@ export function useMembersPage() {
     activeCount,
     invitedCount,
     holdsByMember,
+    ownerMemberId,
+    viewerMemberId,
+    isViewerOwner,
     // list actions
     isUpdating: updateMember.isPending,
     setRemoveId,
-    // form
-    form,
-    isSubmitting: createMember.isPending,
-    submit: handleSubmit(handleInvite),
-    // dialogs
-    formOpen,
-    openInvite,
-    handleFormOpenChange,
     removeId,
     removingMember,
+    isLeaving,
     isRemoving: deleteMember.isPending,
     removeMember,
   }

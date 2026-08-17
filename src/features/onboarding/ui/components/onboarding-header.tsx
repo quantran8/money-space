@@ -14,27 +14,33 @@ type OnboardingHeaderProps = {
   user: AuthUser | null
 }
 
+/**
+ * Sits on the app surface ABOVE the panel, not inside it: onboarding is one
+ * panel with one question on it, and a header row inside that panel read as a
+ * second thing to deal with. The signed-in name went with it — the avatar
+ * already answers "which account is this", and it carries the full name as its
+ * tooltip for the case where the initials are ambiguous.
+ */
 export function OnboardingHeader({ user }: OnboardingHeaderProps) {
   const { t } = useTranslation()
   const displayName = user?.displayName || user?.fullName || user?.email || ''
 
   return (
-    <header className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-4 sm:px-8">
-      <div className="inline-flex items-center gap-3">
-        <span className="flex size-10 items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
-          <Wallet className="size-5" />
+    <header className="mx-auto flex w-full max-w-[960px] items-center justify-between px-5 py-5 sm:px-7">
+      <div className="flex items-center gap-3">
+        <span className="flex size-9 items-center justify-center rounded-sunk bg-panel text-accent">
+          <Wallet className="size-[19px]" strokeWidth={1.75} aria-hidden />
         </span>
-        <span className="font-semibold tracking-[-0.03em]">{t('onboarding.appName')}</span>
+        <span className="text-[16px] font-semibold tracking-[-0.01em]">
+          {t('onboarding.appName')}
+        </span>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="hidden text-right sm:block">
-          <p className="text-sm font-semibold">{displayName}</p>
-          <p className="text-xs text-ink2">{t('onboarding.signedIn')}</p>
-        </div>
-        <div className="flex size-10 items-center justify-center rounded-full bg-sunk text-sm font-semibold">
-          {initialsOf(user?.displayName ?? user?.fullName ?? null, user?.email ?? null)}
-        </div>
+      <div
+        className="flex size-10 items-center justify-center rounded-full bg-panel text-[13px] font-semibold"
+        title={displayName}
+      >
+        {initialsOf(user?.displayName ?? user?.fullName ?? null, user?.email ?? null)}
       </div>
     </header>
   )

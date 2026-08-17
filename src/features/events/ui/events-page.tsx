@@ -1,6 +1,7 @@
 import { RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
@@ -57,18 +58,15 @@ export function EventsPage() {
 
   return (
     <div className="space-y-4 pb-3">
-      <header className="flex items-center justify-between gap-4 px-1 py-1">
-        <div>
-          <h1 className="page-title text-[19px]">{t('events.history.title')}</h1>
-          <p className="mt-1 text-[12px] text-ink3">{t('events.history.description')}</p>
-        </div>
-        <div className="hidden sm:block">
+      <CompactPageHeader
+        title={t('events.history.title')}
+        actions={
           <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
             <RefreshCw className="size-4" strokeWidth={1.75} />
             {t('events.history.quickUpdate')}
           </Button>
-        </div>
-      </header>
+        }
+      />
 
       <EventsTimelineCard
         tab={tab}

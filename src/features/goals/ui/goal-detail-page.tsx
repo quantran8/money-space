@@ -1,103 +1,30 @@
 import { ChevronLeft, Pencil, Plus } from 'lucide-react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { MoneyInput } from '@/components/ui/number-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Panel, PanelHeader, PanelSplit, Sunk } from '@/components/ui/panel'
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useEvents } from '@/features/events/hooks/use-events'
-import type { MoneyEventItem } from '@/features/events/model/events.types'
 import { useGoalsPage } from '@/features/goals/hooks/use-goals-page'
-import type { GoalItem } from '@/features/goals/model/goals'
-import {
-  formatAmount,
-  goalAmount,
-  priorityTone,
-  suggestedPace,
-} from '@/features/goals/model/goals-form'
+import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
+import { goalAmount } from '@/features/goals/model/goals-form'
+import { GoalContributionDialog } from '@/features/goals/ui/components/goal-contribution-dialog'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
-import { GoalProjectionPanel } from '@/features/goals/ui/components/goal-projection-panel'
+import { useMembers } from '@/features/members/hooks/use-members'
+import { formatVndScale, splitVndScale } from '@/shared/lib/format-money'
 
-type ChartPoint = {
-  date: string
-  label: string
-  actual?: number
-  plan: number
-}
-
-function validDate(value?: string) {
-  if (!value || value === 'No deadline') return null
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
+/** Goal dates are month-precision; `'No deadline'` is the legacy empty marker. */
 function formatGoalDate(value: string | undefined, locale: string, fallback: string) {
-  const date = validDate(value)
-  return date
-    ? date.toLocaleDateString(locale, { month: '2-digit', year: 'numeric' })
-    : fallback
-}
-
-function buildChartData(goal: GoalItem, events: MoneyEventItem[], locale: string): ChartPoint[] {
-  const current = goalAmount(goal.currentAmount)
-  const target = goalAmount(goal.targetAmount)
-  const sorted = [...events].sort((a, b) => a.isoDate.localeCompare(b.isoDate))
-  const totalContributions = sorted.reduce((sum, event) => sum + Math.abs(event.amount), 0)
-  const baseline = Math.max(current - totalContributions, 0)
-  const now = new Date()
-  const defaultStart = new Date(now)
-  defaultStart.setMonth(defaultStart.getMonth() - 6)
-  const start = sorted[0] ? new Date(sorted[0].isoDate) : defaultStart
-  const configuredDeadline = validDate(goal.targetDate)
-  const fallbackDeadline = new Date(now)
-  fallbackDeadline.setMonth(fallbackDeadline.getMonth() + 4)
-  const end = configuredDeadline && configuredDeadline > now ? configuredDeadline : fallbackDeadline
-  const duration = Math.max(end.getTime() - start.getTime(), 1)
-
-  const toPoint = (date: Date, actual?: number): ChartPoint => ({
-    date: date.toISOString().slice(0, 10),
-    label: date.toLocaleDateString(locale, { month: 'short', year: '2-digit' }),
-    actual,
-    plan: Math.min(target, Math.max(0, target * ((date.getTime() - start.getTime()) / duration))),
-  })
-
-  let cumulative = baseline
-  const points: ChartPoint[] = [toPoint(start, baseline)]
-  for (const event of sorted) {
-    cumulative += Math.abs(event.amount)
-    points.push(toPoint(new Date(event.isoDate), Math.min(cumulative, current)))
-  }
-  points.push(toPoint(now, current))
-  points.push(toPoint(end))
-  return points.sort((a, b) => a.date.localeCompare(b.date))
-}
-
-function InfoRow({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-right text-sm font-semibold">{value}</span>
-    </div>
-  )
+  if (!value || value === 'No deadline') return fallback
+  const date = new Date(`${value}T00:00:00Z`)
+  if (Number.isNaN(date.getTime())) return fallback
+  return new Intl.DateTimeFormat(locale, {
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date)
 }
 
 export function GoalDetailPage() {
@@ -105,9 +32,11 @@ export function GoalDetailPage() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const [contributionOpen, setContributionOpen] = useState(false)
+  const [explainOpen, setExplainOpen] = useState(false)
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
   const { events, isLoading: eventsLoading } = useEvents()
   const { assets } = useAssets()
+  const { members } = useMembers()
   const {
     goals,
     isLoading,
@@ -132,10 +61,7 @@ export function GoalDetailPage() {
   const contributionEvents = useMemo(
     () =>
       events
-        .filter(
-          (event) =>
-            event.type === 'goal_contribution' && event.financialGoalId === goalId,
-        )
+        .filter((event) => event.type === 'goal_contribution' && event.financialGoalId === goalId)
         .sort((a, b) => b.isoDate.localeCompare(a.isoDate)),
     [events, goalId],
   )
@@ -143,33 +69,29 @@ export function GoalDetailPage() {
     () => new Map(assets.map((asset) => [asset.id, asset.name])),
     [assets],
   )
-  const chartData = useMemo(
-    () => (goal ? buildChartData(goal, contributionEvents, locale) : []),
-    [contributionEvents, goal, locale],
+  // `createdById` is an auth profile id; members carry it as `profileId`.
+  const memberNames = useMemo(
+    () => new Map(members.map((member) => [member.profileId, member.name])),
+    [members],
   )
 
   if ((isLoading || eventsLoading) && !goal) {
     return (
-      <div className="space-y-4">
-        <div className="h-9 w-40 animate-pulse rounded-full bg-muted" />
-        <div className="h-52 animate-pulse rounded-[28px] bg-muted" />
+      <div className="space-y-4 pb-3">
+        <Sunk className="h-9 w-40 animate-pulse" />
+        <Sunk className="h-52 animate-pulse rounded-panel" />
       </div>
     )
   }
 
   if (!goal) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/goals')}>
-          <ChevronLeft className="size-4" />
-          {t('goals.detail.back')}
-        </Button>
-        <Card className="py-10 text-center">
-          <h1 className="text-lg font-semibold">{t('goals.detail.notFound.title')}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('goals.detail.notFound.description')}
-          </p>
-        </Card>
+      <div className="space-y-4 pb-3">
+        <BackLink onClick={() => navigate('/goals')} label={t('goals.detail.back')} />
+        <Panel className="py-10 text-center">
+          <h1 className="section-title text-[16px]">{t('goals.detail.notFound.title')}</h1>
+          <p className="mt-1 text-[13px] text-ink2">{t('goals.detail.notFound.description')}</p>
+        </Panel>
       </div>
     )
   }
@@ -177,191 +99,232 @@ export function GoalDetailPage() {
   const current = goalAmount(goal.currentAmount)
   const target = goalAmount(goal.targetAmount)
   const remaining = Math.max(target - current, 0)
-  const pace = suggestedPace(goal)
-  const deadline = formatGoalDate(goal.targetDate, locale, t('goals.list.noDeadline'))
+  const progress = Math.min(Math.max(goal.progress, 0), 100)
+  const savedFigure = splitVndScale(current)
+  const projection = goal.projection
+  const notSet = t('goals.table.notSet')
+  const desiredDate = formatGoalDate(goal.targetDate, locale, notSet)
+  const projectedDate =
+    projection && hasProjectedDate(projection)
+      ? formatGoalDate(projection.projectedCompletionDate ?? undefined, locale, notSet)
+      : t('goals.demo.unknownProjection')
+  const requiredMonthly = projection?.requiredMonthlyContributionForTargetDate
+  const plannedMonthly = goal.plannedMonthlyContribution
+
+  function handleContributionOpen() {
+    if (!goal) return
+    setContribution(goal.id, '')
+    setContributionOpen(true)
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4">
-        <Button
-          variant="ghost"
-          className="-ml-2 w-fit gap-1"
-          onClick={() => navigate('/goals')}
-        >
-          <ChevronLeft className="size-4" />
-          {t('goals.detail.back')}
-        </Button>
+    <div className="space-y-4 pb-3">
+      <header className="px-1 py-1 sm:px-0">
+        <BackLink onClick={() => navigate('/goals')} label={t('goals.detail.back')} />
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm text-muted-foreground">{t('goals.detail.eyebrow')}</p>
-              <Badge className={priorityTone[goal.priority]}>
-                {priorityLabels[goal.priority]}
-              </Badge>
-            </div>
-            <h1 className="page-title mt-2 text-3xl font-semibold sm:text-4xl">{goal.name}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t('goals.detail.deadline', { value: deadline })}
-              {goal.note ? ` · ${goal.note}` : ''}
-            </p>
-          </div>
+        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <h1 className="page-title min-w-0 truncate text-[30px] leading-tight sm:text-[36px]">
+            {goal.name}
+          </h1>
 
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => openEdit(goal.id)}>
-              <Pencil className="mr-2 size-4" />
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <Button
+              variant="secondary"
+              className="h-10 px-4 text-[13px]"
+              onClick={() => openEdit(goal.id)}
+            >
+              <Pencil className="size-4" strokeWidth={1.75} />
               {t('common.edit')}
             </Button>
-            <Button onClick={() => setContributionOpen((open) => !open)}>
-              <Plus className="mr-2 size-4" />
+            <Button className="h-10 px-4 text-[13px]" onClick={handleContributionOpen}>
+              <Plus className="size-4" strokeWidth={1.75} />
               {t('goals.detail.addContribution')}
             </Button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {contributionOpen ? (
-        <Card className="border-accent/20 bg-card">
-          <p className="text-sm font-semibold">{t('goals.actions.contributeHelp')}</p>
-          <form
-            className="mt-3 flex flex-wrap items-center gap-2"
-            onSubmit={(event) => {
-              event.preventDefault()
-              void addContribution(goal.id)
-            }}
-          >
-            <MoneyInput
-              value={contributions[goal.id] ?? ''}
-              onChange={(value) => setContribution(goal.id, value)}
-              placeholder={t('goals.actions.contributePlaceholder')}
-              className="min-w-[12rem] flex-1"
-            />
-            <Select
-              value={contributionSources[goal.id] ?? ''}
-              onValueChange={(value) => setContributionSource(goal.id, value)}
-              disabled={walletOptions.length === 0}
-            >
-              <SelectTrigger className="w-48" aria-label={t('goals.actions.source')}>
-                <SelectValue placeholder={t('goals.actions.sourcePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {walletOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              type="submit"
-              disabled={isContributing || !contributionSources[goal.id]}
-            >
-              {isContributing ? t('goals.actions.contributing') : t('goals.actions.contribute')}
-            </Button>
-          </form>
-        </Card>
-      ) : null}
-
-      <section className="rounded-[28px] bg-[#1d1d1f] p-6 text-white shadow-[0_14px_38px_rgba(0,0,0,0.08)] sm:p-8">
-        <div className="grid gap-8 xl:grid-cols-[1.1fr_1fr] xl:items-end">
+      {/* The answer: how much is set aside, and what that means for the date. */}
+      <Panel>
+        <PanelSplit className="mt-0">
           <div>
-            <p className="text-sm text-white/45">{t('goals.detail.progress.current')}</p>
-            <p className="money-number mt-4 text-5xl font-semibold tracking-[-0.055em] sm:text-6xl">
-              {goal.progress}%
-            </p>
-            <p className="mt-5 text-sm text-white/45">
-              {t('goals.detail.progress.description', {
-                current: formatAmount(current),
-                target: formatAmount(target),
+            <p className="label">{t('goals.detail.picture.saved')}</p>
+            <div className="mt-3 flex items-end gap-2">
+              <span className="money-number text-[44px] leading-none sm:text-[54px]">
+                {savedFigure.amount}
+              </span>
+              <span className="mb-1 text-[15px] text-ink2">/ {formatVndScale(target)}</span>
+            </div>
+
+            <div
+              className="mt-6 h-1.5 overflow-hidden rounded-full bg-committed"
+              role="progressbar"
+              aria-label={t('goals.detail.picture.progressAria', {
+                current: formatVndScale(current),
+                target: formatVndScale(target),
               })}
-            </p>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-3 sm:gap-3">
-            <HeroMetric label={t('goals.strip.saved')} value={formatAmount(current)} />
-            <HeroMetric label={t('goals.strip.remaining')} value={formatAmount(remaining)} />
-            <HeroMetric label={t('goals.strip.monthlyPace')} value={formatAmount(pace)} />
-          </div>
-        </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-12">
-        <Card className="xl:col-span-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 className="section-title text-xl font-semibold">
-                {t('goals.detail.chart.title')}
-              </h2>
-            </div>
-            <div className="flex gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-2">
-                <span className="h-2 w-5 rounded-full bg-accent" />
-                {t('goals.detail.chart.actual')}
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="h-px w-5 border-t border-dashed border-muted-foreground" />
-                {t('goals.detail.chart.plan')}
-              </span>
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(progress)}
+            >
+              <div
+                className="seg h-full min-w-[4px] rounded-full bg-accent"
+                style={{ width: `${progress}%` }}
+              />
             </div>
           </div>
-          <GoalProgressChart data={chartData} />
-        </Card>
 
-        <Card className="xl:col-span-4">
-          <h2 className="section-title text-xl font-semibold">
-            {t('goals.detail.info.title')}
-          </h2>
-          <div className="mt-5 divide-y divide-border">
-            <InfoRow label={t('goals.detail.info.target')} value={formatAmount(target)} />
-            <InfoRow label={t('goals.detail.info.deadline')} value={deadline} />
-            <InfoRow
-              label={t('goals.detail.info.priority')}
-              value={priorityLabels[goal.priority]}
+          <dl className="grid gap-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            <PictureMetric label={t('goals.detail.picture.desiredDate')} value={desiredDate} />
+            <PictureMetric label={t('goals.detail.picture.atCurrentPace')} value={projectedDate} />
+            <PictureMetric
+              label={t('goals.detail.picture.requiredMonthly')}
+              value={
+                requiredMonthly != null && requiredMonthly > 0
+                  ? t('goals.detail.picture.perMonth', { amount: formatVndScale(requiredMonthly) })
+                  : notSet
+              }
             />
-            <InfoRow label={t('goals.detail.info.method')} value={t('goals.detail.info.multipleSources')} />
-          </div>
-        </Card>
-      </section>
+          </dl>
+        </PanelSplit>
+      </Panel>
 
-      {goal.projection ? (
-        <GoalProjectionPanel projection={goal.projection} />
-      ) : null}
+      <Panel>
+        <PanelHeader
+          title={t('goals.detail.plan.title')}
+          action={
+            <button
+              type="button"
+              className="min-h-11 text-[13px] font-medium text-accent"
+              onClick={() => setExplainOpen((open) => !open)}
+              aria-expanded={explainOpen}
+            >
+              {explainOpen ? t('goals.detail.plan.hide') : t('goals.detail.plan.explain')}
+            </button>
+          }
+        />
 
-      <Card>
-        <h2 className="section-title text-xl font-semibold">
-          {t('goals.detail.history.title')}
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t('goals.detail.history.description')}
-        </p>
+        <div className="mt-7 grid gap-4 lg:grid-cols-3">
+          <PlanTile
+            label={t('goals.detail.plan.monthly')}
+            value={
+              plannedMonthly != null && plannedMonthly > 0
+                ? formatVndScale(plannedMonthly)
+                : t('goals.projection.noPace')
+            }
+          />
+          <PlanTile label={t('goals.detail.plan.remaining')} value={formatVndScale(remaining)} />
+          <PlanTile label={t('goals.detail.plan.priority')} value={priorityLabels[goal.priority]} />
+        </div>
+
+        {/* Every projected number has to be explainable (design.md §16). */}
+        {explainOpen ? (
+          <Sunk className="mt-4 px-4 py-4 text-[13px] leading-6 text-ink2">
+            {projection ? (
+              <>
+                <p>{t(`goals.projection.reason.${projection.reason}`)}</p>
+                {hasProjectedDate(projection) ? (
+                  <dl className="mt-3 grid gap-x-4 gap-y-1.5 sm:grid-cols-[180px_1fr]">
+                    <dt>{t('goals.detail.plan.monthly')}</dt>
+                    <dd className="num font-medium text-ink">
+                      {formatVndScale(projection.plannedMonthlyContribution ?? 0)}
+                    </dd>
+                    <dt>{t('goals.detail.plan.remaining')}</dt>
+                    <dd className="num font-medium text-ink">
+                      {formatVndScale(projection.remainingAmount)}
+                    </dd>
+                    {projection.estimatedMonthsToGoal != null ? (
+                      <>
+                        <dt>{t('goals.detail.plan.estimatedMonths')}</dt>
+                        <dd className="num font-medium text-ink">
+                          {t('goals.projection.months', {
+                            count: projection.estimatedMonthsToGoal,
+                          })}
+                        </dd>
+                      </>
+                    ) : null}
+                  </dl>
+                ) : null}
+              </>
+            ) : (
+              <p>{t('goals.detail.plan.explainUnavailable')}</p>
+            )}
+          </Sunk>
+        ) : null}
+      </Panel>
+
+      <Panel>
+        <PanelHeader
+          title={t('goals.detail.history.title')}
+          meta={t('goals.detail.history.count', { count: contributionEvents.length })}
+        />
 
         {contributionEvents.length > 0 ? (
-          <div className="mt-5 divide-y divide-border">
-            {contributionEvents.map((event) => (
-              <div
-                key={event.id ?? `${event.isoDate}-${event.amount}`}
-                className="grid gap-3 py-4 first:pt-0 last:pb-0 md:grid-cols-[110px_1fr_180px_130px] md:items-center"
-              >
-                <p className="text-xs text-muted-foreground">
-                  {new Date(event.isoDate).toLocaleDateString(locale)}
-                </p>
-                <p className="text-sm font-medium">{event.note || t('goals.detail.history.defaultNote')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {event.fromAssetId
-                    ? assetNames.get(event.fromAssetId) ?? t('goals.detail.history.unknownSource')
-                    : t('goals.detail.history.unknownSource')}
-                </p>
-                <p className="money-number text-sm font-semibold text-accent md:text-right">
-                  +{formatAmount(Math.abs(event.amount))}
-                </p>
-              </div>
-            ))}
+          <div className="mt-6 overflow-x-auto">
+            <table className="table-dense w-full min-w-[640px] text-[14px]">
+              <thead>
+                <tr className="label">
+                  <th className="pb-3 text-left font-normal">
+                    {t('goals.detail.history.columns.date')}
+                  </th>
+                  <th className="pb-3 text-left font-normal">
+                    {t('goals.detail.history.columns.source')}
+                  </th>
+                  <th className="pb-3 text-left font-normal">
+                    {t('goals.detail.history.columns.recordedBy')}
+                  </th>
+                  <th className="pb-3 text-left font-normal">
+                    {t('goals.detail.history.columns.note')}
+                  </th>
+                  <th className="pb-3 text-right font-normal">
+                    {t('goals.detail.history.columns.amount')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {contributionEvents.map((event) => (
+                  <tr key={event.id ?? `${event.isoDate}-${event.amount}`}>
+                    <td className="py-3 font-mono text-[12px] text-ink3">
+                      {new Date(event.isoDate).toLocaleDateString(locale)}
+                    </td>
+                    <td className="py-3">
+                      {(event.fromAssetId ? assetNames.get(event.fromAssetId) : undefined) ??
+                        t('goals.detail.history.unknownSource')}
+                    </td>
+                    <td className="py-3">
+                      {(event.createdById ? memberNames.get(event.createdById) : undefined) ??
+                        t('goals.detail.history.unknownMember')}
+                    </td>
+                    <td className="py-3 text-ink2">
+                      {event.note || t('goals.detail.history.defaultNote')}
+                    </td>
+                    <td className="num py-3 text-right font-medium text-accent">
+                      +{formatVndScale(Math.abs(event.amount))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
-          <p className="mt-6 rounded-2xl bg-muted px-4 py-8 text-center text-sm text-muted-foreground">
+          <p className="mt-6 py-10 text-center text-[13px] text-ink2">
             {t('goals.detail.history.empty')}
           </p>
         )}
-      </Card>
+      </Panel>
+
+      <GoalContributionDialog
+        open={contributionOpen}
+        onOpenChange={setContributionOpen}
+        goal={goal}
+        amount={contributions[goal.id] ?? ''}
+        onAmountChange={(value) => setContribution(goal.id, value)}
+        sourceId={contributionSources[goal.id] ?? ''}
+        onSourceChange={(value) => setContributionSource(goal.id, value)}
+        walletOptions={walletOptions}
+        isSubmitting={isContributing}
+        onSubmit={() => addContribution(goal.id)}
+      />
 
       <GoalFormDialog
         open={formOpen}
@@ -375,69 +338,33 @@ export function GoalDetailPage() {
   )
 }
 
-function HeroMetric({ label, value }: { label: string; value: string }) {
+function BackLink({ onClick, label }: { onClick: () => void; label: string }) {
   return (
-    <div className="border-l border-white/10 pl-4">
-      <p className="text-xs text-white/40">{label}</p>
-      <p className="money-number mt-3 text-xl font-semibold">{value}</p>
+    <button
+      type="button"
+      className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 text-[13px] font-medium text-accent hover:bg-accent-soft"
+      onClick={onClick}
+    >
+      <ChevronLeft className="size-4" strokeWidth={1.75} />
+      {label}
+    </button>
+  )
+}
+
+function PictureMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[13px] text-ink2">{label}</dt>
+      <dd className="num mt-1 text-[20px] font-medium">{value}</dd>
     </div>
   )
 }
 
-function GoalProgressChart({ data }: { data: ChartPoint[] }) {
-  const { t } = useTranslation()
+function PlanTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="mt-6 h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 4 }}>
-          <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-          <XAxis
-            dataKey="label"
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-          />
-          <YAxis
-            width={48}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-            tickFormatter={(value: number) => formatAmount(value)}
-          />
-          <Tooltip
-            formatter={(value, name) => [
-              formatAmount(Number(value)),
-              name === 'actual'
-                ? t('goals.detail.chart.actual')
-                : t('goals.detail.chart.plan'),
-            ]}
-            labelClassName="text-xs text-muted-foreground"
-            contentStyle={{
-              borderRadius: 14,
-              borderColor: 'hsl(var(--border))',
-              background: 'hsl(var(--card))',
-            }}
-          />
-          <Line
-            type="monotone"
-            dataKey="plan"
-            stroke="hsl(var(--muted-foreground))"
-            strokeWidth={2}
-            strokeDasharray="7 7"
-            dot={false}
-            isAnimationActive={false}
-          />
-          <Line
-            type="monotone"
-            dataKey="actual"
-            stroke="hsl(var(--accent))"
-            strokeWidth={3}
-            connectNulls={false}
-            isAnimationActive={false}
-            activeDot={{ r: 5, strokeWidth: 3, stroke: 'hsl(var(--card))' }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <Sunk className="px-4 py-4">
+      <p className="text-[13px] text-ink2">{label}</p>
+      <p className="num mt-2 text-[22px] font-medium">{value}</p>
+    </Sunk>
   )
 }

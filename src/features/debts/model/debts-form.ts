@@ -106,21 +106,6 @@ export function getStatusTone(status: DebtStatus) {
   return 'bg-attention-tint text-attention border-none'
 }
 
-export function getStatusLabel(status: DebtStatus) {
-  switch (status) {
-    case 'active':
-      return 'Đang trả'
-    case 'paid_off':
-      return 'Đã xong'
-    case 'paused':
-      return 'Tạm dừng'
-    case 'overdue':
-      return 'Quá hạn'
-    case 'cancelled':
-      return 'Đã hủy'
-  }
-}
-
 export function buildDebtSchema(t: (key: string) => string) {
   return z
     .object({

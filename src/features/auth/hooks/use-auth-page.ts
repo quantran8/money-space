@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import {
@@ -10,6 +10,7 @@ import {
   login as loginRequest,
   signup as signupRequest,
 } from '@/features/auth/api/auth.repository'
+import { authHandoffState, resolveNextPath } from '@/features/auth/model/next-path'
 import {
   buildLoginSchema,
   buildSignupSchema,
@@ -27,7 +28,15 @@ const GOOGLE_REDIRECT_PATH = '/auth/callback'
 export function useAuthPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const setAuth = useAuthStore((state) => state.setAuth)
+
+  /**
+   * Set by `RequireAuth` when it bounced the user off a protected route — an
+   * invite QR at `/join?…` being the case that matters, since losing it means
+   * losing the invitation.
+   */
+  const nextPath = resolveNextPath(searchParams.get('next'))
 
   const [tab, setTab] = useState<AuthTab>('login')
   const [googlePending, setGooglePending] = useState(false)
@@ -53,7 +62,7 @@ export function useAuthPage() {
       if (!result.session) throw new Error(t('auth.errors.loginFailed'))
       setAuth(result.user, result.session)
       toast.success(t('auth.toast.loginSuccess'))
-      navigate('/', { replace: true })
+      navigate(nextPath, { replace: true, state: authHandoffState })
     } catch (error) {
       toast.error(getErrorMessage(error, t('auth.errors.loginFailed')))
     }
@@ -70,7 +79,7 @@ export function useAuthPage() {
       if (result.session) {
         setAuth(result.user, result.session)
         toast.success(t('auth.toast.signupSuccess', { name: values.fullName }))
-        navigate('/', { replace: true })
+        navigate(nextPath, { replace: true, state: authHandoffState })
       } else {
         toast.success(t('auth.toast.confirmEmail'))
         setTab('login')
@@ -83,7 +92,11 @@ export function useAuthPage() {
   async function onGoogle() {
     setGooglePending(true)
     try {
-      const redirectTo = `${window.location.origin}${GOOGLE_REDIRECT_PATH}`
+      // Carry `next` through the Google round-trip; the callback reads it back
+      // off its own URL, since nothing of ours survives the hop otherwise.
+      const callback = new URL(GOOGLE_REDIRECT_PATH, window.location.origin)
+      if (nextPath !== '/') callback.searchParams.set('next', nextPath)
+      const redirectTo = callback.toString()
       const { url } = await getGoogleAuthUrl(redirectTo)
       // Hand off to Google; the browser returns to GOOGLE_REDIRECT_PATH with a code.
       window.location.assign(url)

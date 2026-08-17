@@ -193,8 +193,7 @@ export function AssetDetailPage() {
   const updatedAt = asset.valueUpdatedAt ? formatUpdatedAt(asset.valueUpdatedAt, locale) : null
   function handlePrimaryUpdate() {
     if (!asset) return
-    if (canUpdatePrice) setPriceDialogOpen(true)
-    else openEdit(asset.id)
+    setPriceDialogOpen(true)
   }
 
   return (
@@ -211,31 +210,25 @@ export function AssetDetailPage() {
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-[13px] text-ink2">
-              <span>{t(`options.assetType.${asset.type}`)}</span>
-              <span className="sunk px-2.5 py-1 text-[11px] font-medium text-ink2">
-                {t(`options.liquidity.${asset.liquidity}`)}
-              </span>
-              {isSold ? (
+            {isSold ? (
+              <div className="flex flex-wrap items-center gap-2 text-[13px] text-ink2">
                 <span className="sunk px-2.5 py-1 text-[11px] font-medium text-ink2">
                   {t('options.assetStatus.sold')}
                 </span>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
             <h1 className="page-title mt-2 truncate text-[32px] leading-tight">{asset.name}</h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            {!isSold && (canUpdatePrice || isBalanceAsset) ? (
+            {canUpdatePrice ? (
               <Button
                 variant="secondary"
                 className="h-10 px-4 text-[13px]"
                 onClick={handlePrimaryUpdate}
               >
                 <RefreshCw className="size-4" strokeWidth={1.75} />
-                {isBalanceAsset
-                  ? t('assets.detail.balanceUpdateAction')
-                  : t('assets.priceUpdate.action')}
+                {t('assets.priceUpdate.action')}
               </Button>
             ) : null}
             <Button className="h-10 px-4 text-[13px]" onClick={() => openEdit(asset.id)}>

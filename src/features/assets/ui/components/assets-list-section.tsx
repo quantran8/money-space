@@ -50,7 +50,6 @@ export function AssetsListSection({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="section-title text-[16px]">{t('assets.demo.sources')}</h2>
-          <p className="mt-1 text-[12px] text-ink2">{t('assets.demo.sourcesDescription')}</p>
         </div>
         <div className="flex items-center gap-2">
           <label className="sunk flex h-10 min-w-0 flex-1 items-center gap-2 px-3 sm:w-[250px]">

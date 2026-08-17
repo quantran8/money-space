@@ -4,12 +4,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { googleCallback } from '@/features/auth/api/auth.repository'
+import { authHandoffState, resolveNextPath } from '@/features/auth/model/next-path'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 /**
  * Handles the Google OAuth redirect: reads `?code`, exchanges it for a session
- * via the backend, stores it, then navigates home (or back to /auth on error).
+ * via the backend, stores it, then navigates to `?next` — the route the user was
+ * originally headed for, an invite QR's `/join?…` above all — falling back home.
+ * On error it goes back to /auth, keeping `next` so the retry still lands right.
  */
 export function useGoogleCallback() {
   const { t } = useTranslation()
@@ -24,15 +27,18 @@ export function useGoogleCallback() {
 
     const code = searchParams.get('code')
     const oauthError = searchParams.get('error_description') ?? searchParams.get('error')
+    const nextPath = resolveNextPath(searchParams.get('next'))
+    const authPath =
+      nextPath === '/' ? '/auth' : `/auth?next=${encodeURIComponent(nextPath)}`
 
     if (oauthError) {
       toast.error(oauthError)
-      navigate('/auth', { replace: true })
+      navigate(authPath, { replace: true })
       return
     }
 
     if (!code) {
-      navigate('/auth', { replace: true })
+      navigate(authPath, { replace: true })
       return
     }
 
@@ -41,11 +47,11 @@ export function useGoogleCallback() {
         if (!result.session) throw new Error(t('auth.errors.googleFailed'))
         setAuth(result.user, result.session)
         toast.success(t('auth.toast.loginSuccess'))
-        navigate('/', { replace: true })
+        navigate(nextPath, { replace: true, state: authHandoffState })
       })
       .catch((cause) => {
         toast.error(getErrorMessage(cause, t('auth.errors.googleFailed')))
-        navigate('/auth', { replace: true })
+        navigate(authPath, { replace: true })
       })
   }, [navigate, searchParams, setAuth, t])
 }

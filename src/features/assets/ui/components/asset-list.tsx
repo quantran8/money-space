@@ -56,16 +56,21 @@ export function AssetList({
           return (
             <article
               key={asset.id}
-              className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[1.5fr_.8fr_.8fr_1fr_.8fr_110px] lg:items-center"
+              role="button"
+              tabIndex={0}
+              onClick={() => onOpen?.(asset.id)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  onOpen?.(asset.id)
+                }
+              }}
+              className="grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[1.5fr_.8fr_.8fr_1fr_.8fr_110px] lg:items-center"
             >
-              <button
-                type="button"
-                onClick={() => onOpen?.(asset.id)}
-                className="min-w-0 text-left"
-              >
+              <div className="min-w-0 text-left">
                 <p className="truncate text-[13px] font-medium">{asset.name}</p>
                 <p className="mt-1 text-[11px] text-ink3">{t(`options.assetType.${asset.type}`)}</p>
-              </button>
+              </div>
 
               <p className="mt-2 text-[12px] text-ink2 lg:mt-0">
                 {asset.holderMemberId
@@ -80,14 +85,10 @@ export function AssetList({
                 {value === null ? t('assets.list.priceUnavailable') : formatVndCell(value)}
               </p>
 
-              <div className="col-start-2 row-start-2 row-span-4 flex items-start justify-end gap-1 lg:col-auto lg:row-auto">
-                <button
-                  type="button"
-                  onClick={() => onOpen?.(asset.id)}
-                  className="hidden text-[12px] font-medium text-accent xl:block"
-                >
-                  {t('assets.demo.detail')}
-                </button>
+              <div
+                className="col-start-2 row-start-2 row-span-4 flex items-start justify-end gap-1 lg:col-auto lg:row-auto"
+                onClick={(event) => event.stopPropagation()}
+              >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="size-8" aria-label={t('common.actions')}>

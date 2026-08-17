@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { CashflowEventFormDialog } from '@/features/cashflow/ui/components/cashflow-event-form-dialog'
 import { useCashflowEvents } from '@/features/cashflow/hooks/use-cashflow-events'
@@ -30,15 +31,9 @@ export function UpcomingPage() {
 
   return (
     <div className="space-y-4 pb-3">
-      <header className="flex flex-col gap-5 pb-1 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="label">{t('upcoming.eyebrow')}</p>
-          <h1 className="page-title mt-2 text-[30px] leading-[1.15] sm:text-[34px]">
-            {t('upcoming.title')}
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-2.5">
+      <CompactPageHeader
+        title={t('upcoming.title')}
+        actions={
           <Button
             className="h-10 px-4 text-[13px]"
             onClick={() => cashflowForm.openCreate('outgoing')}
@@ -46,8 +41,8 @@ export function UpcomingPage() {
             <Plus className="size-4" />
             {t('upcoming.form.title')}
           </Button>
-        </div>
-      </header>
+        }
+      />
 
       <div
         className="flex items-center gap-1 rounded-sunk bg-sunk p-1 sm:w-fit"

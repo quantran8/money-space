@@ -1,12 +1,39 @@
-# Web Design System — Money Space v4.0
+# Web Design System — Money Space v4.1
 
 > **Spec alignment:** Shared Financial Clarity → Financial Foresight → Decision Support for couples 25–37.
 >
 > **v4.0 là bản đổi hướng thị giác.** Nội dung sản phẩm, IA, copy và nguyên tắc hành vi từ v3.x được giữ nguyên. Toàn bộ hệ thị giác — surface, màu, typography, spacing, component — được thay bằng hệ đã hội tụ qua vòng thiết kế: **panel trắng trên nền có sắc, phân tầng bằng độ sáng, không divider, không viền, không shadow, sidebar, lục ngân hàng bão hoà, mật độ bảng thật.**
 >
+> **v4.1 là bản cắt copy.** Không đổi hệ thị giác. Mọi dòng chữ trên UI được soát lại: dòng nào không giúp user hiểu con số hoặc không nói được việc cần làm thì bị xoá khỏi spec. Nguyên tắc điều phối mới là **một dữ kiện, một chỗ** (§2.10).
+>
 > Bản v3.x đi theo hướng white-first với section frame viền alpha và accent xanh dương hệ Apple. Hướng đó đã bị loại: xem §25.
 
 ---
+
+## Changelog v4.0 → v4.1
+
+```txt
+§2.10  Nâng thành quy tắc cứng: “một dữ kiện, một chỗ” + copy budget + giới hạn độ dài
+       (nhãn ≤ 4 từ, câu hệ quả ≤ 12 từ) + bảng trước/sau.
+§11.5  Coverage strip bỏ “3 mới trong tuần”; caveat rút thành “Chưa gồm A và B.”
+§16.5  Status copy rút còn một dòng mỗi trạng thái, dưới 10 từ.
+§22.7  Câu hệ quả trong form: tối đa hai dòng, thêm ví dụ “đúng ý nhưng quá dài”.
+§22.8  Tóm tắt thay đổi rút về một dòng có `→`.
+§23    Empty state đúng một dòng, không nhắc lại tên section.
+§9.2   Page header bỏ tên thứ trong ngày — mono không chạm chuỗi có dấu (§10.1).
+§11.1  Header section: title + ĐÚNG MỘT thứ bên phải. Không có cả metadata lẫn link.
+§11.4  Legend money composition về 2 dòng, aria-label đọc 2 giá trị (bar còn 2 đoạn từ §5.4).
+§11.7  Một dấu hiệu “chưa phải số thật” cho mỗi luồng mô phỏng, không phải hai.
+§12.1  Bỏ dòng “trên tổng … tiền mặt · giá trị ròng …” dưới hero — lặp §12.4, và net worth
+       không thuộc Home (§2.13).
+§12.2  Dòng tổng của bảng dòng tiền đổi thành tổng vào · tổng ra, thôi lặp ô cuối cột “Còn lại”.
+§12.3  Bỏ chip “chính” (đã có trong tên section) và bỏ số “20%” (đã có phân số + bar).
+       Nhãn dài đổi thành “Để đúng hẹn cần”.
+§12.6  Dòng phạm vi bỏ mệnh đề “Tính trên dữ liệu hiện có”; chỉ giữ phần nói thiếu gì.
+§16.6  MỚI — Canonical strings: mỗi dữ kiện có đúng một cách viết trong toàn app.
+§20    Ví dụ Home viết lại theo các mục trên.
+§25    Thêm các dòng copy đã bị loại.
+```
 
 ## Changelog v3.4 → v4.0
 
@@ -206,7 +233,7 @@ Flexible Money       → money number lớn nhất, weight 500.
 Financial State      → chip trái ở đầu section 1.
 Data coverage        → chip phải ở đầu section 1 + coverage strip dưới money number.
 Thấp nhất dự kiến    → metric lớn thứ hai, mở đầu section 2.
-Money composition    → thanh 3 đoạn + legend có phần trăm.
+Money composition    → thanh 2 đoạn + legend 2 dòng có phần trăm.
 Goal projection      → ngày dự kiến quan trọng hơn progress bar.
 Money location       → bảng, kèm cột Cập nhật.
 Nhật ký              → list gọn, ba dòng gần nhất.
@@ -345,10 +372,10 @@ Có thể linh hoạt
 54tr
 ```
 
-Helper chỉ tồn tại vì nó giải thích calculation:
+Dòng duy nhất đi kèm là dòng giải thích cách tính, viết đúng một cách trong toàn app (§16.6):
 
 ```txt
-Sau các khoản đã biết trong thời gian tới.
+Sau các khoản đã có nhiệm vụ
 ```
 
 Supporting breakdown:
@@ -454,27 +481,100 @@ Sticky/prominent CTA được phép
 
 Consequence chỉ xuất hiện **sau user action**.
 
-## 2.10. Helper copy phải có lý do tồn tại
+## 2.10. Mỗi dòng chữ phải có lý do tồn tại
 
-Một subtitle/helper chỉ được thêm nếu nó truyền tải ít nhất một trong ba loại meaning:
+Một dòng chữ chỉ được lên UI nếu nó làm đúng một trong ba việc:
 
 ```txt
-1. Scope / assumption user cần biết.
-2. Consequence / state user cần hiểu.
-3. Action / next step user cần làm.
+1. Scope / assumption     con số này tính từ đâu, gồm và không gồm gì.
+2. Consequence / state    tình hình đang thế nào, khoản này ảnh hưởng gì.
+3. Action                 việc tiếp theo user có thể làm.
 ```
 
-Test:
+Không thuộc ba loại trên thì không phải copy — là trang trí.
 
-> Nếu xóa dòng này mà user không mất meaning, context hoặc action nào, hãy xóa.
+**Test xoá.** Xoá dòng đó đi. Nếu user vẫn hiểu con số và vẫn biết làm gì tiếp, dòng đó không quay lại.
+
+### Một dữ kiện, một chỗ
+
+Đây là quy tắc bị vi phạm nhiều nhất, và là lý do của gần hết các mục bị cắt ở v4.1.
+
+```txt
+Một con số xuất hiện ĐÚNG MỘT LẦN trên một trang.
+Một dữ kiện được diễn đạt ĐÚNG MỘT CÁCH trong toàn app (§16.6).
+Một action có ĐÚNG MỘT nhãn, và tối đa hai lối vào trên một trang.
+```
+
+Ngoại lệ duy nhất: legend là nhãn trực tiếp của một hình (bar, chart). Legend được nhắc lại giá trị của đoạn nó đang chú thích, vì nếu không thì hình đó không đọc được.
+
+Không phải ngoại lệ:
+
+```txt
+Số cuối cột “Còn lại” rồi lặp lại trong dòng tổng.
+Hero number rồi lặp lại trong một dòng tóm tắt dưới hero.
+Phân số 160,0 / 800,0 · số 20% · progress bar — ba cách nói cùng một tỉ lệ.
+Chip “chính” trong một section đã tên là “Mục tiêu chính”.
+Hai nhãn cùng nói “đây chưa phải số thật” trong một luồng mô phỏng.
+```
+
+### Copy budget cho mỗi Home section
+
+```txt
+1   section title
+1   metadata HOẶC 1 action link ở header — không phải cả hai (§11.1)
+1   .label cho mỗi số lớn, nói số đó là gì
+1   câu hệ quả cho mỗi số lớn, nói khi nào / so với cái gì
+1   caveat, chỉ khi dữ liệu thực sự thiếu
+0   subtitle
+0   câu nói về sản phẩm
+```
+
+### Độ dài: ngắn nhất mà vẫn đủ nghĩa
+
+```txt
+Nhãn          ≤ 4 từ
+Câu hệ quả    ≤ 12 từ, một câu
+Caveat        ≤ 12 từ
+Nút           ≤ 4 từ
+```
+
+Cách viết:
+
+```txt
+Vào thẳng dữ kiện. Bỏ mở đầu kiểu “Theo…”, “Dựa trên…”, “Hiện tại…”, “Bạn đã…”.
+Bỏ được từ nào mà nghĩa không đổi thì bỏ.
+Số nói được thì đừng viết chữ. “thấp hơn hôm nay 12,1 tr” thắng “thấp hơn khá nhiều”.
+Suy ra được thì đừng nói. Có 5 nguồn và 2 cần cập nhật thì không cần nói 3 nguồn mới.
+Một dòng một ý. Cần hai ý thì tách bằng `·`, không viết câu ghép.
+```
+
+Trước và sau:
+
+```txt
+Số trên chưa gồm thay đổi của Quỹ mở & ETF và tiền mặt.
+→ Chưa gồm Quỹ mở & ETF và tiền mặt.
+
+Tính từ 5 nguồn · 3 mới trong tuần · 2 cần cập nhật
+→ Tính từ 5 nguồn · 2 cần cập nhật
+
+Vào 24/08, thấp hơn hôm nay 12,1 tr.
+→ 24/08 · thấp hơn hôm nay 12,1 tr
+
+Có một thời điểm các khoản đã biết chưa được cover.
+→ 24/08 chưa đủ cho các khoản đã biết.
+
+160,0 tr đã dành sẽ quay về phần tiền linh hoạt.
+→ 160,0 tr sẽ quay về tiền linh hoạt.
+```
 
 Good:
 
 ```txt
-Chỉ gồm các khoản đã biết.
-Sau các khoản đã biết trong thời gian tới.
-2 khoản nên cập nhật.
-Cập nhật 35 ngày trước.
+Sau các khoản đã có nhiệm vụ
+24/08 · thấp hơn hôm nay 12,1 tr
+Tính từ 5 nguồn · 2 cần cập nhật
+Chưa gồm Quỹ mở & ETF và tiền mặt.
+Cập nhật 35 ngày trước
 ```
 
 Avoid:
@@ -600,20 +700,20 @@ Cấu trúc bắt buộc quanh Flexible Money:
 
 ```txt
 1. Giá trị            54tr
-2. Cách tính          Sau các khoản đã biết trong thời gian tới.
-3. Phạm vi dữ liệu    Tính từ 5 nguồn · 3 mới trong tuần · 2 cần cập nhật
-4. Hệ quả nếu thiếu   Số trên chưa gồm thay đổi của VCB và tiền mặt.
+2. Cách tính          Sau các khoản đã có nhiệm vụ
+3. Phạm vi dữ liệu    Tính từ 5 nguồn · 2 cần cập nhật
+4. Hệ quả nếu thiếu   Chưa gồm VCB và tiền mặt.
 5. Action             Cập nhật nhanh
 ```
 
-Dòng 3 và 4 là phần mới của v3.4. Dòng 4 chỉ xuất hiện khi thực sự có nguồn stale.
+Đúng năm dòng này, không thêm dòng thứ sáu. Dòng 4 chỉ xuất hiện khi thực sự có nguồn stale.
 
 Rules:
 
 ```txt
 Coverage strip nằm TRONG Financial Picture, không phải section riêng.
 Coverage strip hiện cả khi mọi thứ đều mới — nó là ngữ cảnh, không phải cảnh báo.
-  Trạng thái tất cả mới: “Tính từ 5 nguồn · tất cả mới trong tuần”, neutral, không màu.
+  Trạng thái tất cả mới: “Tính từ 5 nguồn · tất cả đều mới”, neutral, không màu.
 Không dùng phần trăm độ tin cậy. “87% đáng tin” là con số bịa.
 Không ẩn freshness sau tooltip hoặc icon.
 Không làm mờ money number khi dữ liệu cũ — giá trị vẫn là giá trị tốt nhất đang có.
@@ -1014,7 +1114,7 @@ Nợ và Nhật ký **không phải item thứ 6 hoặc 7**. Xem §2.13, §2.14.
 
 ```txt
 ┌ Sidebar ┐ ┌ Main ─────────────────────────────────────────────────┐
-│ CTA     │ │ Tổng quan · Thứ năm 13/08/2026        Cập nhật nhanh  │
+│ CTA     │ │ Tổng quan · 13/08/2026                Cập nhật nhanh  │
 │         │ │                                                        │
 │ Bức     │ │ ┌ Bức tranh hôm nay ────────────────────────────────┐ │
 │ tranh   │ │ │ ● ổn                        ● 2 nguồn cần cập nhật│ │
@@ -1143,7 +1243,13 @@ Vượt ngưỡng stale của loại nguồn → chuyển `--attention`. Luôn c
 </section>
 ```
 
-Header của mỗi section là **title bên trái + một metadata hoặc một link hành động bên phải**. Không subtitle mặc định.
+Header của mỗi section là **title bên trái + đúng một thứ bên phải**: hoặc một metadata, hoặc một link hành động. Không phải cả hai, và không bao giờ có subtitle.
+
+```txt
+Chọn metadata khi user cần biết phạm vi dữ liệu:   13/08 — 12/09 · 4 khoản
+Chọn link khi section chỉ là preview của trang khác: Xem nguồn tiền
+Cần cả hai → section đang gánh hai việc, tách hoặc bỏ một.
+```
 
 ## 11.2. Sunk block
 
@@ -1199,10 +1305,10 @@ Bảng dòng tiền BẮT BUỘC có cột “Còn lại” chạy số dư lu�
 </div>
 ```
 
-Legend đi kèm là 3 dòng, mỗi dòng: chấm màu · nhãn · phần trăm (mono) · số tiền căn phải.
+Legend đi kèm là 2 dòng, mỗi dòng: chấm màu · nhãn · phần trăm (mono) · số tiền căn phải. Legend là nhãn của bar, nên được nhắc lại giá trị hero — đây là ngoại lệ duy nhất của “một dữ kiện, một chỗ” (§2.10).
 
 ```txt
-aria-label đọc ra cả ba giá trị bằng chữ.
+aria-label đọc ra cả hai giá trị bằng chữ.
 Segment < 4% cần min-width — đúng lúc linh hoạt ≈ 0 là lúc cần thấy nó nhất.
 Chỉ animate lần mount đầu.
 Không dùng pie chart cho cùng dữ liệu này.
@@ -1250,10 +1356,12 @@ Strip hiện cả khi mọi nguồn đều mới, lúc đó toàn --ink và khô
 Copy:
 
 ```txt
-Tất cả mới    Tính từ 5 nguồn · tất cả mới trong tuần
-Có nguồn cũ   Tính từ 5 nguồn · 3 mới trong tuần · 2 cần cập nhật
-Caveat        Số trên chưa gồm thay đổi của Quỹ mở & ETF và tiền mặt.
+Tất cả mới    Tính từ 5 nguồn · tất cả đều mới
+Có nguồn cũ   Tính từ 5 nguồn · 2 cần cập nhật
+Caveat        Chưa gồm Quỹ mở & ETF và tiền mặt.
 ```
+
+Không ghi “3 mới trong tuần” — user tự trừ được, và nó đẩy dòng xuống hai hàng trên mobile.
 
 ## 11.6. Status chip
 
@@ -1276,7 +1384,11 @@ Vùng duy nhất trong sản phẩm có viền đứt.
 </div>
 ```
 
-Trong modal: header có `.label` màu accent ghi “Đang thử — chưa ghi vào bức tranh”. Khối kết quả dùng nền `--accent-soft`. Không có surface nào khác trong app dùng nền này.
+Một luồng mô phỏng có **đúng một** dấu hiệu bằng chữ, đặt trên khối kết quả: `.label` màu accent ghi “Nếu thực hiện”. Tiêu đề modal đã là “Thử một khoản chi”, nền `--accent-soft` và viền đứt đã nói phần còn lại — thêm một dòng “Đang thử — chưa ghi vào bức tranh” ở header là nói lại lần thứ ba.
+
+Với screen reader, trạng thái “đang thử” đi qua `aria-describedby` của dialog, không cần một dòng chữ hiện trên màn (§24).
+
+Khối kết quả dùng nền `--accent-soft`. Không có surface nào khác trong app dùng nền này.
 
 ---
 
@@ -1290,7 +1402,6 @@ Thứ tự và nội dung giữ nguyên từ §9. Dưới đây là đặc tả 
 Hàng chip:      ● Nhà mình đang ổn        ● 2 nguồn cần cập nhật
 Cột trái:       .label “Sau các khoản đã có nhiệm vụ”
                 48,2 · triệu linh hoạt        ← 64px
-                trên tổng 209,7 tr tiền mặt · giá trị ròng 1,81 tỷ
                 SourceCoverageStrip           ← §11.5
 Cột phải:       money composition bar + legend 2 dòng có %
                 nút Thử một khoản chi
@@ -1298,6 +1409,8 @@ Cột phải:       money composition bar + legend 2 dòng có %
 
 ```txt
 48,2 là visual anchor lớn nhất Home.
+Dưới hero không có dòng tóm tắt nào. Tổng tiền mặt thuộc §12.4, giá trị ròng
+  thuộc trang Tài sản (§2.13, §14.1) — nhắc lại ở đây là hai anchor cạnh tranh.
 Coverage strip đứng ngay dưới hero, trước mọi breakdown.
 Nút mô phỏng có hai lối vào: sidebar và cột phải section này. Không thêm lối thứ ba.
 Trên mobile: chip → hero → coverage strip → composition. Không đẩy coverage xuống dưới fold.
@@ -1308,34 +1421,42 @@ Trên mobile: chip → hero → coverage strip → composition. Không đẩy co
 ```txt
 Cột trái:   .label “Thấp nhất dự kiến”
             36,1 tr                        ← 30px
-            “Vào 24/08, thấp hơn hôm nay 12,4 tr.”
+            “24/08 · thấp hơn hôm nay 12,1 tr”
             sunk block chứa đường dòng tiền, 3 mốc mono bên dưới
 Cột phải:   bảng 5 cột: Ngày · Khoản · Ai · Số tiền · Còn lại
-            sunk block “Cuối kỳ dự kiến còn linh hoạt”
+            sunk block: Vào 53,5 tr · Ra −21,0 tr
 ```
 
 ```txt
 Điểm thấp nhất trên chart đánh dấu bằng chấm --attention.
 Event chưa xác nhận mang nhãn mono “cần xác nhận” màu --attention, đặt cạnh tên khoản.
+Dòng tổng chỉ ghi tổng vào và tổng ra — hai số chưa có ở đâu khác trên trang.
+  Không ghi “Cuối kỳ dự kiến còn linh hoạt”: đó đúng là ô cuối cột “Còn lại”,
+  cách nó 20px, và §2.7 chỉ đòi incoming/outgoing total.
 Không tách section phụ “Những khoản sắp tới”.
 ```
 
 ## 12.3. Mục tiêu chính
 
 ```txt
-Cột trái:   tên goal + chip “chính”
-            160,0 / 800,0 tr        20%
+Cột trái:   tên goal
+            160,0 / 800,0 tr
             progress bar 1.5px, accent
-Cột phải:   Ngày mong muốn            06/2029
-            Theo tốc độ hiện tại      11/2029
-            Để về đúng ngày mong muốn +4,5 tr / tháng
+Cột phải:   Ngày mong muốn        06/2029
+            Theo tốc độ hiện tại  11/2029
+            Để đúng hẹn cần       +4,5 tr / tháng
 ```
 
+```txt
 Chỉ một goal trên Home. Ngày dự kiến quan trọng hơn progress bar.
+Không có chip “chính” — section đã tên là “Mục tiêu chính”.
+Không có số “20%” — phân số nói số tiền, bar nói tỉ lệ; phần trăm là cách thứ ba.
+Dòng “Để đúng hẹn cần” chỉ hiện khi đang chậm so với ngày mong muốn.
+```
 
 ## 12.4. Tiền đang ở đâu
 
-Bảng 5 cột: Nơi giữ · Phụ trách · Vai trò · Cập nhật · Số dư. Cột `Cập nhật` chuyển `--attention` khi vượt ngưỡng. Kết thúc bằng sunk block “Tổng tiền mặt”.
+Bảng 5 cột: Nơi giữ · Phụ trách · Vai trò · Cập nhật · Số dư. Cột `Cập nhật` chuyển `--attention` khi vượt ngưỡng. Kết thúc bằng sunk block “Tổng tiền mặt” — đây là chỗ duy nhất trên Home hiện tổng tiền mặt.
 
 ## 12.5. Nhật ký
 
@@ -1345,7 +1466,7 @@ Cột impact là bắt buộc — nếu một loại thay đổi không mô tả
 
 ## 12.6. Mô phỏng
 
-Modal, không phải section. Nhập: tên khoản chi (trước), số tiền (sau), slider đồng bộ hai chiều. Kết quả 2 ô: điểm thấp nhất còn lại · mục tiêu chậm bao lâu. Kết thúc bằng dòng phạm vi dữ liệu: “Tính trên dữ liệu hiện có; 2 nguồn chưa cập nhật.”
+Modal, không phải section. Nhập: tên khoản chi (trước), số tiền (sau), slider đồng bộ hai chiều. Kết quả 2 ô: điểm thấp nhất còn lại · mục tiêu chậm bao lâu. Kết thúc bằng dòng phạm vi dữ liệu, chỉ khi có nguồn cũ: “Chưa gồm 2 nguồn cần cập nhật.” Mệnh đề “Tính trên dữ liệu hiện có” bị bỏ — nó là filler (§16.4), phần mang nghĩa là số nguồn còn thiếu.
 
 Actions: Gửi cho [tên] xem · Lưu thành kịch bản · Xem cách tính. Không verdict.
 
@@ -1747,6 +1868,7 @@ Avoid filler on Home:
 
 ```txt
 Theo dữ liệu hiện có
+Tính trên dữ liệu hiện có
 Không cần tự cộng trong đầu
 Cùng hiểu tài chính tốt hơn
 Bức tranh chung cho hai người
@@ -1755,36 +1877,54 @@ Tương lai rõ ràng hơn
 
 Không cấm tuyệt đối các câu này trong education/onboarding, nhưng không dùng làm subtitle mặc định trên dashboard Home.
 
+Avoid vì lặp lại thứ đã có trên màn (§2.10):
+
+```txt
+Đang thử — chưa ghi vào bức tranh     nền accent-soft + “Nếu thực hiện” đã nói
+Cuối kỳ dự kiến còn linh hoạt         đúng là ô cuối cột “Còn lại”
+trên tổng … tiền mặt · giá trị ròng … thuộc §12.4 và trang Tài sản
+chip “chính” trong Mục tiêu chính     tên section đã nói
+20% cạnh 160,0 / 800,0 tr và bar      cách thứ ba của cùng một tỉ lệ
+```
+
 ## 16.5. Status copy
 
-On track:
+Mỗi trạng thái đúng một dòng, dưới 10 từ, có số nếu có số.
 
 ```txt
-Nhà mình đang ổn
+Ổn          Nhà mình đang ổn
+Ổn + lý do  Đủ cho các khoản 30 ngày tới.
+Watch       Một khoản sắp tới lớn so với tiền đang có.
+Thiếu data  2 nguồn cần cập nhật
+Thiếu tiền  24/08 chưa đủ cho các khoản đã biết.
 ```
 
-Nếu cần explanation vì có consequence:
+Dòng “Ổn + lý do” chỉ thêm khi user cần biết vì sao, không mặc định.
+
+## 16.6. Canonical strings — MỚI
+
+Mỗi dữ kiện có **đúng một** cách viết. Hai cách viết cho cùng một ý làm user tưởng là hai ý khác nhau, và làm i18n phình ra hai key.
+
+| Dữ kiện                     | Chuỗi duy nhất                          |
+| --------------------------- | --------------------------------------- |
+| Cách tính hero              | `Sau các khoản đã có nhiệm vụ`          |
+| Coverage, mọi nguồn đều mới | `Tính từ <N> nguồn · tất cả đều mới`    |
+| Coverage, có nguồn cũ       | `Tính từ <N> nguồn · <M> cần cập nhật`  |
+| Nguồn còn thiếu             | `Chưa gồm <A> và <B>.`                  |
+| Phạm vi kết quả mô phỏng    | `Chưa gồm <M> nguồn cần cập nhật.`      |
+| Dự báo theo nhịp hiện tại   | `Theo tốc độ hiện tại`                  |
+| Mức cần để không trễ hẹn    | `Để đúng hẹn cần`                       |
+| Vùng số chưa thật           | `Nếu thực hiện`                         |
+| Event chưa chắc             | `cần xác nhận`                          |
+| Minh bạch với người kia     | `<tên> sẽ thấy trong Nhật ký`           |
+
+Quy tắc:
 
 ```txt
-Các khoản đã biết trong 30 ngày tới đều được cover.
-```
-
-Watch:
-
-```txt
-Có một khoản chi lớn sắp tới so với tiền đang có.
-```
-
-Incomplete:
-
-```txt
-2 khoản cần cập nhật để forecast đáng tin hơn.
-```
-
-Shortfall:
-
-```txt
-Có một thời điểm các khoản đã biết chưa được cover.
+Cần một cách viết mới → sửa dòng trong bảng này, không thêm dòng thứ hai.
+Một chuỗi = một key trong i18n resources, dùng lại ở mọi surface.
+Số trong chuỗi luôn là biến, không hard-code.
+Sửa một chuỗi ở đây là sửa cho cả app — không fork bản dài hơn cho một màn riêng.
 ```
 
 ---
@@ -1886,6 +2026,9 @@ What-if là action mở modal, không phải section.
 Consequence chỉ hiện sau khi user bấm.
 Nợ vào bức tranh qua nghĩa vụ, không qua hero number.
 Nhật ký ghi thay đổi bức tranh, không ghi giao dịch.
+Một con số xuất hiện đúng một lần trên một trang.
+Một dữ kiện có đúng một cách viết trong toàn app (§16.6).
+Mỗi số lớn có đúng một nhãn nói nó là gì và một câu nói hệ quả.
 tabular-nums ở mọi money value.
 mono chỉ chạm chuỗi ASCII.
 Panel không viền, không shadow.
@@ -1912,6 +2055,10 @@ Không phần trăm “độ tin cậy”.
 Không làm mờ money number khi dữ liệu cũ.
 Không font-weight 300.
 Không verdict nên mua / không nên mua.
+Không subtitle dưới section title.
+Không dòng tổng lặp lại một ô đã có trong bảng.
+Không hai cách viết cho cùng một dữ kiện.
+Không cả metadata lẫn action link trong một section header.
 ```
 
 ---
@@ -1923,13 +2070,11 @@ Không verdict nên mua / không nên mua.
 
 SAU CÁC KHOẢN ĐÃ CÓ NHIỆM VỤ                ▬▬▬▬▬▬▬▬▬  ▬▬▬
 48,2 triệu linh hoạt
-trên tổng 209,7 tr tiền mặt · ròng 1,81 tỷ  Đã có nhiệm vụ  77%  161,5 tr
-                                            Linh hoạt       23%   48,2 tr
-▬▬ ▬▬ ▬▬ ▬▬ ▬▬
-Tính từ 5 nguồn · 3 mới trong tuần
-· 2 cần cập nhật          Cập nhật nhanh    [ Thử một khoản chi ]
-Số trên chưa gồm thay đổi của
-Quỹ mở & ETF và tiền mặt.
+                                            Đã có nhiệm vụ  77%  161,5 tr
+▬▬ ▬▬ ▬▬ ▬▬ ▬▬                              Linh hoạt       23%   48,2 tr
+Tính từ 5 nguồn · 2 cần cập nhật
+Chưa gồm Quỹ mở & ETF          Cập nhật nhanh    [ Thử một khoản chi ]
+và tiền mặt.
 ```
 
 ```txt
@@ -1937,19 +2082,19 @@ Ba mươi ngày tới                                 13/08 — 12/09 · 4 kho�
 
 THẤP NHẤT DỰ KIẾN        NGÀY   KHOẢN                AI   SỐ TIỀN  CÒN LẠI
 36,1 tr                  24/08  Học phí               ·   −12,1     36,1
-Vào 24/08, thấp hơn      25/08  Lương An  cần xác nhận A   +32,0     68,1
-hôm nay 12,1 tr.         05/09  Lương Bình            B   +21,5     89,6
+24/08 · thấp hơn         25/08  Lương An  cần xác nhận A   +32,0     68,1
+hôm nay 12,1 tr          05/09  Lương Bình            B   +21,5     89,6
                          10/09  Trả góp nhà           ·    −8,9     80,7
 [ đường dòng tiền ]
-                         ┌ Cuối kỳ dự kiến còn linh hoạt      80,7 tr ┐
+                         ┌ Vào 53,5 tr           Ra −21,0 tr ┐
 ```
 
 ```txt
 Mục tiêu chính                                        Xem tất cả · 3
 
-Cọc căn thứ hai [chính]        Ngày mong muốn              06/2029
-160,0 / 800,0 tr        20%    Theo tốc độ hiện tại        11/2029
-▬▬▬░░░░░░░░░░░░░░░░░░          Để về đúng ngày mong muốn   +4,5 tr / tháng
+Cọc căn thứ hai                Ngày mong muốn              06/2029
+160,0 / 800,0 tr               Theo tốc độ hiện tại        11/2029
+▬▬▬░░░░░░░░░░░░░░░░░░          Để đúng hẹn cần             +4,5 tr / tháng
 ```
 
 ```txt
@@ -2110,7 +2255,7 @@ App suy ra được      → điền sẵn, ghi rõ nguồn suy ra
 App không thể biết   → hỏi
 ```
 
-Ví dụ ở form mục tiêu: mức để dành mỗi tháng suy từ tiền linh hoạt hiện có, điền sẵn 18 tr, kèm dòng “Mặc định lấy từ 48,2 tr đang linh hoạt của nhà mình”. User không phải gõ lại con số app vừa hiển thị trên Tổng quan.
+Ví dụ ở form mục tiêu: mức để dành mỗi tháng suy từ tiền linh hoạt hiện có, điền sẵn 18 tr, kèm dòng “Lấy từ 48,2 tr đang linh hoạt”. User không phải gõ lại con số app vừa hiển thị trên Tổng quan.
 
 Hệ quả trực tiếp: **khối hệ quả có số ngay từ trường thứ hai**, thay vì bắt điền hết mới thấy được gì.
 
@@ -2171,7 +2316,7 @@ Lỗi             12px, --alert, ngay dưới trường.
 
 `.label` mono uppercase là phụ kiện thưa của màn hiển thị. Xếp bảy cái liên tiếp trong một form thì nó thành ngôn ngữ form builder.
 
-Helper phải qua bài kiểm tra §2.10. “Phần đã dành riêng cho mục tiêu này” dưới trường tên là “Đã dành riêng được” — không qua. “Mặc định lấy từ 48,2 tr đang linh hoạt” — qua, vì nó nói nguồn của con số đã điền sẵn.
+Helper phải qua bài kiểm tra §2.10. “Phần đã dành riêng cho mục tiêu này” dưới trường tên là “Đã dành riêng được” — không qua, nó chỉ nhắc lại nhãn. “Lấy từ 48,2 tr đang linh hoạt” — qua, vì nó nói nguồn của con số đã điền sẵn, trong 6 từ.
 
 ## 22.5. Ô nhập tiền
 
@@ -2212,15 +2357,19 @@ Trình bày là **một câu văn**, không phải lưới metric có nhãn:
 
 ```txt
 Đúng
-Với 18,0 tr mỗi tháng, nhà mình đủ vào 11/2029. Chậm 5 tháng so với
-mong muốn — để đúng hẹn cần 20,2 tr mỗi tháng.
+18,0 tr mỗi tháng → đủ vào 11/2029, chậm 5 tháng.
+Để đúng hẹn cần 20,2 tr.
 
 Sai
 DỰ KIẾN ĐỦ VÀO    SO VỚI MONG MUỐN    ĐỂ ĐÚNG HẸN CẦN
 11/2029           chậm 5 tháng        20,2 tr/th
+
+Cũng sai — đúng ý nhưng dài gấp đôi
+Với 18,0 tr mỗi tháng, nhà mình dự kiến đủ vào 11/2029. Như vậy là chậm
+5 tháng so với ngày mong muốn — để về đúng hẹn thì cần 20,2 tr mỗi tháng.
 ```
 
-Lưới ba ô có nhãn là ngôn ngữ báo cáo. Câu văn là ngôn ngữ hai người nói với nhau. Số quan trọng vẫn nhấn bằng `font-weight 500` và `tabular-nums` ngay trong câu.
+Lưới ba ô có nhãn là ngôn ngữ báo cáo. Câu văn là ngôn ngữ hai người nói với nhau. Tối đa hai dòng: một dòng hệ quả, một dòng cách sửa. Số quan trọng vẫn nhấn bằng `font-weight 500` và `tabular-nums` ngay trong câu.
 
 Nền khối hệ quả dùng `--accent-soft`, giống vùng mô phỏng — cả hai đều là “nếu làm thế này thì sao”.
 
@@ -2235,12 +2384,11 @@ Nền khối hệ quả dùng `--accent-soft`, giống vùng mô phỏng — c�
 | Hành động phá huỷ | không             | text button trong hàng nút |
 | Ghi Nhật ký       | “tạo mục tiêu X”  | “sửa mục tiêu X: …”        |
 
-**Tóm tắt thay đổi là một câu, không phải bảng before/after.**
+**Tóm tắt thay đổi là một dòng, không phải bảng before/after.**
 
 ```txt
 Đúng
-Bạn đã đổi số tiền cần từ 800,0 tr thành 900,0 tr và tháng mong muốn
-từ 06/2029 thành 09/2029.
+Số tiền 800,0 → 900,0 tr · tháng mong muốn 06/2029 → 09/2029
 
 Sai
 Cần bao nhiêu    800,0 tr → 900,0 tr
@@ -2284,7 +2432,7 @@ Nút bị disable giấu mất lý do — user không biết còn thiếu gì. N
 Dùng động từ đúng với dữ liệu:
   “Đóng mục tiêu”   không phải “Xoá mục tiêu”   — lịch sử vẫn còn trong Nhật ký
   “Gỡ nguồn tiền”   không phải “Xoá tài khoản”
-Luôn nói hệ quả bằng số: “160,0 tr đã dành sẽ quay về phần tiền linh hoạt.”
+Luôn nói hệ quả bằng số, một dòng: “160,0 tr sẽ quay về tiền linh hoạt.”
 Là text button màu --alert trong hàng nút, tách bằng khoảng cách.
 KHÔNG dùng khối có viền và tiêu đề “Danger zone” — đó là ngôn ngữ bảng quản trị.
 Xác nhận bằng dialog nhỏ, không bằng gõ lại tên.
@@ -2310,7 +2458,7 @@ Mỗi section và mỗi form phải định nghĩa đủ 5 trạng thái trướ
 
 ```txt
 Bức tranh hôm nay  → prompt onboarding, KHÔNG hiện 0đ
-Ba mươi ngày tới   → “Chưa có khoản nào sắp tới” + Thêm khoản
+Ba mươi ngày tới   → “Chưa có khoản nào” + Thêm khoản
 Mục tiêu chính     → “Chưa có mục tiêu” + Thêm mục tiêu
 Tiền đang ở đâu    → “Chưa có nguồn tiền” + Thêm nguồn tiền
 Tài sản / Nợ       → ẩn section
@@ -2319,7 +2467,7 @@ Nhật ký            → ẩn section
 
 Không hiển thị `0đ` khi thực chất là chưa nhập dữ liệu. Hai thứ này khác nhau, và nhầm ở đây làm mất niềm tin ngay lần mở đầu tiên.
 
-Empty state dùng nền `--panel` bình thường, không dùng illustration, không dùng emoji. Một dòng nói thiếu gì + một nút.
+Empty state dùng nền `--panel` bình thường, không dùng illustration, không dùng emoji. Đúng một dòng nói thiếu gì + một nút — không thêm câu giải thích vì sao nên thêm. Tên section đã cho ngữ cảnh, nên dòng đó không cần nhắc lại tên section.
 
 **Loading**
 
@@ -2346,8 +2494,8 @@ Scope caveat xuất hiện dưới strip.
 ```txt
 Flexible Money vẫn tính, vẫn hiện — đó là ước lượng tốt nhất đang có.
 Coverage strip chỉ đúng nguồn nào thiếu.
-Caveat nêu đích danh: “Số trên chưa gồm thay đổi của Quỹ mở & ETF và tiền mặt.”
-Kết quả mô phỏng kèm dòng phạm vi: “Tính trên dữ liệu hiện có; 2 nguồn chưa cập nhật.”
+Caveat nêu đích danh: “Chưa gồm Quỹ mở & ETF và tiền mặt.”
+Kết quả mô phỏng kèm dòng phạm vi: “Chưa gồm 2 nguồn cần cập nhật.”
 Không chặn user dùng app cho tới khi cập nhật xong.
 Không thay số bằng dấu “—” chỉ vì một nguồn cũ.
 ```
@@ -2359,7 +2507,7 @@ Kiểm tra khi review: mở Tổng quan ở trạng thái 2/5 nguồn cũ, trả
 ```txt
 Giữ dữ liệu đã có trên màn hình. Báo lỗi ở phạm vi nhỏ nhất có thể.
 Không thay cả section bằng error state nếu chỉ một nguồn lỗi.
-Copy nêu hệ quả: “Chưa lấy được số dư VCB. Con số dưới đây chưa gồm nguồn này.”
+Copy nêu hệ quả, ngắn: “Chưa lấy được số dư VCB · số dưới chưa gồm nguồn này”
 Lỗi lưu form: giữ nguyên dữ liệu user đã nhập, không đóng modal, không reset.
 ```
 
@@ -2439,6 +2587,14 @@ Các hướng đã thử và bị loại. Ghi lại để không quay lại.
 | Bảng before/after trong hộp thoại sửa                                      | Công cụ audit; thuộc trang Nhật ký, không thuộc form                                           |
 | Khối “Danger zone” có viền trong form                                      | Ngôn ngữ bảng quản trị; §22.11                                                                 |
 | Số tiền cỡ hero làm ô nhập                                                 | Số lớn là output, không phải input; §22.5                                                      |
+| Dòng “trên tổng … tiền mặt · giá trị ròng …” dưới hero                     | Lặp §12.4; net worth không thuộc Home (§2.13)                                                   |
+| Dòng tổng “Cuối kỳ dự kiến còn linh hoạt”                                  | Đúng là ô cuối cột “Còn lại”, cách 20px                                                        |
+| Chip “chính” trong section Mục tiêu chính                                  | Tên section đã nói                                                                             |
+| Số “20%” cạnh phân số và progress bar                                      | Cách thứ ba của cùng một tỉ lệ                                                                 |
+| Nhãn “Đang thử — chưa ghi vào bức tranh” ở header modal                     | Nói lần thứ ba sau tiêu đề modal và nền accent-soft                                            |
+| “Tính trên dữ liệu hiện có; …” mở đầu dòng phạm vi                         | Mệnh đề đầu là filler; phần mang nghĩa là số nguồn còn thiếu                                   |
+| “3 mới trong tuần” trong coverage strip                                    | User tự trừ được từ 5 nguồn − 2 cần cập nhật                                                   |
+| Câu hệ quả dạng văn xuôi hai mệnh đề trong form                             | Đúng ý nhưng dài gấp đôi; §2.10 giới hạn 12 từ                                                 |
 
 Nếu một hướng trên được đề xuất lại, cần lý do gắn với một vấn đề user thật, không phải lý do thẩm mỹ.
 

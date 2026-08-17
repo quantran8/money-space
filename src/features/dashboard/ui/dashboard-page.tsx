@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { useCashflowEvents } from '@/features/cashflow/hooks/use-cashflow-events'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
 import { useDashboardPage } from '@/features/dashboard/hooks/use-dashboard-page'
@@ -78,10 +79,12 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      <div className="px-1 pb-1">
-        <h1 className="page-title text-[19px]">{t('nav.dashboard')}</h1>
-        <p className="mt-1 font-mono text-[11px] text-ink3">{formatToday(forecast?.asOfDate)}</p>
-      </div>
+      <CompactPageHeader
+        title={t('nav.dashboard')}
+        actions={
+          <p className="font-mono text-[11px] text-ink3">{formatToday(forecast?.asOfDate)}</p>
+        }
+      />
 
       <FinancialPictureSection
         flexibleMoney={flexibleMoney}

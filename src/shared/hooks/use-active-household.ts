@@ -11,6 +11,13 @@ export type HouseholdSummary = {
   name: string
   currency: string
   updateFrequency: string
+  /**
+   * Profile id of whoever created the household. The backend refuses to delete
+   * this member's row (it is what the invite/remove/delete guard resolves
+   * against), so the client uses it to hide the action rather than offer one
+   * that always fails.
+   */
+  createdBy: string
   createdAt: string
 }
 

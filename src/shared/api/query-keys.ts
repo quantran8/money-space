@@ -14,6 +14,13 @@ export const queryKeys = {
   goalProjection: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'projection'] as const,
   members: (householdId: string) => ['households', householdId, 'members'] as const,
+  /** Pending invite tokens for a household — the inviter's side (QR + link). */
+  invites: (householdId: string) => ['households', householdId, 'invites'] as const,
+  /**
+   * The invitee's pre-accept preview. NOT under `households` — the person
+   * holding the token has no household yet, which is the whole point.
+   */
+  invitePreview: (token: string) => ['invites', token] as const,
   payments: (householdId: string) => ['households', householdId, 'payments'] as const,
 
   // --- v3.1 foresight ------------------------------------------------------

@@ -114,7 +114,7 @@ export function GoalsListSection({
                 </thead>
                 <tbody>
                   {goalViews.map(({ goal, current, target, desiredDate, projectedDate, monthly, paceGapMonths }) => (
-                    <tr key={goal.id} className="group">
+                    <tr key={goal.id} className="group cursor-pointer" onClick={() => onOpen(goal.id)}>
                       <td className="rounded-l-control py-4 pl-3 pr-5 align-top transition-colors group-hover:bg-sunk">
                         <GoalName goal={goal} isPrimary={goal.id === primaryGoalId} onOpen={onOpen} />
                       </td>
@@ -124,7 +124,10 @@ export function GoalsListSection({
                       <td className="py-4 pr-7 align-top transition-colors group-hover:bg-sunk">
                         <GoalPlan desiredDate={desiredDate} projectedDate={projectedDate} monthly={monthly} paceGapMonths={paceGapMonths} />
                       </td>
-                      <td className="rounded-r-control py-3 pr-2 text-right align-top transition-colors group-hover:bg-sunk">
+                      <td
+                        className="rounded-r-control py-3 pr-2 text-right align-top transition-colors group-hover:bg-sunk"
+                        onClick={(event) => event.stopPropagation()}
+                      >
                         <GoalActions goal={goal} onContribute={onContribute} onEdit={onEdit} onDelete={onDelete} />
                       </td>
                     </tr>
@@ -135,16 +138,31 @@ export function GoalsListSection({
 
             <ul className="space-y-2 lg:hidden" aria-label={t('goals.table.ariaLabel')}>
               {goalViews.map(({ goal, current, target, desiredDate, projectedDate, monthly, paceGapMonths }) => (
-                <li key={goal.id} className="rounded-sunk px-3 py-4 transition-colors hover:bg-sunk">
+                <li
+                  key={goal.id}
+                  className="cursor-pointer rounded-sunk px-3 py-4 transition-colors hover:bg-sunk"
+                  onClick={() => onOpen(goal.id)}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <GoalName goal={goal} isPrimary={goal.id === primaryGoalId} onOpen={onOpen} />
                       <div className="mt-3"><GoalProgress goal={goal} current={current} target={target} /></div>
                       <div className="mt-4"><GoalPlan desiredDate={desiredDate} projectedDate={projectedDate} monthly={monthly} paceGapMonths={paceGapMonths} /></div>
                     </div>
-                    <GoalMenu goalId={goal.id} goalName={goal.name} onEdit={onEdit} onDelete={onDelete} />
+                    <div onClick={(event) => event.stopPropagation()}>
+                      <GoalMenu goalId={goal.id} goalName={goal.name} onEdit={onEdit} onDelete={onDelete} />
+                    </div>
                   </div>
-                  <Button type="button" variant="ghost" size="sm" className="mt-3 px-3" onClick={() => onContribute(goal.id)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="mt-3 px-3"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onContribute(goal.id)
+                    }}
+                  >
                     {t('goals.actions.contribute')}
                   </Button>
                 </li>
@@ -161,7 +179,14 @@ function GoalName({ goal, isPrimary, onOpen }: { goal: GoalItem; isPrimary: bool
   const { t } = useTranslation()
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <button type="button" onClick={() => onOpen(goal.id)} className="truncate text-left text-[14px] font-medium hover:text-accent">
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation()
+          onOpen(goal.id)
+        }}
+        className="truncate text-left text-[14px] font-medium hover:text-accent"
+      >
         {goal.name}
       </button>
       {isPrimary ? <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-accent">{t('home.mainGoal.badge')}</span> : null}

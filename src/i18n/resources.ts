@@ -17,6 +17,7 @@ export const resources = {
         delete: 'Xóa',
         deleting: 'Đang xóa...',
         cancel: 'Hủy',
+        done: 'Xong',
         create: 'Tạo',
         actions: 'Tùy chọn',
         quick: 'Nhanh',
@@ -64,18 +65,17 @@ export const resources = {
         upcoming: 'Sắp tới',
         goals: 'Mục tiêu',
         events: 'Sự kiện tài chính',
-        household: 'Nhà mình',
+        household: 'Cài đặt',
         settings: 'Thiết lập',
         group: {
           picture: 'Bức tranh',
           decisions: 'Quyết định',
-          household: 'Nhà mình',
+          household: 'Gia đình',
         },
       },
       networth: {
         header: {
-          eyebrow: 'Tài sản và nợ',
-          title: 'Nhà mình đang có và đang nợ những gì',
+          title: 'Tài sản & Nợ',
         },
       },
       shell: {
@@ -85,6 +85,7 @@ export const resources = {
         manageHousehold: 'Quản lý nhà',
         openMenu: 'Mở menu',
         closeMenu: 'Đóng menu',
+        logout: 'Đăng xuất',
       },
       dashboard: {
         status: {
@@ -115,50 +116,6 @@ export const resources = {
             due: 'Sắp phải trả',
             remaining: 'Dự kiến còn',
           },
-          activity: {
-        header: {
-          eyebrow: 'Nhà mình',
-          title: 'Nhật ký',
-          description: 'Những thay đổi làm bức tranh chung khác đi.',
-        },
-        empty: 'Chưa có thay đổi nào được ghi.',
-        object: {
-          folded: 'một khoản đóng góp chung',
-        },
-        action: {
-          'asset.created': 'Thêm nguồn tiền "{{object}}"',
-          'asset.deleted': 'Gỡ nguồn tiền "{{object}}"',
-          'asset.value_updated': 'Cập nhật số dư "{{object}}"',
-          'asset.liquidity_changed': 'Đổi nhóm thanh khoản của "{{object}}"',
-          'asset.sold': 'Bán "{{object}}"',
-          'cashflow_event.added': 'Thêm khoản sắp tới "{{object}}"',
-          'cashflow_event.completed': 'Đánh dấu đã xong "{{object}}"',
-          'cashflow_event.cancelled': 'Huỷ khoản "{{object}}"',
-          'cashflow_event.postponed': 'Dời khoản "{{object}}"',
-          'protected_reserve.created': 'Lập quỹ an toàn "{{object}}"',
-          'protected_reserve.updated': 'Đổi quỹ an toàn "{{object}}"',
-          'protected_reserve.archived': 'Đóng quỹ an toàn "{{object}}"',
-          'goal.created': 'Đặt mục tiêu "{{object}}"',
-          'goal.target_changed': 'Đổi mục tiêu "{{object}}"',
-          'record.visibility_changed': 'Cập nhật "{{object}}"',
-          'household.created': 'Tạo không gian chung',
-          'household.deleted': 'Xoá không gian chung',
-          'household.member_joined': 'Tham gia nhà mình',
-          'household.member_removed': 'Gỡ một thành viên',
-          'household.invite_created': 'Gửi lời mời',
-          'household.invite_revoked': 'Thu hồi lời mời',
-          'household.steward_transferred': 'Chuyển quyền quản trị không gian',
-          'snapshot.created': 'Chốt một mốc bức tranh',
-          'debt.corrected': 'Chỉnh lại khoản nợ "{{object}}"',
-        },
-        impact: {
-          liquid: 'Tiền dùng ngay {{value}}',
-          net_worth: 'Tổng tài sản {{value}}',
-          flexible_money: 'Tiền linh hoạt {{value}}',
-          upcoming_outgoing: 'Khoản phải trả {{value}}',
-          protected_reserve: 'Quỹ an toàn {{value}}',
-        },
-      },
       assets: {
             eyebrow: 'Tài sản',
             title: 'Tiền đang ở đâu?',
@@ -321,46 +278,44 @@ export const resources = {
       },
       activity: {
         header: {
-          eyebrow: 'Household',
-          title: 'Journal',
-          description: 'The changes that made the shared picture different.',
+          title: 'Nhật ký',
         },
-        empty: 'No changes recorded yet.',
+        empty: 'Chưa có thay đổi nào được ghi.',
         object: {
-          folded: 'a shared contribution',
+          folded: 'một khoản đóng góp chung',
         },
         action: {
-          'asset.created': 'Added the money source "{{object}}"',
-          'asset.deleted': 'Removed the money source "{{object}}"',
-          'asset.value_updated': 'Updated the balance of "{{object}}"',
-          'asset.liquidity_changed': 'Changed the liquidity bucket of "{{object}}"',
-          'asset.sold': 'Sold "{{object}}"',
-          'cashflow_event.added': 'Added the upcoming item "{{object}}"',
-          'cashflow_event.completed': 'Marked "{{object}}" done',
-          'cashflow_event.cancelled': 'Cancelled "{{object}}"',
-          'cashflow_event.postponed': 'Postponed "{{object}}"',
-          'protected_reserve.created': 'Set up the safety fund "{{object}}"',
-          'protected_reserve.updated': 'Changed the safety fund "{{object}}"',
-          'protected_reserve.archived': 'Closed the safety fund "{{object}}"',
-          'goal.created': 'Set the goal "{{object}}"',
-          'goal.target_changed': 'Changed the goal "{{object}}"',
-          'record.visibility_changed': 'Updated "{{object}}"',
-          'household.created': 'Created the shared space',
-          'household.deleted': 'Deleted the shared space',
-          'household.member_joined': 'Joined the household',
-          'household.member_removed': 'Removed a member',
-          'household.invite_created': 'Sent an invitation',
-          'household.invite_revoked': 'Revoked an invitation',
-          'household.steward_transferred': 'Handed over household administration',
-          'snapshot.created': 'Saved a snapshot of the picture',
-          'debt.corrected': 'Corrected the debt "{{object}}"',
+          'asset.created': 'Thêm nguồn tiền "{{object}}"',
+          'asset.deleted': 'Gỡ nguồn tiền "{{object}}"',
+          'asset.value_updated': 'Cập nhật số dư "{{object}}"',
+          'asset.liquidity_changed': 'Đổi nhóm thanh khoản của "{{object}}"',
+          'asset.sold': 'Bán "{{object}}"',
+          'cashflow_event.added': 'Thêm khoản sắp tới "{{object}}"',
+          'cashflow_event.completed': 'Đánh dấu đã xong "{{object}}"',
+          'cashflow_event.cancelled': 'Huỷ khoản "{{object}}"',
+          'cashflow_event.postponed': 'Dời khoản "{{object}}"',
+          'protected_reserve.created': 'Lập quỹ an toàn "{{object}}"',
+          'protected_reserve.updated': 'Đổi quỹ an toàn "{{object}}"',
+          'protected_reserve.archived': 'Đóng quỹ an toàn "{{object}}"',
+          'goal.created': 'Đặt mục tiêu "{{object}}"',
+          'goal.target_changed': 'Đổi mục tiêu "{{object}}"',
+          'record.visibility_changed': 'Cập nhật "{{object}}"',
+          'household.created': 'Tạo không gian chung',
+          'household.deleted': 'Xoá không gian chung',
+          'household.member_joined': 'Tham gia nhà mình',
+          'household.member_removed': 'Gỡ một thành viên',
+          'household.invite_created': 'Gửi lời mời',
+          'household.invite_revoked': 'Thu hồi lời mời',
+          'household.steward_transferred': 'Chuyển quyền quản trị không gian',
+          'snapshot.created': 'Chốt một mốc bức tranh',
+          'debt.corrected': 'Chỉnh lại khoản nợ "{{object}}"',
         },
         impact: {
-          liquid: 'Ready to use {{value}}',
-          net_worth: 'Total assets {{value}}',
-          flexible_money: 'Flexible money {{value}}',
-          upcoming_outgoing: 'Upcoming payments {{value}}',
-          protected_reserve: 'Safety fund {{value}}',
+          liquid: 'Tiền dùng ngay {{value}}',
+          net_worth: 'Tổng tài sản {{value}}',
+          flexible_money: 'Tiền linh hoạt {{value}}',
+          upcoming_outgoing: 'Khoản phải trả {{value}}',
+          protected_reserve: 'Quỹ an toàn {{value}}',
         },
       },
       assets: {
@@ -383,7 +338,6 @@ export const resources = {
           netWorth: 'Giá trị ròng',
           netWorthNote: 'Tài sản trừ dư nợ còn lại.',
           sources: 'Nguồn tiền',
-          sourcesDescription: 'Ai đang giữ và nguồn tiền được cập nhật lần cuối khi nào.',
           search: 'Tìm nguồn tiền…',
           filter: 'Lọc nguồn tiền',
           householdOwner: 'Cả nhà',
@@ -391,6 +345,7 @@ export const resources = {
           columns: {
             source: 'Nguồn',
             owner: 'Người giữ',
+            role: 'Thanh khoản',
             updated: 'Cập nhật',
             balance: 'Số dư',
           },
@@ -604,7 +559,6 @@ export const resources = {
           heading: 'Tài sản · {{type}}',
           updatedAt: 'Cập nhật gần nhất: {{value}}',
           overview: 'Tổng quan',
-          balanceUpdateAction: 'Cập nhật số dư',
           balanceUpdatedAt: 'Số dư cập nhật lúc {{value}}',
           priceUpdatedAt: 'Giá cập nhật lúc {{value}}',
           notFound: {
@@ -736,6 +690,58 @@ export const resources = {
             interest: 'Lãi suất',
             owner: 'Phụ trách',
             payoff: 'Tất toán',
+          },
+        },
+        detail: {
+          back: 'Tài sản & Nợ',
+          notFoundTitle: 'Không tìm thấy khoản nợ',
+          notFoundBody: 'Khoản nợ này có thể đã bị xóa hoặc không tồn tại.',
+          tryEarlyRepayment: 'Thử trả trước',
+          noValue: 'Chưa có',
+          noMonth: 'Chưa chốt',
+          overview: {
+            title: 'Tổng quan',
+            updatedAt: 'Cập nhật gần nhất',
+            outstanding: 'Dư nợ còn lại',
+            progress: 'Tiến độ trả',
+            progressAria: 'Đã trả {{percent}}% khoản vay',
+            repaid: 'Đã trả',
+          },
+          loan: {
+            title: 'Thông tin khoản vay',
+            payoff: 'Tất toán dự kiến',
+            payoffNote: 'Theo lịch trả hiện tại',
+            paid: 'Đã thanh toán',
+            installments: '{{count}} kỳ',
+            latestInstallment: 'Kỳ gần nhất {{date}}',
+            noInstallment: 'Chưa có kỳ nào',
+            remaining: 'Còn lại',
+            remainingMonths: 'Khoảng {{count}} tháng',
+            noTerm: 'Chưa chốt thời hạn',
+            lender: 'Bên cho vay',
+            originalAmount: 'Khoản vay ban đầu',
+            interest: 'Lãi suất',
+            noInterest: 'Không tính lãi',
+            method: 'Cách trả',
+            paymentDay: 'Ngày thanh toán',
+            paymentDayValue: 'Ngày {{day}}',
+            owner: 'Người phụ trách',
+            receivedInto: 'Nhận vào',
+            disbursedAt: 'Ngày giải ngân',
+            unassigned: 'Chưa phân công',
+            notUpdated: 'Chưa cập nhật',
+          },
+          // Chữ thường vì nối vào sau tần suất trả, ví dụ "Hàng tháng · cố định".
+          calc: {
+            fixed: 'cố định',
+            reducing: 'dư nợ giảm dần',
+          },
+          schedule: {
+            title: 'Các kỳ thanh toán',
+            viewJournal: 'Xem nhật ký',
+            paid: 'Đã thanh toán',
+            next: 'Kỳ tiếp theo',
+            empty: 'Chưa có lịch thanh toán cho khoản nợ này.',
           },
         },
         form: {
@@ -959,7 +965,6 @@ export const resources = {
           updateFailed: 'Chưa cập nhật được khoản này.',
           deleteFailed: 'Chưa xoá được khoản này.',
         },
-        eyebrow: 'Nhìn về phía trước',
         title: 'Sắp tới',
         description:
           'Tiền vào và tiền ra theo từng ngày, kèm số dư dự kiến sau mỗi khoản. Theo dữ liệu hiện có.',
@@ -1026,10 +1031,7 @@ export const resources = {
       },
       household: {
         header: {
-          eyebrow: 'Không gian gia đình',
-          title: 'Nhà mình',
-          description:
-            'Thành viên, thiết lập chung, nhóm sự kiện và dữ liệu gia đình — ở cùng một chỗ.',
+          title: 'Cài đặt',
         },
         admin: {
           toggle: 'Quản trị không gian',
@@ -1052,7 +1054,6 @@ export const resources = {
           coverageFresh: 'Tính từ {{count}} nguồn · tất cả mới trong tuần',
           coverageMixed: 'Tính từ {{total}} nguồn · {{stale}} nguồn cần cập nhật',
           membersTitle: 'Thành viên',
-          membersHelp: 'Mỗi nguồn tiền hiển thị rõ thành viên đang phụ trách.',
           updateCadence: 'Nhịp cập nhật',
           cadenceDescription: 'Nhắc cả hai kiểm tra những nguồn làm dự báo bị cũ.',
           otherReminders: 'Các nhắc nhở khác',
@@ -1333,10 +1334,7 @@ export const resources = {
           },
         },
         header: {
-          eyebrow: 'Mục tiêu chung',
-          title: 'Nhà mình đang tiến tới đâu?',
-          description:
-            'So sánh tiến độ của các mục tiêu và cập nhật kế hoạch tiết kiệm của gia đình.',
+          title: 'Mục tiêu',
         },
         demo: {
           overview: 'Tổng quan',
@@ -1459,39 +1457,44 @@ export const resources = {
         },
         detail: {
           back: 'Mục tiêu',
-          eyebrow: 'Mục tiêu tài chính',
-          deadline: 'Mốc dự kiến: {{value}}',
-          addContribution: 'Ghi nhận khoản tích lũy',
+          addContribution: 'Ghi nhận tích lũy',
           notFound: {
             title: 'Không tìm thấy mục tiêu',
             description: 'Mục tiêu này có thể đã bị xóa hoặc không còn tồn tại.',
           },
-          progress: {
-            current: 'Tiến độ hiện tại',
-            description: 'Đã tích lũy {{current}} trên tổng mục tiêu {{target}}.',
+          picture: {
+            saved: 'Đã dành',
+            progressAria: 'Đã dành {{current}} trên mục tiêu {{target}}',
+            desiredDate: 'Ngày mong muốn',
+            atCurrentPace: 'Theo tốc độ hiện tại',
+            requiredMonthly: 'Để đúng hẹn cần',
+            perMonth: '+{{amount}}/tháng',
           },
-          chart: {
-            eyebrow: 'Theo thời gian',
-            title: 'Tiến độ so với kế hoạch',
-            actual: 'Thực tế',
-            plan: 'Kế hoạch',
-          },
-          info: {
-            eyebrow: 'Thông tin mục tiêu',
-            title: 'Thiết lập hiện tại',
-            target: 'Tổng mục tiêu',
-            deadline: 'Deadline',
+          plan: {
+            title: 'Kế hoạch',
+            explain: 'Xem cách tính',
+            hide: 'Ẩn cách tính',
+            monthly: 'Mỗi tháng hiện tại',
+            remaining: 'Còn thiếu',
             priority: 'Mức ưu tiên',
-            method: 'Cách ghi nhận',
-            multipleSources: 'Nhiều nguồn',
+            estimatedMonths: 'Số tháng ước tính',
+            explainUnavailable:
+              'Chưa đủ dữ liệu để tính. Đặt mức góp mỗi tháng và ngày mong muốn để thấy dự kiến.',
           },
           history: {
-            eyebrow: 'Khoản đã đóng góp',
             title: 'Lịch sử tích lũy',
-            description: 'Mỗi lần ghi nhận có thể đến từ một nguồn tiền khác nhau.',
+            count: '{{count}} lần',
             defaultNote: 'Đóng góp vào mục tiêu',
             unknownSource: 'Không rõ nguồn tiền',
+            unknownMember: 'Không rõ',
             empty: 'Chưa có khoản đóng góp nào cho mục tiêu này.',
+            columns: {
+              date: 'Ngày',
+              source: 'Nguồn',
+              recordedBy: 'Người ghi',
+              note: 'Ghi chú',
+              amount: 'Số tiền',
+            },
           },
         },
         form: {
@@ -1536,9 +1539,7 @@ export const resources = {
             'Theo dõi các khoản lớn đã diễn ra và những khoản sắp tới của gia đình trong cùng một dòng thời gian.',
         },
         history: {
-          eyebrow: 'Nguồn sự thật chung',
-          title: 'Lịch sử cập nhật',
-          description: 'Những thay đổi đã làm bức tranh tài chính của nhà mình thay đổi.',
+          title: 'Sự kiện tài chính',
           quickUpdate: 'Cập nhật nhanh',
           deleting: 'Đang xóa…',
           today: 'Hôm nay',
@@ -1775,22 +1776,27 @@ export const resources = {
           active: 'Đang hoạt động',
           holdsSources: '{{count}} nguồn tiền',
           soloPrompt: 'Mời thêm một thành viên để cùng theo dõi tài chính gia đình.',
+          removed: 'Đã gỡ thành viên.',
+          removeFailed: 'Chưa gỡ được thành viên.',
+          // Người tạo nhà không rời được (phải chuyển quyền trước), người còn
+          // lại chỉ tự rời — không gỡ được người kia.
+          leave: 'Rời khỏi nhà',
+          leaveConfirm: {
+            title: 'Rời khỏi nhà này?',
+            description:
+              'Bạn sẽ không còn xem được số liệu của nhà này. Người tạo nhà có thể mời bạn lại bất cứ lúc nào.',
+          },
+          left: 'Bạn đã rời khỏi nhà này.',
+          leaveFailed: 'Chưa rời khỏi được nhà này.',
         },
         quickInvite: {
           eyebrow: 'Mời người mới',
           title: 'Thêm thành viên',
         },
+        // The email form is gone — inviting is a QR code now (`invites.qr`).
+        // Only the shared button label and the two row badges survive.
         invite: {
-          eyebrow: 'Mời người mới',
-          title: 'Gửi lời mời',
-          email: 'Email',
-          emailPlaceholder: 'vidu@email.com',
-          helper:
-            'Người được mời sẽ nhận email xác nhận. Bạn có thể điều chỉnh quyền xem của họ bất cứ lúc nào sau khi họ tham gia.',
-          helperShort: 'Gửi lời mời qua email và chọn vai trò trước khi họ tham gia.',
           action: 'Mời thành viên',
-          submit: 'Gửi lời mời',
-          submitting: 'Đang gửi...',
           justInvited: 'Vừa mời',
           notActiveYet: 'Chưa hoạt động',
         },
@@ -1805,6 +1811,71 @@ export const resources = {
           title: 'Không cần chia sẻ mọi thứ',
           description:
             'Mặc định nên an toàn: chỉ chia sẻ vừa đủ để cả nhà hiểu tình hình, còn chi tiết là lựa chọn của bạn.',
+        },
+      },
+      /**
+       * Household invites — the QR flow (spec §6).
+       *
+       * `qr.*` is the inviter's side, `join.*` the invitee's. Neither mentions
+       * roles or permission levels: whoever joins is an equal member.
+       */
+      invites: {
+        qr: {
+          eyebrow: 'Mời người mới',
+          title: 'Quét mã để tham gia',
+          helper: 'Người kia mở Money Space trên máy của họ và quét mã này để cùng vào nhà mình.',
+          helperNamed: 'Người kia quét mã này để cùng vào “{{name}}”.',
+          scanHint: 'Mỗi mã dùng cho một người. Sau khi họ tham gia, bạn tạo mã mới cho người tiếp theo.',
+          preparing: 'Đang tạo mã mời...',
+          imageAlt: 'Mã QR để tham gia nhà mình',
+          linkLabel: 'Hoặc gửi liên kết này nếu không quét được mã',
+          copy: 'Sao chép',
+          copied: 'Đã sao chép liên kết mời.',
+          copyFailed: 'Chưa sao chép được. Bạn có thể chọn và tự sao chép liên kết.',
+          expiresOn: 'Mã dùng được đến {{date}}.',
+          renew: 'Tạo mã mới',
+          renewed: 'Đã tạo mã mới. Mã cũ không còn dùng được.',
+          error: 'Chưa tạo được mã mời. Thử lại sau ít phút.',
+        },
+        /** Joining from the onboarding screen: paste a link, or scan the code. */
+        joinByCode: {
+          title: 'Nhập mã mời',
+          inputLabel: 'Liên kết hoặc mã mời',
+          inputPlaceholder: 'Dán liên kết mời vào đây',
+          submit: 'Tiếp tục',
+          invalid: 'Chưa nhận ra mã mời trong nội dung này. Kiểm tra lại liên kết nhé.',
+          scan: 'Quét mã QR',
+          scanTitle: 'Đưa mã QR vào khung',
+          scanStop: 'Đóng',
+          scanHint: 'Giữ máy cách mã khoảng một gang tay.',
+          cameraDenied: 'Chưa được dùng camera. Bạn có thể dán liên kết thay cho quét mã.',
+          cameraUnavailable: 'Máy này chưa mở được camera. Bạn có thể dán liên kết thay cho quét mã.',
+        },
+        join: {
+          eyebrow: 'Lời mời tham gia',
+          title: 'Cùng vào “{{name}}”?',
+          invitedBy: '{{name}} mời bạn cùng nhìn bức tranh tài chính của nhà.',
+          invitedByUnknown: 'Bạn được mời cùng nhìn bức tranh tài chính của nhà.',
+          equalMembers: 'Hai người có quyền như nhau: cùng xem và cùng cập nhật số liệu của nhà mình.',
+          accept: 'Tham gia',
+          autoJoining: 'Đang đưa bạn vào nhà mình...',
+          autoJoiningNamed: 'Đang đưa bạn vào “{{name}}”...',
+          autoJoiningHint: 'Chỉ một chút nữa thôi.',
+          joining: 'Đang tham gia...',
+          later: 'Để sau',
+          back: 'Về trang chính',
+          success: 'Bạn đã vào nhà mình.',
+          alreadyMember: 'Bạn đã ở trong nhà này rồi.',
+          failed: 'Chưa tham gia được.',
+          notFound: 'Không tìm thấy lời mời này.',
+          malformed: 'Liên kết thiếu mã mời. Nhờ người mời tạo lại mã QR.',
+          unavailableTitle: 'Lời mời không dùng được',
+          status: {
+            pending: 'Lời mời đang chờ bạn.',
+            accepted: 'Lời mời này đã được dùng rồi.',
+            expired: 'Lời mời đã hết hạn. Nhờ người mời tạo mã mới.',
+            cancelled: 'Lời mời đã được thu lại.',
+          },
         },
       },
       settings: {
@@ -1981,6 +2052,13 @@ export const resources = {
           sold: 'Đã bán',
           closed: 'Đã đóng',
         },
+        debtStatus: {
+          active: 'Đang trả',
+          paid_off: 'Đã xong',
+          paused: 'Tạm dừng',
+          overdue: 'Quá hạn',
+          cancelled: 'Đã hủy',
+        },
         paymentStatus: {
           important: 'Cần chú ý',
           normal: 'Bình thường',
@@ -1995,8 +2073,14 @@ export const resources = {
           expense: 'Chi ra',
           income: 'Tiền vào',
           transfer: 'Chuyển khoản nội bộ',
+          asset_purchase: 'Mua tài sản',
+          asset_sale: 'Bán tài sản',
           asset_update: 'Định giá lại',
+          payment_paid: 'Đã thanh toán',
           goal_contribution: 'Góp vào mục tiêu',
+          debt_update: 'Cập nhật khoản nợ',
+          adjustment: 'Điều chỉnh',
+          other: 'Khác',
         },
         eventCategory: {
           housing: 'Nhà ở',
@@ -2111,109 +2195,30 @@ export const resources = {
         },
       },
       onboarding: {
-        wizard: {
-          stepCounter: 'Bước {{current}} / {{total}}',
-          back: 'Quay lại',
-          next: 'Tiếp tục',
-          skip: 'Để sau',
-          finish: 'Xong',
-          add: 'Thêm',
-          saving: 'Đang lưu...',
-          saved: 'Đã lưu',
-          saveFailed: 'Chưa lưu được.',
-        },
-        steps: {
-          household: {
-            title: 'Nhà mình tên gì?',
-            description: 'Bắt đầu bằng một cái tên và đơn vị tiền nhà mình dùng.',
-          },
-          financial_mode: {
-            title: 'Nhà mình quản lý tiền thế nào?',
-            description: 'Chọn cách phù hợp nhất — có thể đổi lại bất cứ lúc nào.',
-            hint: 'Phần này sẽ mở ở màn hình Nhà mình.',
-          },
-          invite: {
-            title: 'Mời người cùng nhà',
-            description: 'Cùng xem một bức tranh thì dễ bàn hơn.',
-            hint: 'Có thể mời sau ở màn hình Nhà mình.',
-          },
-          money_sources: {
-            title: 'Tiền nhà mình đang ở đâu?',
-            description: 'Thêm 2–3 nguồn chính là đủ để bắt đầu.',
-            hint: 'Mỗi nguồn có thể ghi rõ ai đang giữ.',
-            add: 'Thêm nguồn tiền',
-          },
-          recurring_income: {
-            title: 'Tiền vào đều đặn',
-            description: 'Ví dụ lương hằng tháng.',
-          },
-          obligations: {
-            title: 'Khoản phải trả đều đặn',
-            description: 'Tiền nhà, điện nước, khoản vay...',
-          },
-          main_goal: {
-            title: 'Nhà mình đang hướng tới điều gì?',
-            description: 'Một mục tiêu chính là đủ để bắt đầu.',
-          },
-          first_picture: {
-            title: 'Bức tranh đầu tiên',
-            description: 'Đây là tình hình nhà mình, theo những gì vừa nhập.',
-            intro: 'Theo dữ liệu hiện có:',
-          },
-          first_whatif: {
-            title: 'Thử một quyết định',
-            description: 'Xem trước điều gì thay đổi, trước khi quyết định.',
-          },
-          cashflow: {
-            name: 'Tên khoản',
-            amount: 'Số tiền',
-            date: 'Ngày dự kiến',
-            recurrence: 'Lặp lại',
-            monthly: 'Hằng tháng',
-            once: 'Một lần',
-            incomePlaceholder: 'Ví dụ: lương',
-            obligationPlaceholder: 'Ví dụ: tiền nhà',
-          },
-          goal: {
-            name: 'Tên mục tiêu',
-            namePlaceholder: 'Ví dụ: mua nhà',
-            target: 'Cần bao nhiêu',
-          },
-          firstPicture: {
-            intro: 'Theo dữ liệu hiện có:',
-          },
-          firstWhatIf: {
-            title: 'Thử một khoản chi',
-            description:
-              'Ví dụ: nếu tháng sau chi 30 triệu thì dòng tiền nhà mình thay đổi thế nào?',
-            sidebarHint: 'Sau khi hoàn tất, mở công cụ này từ thanh bên.',
-          },
-        },
         appName: 'Money Space',
-        signedIn: 'Đã đăng nhập',
-        sidebar: {
-          eyebrow: 'Thiết lập lần đầu',
-          title: 'Tạo không gian cho nhà mình.',
-          description:
-            'Household là nơi tài sản, khoản sắp tới, mục tiêu và snapshot tài chính của gia đình được tổng hợp.',
-          stepTitle: 'Tạo household đầu tiên',
-          stepDescription: 'Hoàn tất bước này, bạn sẽ vào thẳng dashboard của nhà mình.',
-          privacyTitle: 'Riêng tư ngay từ đầu',
-          privacyDescription:
-            'Không nhập mật khẩu ngân hàng, OTP, mã PIN hoặc số thẻ đầy đủ vào Money Space.',
+        /**
+         * Onboarding is one question with two answers. The nine-step wizard's
+         * copy (`wizard`, `steps`, `sidebar`, `invite`) went with the screens.
+         * Each screen is a heading and the controls under it — the eyebrows,
+         * descriptions and field hints went with the redesign.
+         */
+        choose: {
+          title: 'Bạn muốn bắt đầu theo cách nào?',
+          back: 'Quay lại',
+          create: {
+            title: 'Tạo nhà mới',
+          },
+          join: {
+            title: 'Tham gia nhà đã có',
+          },
         },
         form: {
-          eyebrow: 'Household đầu tiên',
-          title: 'Nhà mình gọi là gì?',
-          description:
-            'Dùng một tên thân thuộc. Tên này sẽ xuất hiện trên dashboard và lời mời thành viên.',
-          nameLabel: 'Tên household',
+          title: 'Nhà này gọi là gì?',
+          nameLabel: 'Tên nhà',
           namePlaceholder: 'Ví dụ: Nhà Minh & Linh',
-          nameHint: 'Có thể đổi tên sau trong phần Cài đặt.',
-          currencyLabel: 'Tiền tệ mặc định',
-          currencyHint: 'Dùng để hiển thị tổng tài sản và quy đổi các khoản có tiền tệ khác.',
-          footerNote: 'Sau khi tạo, bạn sẽ được chuyển thẳng vào dashboard.',
-          submit: 'Tạo household',
+          options: 'Tuỳ chọn',
+          currencyLabel: 'Tiền tệ',
+          submit: 'Tạo nhà',
           submitting: 'Đang tạo...',
         },
         currencies: {
@@ -2221,21 +2226,9 @@ export const resources = {
           USD: 'USD · US Dollar',
           THB: 'THB · Thai Baht',
         },
-        invite: {
-          title: 'Mời partner vào household',
-          description: 'Có thể bỏ qua và gửi lời mời sau trong phần Thành viên.',
-          optional: 'Tùy chọn',
-          emailLabel: 'Email người được mời',
-          emailPlaceholder: 'partner@example.com',
-        },
-        ownerNote: {
-          title: 'Quyền của bạn',
-          description:
-            'Sau khi tạo, tài khoản hiện tại sẽ là <b>Owner</b> với quyền <b>Admin</b>.',
-        },
         toast: {
-          created: 'Đã tạo household. Chào mừng bạn!',
-          failed: 'Không thể tạo household.',
+          created: 'Đã tạo nhà mình. Chào bạn!',
+          failed: 'Chưa tạo được nhà mình.',
         },
       },
     },
@@ -2258,6 +2251,7 @@ export const resources = {
         delete: 'Delete',
         deleting: 'Deleting...',
         cancel: 'Cancel',
+        done: 'Done',
         create: 'Create',
         actions: 'Options',
         quick: 'Quick',
@@ -2300,7 +2294,7 @@ export const resources = {
         upcoming: 'Upcoming',
         goals: 'Goals',
         events: 'Money events',
-        household: 'Household',
+        household: 'Settings',
         settings: 'Settings',
         group: {
           picture: 'The picture',
@@ -2308,10 +2302,51 @@ export const resources = {
           household: 'Household',
         },
       },
+      activity: {
+        header: {
+          title: 'Journal',
+        },
+        empty: 'No changes recorded yet.',
+        object: {
+          folded: 'a shared contribution',
+        },
+        action: {
+          'asset.created': 'Added the money source "{{object}}"',
+          'asset.deleted': 'Removed the money source "{{object}}"',
+          'asset.value_updated': 'Updated the balance of "{{object}}"',
+          'asset.liquidity_changed': 'Changed the liquidity bucket of "{{object}}"',
+          'asset.sold': 'Sold "{{object}}"',
+          'cashflow_event.added': 'Added the upcoming item "{{object}}"',
+          'cashflow_event.completed': 'Marked "{{object}}" done',
+          'cashflow_event.cancelled': 'Cancelled "{{object}}"',
+          'cashflow_event.postponed': 'Postponed "{{object}}"',
+          'protected_reserve.created': 'Set up the safety fund "{{object}}"',
+          'protected_reserve.updated': 'Changed the safety fund "{{object}}"',
+          'protected_reserve.archived': 'Closed the safety fund "{{object}}"',
+          'goal.created': 'Set the goal "{{object}}"',
+          'goal.target_changed': 'Changed the goal "{{object}}"',
+          'record.visibility_changed': 'Updated "{{object}}"',
+          'household.created': 'Created the shared space',
+          'household.deleted': 'Deleted the shared space',
+          'household.member_joined': 'Joined the household',
+          'household.member_removed': 'Removed a member',
+          'household.invite_created': 'Sent an invitation',
+          'household.invite_revoked': 'Revoked an invitation',
+          'household.steward_transferred': 'Handed over household administration',
+          'snapshot.created': 'Saved a snapshot of the picture',
+          'debt.corrected': 'Corrected the debt "{{object}}"',
+        },
+        impact: {
+          liquid: 'Ready to use {{value}}',
+          net_worth: 'Total assets {{value}}',
+          flexible_money: 'Flexible money {{value}}',
+          upcoming_outgoing: 'Upcoming payments {{value}}',
+          protected_reserve: 'Safety fund {{value}}',
+        },
+      },
       networth: {
         header: {
-          eyebrow: 'Assets and debts',
-          title: 'What your household owns and owes',
+          title: 'Assets & debts',
         },
       },
       shell: {
@@ -2321,6 +2356,7 @@ export const resources = {
         manageHousehold: 'Manage household',
         openMenu: 'Open menu',
         closeMenu: 'Close menu',
+        logout: 'Sign out',
       },
       dashboard: {
         status: {
@@ -2531,7 +2567,6 @@ export const resources = {
           netWorth: 'Net worth',
           netWorthNote: 'Assets minus outstanding debt.',
           sources: 'Money sources',
-          sourcesDescription: 'Who holds each source and when it was last updated.',
           search: 'Search money sources…',
           filter: 'Filter money sources',
           householdOwner: 'Household',
@@ -2539,6 +2574,7 @@ export const resources = {
           columns: {
             source: 'Source',
             owner: 'Holder',
+            role: 'Liquidity',
             updated: 'Updated',
             balance: 'Balance',
           },
@@ -2747,7 +2783,6 @@ export const resources = {
           heading: 'Asset · {{type}}',
           updatedAt: 'Last updated: {{value}}',
           overview: 'Overview',
-          balanceUpdateAction: 'Update balance',
           balanceUpdatedAt: 'Balance updated at {{value}}',
           priceUpdatedAt: 'Price updated at {{value}}',
           notFound: {
@@ -2879,6 +2914,60 @@ export const resources = {
             interest: 'Interest',
             owner: 'Owner',
             payoff: 'Payoff',
+          },
+        },
+        detail: {
+          back: 'Assets & debts',
+          notFoundTitle: 'Debt not found',
+          notFoundBody: 'This debt may have been removed, or it never existed.',
+          tryEarlyRepayment: 'Try paying early',
+          noValue: 'Not set',
+          noMonth: 'Not set',
+          overview: {
+            title: 'Overview',
+            updatedAt: 'Last updated',
+            outstanding: 'Outstanding',
+            progress: 'Repayment progress',
+            progressAria: '{{percent}}% of the loan repaid',
+            repaid: 'Repaid',
+          },
+          loan: {
+            title: 'Loan details',
+            payoff: 'Expected payoff',
+            payoffNote: 'Based on the current schedule',
+            paid: 'Paid',
+            installments_one: '{{count}} instalment',
+            installments_other: '{{count}} instalments',
+            latestInstallment: 'Latest on {{date}}',
+            noInstallment: 'No instalments yet',
+            remaining: 'Remaining',
+            remainingMonths_one: 'About {{count}} month',
+            remainingMonths_other: 'About {{count}} months',
+            noTerm: 'No term set',
+            lender: 'Lender',
+            originalAmount: 'Original loan',
+            interest: 'Interest rate',
+            noInterest: 'No interest',
+            method: 'Repayment',
+            paymentDay: 'Payment day',
+            paymentDayValue: 'Day {{day}}',
+            owner: 'Responsible',
+            receivedInto: 'Received into',
+            disbursedAt: 'Disbursed on',
+            unassigned: 'Unassigned',
+            notUpdated: 'Not set',
+          },
+          // Lower case: this is appended after the frequency, e.g. "Monthly · fixed".
+          calc: {
+            fixed: 'fixed',
+            reducing: 'reducing balance',
+          },
+          schedule: {
+            title: 'Instalments',
+            viewJournal: 'Open the journal',
+            paid: 'Paid',
+            next: 'Next instalment',
+            empty: 'No repayment schedule for this debt yet.',
           },
         },
         form: {
@@ -3100,7 +3189,6 @@ export const resources = {
           updateFailed: 'Could not update that item.',
           deleteFailed: 'Could not remove that item.',
         },
-        eyebrow: 'Looking ahead',
         title: 'Upcoming',
         description:
           'Money in and out day by day, with the projected balance after each one. Based on the data we have.',
@@ -3165,10 +3253,7 @@ export const resources = {
       },
       household: {
         header: {
-          eyebrow: 'Household space',
-          title: 'Our household',
-          description:
-            'Members, general settings, event groups, and household data — all in one place.',
+          title: 'Settings',
         },
         admin: {
           toggle: 'Household administration',
@@ -3191,7 +3276,6 @@ export const resources = {
           coverageFresh: 'From {{count}} sources · all updated this week',
           coverageMixed: 'From {{total}} sources · {{stale}} need an update',
           membersTitle: 'Members',
-          membersHelp: 'Each money source clearly shows the member responsible for it.',
           updateCadence: 'Update cadence',
           cadenceDescription: 'Remind both people to check sources that make the forecast stale.',
           otherReminders: 'Other reminders',
@@ -3453,10 +3537,7 @@ export const resources = {
           },
         },
         header: {
-          eyebrow: 'Shared goals',
-          title: 'Where is your household heading?',
-          description:
-            'Compare goal progress and keep your household savings plans up to date.',
+          title: 'Goals',
         },
         demo: {
           overview: 'Overview',
@@ -3579,39 +3660,44 @@ export const resources = {
         },
         detail: {
           back: 'Goals',
-          eyebrow: 'Financial goal',
-          deadline: 'Target date: {{value}}',
           addContribution: 'Record contribution',
           notFound: {
             title: 'Goal not found',
             description: 'This goal may have been deleted or no longer exists.',
           },
-          progress: {
-            current: 'Current progress',
-            description: 'Saved {{current}} toward a total target of {{target}}.',
+          picture: {
+            saved: 'Set aside',
+            progressAria: 'Set aside {{current}} of a {{target}} goal',
+            desiredDate: 'Target date',
+            atCurrentPace: 'At the current pace',
+            requiredMonthly: 'To reach it on time',
+            perMonth: '+{{amount}}/month',
           },
-          chart: {
-            eyebrow: 'Over time',
-            title: 'Progress against plan',
-            actual: 'Actual',
-            plan: 'Plan',
-          },
-          info: {
-            eyebrow: 'Goal information',
-            title: 'Current setup',
-            target: 'Total target',
-            deadline: 'Deadline',
+          plan: {
+            title: 'Plan',
+            explain: 'How this is calculated',
+            hide: 'Hide the calculation',
+            monthly: 'Current monthly amount',
+            remaining: 'Remaining',
             priority: 'Priority',
-            method: 'Recording method',
-            multipleSources: 'Multiple sources',
+            estimatedMonths: 'Estimated months',
+            explainUnavailable:
+              'Not enough data yet. Set a monthly contribution and a target date to see a projection.',
           },
           history: {
-            eyebrow: 'Contributions',
             title: 'Contribution history',
-            description: 'Each contribution can come from a different money source.',
+            count: '{{count}} times',
             defaultNote: 'Goal contribution',
             unknownSource: 'Unknown source',
+            unknownMember: 'Unknown',
             empty: 'No contributions have been recorded for this goal yet.',
+            columns: {
+              date: 'Date',
+              source: 'Source',
+              recordedBy: 'Recorded by',
+              note: 'Note',
+              amount: 'Amount',
+            },
           },
         },
         form: {
@@ -3656,9 +3742,7 @@ export const resources = {
             'Track notable past events and upcoming household payments in one timeline.',
         },
         history: {
-          eyebrow: 'Shared source of truth',
-          title: 'Update history',
-          description: "Changes that shaped your household's financial picture.",
+          title: 'Money events',
           quickUpdate: 'Quick update',
           deleting: 'Deleting…',
           today: 'Today',
@@ -3892,22 +3976,27 @@ export const resources = {
           active: 'Active',
           holdsSources: '{{count}} money sources',
           soloPrompt: 'Invite another member to manage your household finances together.',
+          removed: 'Member removed.',
+          removeFailed: 'Could not remove that member.',
+          // The creator cannot leave (they transfer the role first); everyone
+          // else can only leave, never remove the other person.
+          leave: 'Leave household',
+          leaveConfirm: {
+            title: 'Leave this household?',
+            description:
+              'You will no longer see this household’s numbers. Whoever created it can invite you back at any time.',
+          },
+          left: 'You have left this household.',
+          leaveFailed: 'Could not leave this household.',
         },
         quickInvite: {
           eyebrow: 'Invite someone new',
           title: 'Add a member',
         },
+        // The email form is gone — inviting is a QR code now (`invites.qr`).
+        // Only the shared button label and the two row badges survive.
         invite: {
-          eyebrow: 'Invite someone',
-          title: 'Send invitation',
-          email: 'Email',
-          emailPlaceholder: 'example@email.com',
-          helper:
-            'The invited person will receive a confirmation email. You can change what they can see anytime after they join.',
-          helperShort: 'Send an email invitation and choose their role before they join.',
           action: 'Invite a member',
-          submit: 'Send invitation',
-          submitting: 'Sending...',
           justInvited: 'Just invited',
           notActiveYet: 'Not active yet',
         },
@@ -3922,6 +4011,71 @@ export const resources = {
           title: 'You don\'t have to share everything',
           description:
             'Safe by default: share just enough for the household to understand the situation — the details stay your choice.',
+        },
+      },
+      /**
+       * Household invites — the QR flow (spec §6).
+       *
+       * `qr.*` is the inviter's side, `join.*` the invitee's. Neither mentions
+       * roles or permission levels: whoever joins is an equal member.
+       */
+      invites: {
+        qr: {
+          eyebrow: 'Invite someone',
+          title: 'Scan to join',
+          helper: 'They open Money Space on their own device and scan this code to join your household.',
+          helperNamed: 'They scan this code to join “{{name}}”.',
+          scanHint: 'Each code is for one person. Once they join, create a new code for the next one.',
+          preparing: 'Creating the invite code...',
+          imageAlt: 'QR code for joining the household',
+          linkLabel: 'Or send this link if the code will not scan',
+          copy: 'Copy',
+          copied: 'Invite link copied.',
+          copyFailed: 'Could not copy. You can select and copy the link yourself.',
+          expiresOn: 'This code works until {{date}}.',
+          renew: 'New code',
+          renewed: 'New code created. The old one no longer works.',
+          error: 'Could not create an invite code. Try again in a moment.',
+        },
+        /** Joining from the onboarding screen: paste a link, or scan the code. */
+        joinByCode: {
+          title: 'Enter your invite',
+          inputLabel: 'Invite link or code',
+          inputPlaceholder: 'Paste the invite link here',
+          submit: 'Continue',
+          invalid: 'No invite code found in that. Have another look at the link.',
+          scan: 'Scan QR code',
+          scanTitle: 'Point the camera at the code',
+          scanStop: 'Close',
+          scanHint: 'Hold the phone about a hand-span from the code.',
+          cameraDenied: 'Camera access was not granted. You can paste the link instead.',
+          cameraUnavailable: 'This device cannot open the camera. You can paste the link instead.',
+        },
+        join: {
+          eyebrow: 'Invitation',
+          title: 'Join “{{name}}”?',
+          invitedBy: '{{name}} invited you to share the household’s financial picture.',
+          invitedByUnknown: 'You have been invited to share a household’s financial picture.',
+          equalMembers: 'Both of you have the same rights: you can each view and update the household’s numbers.',
+          accept: 'Join',
+          autoJoining: 'Taking you into the household...',
+          autoJoiningNamed: 'Taking you into “{{name}}”...',
+          autoJoiningHint: 'Just a moment.',
+          joining: 'Joining...',
+          later: 'Not now',
+          back: 'Back to home',
+          success: 'You are in.',
+          alreadyMember: 'You are already in this household.',
+          failed: 'Could not join.',
+          notFound: 'This invitation was not found.',
+          malformed: 'The link is missing its invite code. Ask them to show the QR again.',
+          unavailableTitle: 'This invitation cannot be used',
+          status: {
+            pending: 'This invitation is waiting for you.',
+            accepted: 'This invitation has already been used.',
+            expired: 'This invitation has expired. Ask them for a new code.',
+            cancelled: 'This invitation was withdrawn.',
+          },
         },
       },
       settings: {
@@ -4097,6 +4251,13 @@ export const resources = {
           sold: 'Sold',
           closed: 'Closed',
         },
+        debtStatus: {
+          active: 'Repaying',
+          paid_off: 'Paid off',
+          paused: 'Paused',
+          overdue: 'Overdue',
+          cancelled: 'Cancelled',
+        },
         paymentStatus: {
           important: 'Needs attention',
           normal: 'Normal',
@@ -4111,8 +4272,14 @@ export const resources = {
           expense: 'Money out',
           income: 'Money in',
           transfer: 'Internal transfer',
+          asset_purchase: 'Asset purchase',
+          asset_sale: 'Asset sale',
           asset_update: 'Revaluation',
+          payment_paid: 'Payment made',
           goal_contribution: 'Goal contribution',
+          debt_update: 'Debt update',
+          adjustment: 'Adjustment',
+          other: 'Other',
         },
         eventCategory: {
           housing: 'Housing',
@@ -4226,129 +4393,39 @@ export const resources = {
         },
       },
       onboarding: {
-        wizard: {
-          stepCounter: 'Step {{current}} of {{total}}',
-          back: 'Back',
-          next: 'Continue',
-          skip: 'Later',
-          finish: 'Done',
-          add: 'Add',
-          saving: 'Saving...',
-          saved: 'Saved',
-          saveFailed: 'Could not save.',
-        },
-        steps: {
-          household: {
-            title: 'What should we call your household?',
-            description: 'Start with a name and the currency you use.',
-          },
-          financial_mode: {
-            title: 'How does your household manage money?',
-            description: 'Pick what fits best — you can change it any time.',
-            hint: 'This opens up on the Household screen.',
-          },
-          invite: {
-            title: 'Invite the people you live with',
-            description: 'Sharing one picture makes it easier to talk about.',
-            hint: 'You can invite people later from the Household screen.',
-          },
-          money_sources: {
-            title: 'Where is your money?',
-            description: 'Two or three main sources is enough to start.',
-            hint: 'Each source can record who holds it.',
-            add: 'Add a money source',
-          },
-          recurring_income: {
-            title: 'Money coming in regularly',
-            description: 'A monthly salary, for example.',
-          },
-          obligations: {
-            title: 'Regular payments',
-            description: 'Rent, utilities, loan repayments...',
-          },
-          main_goal: {
-            title: 'What are you working toward?',
-            description: 'One main goal is enough to start.',
-          },
-          first_picture: {
-            title: 'Your first picture',
-            description: 'Here is where things stand, from what you just entered.',
-            intro: 'Based on the data we have:',
-          },
-          first_whatif: {
-            title: 'Try a decision',
-            description: 'See what changes before you decide.',
-          },
-          cashflow: {
-            name: 'Name',
-            amount: 'Amount',
-            date: 'Expected date',
-            recurrence: 'Repeats',
-            monthly: 'Monthly',
-            once: 'One-off',
-            incomePlaceholder: 'e.g. salary',
-            obligationPlaceholder: 'e.g. rent',
-          },
-          goal: {
-            name: 'Goal name',
-            namePlaceholder: 'e.g. buy a home',
-            target: 'How much is needed',
-          },
-          firstPicture: {
-            intro: 'Based on the data we have:',
-          },
-          firstWhatIf: {
-            title: 'Try a purchase',
-            description:
-              'For example: if we spend 30M next month, how does our cashflow change?',
-            sidebarHint: 'After setup, open this tool from the sidebar.',
-          },
-        },
         appName: 'Money Space',
-        signedIn: 'Signed in',
-        sidebar: {
-          eyebrow: 'First-time setup',
-          title: 'Create a space for your household.',
-          description:
-            'A household is where your family’s assets, upcoming payments, goals and financial snapshots come together.',
-          stepTitle: 'Create your first household',
-          stepDescription: 'Finish this step and you’ll go straight to your household’s dashboard.',
-          privacyTitle: 'Private from the start',
-          privacyDescription:
-            'Never enter bank passwords, OTPs, PINs or full card numbers into Money Space.',
+        /**
+         * Onboarding is one question with two answers. The nine-step wizard's
+         * copy (`wizard`, `steps`, `sidebar`, `invite`) went with the screens.
+         * Each screen is a heading and the controls under it — the eyebrows,
+         * descriptions and field hints went with the redesign.
+         */
+        choose: {
+          title: 'How would you like to start?',
+          back: 'Back',
+          create: {
+            title: 'Create a household',
+          },
+          join: {
+            title: 'Join an existing one',
+          },
         },
         form: {
-          eyebrow: 'First household',
-          title: 'What should we call your household?',
-          description:
-            'Use a name that feels familiar. It appears on the dashboard and on member invites.',
+          title: 'What should we call it?',
           nameLabel: 'Household name',
-          namePlaceholder: 'e.g. Minh & Linh’s home',
-          nameHint: 'You can rename it later in Settings.',
-          currencyLabel: 'Default currency',
-          currencyHint: 'Used to show total assets and convert amounts in other currencies.',
-          footerNote: 'After creating, you’ll be taken straight to the dashboard.',
+          namePlaceholder: 'For example: Minh & Linh',
+          options: 'Options',
+          currencyLabel: 'Currency',
           submit: 'Create household',
           submitting: 'Creating...',
         },
         currencies: {
-          VND: 'VND · Vietnamese Dong',
+          VND: 'VND · Vietnamese dong',
           USD: 'USD · US Dollar',
           THB: 'THB · Thai Baht',
         },
-        invite: {
-          title: 'Invite a partner to the household',
-          description: 'You can skip this and send an invite later from Members.',
-          optional: 'Optional',
-          emailLabel: 'Invitee email',
-          emailPlaceholder: 'partner@example.com',
-        },
-        ownerNote: {
-          title: 'Your access',
-          description: 'After creating, your account will be the <b>Owner</b> with <b>Admin</b> access.',
-        },
         toast: {
-          created: 'Household created. Welcome aboard!',
+          created: 'Household created. Welcome!',
           failed: 'Could not create the household.',
         },
       },

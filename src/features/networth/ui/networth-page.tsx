@@ -93,7 +93,6 @@ export function NetWorthPage() {
   return (
     <div className="space-y-4 pb-3">
       <CompactPageHeader
-        eyebrow={t('networth.header.eyebrow')}
         title={t('networth.header.title')}
         actions={
           <Button

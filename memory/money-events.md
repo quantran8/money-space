@@ -185,6 +185,12 @@ Marking a debt-linked upcoming payment as paid ("Đánh dấu đã trả" on a "
 
 A sale is a single `asset_sale` money event (`direction = neutral`), created from the assets-list "Bán" action (primary) or the events quick-action "Bán tài sản" (secondary, navigates to `/assets`). The frontend posts: `amount` = gross proceeds, `feeAmount` = fee, `fromAssetId` = sold asset, `toAssetId` = receiving wallet, plus `soldQuantity` (market assets) / `soldValue` (manual assets — the resolved amount that left the position; a "bán toàn bộ" sends the current quantity/value). The **backend** credits the wallet net (`amount − feeAmount`), reduces the sold asset's position, and on a full sale sets the asset `status = 'sold'`. The events mutations invalidate the **assets** query so the reduced position/status shows. Full rules: [[asset-sale]].
 
+## Who recorded it (`createdById`)
+
+Every money event carries `createdById` — the auth **profile id** of whoever recorded it. The API sends **no name**: resolve it against the household's members via `MemberItem.profileId` (`useMembers`). A creator who has left the household therefore goes unnamed ("Không rõ") instead of being shown under a stale name. Rendered today as the "Người ghi" column in the goal detail contribution history.
+
+Not trustworthy for **system-generated** events (saving-interest accrual): those have no acting member and the backend falls back to the household creator, because the column is NOT NULL. Don't build a UI that asserts who did something on an event a person did not record. See the backend's [[money-events]] for the write rule.
+
 ## Timeline grouping (`getTimelineGroupKey`)
 
 Upcoming payments → "upcoming"; else by date → today / this-week / this-month / older. Week is Mon–Sun. Uses hardcoded `TODAY = '2026-07-08'` (see [[domain-overview]]).

@@ -56,7 +56,6 @@ export function GoalsPage() {
   return (
     <div className="space-y-4 pb-3">
       <CompactPageHeader
-        eyebrow={t('goals.header.eyebrow')}
         title={t('goals.header.title')}
         actions={
           <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
