@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#env files
+.env
+
+# lockfiles from other package managers (this project uses npm)
+pnpm-lock.yaml
+yarn.lock
+bun.lockb
