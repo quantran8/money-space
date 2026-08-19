@@ -11,6 +11,7 @@ import {
   type AssetType,
   type ValuationMode,
 } from '@/features/assets/model/assets'
+import { formatMoney } from '@/shared/lib/format-money'
 import { parseRawDecimal, parseRawMoney } from '@/shared/lib/number-format'
 import { localizedOptionalText } from '@/shared/lib/validation'
 
@@ -58,6 +59,21 @@ export type AssetForm = {
   countsAsFlexible: boolean
   /** Who is responsible for the money — distinct from who entered the record. */
   holderMemberId: string
+  /**
+   * Two different acts the app must not conflate:
+   *
+   * - `owned` — "we already have this". Gold bought in 2020, only now entered.
+   *   Net worth rises, and rightly so: the household is no richer, just newly
+   *   honest about what it holds. No wallet is touched.
+   * - `purchased` — "we just bought this". Money left `fundingAssetId` and came
+   *   back as the asset, so net worth stays put.
+   *
+   * Defaults to `owned` because the first thing a household does is enter what
+   * it already has.
+   */
+  acquisition: 'owned' | 'purchased'
+  /** The wallet a purchase was paid from. Only read when `acquisition` is `purchased`. */
+  fundingAssetId: string
 }
 
 export const defaultAssetFormValues: AssetForm = {
@@ -82,6 +98,27 @@ export const defaultAssetFormValues: AssetForm = {
   // `cash` is the default type, and cash is spendable.
   countsAsFlexible: true,
   holderMemberId: '',
+  acquisition: 'owned',
+  fundingAssetId: '',
+}
+
+/**
+ * Asset types the household can be BUYING rather than merely declaring.
+ *
+ * Wallets are excluded because paying for a wallet out of a wallet is just a
+ * transfer, and a saving deposit already has its own funding flow. What is left
+ * is what a household actually buys with money it holds.
+ */
+const purchasableTypes: ReadonlySet<AssetType> = new Set<AssetType>([
+  'gold',
+  'crypto',
+  'stock',
+  'real_estate',
+  'foreign_currency',
+])
+
+export function canBePurchased(type: AssetType): boolean {
+  return purchasableTypes.has(type)
 }
 
 /** Parse a raw (separator-free) money string like "20000000" into VND. */
@@ -262,12 +299,26 @@ export function fromAsset(asset: Asset): AssetForm {
     // the type default and any decision the household made.
     countsAsFlexible: asset.liquidity === 'usable_now',
     holderMemberId: asset.holderMemberId ?? '',
+    // Editing an asset is not buying it again. `defaultAssetFormValues` already
+    // says `owned`; spelling it out here keeps that from being read as an
+    // oversight when the spread above is scanned.
+    acquisition: 'owned',
+    fundingAssetId: '',
   }
 }
 
 const moneyLike = /^\d+$/
 
-export function buildAssetSchema(t: (key: string, params?: Record<string, unknown>) => string) {
+export function buildAssetSchema(
+  t: (key: string, params?: Record<string, unknown>) => string,
+  /**
+   * Live wallet balances, so an unaffordable purchase is caught here instead of
+   * after a round-trip. Optional: the server re-checks anyway (the balance can
+   * move between opening the form and saving), so a caller without them still
+   * gets a valid schema.
+   */
+  walletBalances?: ReadonlyMap<string, number>,
+) {
   return z
     .object({
       // Required only where the app cannot derive it — a market-priced holding
@@ -293,6 +344,8 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
       receivingWalletId: z.string().trim(),
       countsAsFlexible: z.boolean(),
       holderMemberId: z.string().trim(),
+      acquisition: z.enum(['owned', 'purchased']),
+      fundingAssetId: z.string().trim(),
     })
     .superRefine((values, ctx) => {
       const mode = valuationModeForType(values.type)
@@ -438,7 +491,53 @@ export function buildAssetSchema(t: (key: string, params?: Record<string, unknow
           }
         }
       }
+
+      // A purchase has to say where the money came from, and that wallet has to
+      // hold it. Unlike an expense — recorded after the fact, sometimes against
+      // a stale balance — a purchase is declared as it happens, so an amount
+      // the wallet cannot cover means either the balance is out of date or the
+      // money came from elsewhere. Both are worth fixing before saving.
+      if (values.acquisition === 'purchased' && canBePurchased(values.type)) {
+        if (!values.fundingAssetId) {
+          ctx.addIssue({
+            path: ['fundingAssetId'],
+            code: 'custom',
+            message: required(t('assets.form.payFrom')),
+          })
+          return
+        }
+        const balance = walletBalances?.get(values.fundingAssetId)
+        const cost = purchaseCostOf(values)
+        if (balance !== undefined && Number.isFinite(cost) && cost > balance) {
+          ctx.addIssue({
+            path: ['fundingAssetId'],
+            code: 'custom',
+            message: t('assets.form.payFromInsufficient', {
+              balance: formatMoney(balance),
+            }),
+          })
+        }
+      }
     })
+}
+
+/**
+ * What the household is paying, for the affordability check.
+ *
+ * A market holding costs `quantity × purchase price` — the cost basis, not
+ * today's market value. Buying 1 lượng at 80tr while the live price says 82tr
+ * takes 80tr out of the wallet; charging the market price would invent a loss
+ * that never happened. Everything else has no separate basis, so its own value
+ * is the price paid. Mirrors `resolvePurchaseCost` on the server.
+ */
+export function purchaseCostOf(values: AssetForm): number {
+  if (valuationModeForType(values.type) === 'market_priced') {
+    const quantity = parseRawDecimal(values.quantity)
+    const unitPrice = parseMoneyToVnd(values.purchasePrice)
+    if (!Number.isFinite(quantity) || !Number.isFinite(unitPrice)) return NaN
+    return quantity * unitPrice
+  }
+  return parseMoneyToVnd(values.value)
 }
 
 export function modeSuffix(mode: ValuationMode): 'Manual' | 'Market' | 'Formula' {

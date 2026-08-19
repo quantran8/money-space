@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -83,6 +83,18 @@ export function NetWorthPage() {
     handleDeleteAsset,
   } = assetsPage
 
+  // "Mua tài sản" on the events page hands over to here. It arrives as a
+  // purchase, so the form opens already set to "vừa mua" rather than making the
+  // user say so again. Deferred a tick and the history state cleared, matching
+  // how the debt shortcut above is handled.
+  useEffect(() => {
+    if (location.state && typeof location.state === 'object' && 'buyAsset' in location.state) {
+      const timer = window.setTimeout(() => openAssetCreate('purchased'), 0)
+      window.history.replaceState({}, document.title)
+      return () => window.clearTimeout(timer)
+    }
+  }, [location.state, openAssetCreate])
+
   const activeDebts = allDebts.filter(
     (debt) => debt.status === 'active' || debt.status === 'overdue',
   )
@@ -97,7 +109,9 @@ export function NetWorthPage() {
         actions={
           <Button
             className="h-10 px-4 text-[13px]"
-            onClick={onAssets ? openAssetCreate : debtsPage.openCreate}
+            // Wrapped, not passed by reference: `openAssetCreate` takes an
+            // optional acquisition and a click event would land in it.
+            onClick={onAssets ? () => openAssetCreate() : debtsPage.openCreate}
           >
             <Plus className="size-4" />
             {onAssets ? t('assets.demo.addSource') : t('debts.demo.add')}

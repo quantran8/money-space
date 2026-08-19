@@ -2,10 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
   createGoal,
+  createGoalAllocation,
   deleteGoal,
+  deleteGoalAllocation,
   listGoals,
   updateGoal,
+  updateGoalAllocation,
   type CreateGoalPayload,
+  type GoalAllocationPayload,
   type GoalPayload,
 } from '@/features/goals/api/goals.repository'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -35,6 +39,9 @@ export function useGoals() {
   const invalidate = () => {
     if (!activeHouseholdId) return
     for (const queryKey of [
+      // `goals(...)` is a PREFIX of `goalAllocations(...)`, so this one call
+      // also refreshes every open allocation panel — which it must, since an
+      // allocation IS an asset-backed goal's progress.
       queryKeys.goals(activeHouseholdId),
       queryKeys.dashboard(activeHouseholdId),
     ]) {
@@ -57,6 +64,33 @@ export function useGoals() {
     }),
     deleteGoal: useMutation({
       mutationFn: (goalId: string) => deleteGoal(activeHouseholdId!, goalId),
+      onSuccess: invalidate,
+    }),
+    /**
+     * Allocation writes invalidate the same keys: an asset-backed goal's
+     * progress IS its allocations, so the goal list and the dashboard's
+     * set-aside split both move when one changes.
+     */
+    createAllocation: useMutation({
+      mutationFn: ({ goalId, payload }: { goalId: string; payload: GoalAllocationPayload }) =>
+        createGoalAllocation(activeHouseholdId!, goalId, payload),
+      onSuccess: invalidate,
+    }),
+    updateAllocation: useMutation({
+      mutationFn: ({
+        goalId,
+        allocationId,
+        payload,
+      }: {
+        goalId: string
+        allocationId: string
+        payload: Partial<Omit<GoalAllocationPayload, 'assetId'>>
+      }) => updateGoalAllocation(activeHouseholdId!, goalId, allocationId, payload),
+      onSuccess: invalidate,
+    }),
+    deleteAllocation: useMutation({
+      mutationFn: ({ goalId, allocationId }: { goalId: string; allocationId: string }) =>
+        deleteGoalAllocation(activeHouseholdId!, goalId, allocationId),
       onSuccess: invalidate,
     }),
   }

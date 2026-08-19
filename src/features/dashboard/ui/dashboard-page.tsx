@@ -65,6 +65,8 @@ export function DashboardPage() {
     flexibleMoney,
     freshness,
     goalTracks,
+    earmarkedForGoals,
+    unassigned,
     goals,
     moneyLocation,
     assets,
@@ -115,7 +117,12 @@ export function DashboardPage() {
       ) : null}
 
       {goalTracks.length > 0 ? (
-        <GoalsSection tracks={goalTracks} goalCount={goals.length} />
+        <GoalsSection
+          tracks={goalTracks}
+          goalCount={goals.length}
+          earmarkedForGoals={earmarkedForGoals}
+          unassigned={unassigned}
+        />
       ) : null}
 
       <MoneySourcesSection map={moneyLocation} />

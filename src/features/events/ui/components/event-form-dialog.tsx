@@ -35,11 +35,11 @@ type EventFormDialogProps = {
   /** Returns to the picker without closing the dialog. */
   onBack: () => void
   onBorrowMoney: () => void
+  onBuyAsset: () => void
   onSellAsset: () => void
   onPlanUpcoming: () => void
   showMoreDetails: boolean
   onToggleMoreDetails: () => void
-  assetOptions: Option[]
   /** Wallets eligible as a money source (cash / bank account only). Used for the
    *  "nguồn tiền" selects; destination selects still use the full assetOptions. */
   sourceAssetOptions: Option[]
@@ -67,11 +67,11 @@ export function EventFormDialog({
   onSelectQuickAction,
   onBack,
   onBorrowMoney,
+  onBuyAsset,
   onSellAsset,
   onPlanUpcoming,
   showMoreDetails,
   onToggleMoreDetails,
-  assetOptions,
   sourceAssetOptions,
   categoryOptions,
   actualControl,
@@ -121,6 +121,7 @@ export function EventFormDialog({
             <QuickActionPicker
               onSelect={onSelectQuickAction}
               onBorrowMoney={onBorrowMoney}
+              onBuyAsset={onBuyAsset}
               onSellAsset={onSellAsset}
               onPlanUpcoming={onPlanUpcoming}
             />
@@ -134,7 +135,6 @@ export function EventFormDialog({
               quickAction={quickAction}
               isRevaluation={isRevaluation}
               isEditing={isEditing}
-              assetOptions={assetOptions}
               sourceAssetOptions={sourceAssetOptions}
               categoryOptions={categoryOptions}
               showMoreDetails={showMoreDetails}

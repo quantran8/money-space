@@ -1,4 +1,4 @@
-import { MoreVertical, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { Eye, MoreVertical, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Panel } from '@/components/ui/panel'
+import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
 import type { GoalItem } from '@/features/goals/model/goals'
@@ -20,7 +21,6 @@ type GoalsListSectionProps = {
   goals: GoalItem[]
   primaryGoalId?: string
   isLoading?: boolean
-  onContribute: (goalId: string) => void
   onCreate: () => void
   onOpen: (goalId: string) => void
   onEdit: (goalId: string) => void
@@ -31,7 +31,6 @@ export function GoalsListSection({
   goals,
   primaryGoalId,
   isLoading = false,
-  onContribute,
   onCreate,
   onOpen,
   onEdit,
@@ -97,18 +96,18 @@ export function GoalsListSection({
           </div>
         ) : null}
         {!isLoading && goals.length > 0 && visibleGoals.length === 0 ? (
-          <p className="py-10 text-center text-[13px] text-ink2">{t('goals.list.emptySearch')}</p>
+          <p className="rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">{t('goals.list.emptySearch')}</p>
         ) : null}
 
         {!isLoading && goalViews.length > 0 ? (
           <>
             <div className="hidden lg:block">
-              <table className="w-full table-fixed text-left text-[13px]" aria-label={t('goals.table.ariaLabel')}>
+              <table className="w-full table-fixed text-left text-[14px]" aria-label={t('goals.table.ariaLabel')}>
                 <thead>
-                  <tr className="label text-ink3">
-                    <th className="w-[23%] pb-3 pl-3 font-medium">{t('goals.table.goal')}</th>
-                    <th className="w-[30%] pb-3 font-medium">{t('goals.table.progress')}</th>
-                    <th className="w-[28%] pb-3 font-medium">{t('goals.table.plan')}</th>
+                  <tr className="label">
+                    <th className="w-[23%] pb-3 pl-3 font-normal">{t('goals.table.goal')}</th>
+                    <th className="w-[30%] pb-3 font-normal">{t('goals.table.progress')}</th>
+                    <th className="w-[28%] pb-3 font-normal">{t('goals.table.plan')}</th>
                     <th className="w-[19%] pb-3 pr-2"><span className="sr-only">{t('common.actions')}</span></th>
                   </tr>
                 </thead>
@@ -128,7 +127,7 @@ export function GoalsListSection({
                         className="rounded-r-control py-3 pr-2 text-right align-top transition-colors group-hover:bg-sunk"
                         onClick={(event) => event.stopPropagation()}
                       >
-                        <GoalActions goal={goal} onContribute={onContribute} onEdit={onEdit} onDelete={onDelete} />
+                        <GoalActions goal={goal} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
                       </td>
                     </tr>
                   ))}
@@ -150,7 +149,7 @@ export function GoalsListSection({
                       <div className="mt-4"><GoalPlan desiredDate={desiredDate} projectedDate={projectedDate} monthly={monthly} paceGapMonths={paceGapMonths} /></div>
                     </div>
                     <div onClick={(event) => event.stopPropagation()}>
-                      <GoalMenu goalId={goal.id} goalName={goal.name} onEdit={onEdit} onDelete={onDelete} />
+                      <GoalMenu goalId={goal.id} goalName={goal.name} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
                     </div>
                   </div>
                   <Button
@@ -160,10 +159,10 @@ export function GoalsListSection({
                     className="mt-3 px-3"
                     onClick={(event) => {
                       event.stopPropagation()
-                      onContribute(goal.id)
+                      onOpen(goal.id)
                     }}
                   >
-                    {t('goals.actions.contribute')}
+                    {t('goals.actions.manageAssets')}
                   </Button>
                 </li>
               ))}
@@ -198,13 +197,14 @@ function GoalProgress({ goal, current, target }: { goal: GoalItem; current: numb
   const progress = Math.min(Math.max(goal.progress, 0), 100)
   return (
     <div>
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="num font-medium">{formatAmount(current)} / {formatAmount(target)}</span>
-        <span className="font-mono text-[10px] text-ink3">{Math.round(progress)}%</span>
-      </div>
-      <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-committed" role="progressbar" aria-label={goal.name} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}>
-        <div className="h-full rounded-full bg-accent" style={{ width: `${progress}%` }} />
-      </div>
+      {/* §12.3: the fraction and the bar already say the ratio — a percentage
+          beside them is a third way of saying one thing. */}
+      <span className="num font-medium">{formatAmount(current)} / {formatAmount(target)}</span>
+      <Progress
+        value={progress}
+        className="mt-2.5 h-1"
+        aria-label={goal.name}
+      />
     </div>
   )
 }
@@ -225,12 +225,15 @@ function GoalPlan({ desiredDate, projectedDate, monthly, paceGapMonths }: { desi
   )
 }
 
-function GoalActions({ goal, onContribute, onEdit, onDelete }: { goal: GoalItem; onContribute: (goalId: string) => void; onEdit: (goalId: string) => void; onDelete: (goalId: string) => void }) {
+function GoalActions({ goal, onOpen, onEdit, onDelete }: { goal: GoalItem; onOpen: (goalId: string) => void; onEdit: (goalId: string) => void; onDelete: (goalId: string) => void }) {
   const { t } = useTranslation()
+  // A goal's one real action: choose which money counts towards it.
   return (
     <div className="inline-flex items-start gap-1">
-      <Button type="button" variant="ghost" size="sm" className="h-10 px-3" onClick={() => onContribute(goal.id)}>{t('goals.actions.contribute')}</Button>
-      <GoalMenu goalId={goal.id} goalName={goal.name} onEdit={onEdit} onDelete={onDelete} />
+      <Button type="button" variant="ghost" size="sm" className="h-10 px-3" onClick={() => onOpen(goal.id)}>
+        {t('goals.actions.manageAssets')}
+      </Button>
+      <GoalMenu goalId={goal.id} goalName={goal.name} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
     </div>
   )
 }
@@ -238,11 +241,13 @@ function GoalActions({ goal, onContribute, onEdit, onDelete }: { goal: GoalItem;
 function GoalMenu({
   goalId,
   goalName,
+  onOpen,
   onEdit,
   onDelete,
 }: {
   goalId: string
   goalName: string
+  onOpen: (goalId: string) => void
   onEdit: (goalId: string) => void
   onDelete: (goalId: string) => void
 }) {
@@ -255,6 +260,13 @@ function GoalMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {/* The row itself navigates, but a bare row-click is not an affordance —
+            and for an asset-backed goal the detail page is where its only real
+            action lives. */}
+        <DropdownMenuItem onSelect={() => onOpen(goalId)}>
+          <Eye className="size-4" />
+          {t('goals.list.viewDetail')}
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => onEdit(goalId)}>
           <Pencil className="size-4" />
           {t('common.edit')}

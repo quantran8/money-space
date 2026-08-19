@@ -11,14 +11,18 @@ export type RecordStatus =
   | 'recorded'
   | 'pending_confirmation'
   | 'postponed'
-export type RecordTab = 'all' | 'source' | 'goal' | 'debt'
+/**
+ * `goal` is gone: money events no longer link to goals at all. A goal is a set
+ * of shares of real assets, so its history is the assets' own — there is no
+ * class of event that would ever land in such a tab.
+ */
+export type RecordTab = 'all' | 'source' | 'debt'
 export type RecordDirection = 'inflow' | 'outflow' | 'neutral'
 export type QuickAction =
   | 'upcoming'
   | 'expense'
   | 'income'
   | 'transfer'
-  | 'goal_contribution'
   | 'payment_paid'
   | 'debt_borrow'
 export type RecordType =
@@ -28,7 +32,6 @@ export type RecordType =
   | 'asset_purchase'
   | 'asset_sale'
   | 'payment_paid'
-  | 'goal_contribution'
   | 'debt_update'
   | 'adjustment'
   | 'other'
@@ -109,7 +112,6 @@ export type ActualRecordForm = {
   fromAssetId: string
   toAssetId: string
   cashflowEventId: string
-  financialGoalId: string
   attentionLevel: AttentionLevel
   isAttentionNeeded: boolean
   note: string
@@ -146,7 +148,6 @@ export const actualDefaults: ActualRecordForm = {
   fromAssetId: '',
   toAssetId: '',
   cashflowEventId: '',
-  financialGoalId: '',
   attentionLevel: 'normal',
   isAttentionNeeded: false,
   note: '',
@@ -303,7 +304,6 @@ export function getTimelineTypeLabel(record: FinancialRecordItem) {
       return 'Transfer'
     case 'payment_paid':
       return 'Payment'
-    case 'goal_contribution':
       return 'Goal'
     case 'debt_update':
       return 'Debt'
@@ -333,7 +333,6 @@ export function getTimelineRowTypeLabel(record: FinancialRecordItem) {
       return 'Money out'
     case 'transfer':
       return 'Transfer'
-    case 'goal_contribution':
       return 'Goal'
     case 'debt_update':
       return 'Debt'
@@ -435,7 +434,6 @@ export function isQuickActualAction(
 export function getQuickActionFromEventType(eventType: RecordType): Exclude<QuickAction, 'upcoming'> {
   if (eventType === 'income') return 'income'
   if (eventType === 'transfer') return 'transfer'
-  if (eventType === 'goal_contribution') return 'goal_contribution'
   if (eventType === 'payment_paid') return 'payment_paid'
   if (eventType === 'debt_update') return 'expense'
   return 'expense'
@@ -456,7 +454,6 @@ const EDITABLE_EVENT_TYPES: ReadonlySet<string> = new Set([
   'expense',
   'income',
   'transfer',
-  'goal_contribution',
   'payment_paid',
   'adjustment',
   'other',
@@ -467,7 +464,7 @@ export function isEditableEventType(type: string): boolean {
 }
 
 export function eventRequiresFromAsset(eventType: RecordType) {
-  return ['expense', 'transfer', 'payment_paid', 'goal_contribution', 'asset_purchase', 'asset_sale'].includes(eventType)
+  return ['expense', 'transfer', 'payment_paid', 'asset_purchase', 'asset_sale'].includes(eventType)
 }
 
 export function eventRequiresToAsset(eventType: RecordType) {
@@ -525,7 +522,6 @@ export function buildActualSchema() {
         'asset_purchase',
         'asset_sale',
         'payment_paid',
-        'goal_contribution',
         'debt_update',
         'adjustment',
         'other',
@@ -535,7 +531,6 @@ export function buildActualSchema() {
       fromAssetId: z.string(),
       toAssetId: z.string(),
       cashflowEventId: z.string(),
-      financialGoalId: z.string(),
       attentionLevel: z.enum(['normal', 'important', 'urgent']),
       isAttentionNeeded: z.boolean(),
       note: z.string(),
@@ -552,7 +547,7 @@ export function buildActualSchema() {
         })
       }
       // Category is required for the types that expose a category picker
-      // (expense / income). Transfer / goal_contribution / payment_paid derive
+      // (expense / income). Transfer / payment_paid derive
       // their classification and don't show the field, so they're exempt.
       if (
         (value.eventType === 'expense' || value.eventType === 'income') &&
@@ -588,13 +583,6 @@ export function buildActualSchema() {
           code: z.ZodIssueCode.custom,
           path: ['toAssetId'],
           message: 'Asset nguồn và đích cần khác nhau.',
-        })
-      }
-      if (value.eventType === 'goal_contribution' && !value.financialGoalId.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['financialGoalId'],
-          message: 'Vui lòng nhập mục tiêu.',
         })
       }
     })

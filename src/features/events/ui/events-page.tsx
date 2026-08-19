@@ -31,7 +31,6 @@ export function EventsPage() {
     deletingEvent,
     isSavingActual,
     isDeleting,
-    assetOptions,
     sourceAssetOptions,
     memberOptions,
     categoryOptions,
@@ -41,6 +40,7 @@ export function EventsPage() {
     actualErrors,
     openCreate,
     openBorrowMoney,
+    openBuyAsset,
     openSellAsset,
     openPlanUpcoming,
     openEditEvent,
@@ -96,11 +96,11 @@ export function EventsPage() {
           setShowMoreDetails(false)
         }}
         onBorrowMoney={openBorrowMoney}
+        onBuyAsset={openBuyAsset}
         onSellAsset={openSellAsset}
         onPlanUpcoming={openPlanUpcoming}
         showMoreDetails={showMoreDetails}
         onToggleMoreDetails={() => setShowMoreDetails((current) => !current)}
-        assetOptions={assetOptions}
         sourceAssetOptions={sourceAssetOptions}
         categoryOptions={categoryOptions}
         actualControl={actualControl}

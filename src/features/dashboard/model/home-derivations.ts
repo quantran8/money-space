@@ -419,6 +419,10 @@ export function buildGoalTracks(goals: GoalItem[], limit = 3): GoalTrack[] {
     const monthly = projection?.plannedMonthlyContribution ?? goal.plannedMonthlyContribution ?? 0
     const monthsLeft = projection?.monthsUntilTargetDate ?? null
 
+    // The milestone answers "at the pace you declared, progress should stand
+    // here today". It needs a declared pace to exist at all — a goal without one
+    // gets no milestone and is therefore never flagged as behind, rather than
+    // being judged against a number nobody set.
     const requiredPercent =
       target > 0 && monthly > 0 && monthsLeft !== null && monthsLeft >= 0
         ? clampPercent(((target - monthly * monthsLeft) / target) * 100)

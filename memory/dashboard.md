@@ -109,7 +109,16 @@ everything — it no longer pulls debts, events or cashflow.
 
 ## Composed cards
 
-- **Snapshot card**: liquid total + split (cash vs bank_account), savings (`not_immediately_usable`), debt, **netWorth = totalAssets − totalDebt**, attention count.
+- **Snapshot card**: liquid total + split (cash vs bank_account), savings (`not_immediately_usable`), debt, **netWorth = totalAssets − totalDebt**, attention count, plus the goal split below.
+- **Goal split**: `earmarkedForGoals` (every goal's resolved progress) and
+  `unassigned`. Rendered by `GoalsSection` as "Đã dành cho mục
+  tiêu" / "Chưa gán mục tiêu", and shown only once something is set aside.
+  **Display only** — `netWorth` is NOT reduced by it and flexible money keeps
+  its own formula: setting money aside does not make a household poorer, and
+  subtracting it from the headline figure is the shape that got
+  `protected_reserves` removed (a goal with a monthly contribution is already
+  pulled down by the forecast, so subtracting again counts it twice). See
+  [[goals]].
 - **Asset trend**: sparkline from historical snapshots (`assetTrend` reads `SnapshotAssetValue`, see [[snapshots-and-networth]]).
 - Debts, long-term goal, members, recent events, and attention ("cần chú ý") sections.
 

@@ -1,10 +1,18 @@
-import type { ReactNode } from 'react'
 import { Controller, useWatch, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
-import { EventMoneyInput } from '@/components/ui/event-field'
+import {
+  Consequence,
+  Field,
+  MoneyField,
+  Num,
+  TextareaField,
+  fieldControlReset,
+  fieldInput,
+  fieldShell,
+} from '@/components/ui/form-22'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -20,6 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Sunk } from '@/components/ui/panel'
+import { GoalAllocationsField } from '@/features/goals/ui/components/goal-allocations-field'
+import type { AllocationAssetOption } from '@/features/goals/ui/components/goal-allocations-section'
 import type { GoalForm } from '@/features/goals/model/goals-form'
 import { formatMoney } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
@@ -28,40 +39,13 @@ type GoalFormDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   form: UseFormReturn<GoalForm>
+  /** Every asset the household holds — any of them can back a goal. */
+  assetOptions: AllocationAssetOption[]
   isEditing: boolean
   isSubmitting: boolean
   onSubmit: () => void
 }
 
-type GoalFieldProps = {
-  label: string
-  htmlFor?: string
-  error?: string
-  children: ReactNode
-  className?: string
-}
-
-function GoalField({ label, htmlFor, error, children, className }: GoalFieldProps) {
-  return (
-    <div className={className}>
-      <label
-        htmlFor={htmlFor}
-        className="mb-[7px] block text-[13px] font-normal leading-[1.4] text-ink2"
-      >
-        {label}
-      </label>
-      {children}
-      {error ? <p className="mt-2 px-1 text-[12px] text-alert">{error}</p> : null}
-    </div>
-  )
-}
-
-const controlClass =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
-const inputClass =
-  'h-full min-w-0 w-full bg-transparent text-[16px] leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3'
-
-/** Raw digit string → number. Empty / malformed reads as 0. */
 function toNumber(raw: string | undefined): number {
   if (!raw) return 0
   const value = Number(raw)
@@ -72,6 +56,7 @@ export function GoalFormDialog({
   open,
   onOpenChange,
   form,
+  assetOptions,
   isEditing,
   isSubmitting,
   onSubmit,
@@ -80,12 +65,24 @@ export function GoalFormDialog({
   const {
     control,
     register,
-    formState: { errors, isValid },
+    formState: { errors },
   } = form
 
   const target = toNumber(useWatch({ control, name: 'target' }))
   const current = toNumber(useWatch({ control, name: 'current' }))
-  const plannedMonthly = toNumber(useWatch({ control, name: 'plannedMonthly' }))
+  const allocations = useWatch({ control, name: 'allocations' })
+  // The pace is not a field on this form. On create it is the sum of what the
+  // wallet rows below say they put in each month; on edit it is the figure the
+  // server already keeps, shown only so the sentence below can be honest — the
+  // amounts themselves are edited on the goal's assets panel, one wallet at a
+  // time, which is where each one can be seen against the account it comes from.
+  const storedMonthly = toNumber(useWatch({ control, name: 'plannedMonthly' }))
+  const plannedMonthly = isEditing
+    ? storedMonthly
+    : (allocations ?? []).reduce(
+        (sum, row) => sum + toNumber(row.monthlyContribution),
+        0,
+      )
 
   const remaining = Math.max(target - current, 0)
   // The §26C rule, mirrored client-side purely as a preview: with no declared
@@ -112,89 +109,76 @@ export function GoalFormDialog({
           noValidate
         >
           <div className="space-y-4">
-            <GoalField
-              label={t('goals.form.target')}
-              htmlFor="goal-target"
-              error={errors.target?.message}
-            >
-              <div className={cn(controlClass, errors.target && 'border-alert')}>
-                <Controller
-                  control={control}
-                  name="target"
-                  render={({ field }) => (
-                    <EventMoneyInput
-                      id="goal-target"
-                      className="h-full text-[16px] font-medium tracking-normal sm:text-[16px]"
-                      placeholder="0"
-                      value={field.value}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                    />
-                  )}
+            <Controller
+              control={control}
+              name="target"
+              render={({ field }) => (
+                <MoneyField
+                  id="goal-target"
+                  label={t('goals.form.target')}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={errors.target?.message}
                 />
-                <span className="shrink-0 font-mono text-[12px] text-ink3">đ</span>
-              </div>
-            </GoalField>
+              )}
+            />
 
-            <GoalField
+            <Field
               label={t('goals.form.name')}
               htmlFor="goal-name"
               error={errors.name?.message}
             >
-              <div className={cn(controlClass, errors.name && 'border-alert')}>
+              <div className={cn(fieldShell, errors.name && 'border-alert')}>
                 <input
                   id="goal-name"
-                  className={inputClass}
+                  className={fieldInput}
                   placeholder={t('goals.form.namePlaceholder')}
                   {...register('name')}
                 />
               </div>
-            </GoalField>
+            </Field>
 
-          {/* Create-only. `UpdateFinancialGoalDto` omits currentAmount, so after
-              creation the stored total may only move through a goal_contribution
-              event — rendering an editable field on edit would promise an edit
-              the API silently drops. */}
+            {/* Which money this goal is made of. Create-only: afterwards each
+                share is edited on its own, where the write can be checked
+                against what the asset still has free. */}
+            {!isEditing ? (
+              <Controller
+                control={control}
+                name="allocations"
+                render={({ field }) => (
+                  <GoalAllocationsField
+                    value={field.value}
+                    onChange={field.onChange}
+                    assetOptions={assetOptions}
+                    error={
+                      typeof errors.allocations?.message === 'string'
+                        ? errors.allocations.message
+                        : undefined
+                    }
+                  />
+                )}
+              />
+            ) : null}
+
+            {/* Shown only while editing, and read-only: progress is derived
+                from the goal's allocations, so there is nothing to type. */}
             {isEditing ? (
-              <GoalField label={t('goals.form.currentLocked')}>
-                <div className={cn(controlClass, 'justify-between')}>
-                  <span className="num text-[16px] font-medium text-ink">
+              <Field label={t('goals.form.currentLocked')}>
+                <Sunk className="flex items-baseline justify-between gap-4 px-4 py-3">
+                  <span className="num text-[17px] font-medium text-ink">
                     {formatMoney(current)}
                   </span>
                   <span className="text-[12px] text-ink3">
                     {t('goals.form.currentLockedHelp')}
                   </span>
-                </div>
-              </GoalField>
-            ) : (
-              <GoalField
-                label={t('goals.form.current')}
-                htmlFor="goal-current"
-                error={errors.current?.message}
-              >
-                <div className={cn(controlClass, errors.current && 'border-alert')}>
-                  <Controller
-                    control={control}
-                    name="current"
-                    render={({ field }) => (
-                      <EventMoneyInput
-                        id="goal-current"
-                        className="h-full text-[16px] font-medium tracking-normal sm:text-[16px]"
-                        placeholder="0"
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                      />
-                    )}
-                  />
-                  <span className="shrink-0 font-mono text-[12px] text-ink3">đ</span>
-                </div>
-              </GoalField>
-            )}
+                </Sunk>
+              </Field>
+            ) : null}
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <GoalField label={t('goals.form.deadline')}>
-                <div className={controlClass}>
+              <Field label={t('goals.form.deadline')}>
+                <div className={fieldShell}>
                   <Controller
                     control={control}
                     name="targetDate"
@@ -202,24 +186,21 @@ export function GoalFormDialog({
                       <DatePicker
                         value={field.value}
                         onChange={field.onChange}
-                        className="h-full rounded-none bg-transparent p-0 text-[16px] font-normal hover:bg-transparent [&_svg]:hidden"
+                        className={cn(fieldControlReset, '[&_svg]:hidden')}
                       />
                     )}
                   />
                 </div>
-              </GoalField>
+              </Field>
 
-              <GoalField
-                label={t('goals.form.priority')}
-                error={errors.priority?.message}
-              >
-                <div className={cn(controlClass, errors.priority && 'border-alert')}>
+              <Field label={t('goals.form.priority')} error={errors.priority?.message}>
+                <div className={cn(fieldShell, errors.priority && 'border-alert')}>
                   <Controller
                     control={control}
                     name="priority"
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="h-full rounded-none bg-transparent p-0 text-[16px] font-normal text-ink data-[placeholder]:text-ink3">
+                        <SelectTrigger className={fieldControlReset}>
                           <SelectValue placeholder={t('goals.form.priorityPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -231,87 +212,31 @@ export function GoalFormDialog({
                     )}
                   />
                 </div>
-              </GoalField>
+              </Field>
             </div>
 
-          {/* The field the projection depends on. Undeclared → the API returns
-              reason: 'no_contribution' and every goal surface can show progress
-              only (§14.3, §2.16). */}
-            <GoalField
-              label={t('goals.form.monthly')}
-              htmlFor="goal-monthly"
-              error={errors.plannedMonthly?.message}
-            >
-              <div className={cn(controlClass, errors.plannedMonthly && 'border-alert')}>
-                <Controller
-                  control={control}
-                  name="plannedMonthly"
-                  render={({ field }) => (
-                    <EventMoneyInput
-                      id="goal-monthly"
-                      className="h-full text-[16px] font-medium tracking-normal sm:text-[16px]"
-                      placeholder="0"
-                      value={field.value}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                    />
-                  )}
-                />
-                <span className="shrink-0 font-mono text-[12px] text-ink3">đ</span>
-              </div>
-            </GoalField>
+            {/* §22.7 — the consequence as a SENTENCE on `--accent-soft`, not a
+                labelled grid (that is the language of a report). Never a
+                recommendation (§16.1): it states what remains, and a duration
+                only when one is honestly derivable. */}
+            {target > 0 ? (
+              <Consequence>
+                {t('goals.form.consequenceRemaining')}{' '}
+                <Num>{formatMoney(remaining)}</Num>.{' '}
+                {monthsToGoal !== null
+                  ? t('goals.form.consequenceMonths', { count: monthsToGoal })
+                  : t('goals.form.monthlyEmpty')}
+              </Consequence>
+            ) : null}
 
-          {/* Consequence preview: what the numbers above mean, shown only once a
-              target exists. Never a recommendation (§16.1) — it states the
-              remaining amount, and a duration only when one is honestly derivable. */}
-            <div>
-              <p className="mb-2 text-[12px] leading-5 text-ink3">
-                {t('goals.form.monthlyHelp')}
-              </p>
-              {target > 0 ? (
-                <div className="rounded-[10px] bg-sunk px-4 py-3.5">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-[13px] text-ink2">
-                      {t('goals.form.remaining')}
-                    </span>
-                    <span className="num text-[14px] font-medium text-ink">
-                      {formatMoney(remaining)}
-                    </span>
-                  </div>
-                  {monthsToGoal !== null ? (
-                    <div className="mt-2 flex items-center justify-between gap-4">
-                      <span className="text-[13px] text-ink2">
-                        {t('goals.form.estimate')}
-                      </span>
-                      <span className="text-right text-[13px] font-medium text-ink">
-                        {t('goals.form.estimateMonths', { count: monthsToGoal })}
-                      </span>
-                    </div>
-                  ) : (
-                    <p className="mt-2 text-[12px] leading-[1.5] text-ink3">
-                      {t('goals.form.monthlyEmpty')}
-                    </p>
-                  )}
-                </div>
-              ) : null}
-            </div>
-
-            <GoalField
+            <TextareaField
+              id="goal-note"
               label={t('goals.form.note')}
-              htmlFor="goal-note"
+              placeholder={t('goals.form.notePlaceholder')}
               error={errors.note?.message}
-            >
-              <textarea
-                id="goal-note"
-                rows={3}
-                className={cn(
-                  'min-h-[92px] w-full resize-y rounded-[10px] border border-transparent bg-sunk px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-accent focus:bg-panel',
-                  errors.note && 'border-alert',
-                )}
-                placeholder={t('goals.form.notePlaceholder')}
-                {...register('note')}
-              />
-            </GoalField>
+              className="[&_textarea]:min-h-[92px]"
+              {...register('note')}
+            />
           </div>
 
           {/* No divider: v4.0 removes the rule above a footer (§2.2, §2.4) —
@@ -328,7 +253,6 @@ export function GoalFormDialog({
             <Button
               type="submit"
               className="h-10 px-5 text-[13px]"
-              disabled={!isValid || isSubmitting}
             >
               {isSubmitting
                 ? t('goals.form.saving')

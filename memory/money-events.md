@@ -32,7 +32,7 @@ Consequences the client must respect:
 
 `MoneyEvent` fields: type, category, amount, currency, eventDate, direction,
 `note` (description), and optional links to fromAsset, toAsset, cashflowEvent,
-debt, financialGoal, snapshot.
+debt, snapshot. (No goal link — see below.)
 
 **`cashflowEventId`** (formerly `upcomingPaymentId`, now renamed client-side to
 match the backend) records which expected movement this event settled. The
@@ -43,7 +43,7 @@ settle a given cashflow event.
 **No `title` field.** The free-text `title` was dropped from money events — the
 **note** is now the descriptive label and `category` is the classification. The
 record form no longer has a "Nội dung" field; the note carries the description
-(the form auto-fills a sensible note for transfer / goal_contribution /
+(the form auto-fills a sensible note for transfer /
 payment_paid when the user leaves it blank, e.g. `Chuyển từ … sang …`, `Đã trả
 …`). Everywhere the UI used to show `title` (events timeline / `record-card` /
 data table, dashboard recents, debt & asset history rows) it now shows the note,
@@ -103,23 +103,45 @@ disbursement instead reuses `debt_update` with explicit `direction: 'inflow'`.
 
 ## Per-event-type link rules (`.superRefine` in `buildActualSchema`)
 
-- **Requires a source asset** (`eventRequiresFromAsset`): expense, transfer, payment_paid, goal_contribution, asset_purchase, asset_sale.
+- **Requires a source asset** (`eventRequiresFromAsset`): expense, transfer, payment_paid, asset_purchase, asset_sale.
 - **Requires a destination asset** (`eventRequiresToAsset`): income, transfer, asset_purchase, asset_sale.
 - **from ≠ to** for transfer / asset_purchase / asset_sale.
-- `goal_contribution` **must link** to a goal.
 - Amount must be **> 0**.
 
-### goal_contribution requires a wallet source (and debits it)
+### `asset_purchase` — two shapes, one row
 
-A `goal_contribution` moves cash from a spendable wallet **into a savings goal**
-([[goals]]). Its `fromAssetId` is **mandatory** and must be a cash / bank_account
-asset — the backend rejects a missing / non-wallet source with a **400** on
-create + update, then **debits** that wallet (money leaves the pocket). The goals
-page sends `fromAssetId = contributionSources[goalId]` from `addContribution`
-(`use-goals-page.ts`) — a wallet chosen **per contribution** in the quick-add
-row's required picker (the goal stores no source wallet). `direction` stays
-`neutral`, so it debits a wallet without counting as thu/chi (like a transfer).
-Fixes the old bug where a contribution raised progress with no money moving.
+An `asset_purchase` says how a holding came to exist, and its `from_asset_id`
+decides which act it records (see [[assets]]):
+
+- **With a funding wallet** — a real purchase: `direction: 'outflow'`,
+  `from_asset_id` = the wallet, `to_asset_id` = the asset. The wallet is debited
+  by the cost basis, so **net worth does not move**.
+- **Without one** — the household is declaring something it already owns:
+  `direction: 'neutral'`, no source, no wallet touched. Net worth rises, which
+  is correct: nothing moved, the app simply learned about it.
+
+The second shape used to be the ONLY shape, which is how buying 100tr of gold
+appeared to create 100tr from nothing.
+
+`asset_purchase` is written by the assets flow (create / add to a position), not
+through the generic record form, and it stays outside `WALLET_ONLY_EVENT_TYPES`
+because its destination is deliberately a non-wallet asset. The events page
+offers **"Mua tài sản"** next to "Bán tài sản"; both hand over to the asset
+feature rather than writing the row inline.
+
+### Goals are not linked to money events at all
+
+A goal is a set of shares of real assets ([[goals]]), so its progress follows
+those assets. There is no `goal_contribution` event type, no goal picker on the
+record form, and no `financialGoalId` on a money event — the enum value and the
+column link were both removed.
+
+Money "leaves a goal" by being spent from the asset behind it: the expense
+debits the wallet as usual and the goal reports less on the next read, because a
+fixed share is capped at its asset's live value. Nothing goal-side is written.
+
+The events timeline's "Mục tiêu" tab went with it — no event could ever land
+there again.
 
 ### Wallet-only link rule (income / expense / transfer)
 
@@ -133,8 +155,7 @@ revalue), never a generic cash move.
   cash / bank_account) alongside the full `assetOptions`. The events forms use
   `sourceAssetOptions` for the "nguồn tiền" source select (`fromAssetId`,
   `expectedFromAssetId`) **and** the income/transfer destination select
-  (`toAssetId`). Only goal_contribution's destination still lists all assets.
-  Default source/destination selection also seeds from `sourceAssetOptions`.
+  (`toAssetId`). Default source/destination selection seeds from the same list.
 - **Backend** enforces the same as a **400** (`assertWalletLinks`, gated by
   `WALLET_ONLY_EVENT_TYPES = {income, expense, transfer}`) on create + update.
 - **`asset_sale` is the exception**: its `fromAssetId` is the _sold_ asset (a
@@ -150,10 +171,10 @@ backend, **not** re-computed on the client. `useEventsSummary` calls
 `{ recordedCount, totalIncome, totalOutcome, netChange }`.
 
 - Only `inflow` / `outflow` events count; `neutral` (asset_update, transfer,
-  goal_contribution, sale bookkeeping) are excluded server-side. A `neutral`
-  event can still move a wallet balance (transfer, and now goal_contribution,
-  debit a wallet) — neutral means it doesn't change the household's total money,
-  so it stays out of thu/chi even when a wallet balance changed.
+  sale bookkeeping) are excluded server-side. A `neutral`
+  event can still move a wallet balance (a transfer moves money between the
+  household's own pockets) — neutral means it doesn't change the household's
+  total money, so it stays out of thu/chi even when a balance changed. A
 - `use-events-page` feeds these into the `summary` object (defaults to 0 while
   loading). `attentionCount` stays client-derived from the timeline list (the
   summary endpoint doesn't cover it). The upcoming-in-30-days figures were
@@ -207,4 +228,4 @@ Flagged if `isAttentionNeeded`, OR level important/urgent, OR status overdue / p
 
 ## Enums
 
-`RecordType` (10 event types: expense, income, transfer, asset_purchase, asset_sale, asset_update, payment_paid, goal_contribution, debt_update, adjustment/other), `RecordDirection = inflow | outflow | neutral`, `RecordStatus = unpaid | paid | overdue | recorded | pending_confirmation | postponed`, `MoneyEventStatus = recorded | pending_confirmation | cancelled`, `frequency = once | weekly | monthly | quarterly | yearly`, `AttentionLevel = normal | important | urgent`.
+`RecordType` (9 event types: expense, income, transfer, asset_purchase, asset_sale, asset_update, payment_paid, debt_update, adjustment/other), `RecordDirection = inflow | outflow | neutral`, `RecordStatus = unpaid | paid | overdue | recorded | pending_confirmation | postponed`, `MoneyEventStatus = recorded | pending_confirmation | cancelled`, `frequency = once | weekly | monthly | quarterly | yearly`, `AttentionLevel = normal | important | urgent`.

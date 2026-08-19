@@ -11,6 +11,17 @@ export type DashboardOverview = {
   savings: number
   debt: number
   netWorth: number
+  /**
+   * How much of the household's money already has a job — the sum of every
+   * goal's progress, capped at total assets.
+   *
+   * A DISPLAY split, not a deduction: `netWorth` above is NOT reduced by it,
+   * and flexible money keeps its own formula. Setting money aside for a goal
+   * does not make a household poorer.
+   */
+  earmarkedForGoals: number
+  /** `netWorth`'s asset side minus the above, floored at 0. */
+  unassigned: number
   attentionCount: number
 }
 
@@ -29,6 +40,8 @@ const EMPTY_OVERVIEW: DashboardOverview = {
   savings: 0,
   debt: 0,
   netWorth: 0,
+  earmarkedForGoals: 0,
+  unassigned: 0,
   attentionCount: 0,
 }
 

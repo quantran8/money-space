@@ -22,8 +22,7 @@ export type MoneyEventItem = {
     // wallet, excluded from income/expense. See asset-valuation.
     | 'asset_update'
     | 'payment_paid'
-    | 'goal_contribution'
-    | 'debt_update'
+      | 'debt_update'
     | 'adjustment'
     | 'other'
   category: string

@@ -64,7 +64,16 @@ export type AssetValuePoint = {
   value: number
 }
 
-export type AssetPayload = Omit<Asset, 'id' | 'liquidity'>
+export type AssetPayload = Omit<Asset, 'id' | 'liquidity'> & {
+  /**
+   * The wallet a purchase was paid from, or null when the household is
+   * declaring something it already owns. Lives on the payload, NOT on `Asset`:
+   * it describes one acquisition, not the asset — buying more of the same
+   * position later has no single value to store. Purchase history is kept in
+   * money events, next to sales.
+   */
+  fundingAssetId?: string | null
+}
 
 export function listAssets(householdId: string) {
   return apiRequest<AssetListResponse>(`/api/households/${householdId}/assets`)

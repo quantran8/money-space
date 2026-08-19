@@ -164,7 +164,6 @@ export function EventsTimelineCard({
             options={[
               { value: 'all', label: t('events.history.allChanges') },
               { value: 'source', label: t('events.history.sourceChanges') },
-              { value: 'goal', label: t('events.history.goalChanges') },
               { value: 'debt', label: t('events.history.debtChanges') },
             ]}
           />

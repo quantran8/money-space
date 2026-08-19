@@ -4,14 +4,11 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-import { useQueryClient } from '@tanstack/react-query'
-
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { computeCurrentValue } from '@/features/assets/model/assets'
-import { useEvents } from '@/features/events/hooks/use-events'
 import { useGoals } from '@/features/goals/hooks/use-goals'
 import { parseAmount, type GoalPriority } from '@/features/goals/model/goals'
-import { queryKeys } from '@/shared/api/query-keys'
+import type { GoalAllocationPayload } from '@/features/goals/api/goals.repository'
 import {
   allocationColors,
   amountToRaw,
@@ -19,52 +16,64 @@ import {
   defaultGoalFormValues,
   formatAmount,
   goalAmount,
+  isWalletAssetType,
   priorityRank,
   suggestedPace,
+  type GoalAllocationDraft,
   type GoalAllocationSlice,
   type GoalForm,
   type GoalStats,
-  type RecentUpdate,
 } from '@/features/goals/model/goals-form'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 
+/**
+ * What one draft row declares per month, as the API wants it.
+ *
+ * Only a wallet acting as the contribution source can carry an amount; anything
+ * else sends `null`, which is also what an emptied field means — "this share
+ * feeds the goal no fixed amount", distinct from 0.
+ */
+function allocationMonthly(row: GoalAllocationDraft): number | null {
+  if (row.role !== 'contribution') return null
+  const raw = row.monthlyContribution.trim()
+  return raw === '' ? null : parseAmount(raw)
+}
+
 export function useGoalsPage() {
   const { t } = useTranslation()
-  const queryClient = useQueryClient()
-  const { goals, activeHouseholdId, createGoal, updateGoal, deleteGoal, isLoading } = useGoals()
+  const {
+    goals,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    createAllocation,
+    updateAllocation,
+    deleteAllocation,
+    isLoading,
+  } = useGoals()
   const { assets, asOf } = useAssets()
-  // Each contribution debits a wallet — its `fromAssetId` must be a spendable
-  // cash / bank_account asset (chosen per contribution, not stored on the goal).
-  // Same filter the asset-sale wallet picker uses (see use-asset-sale).
-  const walletOptions = useMemo(
+  // EVERY asset, not just wallets: an asset-backed goal can be fed by gold,
+  // crypto, stocks or cash alike — they are all part of what the household is
+  // working towards. Used by the allocations panel.
+  const assetOptions = useMemo(
     () =>
-      assets
-        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
-        .map((asset) => {
-          const balance = computeCurrentValue(asset, asOf) ?? 0
-          return {
-            value: asset.id,
-            label: `${asset.name} · ${formatAmount(balance)}`,
-            name: asset.name,
-            balance,
-          }
-        }),
+      assets.map((asset) => {
+        const value = computeCurrentValue(asset, asOf) ?? 0
+        return {
+          value: asset.id,
+          label: `${asset.name} · ${formatAmount(value)}`,
+          name: asset.name,
+          balance: value,
+          // Seeds the share's role — a wallet is what money is contributed
+          // through, everything else is value already held.
+          type: asset.type,
+        }
+      }),
     [asOf, assets],
   )
-  // Contributions are recorded as `goal_contribution` money events; the goal's
-  // currentAmount/progress is derived server-side from their sum (there is no
-  // stored current_amount column). `createEvent` already invalidates events,
-  // dashboard, debts and assets — we additionally refetch goals below so the
-  // progress bar reflects the new contribution.
-  const { createEvent } = useEvents()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [contributions, setContributions] = useState<Record<string, string>>({})
-  // Per-goal chosen source wallet for the quick-add contribution row. Defaults to
-  // the first wallet (below) so the required picker starts pre-filled.
-  const [contributionSources, setContributionSources] = useState<Record<string, string>>({})
-  const [recent, setRecent] = useState<RecentUpdate[]>([])
   const isEditing = editingId !== null
   const isSavingGoal = createGoal.isPending || updateGoal.isPending
 
@@ -96,9 +105,23 @@ export function useGoalsPage() {
     }))
   }, [goals, stats.saved])
 
+  // The household's wallets. A goal needs one behind it — money is only ever put
+  // in through a wallet — and the form says so while it is being filled rather
+  // than leaving the server to refuse the submit.
+  const walletAssetIds = useMemo(
+    () =>
+      new Set(
+        assets.filter((asset) => isWalletAssetType(asset.type)).map((asset) => asset.id),
+      ),
+    [assets],
+  )
+
   // Rebuilt when the mode flips: `current` is create-only (the API rejects it on
   // PATCH), so the schema must stop validating it once we are editing.
-  const goalSchema = useMemo(() => buildGoalSchema(t, isEditing), [t, isEditing])
+  const goalSchema = useMemo(
+    () => buildGoalSchema(t, isEditing, walletAssetIds),
+    [t, isEditing, walletAssetIds],
+  )
 
   const priorityLabels: Record<GoalPriority, string> = {
     high: t('options.priority.high'),
@@ -106,10 +129,15 @@ export function useGoalsPage() {
     low: t('options.priority.low'),
   }
 
+  // §22.10: the primary button stays enabled and reports what is missing on
+  // click, so validation runs on submit and only re-runs per keystroke once the
+  // household has seen an error. `shouldFocusError` moves the cursor there.
   const form = useForm<GoalForm>({
     resolver: zodResolver(goalSchema),
     defaultValues: defaultGoalFormValues,
-    mode: 'onChange',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    shouldFocusError: true,
   })
 
   const { reset, handleSubmit } = form
@@ -123,8 +151,7 @@ export function useGoalsPage() {
       reset({
         name: editingGoal.name,
         target: amountToRaw(goalAmount(editingGoal.targetAmount)),
-        // Shown read-only while editing (the API ignores it on PATCH), but kept
-        // in form state so the summary can report progress without a second read.
+        // Read-only context for the dialog's summary; the API ignores it.
         current: amountToRaw(goalAmount(editingGoal.currentAmount)),
         plannedMonthly: amountToRaw(editingGoal.plannedMonthlyContribution ?? undefined),
         priority: editingGoal.priority,
@@ -135,15 +162,6 @@ export function useGoalsPage() {
       reset(defaultGoalFormValues)
     }
   }, [formOpen, editingGoal, reset])
-
-  // Resolve the first wallet as a display default without synchronously writing
-  // derived state from an effect. Explicit user choices still win per goal.
-  const resolvedContributionSources = useMemo(() => {
-    const fallback = walletOptions[0]?.value
-    return Object.fromEntries(
-      goals.map((goal) => [goal.id, contributionSources[goal.id] ?? fallback ?? '']),
-    )
-  }, [contributionSources, goals, walletOptions])
 
   function openCreate() {
     setEditingId(null)
@@ -162,120 +180,121 @@ export function useGoalsPage() {
 
   async function onSubmit(values: GoalForm) {
     try {
-      const plannedMonthly = parseAmount(values.plannedMonthly.trim())
       const payload = {
         name: values.name.trim(),
         targetAmount: parseAmount(values.target.trim()),
         priority: values.priority,
         targetDate: values.targetDate || undefined,
         note: values.note.trim() || priorityLabels[values.priority],
-        // Sent as 0 rather than omitted when cleared, so clearing the field on an
-        // existing goal actually retracts the declared pace. Omitting it would
-        // make the backend fall back to the stored value (`?? goal.planned…`),
-        // leaving a projection the household no longer stands behind.
-        plannedMonthlyContribution: plannedMonthly,
+        // No pace here. It is declared per wallet, on the allocations, and the
+        // server keeps the goal's figure as their sum — sending one from this
+        // form would put a number on the goal that no wallet underneath it
+        // claims.
       }
 
       if (editingId) {
-        // No currentAmount on update: `UpdateFinancialGoalDto` omits it so the
-        // stored total cannot diverge from the contribution history. Raise
-        // progress with a goal_contribution event (addContribution) instead.
+        // No progress figure on update: it is derived from the goal's
+        // allocations, which are edited through their own routes.
         await updateGoal.mutateAsync({ goalId: editingId, payload })
-        toast.success('Cap nhat muc tieu thanh cong.')
+        toast.success(t('goals.toast.updated'))
       } else {
-        // Create-only: lets onboarding record savings that predate the app.
+        // Create-only: lets a household record savings that predate the app.
+        // An asset-backed goal sends no starting amount — its progress comes
+        // from the assets allocated to it (the schema blocks it too).
+        // The goal and the assets behind it are declared together — a goal with
+        // no assets has no progress and no way to gain any.
         await createGoal.mutateAsync({
           ...payload,
-          currentAmount: parseAmount(values.current.trim()),
+          allocations: values.allocations.map((row) =>
+            // Same invariant the form renders by: a contribution is an amount,
+            // never a percent. Read here rather than trusted, so a row that got
+            // its shape from anywhere else cannot be submitted as one thing while
+            // the screen showed another.
+            row.role !== 'contribution' && row.kind === 'percent'
+              ? {
+                  assetId: row.assetId,
+                  kind: 'percent' as const,
+                  role: row.role,
+                  monthlyContribution: allocationMonthly(row),
+                  percent: Number(row.percent),
+                }
+              : {
+                  assetId: row.assetId,
+                  kind: 'fixed' as const,
+                  role: row.role,
+                  monthlyContribution: allocationMonthly(row),
+                  allocatedAmount: parseAmount(row.amount.trim()),
+                },
+          ),
         })
-        toast.success('Tao muc tieu thanh cong.')
+        toast.success(t('goals.toast.created'))
       }
 
       handleFormOpenChange(false)
     } catch (error) {
-      toast.error(getErrorMessage(error, editingId ? 'Khong the cap nhat muc tieu.' : 'Khong the tao muc tieu.'))
+      toast.error(
+        getErrorMessage(
+          error,
+          editingId ? t('goals.toast.updateFailed') : t('goals.toast.createFailed'),
+        ),
+      )
     }
   }
 
   async function handleDeleteGoal(goalId: string) {
     try {
       await deleteGoal.mutateAsync(goalId)
-      toast.success('Da xoa muc tieu.')
-      setContributions((prev) => {
-        const next = { ...prev }
-        delete next[goalId]
-        return next
-      })
+      toast.success(t('goals.toast.deleted'))
       if (editingId === goalId) handleFormOpenChange(false)
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Khong the xoa muc tieu.'))
+      toast.error(getErrorMessage(error, t('goals.toast.deleteFailed')))
       throw error
     }
   }
 
-  async function addContribution(goalId: string) {
-    const raw = contributions[goalId]?.trim()
-    if (!raw) return false
-    const delta = parseAmount(raw)
-    if (delta <= 0) return false
-
-    const goal = goals.find((item) => item.id === goalId)
-    if (!goal) return false
-
-    // A contribution moves money out of a spendable wallet — the source is chosen
-    // per contribution and is required (the backend rejects a goal_contribution
-    // with no / non-wallet fromAssetId). Block + prompt when none is picked.
-    const fromAssetId = resolvedContributionSources[goalId]
-    if (!fromAssetId) {
-      toast.error(t('goals.actions.sourceRequired'))
-      return false
-    }
+  /**
+   * Add a share of an asset to an asset-backed goal.
+   *
+   * The server refuses a claim that would promise more of an asset than it
+   * holds (counting every goal, not just this one) — that message is surfaced
+   * as-is, because it names exactly how much is still free.
+   */
+  async function addAllocation(goalId: string, payload: GoalAllocationPayload) {
     try {
-      await createEvent.mutateAsync({
-        amount: delta,
-        isoDate: new Date().toISOString().slice(0, 10),
-        type: 'goal_contribution',
-        category: 'saving',
-        // `title` was dropped; the contribution label now lives in the note.
-        note: t('goals.recent.added', { value: formatAmount(delta), name: goal.name }),
-        financialGoalId: goalId,
-        // Debits the chosen wallet; backend requires a cash/bank fromAssetId for
-        // goal_contribution. See memory/goals.md.
-        fromAssetId,
-      })
-      // currentAmount is derived from goal_contribution events — refetch goals
-      // so the progress bar and allocation reflect this contribution. Not
-      // awaited: the contribution is saved once the write above returns, and
-      // awaiting the refetch only delays the toast.
-      if (activeHouseholdId) {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.goals(activeHouseholdId) })
-      }
-      toast.success('Da cap nhat dong gop cho muc tieu.')
+      await createAllocation.mutateAsync({ goalId, payload })
+      toast.success(t('goals.toast.allocationSaved'))
+      return true
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Khong the cap nhat dong gop.'))
+      toast.error(getErrorMessage(error, t('goals.toast.allocationFailed')))
       return false
     }
-    setContributions((prev) => ({ ...prev, [goalId]: '' }))
-    if (goal) {
-      setRecent((prev) =>
-        [
-          {
-            id: `${goalId}-${prev.length}`,
-            text: t('goals.recent.added', { value: formatAmount(delta), name: goal.name }),
-          },
-          ...prev,
-        ].slice(0, 4),
-      )
+  }
+
+  /** Change an existing share — the amount or the percent, not the asset. */
+  async function editAllocation(
+    goalId: string,
+    allocationId: string,
+    payload: Omit<GoalAllocationPayload, 'assetId'>,
+  ) {
+    try {
+      await updateAllocation.mutateAsync({ goalId, allocationId, payload })
+      toast.success(t('goals.toast.allocationSaved'))
+      return true
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('goals.toast.allocationFailed')))
+      return false
     }
-    return true
   }
 
-  function setContribution(goalId: string, value: string) {
-    setContributions((prev) => ({ ...prev, [goalId]: value }))
-  }
-
-  function setContributionSource(goalId: string, assetId: string) {
-    setContributionSources((prev) => ({ ...prev, [goalId]: assetId }))
+  async function removeAllocation(goalId: string, allocationId: string) {
+    try {
+      await deleteAllocation.mutateAsync({ goalId, allocationId })
+      toast.success(t('goals.toast.allocationRemoved'))
+      return true
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('goals.toast.allocationFailed')))
+      return false
+    }
   }
 
   const primaryRemaining = primaryGoal
@@ -293,19 +312,19 @@ export function useGoalsPage() {
     isLoading,
     stats,
     allocation,
-    recent,
     primaryGoal,
     primaryRemaining,
     primaryPace,
     priorityLabels,
     // contributions
-    contributions,
-    setContribution,
-    contributionSources: resolvedContributionSources,
-    setContributionSource,
-    walletOptions,
-    addContribution,
-    isContributing: createEvent.isPending,
+    assetOptions,
+    addAllocation,
+    editAllocation,
+    removeAllocation,
+    isSavingAllocation:
+      createAllocation.isPending ||
+      updateAllocation.isPending ||
+      deleteAllocation.isPending,
     // form
     form,
     isEditing,

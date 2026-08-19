@@ -16,14 +16,19 @@ export type EventPayload = {
   soldValue?: number
   note?: string
   isoDate: string
-  type: 'expense' | 'income' | 'transfer' | 'asset_purchase' | 'asset_sale' | 'asset_update' | 'payment_paid' | 'goal_contribution' | 'debt_update' | 'adjustment' | 'other'
+  type: 'expense' | 'income' | 'transfer' | 'asset_purchase' | 'asset_sale' | 'asset_update' | 'payment_paid' | 'debt_update' | 'adjustment' | 'other'
   category: string
   direction?: 'inflow' | 'outflow' | 'neutral'
   fromAssetId?: string
   toAssetId?: string
   cashflowEventId?: string
   debtId?: string
-  financialGoalId?: string
+  /**
+   * The goal this record touches. Send `null` on an EDIT to clear the link —
+   * `undefined` is dropped by JSON.stringify, which the API reads as "leave it
+   * as it was".
+   */
+  financialGoalId?: string | null
 }
 
 /** Backend-computed thu/chi/net aggregate for a month (source of truth). */

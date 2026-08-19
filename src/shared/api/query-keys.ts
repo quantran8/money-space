@@ -11,6 +11,19 @@ export const queryKeys = {
     ['market-data', 'symbols', assetClass, query] as const,
   debts: (householdId: string) => ['households', householdId, 'debts'] as const,
   goals: (householdId: string) => ['households', householdId, 'goals'] as const,
+  /**
+   * One goal's asset allocations. Nested under `goals` so invalidating the goals
+   * list also refreshes every open allocation panel — an allocation IS the
+   * goal's progress, so the two can never be stale relative to each other.
+   */
+  goalAllocations: (householdId: string, goalId: string) =>
+    ['households', householdId, 'goals', goalId, 'allocations'] as const,
+  /** One goal's month-by-month history, frozen into snapshots. */
+  goalMonthlyProgress: (householdId: string, goalId: string) =>
+    ['households', householdId, 'goals', goalId, 'monthly-progress'] as const,
+  /** Why one goal's figure moved since the last frozen point. */
+  goalProgressChange: (householdId: string, goalId: string) =>
+    ['households', householdId, 'goals', goalId, 'progress-change'] as const,
   goalProjection: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'projection'] as const,
   members: (householdId: string) => ['households', householdId, 'members'] as const,

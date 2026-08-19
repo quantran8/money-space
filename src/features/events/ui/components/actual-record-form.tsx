@@ -44,7 +44,6 @@ type ActualRecordFormProps = {
   quickAction: QuickAction
   isRevaluation?: boolean
   isEditing?: boolean
-  assetOptions: Option[]
   sourceAssetOptions: Option[]
   categoryOptions: Option[]
   showMoreDetails: boolean
@@ -62,7 +61,6 @@ export function ActualRecordForm({
   quickAction,
   isRevaluation = false,
   isEditing = false,
-  assetOptions,
   sourceAssetOptions,
   categoryOptions,
   showMoreDetails,
@@ -76,14 +74,12 @@ export function ActualRecordForm({
   const showsCategory = !isRevaluation && (quickAction === 'expense' || quickAction === 'income')
   const showsFrom =
     !isRevaluation &&
-    (isExpense || quickAction === 'transfer' || quickAction === 'goal_contribution')
+    (isExpense || quickAction === 'transfer')
   const showsTo = !isRevaluation && (isIncome || quickAction === 'transfer')
 
   const fromLabel =
     quickAction === 'transfer'
       ? t('events.form.transferFrom')
-      : quickAction === 'goal_contribution'
-        ? t('events.form.contributeFrom')
         : t('events.form.payFrom')
 
   return (
@@ -200,18 +196,6 @@ export function ActualRecordForm({
         </Field>
       ) : null}
 
-      {!isRevaluation && quickAction === 'goal_contribution' ? (
-        <Field label={t('events.form.goal')} error={errors.financialGoalId?.message}>
-          <div className={cn(fieldShell, errors.financialGoalId && 'border-alert')}>
-            <input
-              className="h-full w-full min-w-0 bg-transparent text-[16px] leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
-              placeholder={t('events.form.selectPlaceholder')}
-              {...register('financialGoalId')}
-            />
-          </div>
-        </Field>
-      ) : null}
-
       {/* §22.7 — the consequence, in one sentence, per keystroke. */}
       {!isRevaluation ? (
         <EventEffect control={control} quickAction={quickAction} isEditing={isEditing} />
@@ -250,30 +234,6 @@ export function ActualRecordForm({
               </div>
             </Field>
 
-            {quickAction === 'goal_contribution' ? (
-              <Field label={t('events.form.receiveInto')}>
-                <div className={fieldShell}>
-                  <Controller
-                    control={control}
-                    name="toAssetId"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className={fieldControlReset}>
-                          <SelectValue placeholder={t('events.form.optional')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {assetOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-              </Field>
-            ) : null}
 
             {!isRevaluation ? (
               <div className="flex items-center justify-between gap-4 rounded-[10px] bg-sunk px-4 py-3">
