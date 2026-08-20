@@ -17,6 +17,13 @@ Still capped at what the wallet holds afterwards, so an unaffordable spend does
 reduce the goals. Mirrors the backend's `allocationValue` — **the two must change
 together.**
 
+**The backend violated this once**, in `resolveGoalCommittedAmount`: its
+set-aside half dropped the basis while its pace half kept it, so a `percent: 90`
+claim on a 28,8tr wallet with a 2tr bill measured 24,12tr against 25,92tr. The
+1,8tr gap reached the dashboard as flexible money that did not exist. The lesson:
+whenever a function takes a percent basis, EVERY value call inside it must
+forward it — dropping it is silent and still returns a plausible number.
+
 ## `freeAmount` is not "chưa dành cho mục tiêu nào"
 
 `assetGoalUsage` returns two pairs and they are not interchangeable:
@@ -163,6 +170,36 @@ nothing can disagree with it.
     the fallback as a decision.
 - Exposed at `GET /financial-goals/:goalId/monthly-progress`; rendered by
   `GoalMonthlyProgressSection` on the goal detail page.
+
+### Scheduled outflows are shown BESIDE the figures, in ONE section
+
+Every goal figure — total held, pace, each allocation card — is measured against
+the wallets **as they stand**, scheduled outflows still in them. Money that has
+not moved has not been spent.
+
+What those outflows will cost is fetched once
+(`useScheduledOutflowImpact` → `GET .../scheduled-outflow-impact`) and rendered by
+`GoalScheduledOutflowsSection`, placed directly under the hero it qualifies. The
+server returns `null` when nothing is scheduled against this goal's wallets, and
+the section renders nothing.
+
+**Why one section rather than a note per figure.** One outflow moves several
+numbers at once. Attaching a projected figure to each restated the same fact
+three times, explained it none, and left the cause — a named bill, on a date —
+nowhere to live. The section names the events and carries the whole story.
+
+**Only the parts that actually move are drawn.** With tcb at 28,8tr, a
+`percent: 90` claim and a 2tr bill: the pace line shows (2,88tr → 0,88tr), the
+total line does not (205,02tr both), because the percent basis is pinned to the
+untouched wallet.
+
+**The chart and finish date are deliberately left on the DECLARED pace.** A
+squeezed month is this month only; projecting the dip across years would show a
+pessimistic finish date nobody chose. `paceNote` says so in the UI.
+
+Contrast the forecast hero, which DOES lower its figure: "what can I spend"
+cannot count money already earmarked for a bill, whereas "what have we put in" is
+a different question about a different moment.
 
 ### Where the pace comes from: the wallets declare it
 

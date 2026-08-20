@@ -134,6 +134,8 @@ export function GoalAllocationsSection({
         </button>
       ) : null}
 
+      {/* The ACTUAL total. What scheduled outflows will leave it at is said once,
+          in `GoalScheduledOutflowsSection`, not restated here. */}
       {allocations.length > 0 ? (
         <TotalRow label={t('goals.allocations.totalLabel')} value={formatAmount(total)} />
       ) : null}

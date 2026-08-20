@@ -4,6 +4,12 @@ Expected future movements of money — the **sole input to the forecast**.
 Replaces upcoming payments. Related: [[money-events]], [[debts]], [[dashboard]],
 [[goals]].
 
+A live outgoing event also lowers the wallet it settles from **before it is
+completed**, for every screen that reports goal money: the forecast hero, the
+warning shown before an outflow is saved, and the running month's contribution.
+A scheduled outflow is a decision already made, so the money behind it is not
+counted as available to a goal. See [[goals]].
+
 ## Overview
 
 A cashflow event is one expected movement of money in **either direction**, on a

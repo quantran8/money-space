@@ -381,6 +381,41 @@ export function getSpendImpact(
   )
 }
 
+/**
+ * What money already scheduled to leave this goal's wallets will cost it.
+ *
+ * `null` when nothing is scheduled that touches them — the section then does not
+ * render at all. Deliberately ONE call rather than a projected field on every
+ * metric: the same fact spread across four numbers fragments the story and
+ * leaves the cause (a named bill, on a date) nowhere to live.
+ */
+export type ScheduledOutflowImpact = {
+  goalId: string
+  /** Last day covered — the end of the current month. */
+  throughDate: string
+  events: {
+    id: string
+    name: string
+    amount: number
+    expectedDate: string
+    assetId: string
+    assetName: string
+  }[]
+  outflowAmount: number
+  currentAmount: number
+  projectedAmount: number
+  /** The declared pace, left alone — see `currentPace` / `projectedPace`. */
+  plannedMonthlyContribution: number | null
+  currentPace: number
+  projectedPace: number
+}
+
+export function getScheduledOutflowImpact(householdId: string, goalId: string) {
+  return apiRequest<ScheduledOutflowImpact | null>(
+    `/api/households/${householdId}/financial-goals/${goalId}/scheduled-outflow-impact`,
+  )
+}
+
 export function getGoalMonthlyProgress(householdId: string, goalId: string) {
   return apiRequest<{
     goalId: string

@@ -1036,6 +1036,15 @@ export const resources = {
           namePlaceholderOutgoing: 'Ví dụ: tiền nhà',
           namePlaceholderIncoming: 'Ví dụ: lương',
           expectedDate: 'Ngày dự kiến',
+          walletOut: 'Trừ vào ví nào?',
+          walletIn: 'Vào ví nào?',
+          walletHintOut:
+            'Khoản này sẽ trừ vào ví đã chọn khi bạn xác nhận đã chi.',
+          walletHintIn: 'Có thể để trống nếu chưa biết tiền sẽ vào ví nào.',
+          walletNoneOut:
+            'Chưa có ví nào để trừ. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng ở mục Tài sản trước.',
+          walletNoneIn:
+            'Chưa có ví nào để nhận. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng ở mục Tài sản trước.',
           moreDetails: 'Thêm chi tiết',
           recurrence: 'Lặp lại',
           recurrenceOption: {
@@ -1537,6 +1546,16 @@ export const resources = {
           allocationSaved: 'Đã cập nhật phần tài sản góp vào.',
           allocationRemoved: 'Đã bỏ tài sản khỏi mục tiêu.',
           allocationFailed: 'Chưa cập nhật được phần tài sản góp vào.',
+        },
+        scheduledOutflows: {
+          title: 'Sắp tới có {{amount}} rời ví',
+          description:
+            'Những khoản này chưa chi, nên các con số phía trên vẫn là hiện tại. Đây là mức sau khi chúng diễn ra.',
+          totalLabel: 'Đang có cho mục tiêu',
+          paceLabel: 'Góp trong tháng này',
+          fromWallet: 'từ ví {{wallet}}',
+          paceNote:
+            'Chỉ tính trong tháng này. Ngày đạt mục tiêu vẫn tính theo mức góp nhà mình đã đặt.',
         },
         monthly: {
           title: 'Nhịp góp',
@@ -3519,6 +3538,15 @@ export const resources = {
           namePlaceholderOutgoing: 'e.g. rent',
           namePlaceholderIncoming: 'e.g. salary',
           expectedDate: 'Expected date',
+          walletOut: 'Which wallet does it come out of?',
+          walletIn: 'Which wallet does it go into?',
+          walletHintOut:
+            'It comes out of this wallet when you confirm it has happened.',
+          walletHintIn: 'Leave empty if you do not know where it will land yet.',
+          walletNoneOut:
+            'No wallet to take this from yet. Add cash or a bank account under Assets first.',
+          walletNoneIn:
+            'No wallet to receive this yet. Add cash or a bank account under Assets first.',
           moreDetails: 'Add details',
           recurrence: 'Repeats',
           recurrenceOption: {
@@ -3999,6 +4027,15 @@ export const resources = {
           allocationSaved: 'Asset share updated.',
           allocationRemoved: 'Asset removed from this goal.',
           allocationFailed: 'Could not update the asset share.',
+        },
+        scheduledOutflows: {
+          title: '{{amount}} is scheduled to leave',
+          description:
+            'None of it has been spent yet, so the figures above are what is true now. This is where they land afterwards.',
+          totalLabel: 'Held for this goal',
+          paceLabel: 'Going in this month',
+          fromWallet: 'from {{wallet}}',
+          paceNote: 'This month only. The finish date still uses the pace you set.',
         },
         monthly: {
           title: 'Contribution rhythm',

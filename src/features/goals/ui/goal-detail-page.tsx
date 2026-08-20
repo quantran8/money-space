@@ -12,6 +12,8 @@ import { goalAmount } from '@/features/goals/model/goals-form'
 import { GoalAllocationDialog } from '@/features/goals/ui/components/goal-allocation-dialog'
 import { GoalAllocationsSection } from '@/features/goals/ui/components/goal-allocations-section'
 import { GoalMonthlyProgressSection } from '@/features/goals/ui/components/goal-monthly-progress-section'
+import { GoalScheduledOutflowsSection } from '@/features/goals/ui/components/goal-scheduled-outflows-section'
+import { useScheduledOutflowImpact } from '@/features/goals/hooks/use-scheduled-outflow-impact'
 import { GoalProgressChange } from '@/features/goals/ui/components/goal-progress-change'
 import { GoalRoadSection } from '@/features/goals/ui/components/goal-road-section'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
@@ -54,6 +56,9 @@ export function GoalDetailPage() {
 
   const goal = goals.find((item) => item.id === goalId)
   const { allocations } = useGoalAllocations(goalId)
+  // What money already scheduled to leave this goal's wallets will cost it.
+  // Null unless something is actually scheduled against them.
+  const { impact: scheduledOutflowImpact } = useScheduledOutflowImpact(goalId)
   // `?allocate=1` — set by the create flow, which lands here precisely because
   // an asset-backed goal has nothing behind it until assets are chosen. Opening
   // the dialog straight away makes "create" and "pick the assets" read as one
@@ -214,6 +219,12 @@ export function GoalDetailPage() {
           <GoalProgressChange goalId={goal.id} />
         </div>
       </Panel>
+
+      {/* Directly under the figures it qualifies: the household reads "đang có
+          303,6tr", and if a bill is going to move that, the explanation is the
+          very next thing rather than something to discover further down. Renders
+          nothing when no outflow touches this goal's wallets. */}
+      <GoalScheduledOutflowsSection impact={scheduledOutflowImpact} />
 
       {/* Is this pace going to get us there in time? — as a chart and a
           sentence, because that question is a comparison. */}

@@ -31,6 +31,13 @@ export const queryKeys = {
   /** One goal's month-by-month history, frozen into snapshots. */
   goalMonthlyProgress: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'monthly-progress'] as const,
+  /**
+   * What scheduled outflows will cost one goal. Under the goals prefix so any
+   * allocation write refreshes it; cashflow writes invalidate the whole
+   * household, which covers the other direction.
+   */
+  goalScheduledOutflowImpact: (householdId: string, goalId: string) =>
+    ['households', householdId, 'goals', goalId, 'scheduled-outflow-impact'] as const,
   /** Why one goal's figure moved since the last frozen point. */
   goalProgressChange: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'progress-change'] as const,

@@ -187,6 +187,10 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
 
       <div className="mt-5 flex items-end justify-between gap-4">
         <div>
+          {/* "Đã góp": the figure is measured against the wallet as it stands,
+              with scheduled outflows still in it. Money that has not moved has
+              not been spent. What those outflows will cost is reported on its
+              own line below, never folded into this number. */}
           <p className="text-[11px] text-ink3">{t('goals.monthly.contributed')}</p>
           <p className="money-number mt-1 text-[30px]">{formatAmount(actual)}</p>
         </div>
