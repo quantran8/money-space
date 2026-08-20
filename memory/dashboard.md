@@ -49,11 +49,39 @@ everything — it no longer pulls debts, events or cashflow.
 
 ## Home derivations (`model/home-derivations.ts`)
 
-- **Money composition** splits current liquid money into committed → protected →
-  flexible. `committed` is **derived**, not reported: `totalLiquid − protected −
-  max(flexible, 0)`. Deriving it makes the three parts sum to the total by
-  construction, so the bar can never show a misleading gap. A negative flexible
-  figure must not inflate committed.
+- **Money composition** splits current liquid money into committed → flexible.
+  `committed` is **derived**, not reported: `totalLiquid − flexible`. Deriving it
+  makes the two parts sum to the total by construction, so the bar can never show
+  a misleading gap.
+- **"Đã có nhiệm vụ" is TWO things, and only one of them is a bill:**
+  - near-term obligations, already subtracted in `lowestProjectedBalance`;
+  - **goal money** — what is set aside behind a goal plus what this month's pace
+    can still draw from what is left, sent by the server as
+    `flexibleMoney.goalCommitments`.
+
+  Only the first used to count, so money promised to a goal was offered back as
+  free: 20tr of a 22tr wallet behind the car still read as 22tr flexible. See
+  [[goals]] and the backend's `resolveGoalCommittedAmount` for why the two halves
+  cannot double-count.
+- `flexible = lowestProjectedBalance − goalCommitments`. The composition bar
+  **floors it at 0** — the bar is a split of money that exists — while the hero
+  figure in `financial-picture-section.tsx` stays **unclamped**, because negative
+  flexible money is the signal the product exists to surface (§26B).
+- **Both terms are measured at the same point.** The server resolves
+  `goalCommitments` against wallet values that already have the horizon's
+  outflows removed, because **an outflow outranks the goals sharing its wallet**:
+  a bill is an obligation, a goal is a promise, and the goal gives way — this
+  month's contribution first, then what was set aside.
+
+  While it did not, an outflow was charged **twice** — once by the balance walk
+  and once again by a goal claim still sized to today's untouched wallet — and
+  the hero read **−2tr** for a household that had merely scheduled a 2tr bill
+  against a wallet its goals were saving into. The bar's `Math.max(…, 0)` floor
+  hid the same error. **That floor is a display rule, not a fix for a negative
+  figure**; do not reach for it if this number goes negative again.
+
+  Rule 1 ("never clamp") is untouched: a genuine over-commitment still shows
+  negative. See the backend's [[forecast-and-flexible-money]].
 - **Running balance** (`Còn lại`) accumulates across the **whole** timeline
   before the visible rows are sliced, so a truncated table still shows true
   balances. Occurrences the forecast does not bank (estimated incoming, planned

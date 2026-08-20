@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 import { SubSection } from '@/components/ui/sub-section'
 import { AssumptionsNote } from '@/features/forecast/ui/components/assumptions-note'
+import { SpendImpactBar } from '@/features/cashflow/ui/components/spend-impact-bar'
 import { RESULT_TYPE_CLASS, type WhatIfResult } from '@/features/whatif/model/whatif.types'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
@@ -44,14 +45,105 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
             amount: formatVndShort(Math.abs(delta.lowestProjectedBalance)),
           })}
         </p>
-        {!after.obligationsCovered ? (
+        {/* WHICH items stop being payable, not just that something does.
+            "Some fixed items would not be fully covered" is enough to worry
+            someone and not enough to act on: they cannot move a bill or top up
+            an account without knowing which bill and when. Only items this
+            spend actually breaks are listed — one already going unpaid is not
+            this purchase's doing. */}
+        {result.newlyAtRisk.length > 0 ? (
+          <div className="mt-2">
+            <p className="text-sm text-attention">
+              {t('whatif.blocks.atRisk')}
+            </p>
+            <ul className="mt-1 space-y-0.5">
+              {result.newlyAtRisk.map((item) => (
+                <li
+                  key={item.occurrenceKey}
+                  className="text-xs leading-5 text-ink2"
+                >
+                  {t('whatif.blocks.atRiskRow', {
+                    date: item.date,
+                    name: item.name,
+                    amount: formatVndShort(item.shortfall),
+                  })}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : !after.obligationsCovered ? (
+          // Something is short, but this spend did not cause it — say so
+          // without attaching a list that would misattribute the blame.
           <p className="mt-2 text-sm text-attention">
             {t('whatif.obligations.notCovered')}
           </p>
         ) : null}
       </SubSection>
 
-      {/* 2 — Goal consequence, only when a goal was in scope. */}
+      {/* 2 — What the goals give up: money AND time, per goal.
+          Measured across every flexible wallet — what-if names no single one,
+          so the spend takes genuinely free money first and only then reaches
+          the least-promised wallet's goals. */}
+      {result.goalImpact.totalReduction > 0 ? (
+        <SubSection title={t('whatif.blocks.goalCost')}>
+          {/* The money simply not being there is a different fact from a goal
+              giving way, so it gets its own line rather than being folded into
+              the per-goal list. */}
+          {result.goalImpact.uncovered > 0 ? (
+            <p className="mb-2 text-sm text-alert">
+              {t('whatif.blocks.uncovered', {
+                amount: formatVndShort(result.goalImpact.uncovered),
+              })}
+            </p>
+          ) : null}
+
+          {/* The same bar the cashflow form uses: it carries the proportion,
+              which words cannot — 4tr out of 52tr and 4tr out of 5tr read
+              identically as text and are not the same situation. */}
+          <SpendImpactBar
+            className="mb-2.5"
+            spendFromPace={result.goalImpact.totalPaceReduction}
+            spendFromSetAside={result.goalImpact.totalSetAsideReduction}
+            goalRemaining={result.goalImpact.goals.reduce(
+              (sum, goal) => sum + goal.after,
+              0,
+            )}
+            unassigned={0}
+          />
+
+          <ul className="space-y-1.5">
+            {result.goalImpact.goals.map((goal) => (
+              <li key={goal.goalId}>
+                <p className="text-sm">
+                  {t('whatif.blocks.goalCostRow', {
+                    name: goal.goalName ?? '—',
+                    amount: formatVndShort(goal.reduction),
+                  })}
+                </p>
+                {/* The time cost is the half that decides anything: "giảm 3tr"
+                    says what leaves, "chậm 2 tháng" says what it costs. */}
+                {goal.delayMonths !== null && goal.delayMonths > 0 ? (
+                  <p className="text-xs leading-5 text-ink2">
+                    {goal.delayMonths >= 1
+                      ? t('whatif.blocks.goalDelayRow', {
+                          name: goal.goalName ?? '—',
+                          months: Math.round(goal.delayMonths * 10) / 10,
+                        })
+                      : t('whatif.blocks.goalDelayDays', {
+                          name: goal.goalName ?? '—',
+                          days: goal.delayDays ?? 0,
+                        })}
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </SubSection>
+      ) : null}
+
+      {/* 3 — Goal consequence for the ONE goal the household picked, when they
+          picked one. Distinct from the block above, which covers every goal the
+          settling wallet backs. */}
       {after.goal ? (
         <SubSection title={t('whatif.blocks.goal')}>
           {delta.goalDelayMonths !== null && delta.goalDelayMonths !== 0 ? (
@@ -71,7 +163,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         </SubSection>
       ) : null}
 
-      {/* 3 — Assumptions */}
+      {/* 4 — Assumptions */}
       <AssumptionsNote assumptions={result.assumptions} />
     </div>
   )

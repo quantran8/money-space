@@ -25,6 +25,8 @@ export function useGoalMonthlyProgress(goalId?: string) {
   return {
     months: query.data?.months ?? [],
     plannedMonthlyContribution: query.data?.plannedMonthlyContribution ?? null,
+    // A wallet was split without the household having said how — the panel asks.
+    needsShareDecision: query.data?.needsShareDecision ?? false,
     isLoading: query.isLoading && canQuery,
   }
 }

@@ -1,20 +1,19 @@
 import { ChevronLeft, Pencil, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import { MetricCell } from '@/components/ui/metric-cell'
-import { Panel, PanelHeader, PanelSplit, Sunk } from '@/components/ui/panel'
+import { Panel, Sunk } from '@/components/ui/panel'
 import type { GoalAllocationRecord } from '@/features/goals/api/goals.repository'
 import { useGoalAllocations } from '@/features/goals/hooks/use-goal-allocations'
 import { useGoalsPage } from '@/features/goals/hooks/use-goals-page'
-import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
 import { goalAmount } from '@/features/goals/model/goals-form'
 import { GoalAllocationDialog } from '@/features/goals/ui/components/goal-allocation-dialog'
 import { GoalAllocationsSection } from '@/features/goals/ui/components/goal-allocations-section'
 import { GoalMonthlyProgressSection } from '@/features/goals/ui/components/goal-monthly-progress-section'
 import { GoalProgressChange } from '@/features/goals/ui/components/goal-progress-change'
+import { GoalRoadSection } from '@/features/goals/ui/components/goal-road-section'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
 import { formatVndScale, splitVndScale } from '@/shared/lib/format-money'
 
@@ -34,7 +33,6 @@ export function GoalDetailPage() {
   const { goalId } = useParams<{ goalId: string }>()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const [explainOpen, setExplainOpen] = useState(false)
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
   const {
     goals,
@@ -117,11 +115,6 @@ export function GoalDetailPage() {
   const projection = goal.projection
   const notSet = t('goals.table.notSet')
   const desiredDate = formatGoalDate(goal.targetDate, locale, notSet)
-  const projectedDate =
-    projection && hasProjectedDate(projection)
-      ? formatGoalDate(projection.projectedCompletionDate ?? undefined, locale, notSet)
-      : t('goals.demo.unknownProjection')
-  const requiredMonthly = projection?.requiredMonthlyContributionForTargetDate
   const plannedMonthly = goal.plannedMonthlyContribution
 
   return (
@@ -157,20 +150,27 @@ export function GoalDetailPage() {
         </div>
       </header>
 
-      {/* The answer: how much is set aside, and what that means for the date. */}
+      {/* The current state, and nothing else. The hero used to carry the
+          projection too, which put three numbers of three different kinds
+          side by side and left the household to sort out which answered what.
+          The forecast now has a section of its own below. */}
       <Panel>
-        <PanelSplit className="mt-0">
-          <div>
-            <p className="label">{t('goals.detail.picture.saved')}</p>
-            <div className="mt-3 flex items-end gap-2">
-              <span className="money-number text-[44px] leading-none sm:text-[64px]">
+        <div className="max-w-[780px]">
+          <p className="text-[12px] text-ink3">{priorityLabels[goal.priority]}</p>
+
+          <div className="mt-5">
+            <p className="text-[12px] text-ink3">{t('goals.detail.picture.saved')}</p>
+            <div className="mt-2 flex items-end gap-2.5">
+              <span className="money-number text-[44px] leading-none sm:text-[60px]">
                 {savedFigure.amount}
               </span>
-              <span className="mb-1 text-[14px] text-ink2">/ {formatVndScale(target)}</span>
+              <span className="num mb-1.5 text-[14px] text-ink2">/ {formatVndScale(target)}</span>
             </div>
+          </div>
 
+          <div className="mt-7">
             <div
-              className="mt-6 h-1.5 overflow-hidden rounded-full bg-committed"
+              className="h-2 overflow-hidden rounded-full bg-committed"
               role="progressbar"
               aria-label={t('goals.detail.picture.progressAria', {
                 current: formatVndScale(current),
@@ -186,90 +186,46 @@ export function GoalDetailPage() {
               />
             </div>
 
-            {/* Assets reprice on their own, so this figure can move with the
-                household having done nothing. Saying why is what keeps it
-                trustworthy — see the component. */}
-            <GoalProgressChange goalId={goal.id} />
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-8 gap-y-2 text-[12px] text-ink2">
+              <span>
+                <Trans
+                  i18nKey="goals.detail.picture.remaining"
+                  values={{ amount: formatVndScale(remaining) }}
+                  components={[<strong key="amount" className="num font-medium text-ink" />]}
+                />
+              </span>
+              <span>
+                {goal.targetDate && goal.targetDate !== 'No deadline' ? (
+                  <Trans
+                    i18nKey="goals.detail.picture.wantBy"
+                    values={{ date: desiredDate }}
+                    components={[<strong key="date" className="num font-medium text-ink" />]}
+                  />
+                ) : (
+                  t('goals.detail.picture.noDeadline')
+                )}
+              </span>
+            </div>
           </div>
 
-          <dl className="grid gap-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-            <PictureMetric label={t('goals.detail.picture.desiredDate')} value={desiredDate} />
-            <PictureMetric label={t('goals.detail.picture.atCurrentPace')} value={projectedDate} />
-            <PictureMetric
-              label={t('goals.detail.picture.requiredMonthly')}
-              value={
-                requiredMonthly != null && requiredMonthly > 0
-                  ? t('goals.detail.picture.perMonth', { amount: formatVndScale(requiredMonthly) })
-                  : notSet
-              }
-            />
-          </dl>
-        </PanelSplit>
-      </Panel>
-
-      <Panel>
-        <PanelHeader
-          title={t('goals.detail.plan.title')}
-          action={
-            <button
-              type="button"
-              className="min-h-11 text-[13px] font-medium text-accent"
-              onClick={() => setExplainOpen((open) => !open)}
-              aria-expanded={explainOpen}
-            >
-              {explainOpen ? t('goals.detail.plan.hide') : t('goals.detail.plan.explain')}
-            </button>
-          }
-        />
-
-        <div className="mt-7 grid gap-4 lg:grid-cols-3">
-          <MetricCell
-            label={t('goals.detail.plan.monthly')}
-            value={
-              plannedMonthly != null && plannedMonthly > 0
-                ? formatVndScale(plannedMonthly)
-                : t('goals.projection.noPace')
-            }
-          />
-          <MetricCell label={t('goals.detail.plan.remaining')} value={formatVndScale(remaining)} />
-          <MetricCell label={t('goals.detail.plan.priority')} value={priorityLabels[goal.priority]} />
+          {/* Assets reprice on their own, so this figure can move with the
+              household having done nothing. Saying why is what keeps it
+              trustworthy — see the component. */}
+          <GoalProgressChange goalId={goal.id} />
         </div>
-
-        {/* Every projected number has to be explainable (design.md §16). */}
-        {explainOpen ? (
-          <Sunk className="mt-4 px-4 py-4 text-[13px] leading-6 text-ink2">
-            {projection ? (
-              <>
-                <p>{t(`goals.projection.reason.${projection.reason}`)}</p>
-                {hasProjectedDate(projection) ? (
-                  <dl className="mt-3 grid gap-x-4 gap-y-1.5 sm:grid-cols-[180px_1fr]">
-                    <dt>{t('goals.detail.plan.monthly')}</dt>
-                    <dd className="num font-medium text-ink">
-                      {formatVndScale(projection.plannedMonthlyContribution ?? 0)}
-                    </dd>
-                    <dt>{t('goals.detail.plan.remaining')}</dt>
-                    <dd className="num font-medium text-ink">
-                      {formatVndScale(projection.remainingAmount)}
-                    </dd>
-                    {projection.estimatedMonthsToGoal != null ? (
-                      <>
-                        <dt>{t('goals.detail.plan.estimatedMonths')}</dt>
-                        <dd className="num font-medium text-ink">
-                          {t('goals.projection.months', {
-                            count: projection.estimatedMonthsToGoal,
-                          })}
-                        </dd>
-                      </>
-                    ) : null}
-                  </dl>
-                ) : null}
-              </>
-            ) : (
-              <p>{t('goals.detail.plan.explainUnavailable')}</p>
-            )}
-          </Sunk>
-        ) : null}
       </Panel>
+
+      {/* Is this pace going to get us there in time? — as a chart and a
+          sentence, because that question is a comparison. */}
+      <GoalRoadSection
+        current={current}
+        target={target}
+        remaining={remaining}
+        projection={projection}
+        plannedMonthly={plannedMonthly}
+        targetDate={goal.targetDate}
+        formatDate={(value) => formatGoalDate(value, locale, notSet)}
+      />
 
       <GoalAllocationsSection
         allocations={allocations}
@@ -317,6 +273,7 @@ export function GoalDetailPage() {
       />
 
       <GoalFormDialog
+        key={formOpen ? 'goal-form-open' : 'goal-form-closed'}
         open={formOpen}
         onOpenChange={handleFormOpenChange}
         form={form}
@@ -341,18 +298,4 @@ function BackLink({ onClick, label }: { onClick: () => void; label: string }) {
     </button>
   )
 }
-
-/**
- * §10.2: the secondary metric step is 22px. 20px is not on the scale, and this
- * block sits beside the hero — a size nobody else uses reads as a mistake.
- */
-function PictureMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[13px] text-ink2">{label}</dt>
-      <dd className="num mt-1 text-[22px] font-medium">{value}</dd>
-    </div>
-  )
-}
-
 

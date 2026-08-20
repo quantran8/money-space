@@ -3,6 +3,40 @@
 Shared savings goals. Related: [[assets]] (allocations),
 [[snapshots-and-networth]] (the frozen history), [[dashboard]].
 
+
+
+## Percent claims keep their basis when a wallet is spent from
+
+`computeSpendImpact` pins the percent basis to the wallet BEFORE the spend.
+"50% of this wallet" is a standing arrangement, not a figure that re-derives
+itself when a bill is scheduled — re-reading it against the lowered value shaved
+every goal proportionally even when the spend fitted inside unassigned money
+(5tr from a 52tr wallet with 26tr free reported "giảm 2,5tr"; the answer is 0).
+
+Still capped at what the wallet holds afterwards, so an unaffordable spend does
+reduce the goals. Mirrors the backend's `allocationValue` — **the two must change
+together.**
+
+## `freeAmount` is not "chưa dành cho mục tiêu nào"
+
+`assetGoalUsage` returns two pairs and they are not interchangeable:
+
+- `claimedAmount` / `freeAmount` — money SET ASIDE only. Answers "how much may a
+  NEW allocation still take", the write path's question. A monthly pace locks
+  nothing away from that, so it is excluded.
+- `committedAmount` / `unassignedAmount` — set aside PLUS what this month's paces
+  will draw. Answers "how much of this wallet has no job yet". **This is the pair
+  every display uses**, and it comes from the same resolver as the dashboard's
+  "đã có nhiệm vụ".
+
+Showing `freeAmount` under a "chưa dành cho mục tiêu nào" label contradicted
+Home: a 52tr wallet with 20tr set aside and two goals each promising 20tr/month
+read "32tr chưa dành cho mục tiêu nào" while Home counted all 52tr as committed.
+
+Per goal: `currentValue` is set aside alone, `countedValue` is all in. The
+asset-page table's "đang tính" column uses `countedValue` — `currentValue` showed
+"0đ" for a goal the dashboard counts 16tr behind.
+
 ## Overview
 
 A goal is **a set of shares of real assets** — nothing more. It stores no
@@ -102,6 +136,31 @@ nothing can disagree with it.
     honest reading.
   - It still appears with no declared pace: knowing the month is up 6tr is
     useful even with nothing to compare against.
+  - **With no real previous close, the figure is an ESTIMATE of capacity**, not
+    money observed moving: what the wallets can still put in, capped by the pace
+    each declared. A month that has not ended cannot be reported as kept or
+    missed, and for a goal just created the observed difference is 0 — true but
+    useless.
+- **A wallet feeding several goals is divided ONCE, for all of them**
+  (`resolveWalletShareByGoal`, backend). Estimating per goal had two goals on a
+  2tr wallet each report 2tr — 4tr of capacity against 2tr of money.
+  - `high` is served before `medium` before `low`; a high goal takes its full
+    pace before a lower one gets anything.
+  - Within one priority — the tie `priority` cannot break — the shares are used
+    ONLY when the room cannot cover every pace in the group.
+  - **The split within a tie is the household's**, held in
+    `goal_asset_allocations.share_percent` and asked for by the CREATE FORM the
+    moment a chosen wallet already backs another goal at the same priority.
+    Settling it by creation date would have the product ranking their plans.
+    - `GoalAllocationsField` shows the share input only for a contested wallet,
+      driven by `walletUsage` from `listGoals(?include=projection,walletUsage)`.
+      The condition follows the priority dropdown live, so the question appears
+      and disappears with the choice that creates it.
+    - `buildGoalSchema` requires it for those rows only, reading the priority
+      from the values being validated.
+  - **Fallback when a tie has no shares**: split in proportion to the declared
+    paces, with `needsShareDecision` set so the panel asks rather than presenting
+    the fallback as a decision.
 - Exposed at `GET /financial-goals/:goalId/monthly-progress`; rendered by
   `GoalMonthlyProgressSection` on the goal detail page.
 

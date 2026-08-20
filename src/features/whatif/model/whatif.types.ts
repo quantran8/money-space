@@ -47,6 +47,50 @@ export type WhatIfSideResult = {
   goal: GoalProjection | null
 }
 
+/** One goal's cost, in money AND in time. */
+export type WhatIfGoalCost = {
+  goalId: string
+  goalName: string | null
+  before: number
+  after: number
+  reduction: number
+  /** Which half gave way: this month's contribution, or money set aside. */
+  paceReduction: number
+  setAsideReduction: number
+  /**
+   * How much later the goal lands. `null` when it declared no monthly pace —
+   * without a rate there is no honest way to turn money into time.
+   */
+  delayMonths: number | null
+  delayDays: number | null
+  completionDateBefore: string | null
+  completionDateAfter: string | null
+}
+
+export type WhatIfGoalImpact = {
+  totalReduction: number
+  totalPaceReduction: number
+  totalSetAsideReduction: number
+  goals: WhatIfGoalCost[]
+  /**
+   * The part of the spend no wallet could cover — the money simply is not
+   * there. Distinct from an obligation going unpaid because of it.
+   */
+  uncovered: number
+}
+
+/** An obligation the spend would leave uncovered. */
+export type WhatIfAtRisk = {
+  occurrenceKey: string
+  sourceEventId: string
+  name: string
+  date: string
+  amount: number
+  balanceAfter: number
+  /** How much is missing for THIS item. */
+  shortfall: number
+}
+
 export type WhatIfResult = {
   householdId: string
   asOfDate: string
@@ -55,6 +99,19 @@ export type WhatIfResult = {
   obligationsCovered: boolean
   before: WhatIfSideResult
   after: WhatIfSideResult
+  /**
+   * What every goal gives up, in money AND in time.
+   *
+   * Measured across all flexible wallets: what-if asks a household-level
+   * question and names no wallet, so the spend is taken from genuinely free
+   * money first, then from the least-promised wallet onwards.
+   */
+  goalImpact: WhatIfGoalImpact
+  /**
+   * Obligations this spend breaks, named. Only the ones it actually breaks —
+   * an item already going unpaid is not this purchase's doing.
+   */
+  newlyAtRisk: WhatIfAtRisk[]
   delta: {
     flexibleMoneyToday: number
     lowestProjectedBalance: number

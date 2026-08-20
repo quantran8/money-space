@@ -51,6 +51,12 @@ export function useGoals() {
 
   return {
     goals: query.data?.items ?? [],
+    /**
+     * Which goals already draw on each wallet. The create form reads it to know
+     * whether a wallet is contested — a share is only worth asking for when a
+     * second goal at the same priority is already on the same account.
+     */
+    walletUsage: query.data?.walletUsage ?? [],
     activeHouseholdId,
     ...query,
     createGoal: useMutation({

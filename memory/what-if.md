@@ -3,6 +3,35 @@
 "If we spend this, what happens?" — the feature people pay for (spec §26D,
 05 §5). Related: [[forecast-and-flexible-money]], [[goals]].
 
+
+## What the result must say (not just "something breaks")
+
+Four things, all resolved by the same code the rest of the app uses:
+
+- **Goal cost per goal, in money AND in time.** "Mục tiêu giảm 3tr" says what
+  leaves; "chậm 2 tháng" says what it costs, and the second is the half that
+  decides anything. `null` months when the goal declared no pace — without a
+  rate there is no honest way to turn money into time.
+- **Which half gave way** — this month's contribution, or money already set
+  aside. Different events, not equally serious. See [[goals]].
+- **`newlyAtRisk`: WHICH bills stop being payable**, with dates and shortfalls.
+  `obligationsCovered: false` alone is enough to worry someone and not enough to
+  act on. Only items the spend actually breaks — one already going unpaid is not
+  this purchase's doing.
+- **`uncovered`**: the part no wallet could cover. The money is not there at
+  all, which is a different sentence from a later bill going unpaid.
+
+**No wallet picker.** What-if is a household-level question, so the spend is
+taken in this order: genuinely free money in every wallet first, then goal money
+by the household's own ranking (`low` → `medium` → `high`), with the amount
+promised breaking ties inside a rank. **Priority outranks amount** — 1tr behind a
+`high` goal is not more expendable than 50tr behind a `low` one. Asking which
+account would make the cheapest exploration the most annoying, and the household
+usually has not decided.
+
+Still never a verdict: every one of these reports consequence. `resultType`
+picks a colour and nothing more.
+
 ## Overview
 
 The user names an amount and a date. The backend builds a synthetic outgoing

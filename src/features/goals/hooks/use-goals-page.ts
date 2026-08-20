@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
@@ -39,10 +39,27 @@ function allocationMonthly(row: GoalAllocationDraft): number | null {
   return raw === '' ? null : parseAmount(raw)
 }
 
+/**
+ * The share this row declares, or null when the question did not apply.
+ *
+ * Read against the contested set rather than trusted from the draft: a wallet
+ * that stopped being contested (the household moved the goal to another
+ * priority) must not still submit the share it was asked for earlier.
+ */
+function allocationShare(
+  row: GoalAllocationDraft,
+  contested: ReadonlySet<string>,
+): number | null {
+  if (row.role !== 'contribution' || !contested.has(row.assetId)) return null
+  const raw = row.sharePercent.trim()
+  return raw === '' ? null : Number(raw)
+}
+
 export function useGoalsPage() {
   const { t } = useTranslation()
   const {
     goals,
+    walletUsage,
     createGoal,
     updateGoal,
     deleteGoal,
@@ -116,11 +133,29 @@ export function useGoalsPage() {
     [assets],
   )
 
+  /**
+   * The other goals already drawing on each wallet, excluding the one being
+   * edited. The schema matches their priority against the form's own, so the
+   * share question appears exactly when two goals would have to divide a wallet.
+   */
+  const walletRivals = useMemo(() => {
+    const rivals = new Map<string, Array<{ priority: GoalPriority; name: string }>>()
+    for (const wallet of walletUsage) {
+      rivals.set(
+        wallet.assetId,
+        wallet.goals
+          .filter((row) => row.goalId !== editingId)
+          .map((row) => ({ priority: row.priority, name: row.name })),
+      )
+    }
+    return rivals
+  }, [walletUsage, editingId])
+
   // Rebuilt when the mode flips: `current` is create-only (the API rejects it on
   // PATCH), so the schema must stop validating it once we are editing.
   const goalSchema = useMemo(
-    () => buildGoalSchema(t, isEditing, walletAssetIds),
-    [t, isEditing, walletAssetIds],
+    () => buildGoalSchema(t, isEditing, walletAssetIds, walletRivals),
+    [t, isEditing, walletAssetIds, walletRivals],
   )
 
   const priorityLabels: Record<GoalPriority, string> = {
@@ -140,7 +175,32 @@ export function useGoalsPage() {
     shouldFocusError: true,
   })
 
-  const { reset, handleSubmit } = form
+  const { reset, handleSubmit, control } = form
+
+  // The priority the household is on RIGHT NOW, which is what decides whether a
+  // wallet is contested — not the priority the goal was saved with.
+  const draftPriority = useWatch({ control, name: 'priority' })
+
+  /** Wallets this goal would have to divide with another at the same priority. */
+  const contestedWalletIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const [assetId, rivals] of walletRivals) {
+      if (rivals.some((rival) => rival.priority === draftPriority)) ids.add(assetId)
+    }
+    return ids
+  }, [walletRivals, draftPriority])
+
+  /** Which goals sit on each wallet, so a contested row can name them. */
+  const walletGoalNames = useMemo(() => {
+    const names = new Map<string, string[]>()
+    for (const [assetId, rivals] of walletRivals) {
+      names.set(
+        assetId,
+        rivals.map((rival) => rival.name),
+      )
+    }
+    return names
+  }, [walletRivals])
 
   const editingGoal = editingId ? goals.find((goal) => goal.id === editingId) : undefined
   const deletingGoal = deleteId ? goals.find((goal) => goal.id === deleteId) : undefined
@@ -223,6 +283,11 @@ export function useGoalsPage() {
                   kind: 'fixed' as const,
                   role: row.role,
                   monthlyContribution: allocationMonthly(row),
+                  // Only sent for a contested wallet: elsewhere there is nothing
+                  // to divide, and a share nobody was asked for is worse than
+                  // none — it would settle a future tie by a number the
+                  // household never chose.
+                  sharePercent: allocationShare(row, contestedWalletIds),
                   allocatedAmount: parseAmount(row.amount.trim()),
                 },
           ),
@@ -318,6 +383,11 @@ export function useGoalsPage() {
     priorityLabels,
     // contributions
     assetOptions,
+    // Wallets this goal would have to share with another at the same priority —
+    // the rows the form asks a split for.
+    contestedWalletIds,
+    walletGoalNames,
+    walletUsage,
     addAllocation,
     editAllocation,
     removeAllocation,

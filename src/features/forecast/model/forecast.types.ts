@@ -167,5 +167,14 @@ export type FlexibleMoneyResult = {
   /** MAY BE NEGATIVE. Label with its assumption when shown. */
   endingProjectedBalance: number
   obligationsCovered: boolean
+  /**
+   * Liquid money the household's GOALS already claim — what is set aside behind
+   * a goal, plus what this month's pace can still draw from what is left.
+   *
+   * Not an obligation with a date: this money does not leave the household, it
+   * simply stops being free. Optional so an older server that does not send it
+   * reads as 0 rather than NaN.
+   */
+  goalCommitments?: number
   assumptions: CalculationAssumption[]
 }

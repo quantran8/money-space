@@ -19,6 +19,8 @@ export function GoalsPage() {
     stats,
     primaryGoal,
     assetOptions,
+    contestedWalletIds,
+    walletGoalNames,
     form,
     isEditing,
     isSavingGoal,
@@ -59,10 +61,13 @@ export function GoalsPage() {
       />
 
       <GoalFormDialog
+        key={formOpen ? 'goal-form-open' : 'goal-form-closed'}
         open={formOpen}
         onOpenChange={handleFormOpenChange}
         form={form}
         assetOptions={assetOptions}
+        contestedWalletIds={contestedWalletIds}
+        walletGoalNames={walletGoalNames}
         isEditing={isEditing}
         isSubmitting={isSavingGoal}
         onSubmit={submit}

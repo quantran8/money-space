@@ -18,6 +18,16 @@ export const queryKeys = {
    */
   goalAllocations: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'allocations'] as const,
+  /**
+   * Which goals one ASSET is backing, and how much of it is still free.
+   *
+   * Nested under `goals` rather than `assets`: the answer changes when an
+   * allocation is written, and the goals prefix is what every allocation write
+   * already invalidates. Under `assets` it would go stale until the asset itself
+   * happened to change.
+   */
+  assetGoalUsage: (householdId: string, assetId: string) =>
+    ['households', householdId, 'goals', 'asset-usage', assetId] as const,
   /** One goal's month-by-month history, frozen into snapshots. */
   goalMonthlyProgress: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'monthly-progress'] as const,

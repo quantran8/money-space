@@ -33,20 +33,45 @@ export type MoneyComposition = {
 /**
  * Split current liquid money into committed → flexible (§5.4).
  *
- * "Committed" is derived, not reported: it is whatever liquid money is not
- * flexible, i.e. the near-term obligations already spoken for. Deriving it keeps
- * the two parts summing to the total by construction, so the bar can never show
- * a misleading gap.
+ * "Committed" is money that already has a job, and that is TWO things:
+ *
+ *  - **Near-term obligations** — bills due before more money arrives, which the
+ *    forecast subtracts to reach `lowestProjectedBalance`.
+ *  - **Goal money** — what the household set aside behind a goal, plus what this
+ *    month's pace can still draw from what is left (`goalCommitments`).
+ *
+ * Only the first used to count, so a household with 20tr of a 22tr wallet behind
+ * the car was told it had 22tr flexible. Promising money to a goal and then
+ * seeing it offered back as free money is the overstatement this screen exists
+ * to prevent.
+ *
+ * The two never double-count: the server computes goal money against the same
+ * liquid sources, and its second half is capped at what is still free after the
+ * first (see `resolveGoalCommittedAmount`). Those sources have the horizon's
+ * outflows already taken out, because an outflow outranks the goals sharing its
+ * wallet — so a bill is charged to the balance walk OR to a goal's backing, and
+ * never to both.
  */
 export function buildMoneyComposition(
   flexibleMoney: FlexibleMoneyResult,
   labels: { committed: string; flexible: string },
 ): MoneyComposition {
   const totalLiquid = flexibleMoney.currentSharedLiquidMoney
-  const flexible = flexibleMoney.lowestProjectedBalance
+  const goalCommitments = flexibleMoney.goalCommitments ?? 0
+
+  // Goal money is not free money. Floored at 0 rather than allowed negative:
+  // this bar is a split of what exists, and the negative-is-the-signal rule
+  // belongs to the hero, which reports the same subtraction unclamped.
+  //
+  // The floor is a display rule for a bar of positive widths, NOT a fix for a
+  // negative figure. It used to hide one: while goal money was measured against
+  // wallets the outflows had not been taken out of, this clamp quietly rendered
+  // the double-subtraction as a full committed bar while the hero showed the
+  // negative number. Both read from the same corrected figure now.
+  const flexible = Math.max(flexibleMoney.lowestProjectedBalance - goalCommitments, 0)
 
   // Never let a negative flexible figure inflate the committed slice.
-  const committed = Math.max(totalLiquid - Math.max(flexible, 0), 0)
+  const committed = Math.max(totalLiquid - flexible, 0)
 
   const percent = (value: number) =>
     totalLiquid > 0 ? Math.round((Math.max(value, 0) / totalLiquid) * 100) : 0

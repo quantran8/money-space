@@ -32,6 +32,16 @@ export type GoalAllocationDraft = {
    * "this wallet is behind the goal but feeds it no fixed amount".
    */
   monthlyContribution: string
+  /**
+   * Digits only: this goal's share (1–100) of the wallet's remaining monthly
+   * room, used only when goals tied at the same priority cannot all be paid in
+   * full.
+   *
+   * Asked for ONLY when the chosen wallet already backs another goal at the same
+   * priority — that is the tie `priority` cannot break, and it is the only case
+   * where the household has a decision to make. Empty everywhere else.
+   */
+  sharePercent: string
 }
 
 /**
@@ -177,6 +187,15 @@ export function buildGoalSchema(
    * household is told while filling the form, rather than by a 400 on submit.
    */
   walletAssetIds: ReadonlySet<string> = new Set(),
+  /**
+   * Which OTHER goals already draw on each wallet, and at what priority.
+   *
+   * A share is only asked for when a wallet already feeds another goal at the
+   * SAME priority — that is the tie `priority` cannot break. The priority is read
+   * from the values being validated rather than passed in, so the question
+   * follows the dropdown without the schema having to be rebuilt.
+   */
+  walletRivals: ReadonlyMap<string, ReadonlyArray<{ priority: string }>> = new Map(),
 ) {
   return z
     .object({
@@ -190,6 +209,7 @@ export function buildGoalSchema(
           amount: z.string(),
           percent: z.string(),
           monthlyContribution: z.string(),
+          sharePercent: z.string(),
         }),
       ),
       current: localizedOptionalMoneyAmount(t),
@@ -247,6 +267,25 @@ export function buildGoalSchema(
               path: ['allocations', index],
               message: t('goals.allocations.contributionEmpty'),
             })
+          }
+          // This wallet already feeds another goal at the same priority, so the
+          // household has to say how the two divide it when it runs short.
+          // Asked now rather than when the money runs out: by then the split has
+          // already been guessed at, and the guess is what they would be
+          // correcting.
+          const rivals = walletRivals.get(row.assetId) ?? []
+          if (
+            rivals.some((rival) => rival.priority === values.priority) &&
+            Number(row.monthlyContribution) > 0
+          ) {
+            const share = Number(row.sharePercent)
+            if (!(share > 0 && share <= 100)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['allocations', index],
+                message: t('goals.allocations.shareRequired'),
+              })
+            }
           }
           continue
         }

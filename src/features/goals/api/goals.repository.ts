@@ -68,10 +68,32 @@ export type GoalRecord = {
   allocations?: GoalAllocationRecord[]
 }
 
+/**
+ * Which goals already draw on one wallet.
+ *
+ * A wallet feeding a single goal has nothing to divide. The question only
+ * arises once a second goal at the SAME priority joins it, and the create form
+ * cannot see that on its own — it holds one goal and no view of the others.
+ */
+export type GoalWalletUsage = {
+  assetId: string
+  /** What is left of the wallet after every goal's claim on it. */
+  freeAmount: number
+  goals: Array<{
+    goalId: string
+    name: string
+    priority: 'high' | 'medium' | 'low'
+    monthlyContribution: number | null
+    sharePercent: number | null
+  }>
+}
+
 type GoalListResponse = {
   householdId: string
   items: GoalRecord[]
   total: number
+  /** Attached when the request asks for `?include=walletUsage`. */
+  walletUsage?: GoalWalletUsage[]
 }
 
 export type GoalPayload = {
@@ -114,15 +136,25 @@ export type GoalAllocationPayload = {
    * comes out of. Send `null` to stop declaring one.
    */
   monthlyContribution?: number | null
+  /**
+   * This goal's share (1–100) of the wallet's remaining monthly room, used only
+   * when goals tied at the same priority cannot all be paid in full. Send it
+   * when the chosen wallet already backs another goal at the same priority —
+   * that is the tie `priority` cannot break.
+   */
+  sharePercent?: number | null
   allocatedAmount?: number
   percent?: number
   note?: string
 }
 
-/** Always asks for projections — every goal surface in v3.1 shows one. */
+/**
+ * Always asks for projections — every goal surface in v3.1 shows one — and for
+ * wallet usage, which the create form needs to know whether to ask for a share.
+ */
 export function listGoals(householdId: string) {
   return apiRequest<GoalListResponse>(
-    `/api/households/${householdId}/financial-goals?include=projection`,
+    `/api/households/${householdId}/financial-goals?include=projection,walletUsage`,
   )
 }
 
@@ -231,11 +263,135 @@ export type GoalMonthProgress = {
   inProgress: boolean
 }
 
+/** One goal's claim on an asset, as the asset's own page reads it. */
+export type AssetGoalClaim = {
+  goalId: string
+  goalName: string
+  priority: 'high' | 'medium' | 'low'
+  allocationId: string
+  kind: GoalAllocationKind
+  role: GoalAllocationRole
+  allocatedAmount: number | null
+  percent: number | null
+  monthlyContribution: number | null
+  sharePercent: number | null
+  /** What this claim is worth right now, capped at the asset's value. */
+  currentValue: number
+  /**
+   * What this goal is counted as holding from the asset ALL IN — set aside plus
+   * its share of this month's pace. The figure to show under "đang tính";
+   * `currentValue` is only the set-aside half.
+   */
+  countedValue: number
+}
+
+export type AssetGoalUsage = {
+  householdId: string
+  assetId: string
+  assetValue: number
+  /**
+   * Money SET ASIDE against it — the same sum the write path enforces.
+   *
+   * Excludes the monthly paces on purpose: a pace does not stop a new
+   * allocation from claiming the same money. Pair with `freeAmount`.
+   */
+  claimedAmount: number
+  /** What a new claim would still be allowed to take. */
+  freeAmount: number
+  /**
+   * Everything the goals claim ALL IN — set aside plus what this month's paces
+   * can still draw from the room left over. The same resolver the dashboard's
+   * "đã có nhiệm vụ" uses, so the two screens cannot disagree.
+   */
+  committedAmount: number
+  /**
+   * How much of this wallet has no job yet.
+   *
+   * The figure to show for "chưa dành cho mục tiêu nào" — NOT `freeAmount`,
+   * which answers the write path's question instead. A 52tr wallet with 20tr
+   * set aside and two goals each promising 20tr/month has `freeAmount` 32tr but
+   * `unassignedAmount` 0: both paces are drawing on that 32tr.
+   */
+  unassignedAmount: number
+  items: AssetGoalClaim[]
+  total: number
+}
+
+/**
+ * Which goals an asset is backing, and how much of it is still free.
+ *
+ * Served by the goals module even though the path is under assets — the answer
+ * needs goals, and the module edge only runs one way.
+ */
+export function getAssetGoalUsage(householdId: string, assetId: string) {
+  return apiRequest<AssetGoalUsage>(
+    `/api/households/${householdId}/assets/${assetId}/goal-usage`,
+  )
+}
+
+export interface GoalSpendImpactItem {
+  goalId: string
+  goalName: string | null
+  /** What the goal is counted as holding from this wallet before the spend. */
+  before: number
+  after: number
+  /** How much this goal loses. Always positive — untouched goals are omitted. */
+  reduction: number
+  /**
+   * Which half gave way: this month's contribution, or money already set aside.
+   * Different events for the household — a month of saving paused, versus the
+   * goal moving backwards — so they are never reported as one total.
+   */
+  paceReduction: number
+  setAsideReduction: number
+}
+
+export interface SpendImpact {
+  assetId: string
+  assetValue: number
+  amount: number
+  assetValueAfter: number
+  totalReduction: number
+  /** Across every goal — this month's contribution given up. */
+  totalPaceReduction: number
+  /** Across every goal — money already set aside taken back out. */
+  totalSetAsideReduction: number
+  /** Biggest loser first, so the goal paying most is the one you read first. */
+  goals: GoalSpendImpactItem[]
+  /** True when the wallet cannot cover the spend at all — a separate sentence. */
+  exceedsWallet: boolean
+}
+
+/**
+ * What spending from a wallet would cost the goals saving into it.
+ *
+ * The server's figure of record. **The web form does not call this** — it
+ * computes the same answer locally (`goals/model/spend-impact.ts`) so the
+ * warning appears as the household types, with no round trip to race against a
+ * quick save. Kept because it is the shared contract other clients read, and
+ * because it is what the local copy is verified against.
+ */
+export function getSpendImpact(
+  householdId: string,
+  assetId: string,
+  amount: number,
+) {
+  return apiRequest<SpendImpact>(
+    `/api/households/${householdId}/assets/${assetId}/spend-impact?amount=${encodeURIComponent(amount)}`,
+  )
+}
+
 export function getGoalMonthlyProgress(householdId: string, goalId: string) {
   return apiRequest<{
     goalId: string
     plannedMonthlyContribution: number | null
     months: GoalMonthProgress[]
+    /**
+     * True when a wallet had to be divided without the household having said
+     * how — the figure stands, but it was a fallback rather than their choice,
+     * so the panel asks instead of presenting it as settled.
+     */
+    needsShareDecision?: boolean
   }>(
     `/api/households/${householdId}/financial-goals/${goalId}/monthly-progress`,
   )
