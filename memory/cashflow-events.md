@@ -4,6 +4,12 @@ Expected future movements of money — the **sole input to the forecast**.
 Replaces upcoming payments. Related: [[money-events]], [[debts]], [[dashboard]],
 [[goals]].
 
+A live outgoing event also lowers the wallet it settles from **before it is
+completed**, for every screen that reports goal money: the forecast hero, the
+warning shown before an outflow is saved, and the running month's contribution.
+A scheduled outflow is a decision already made, so the money behind it is not
+counted as available to a goal. See [[goals]].
+
 ## Overview
 
 A cashflow event is one expected movement of money in **either direction**, on a
@@ -56,8 +62,66 @@ Recurrence is `once | weekly | monthly | quarterly | yearly`. There is no
   - Offer only assets passing `canSettleCashflow` (`features/assets/model/assets.ts`):
     `liquidity === 'usable_now'` **and** type `cash`/`bank_account`. That mirrors
     the server check, so the picker cannot produce a 400.
-  - `settlementAssetId` on the event is **optional at create** (planning often
-    predates the decision) and pre-selected in the confirm dialog when set.
+  - `settlementAssetId` is **required by the manual cashflow form for OUTGOING**
+    events (zod `superRefine`), optional for incoming, and pre-selected in the
+    confirm dialog when set. The reason is the goal trade-off: an outflow
+    outranks the goals sharing its wallet, so without a wallet the form cannot
+    show what the outflow costs before saving. See [[dashboard]].
+  - **The server does NOT require it.** A debt is not tied to one wallet, and
+    repayments generated months ahead cannot know which wallet will pay them, so
+    `assertValid` accepts an outgoing event with no wallet. The guarantee lives
+    at `complete` instead (above). Debt repayments carry the debt's optional
+    default wallet as a pre-fill — see [[debts]].
+  - **The form shows what the outflow takes from the goals on that wallet**
+    (`GoalImpactNotice`). Per goal, `before → after`, biggest loser first. It
+    states a consequence and is **never a block**: it does not gate the submit
+    button, so a household that saves immediately is never left staring at a
+    form refusing to submit for no visible reason.
+  - **Computed locally** (`features/goals/model/spend-impact.ts`) from the
+    `assetGoalUsage` data the wallet picker already loaded — not from the
+    server's `spend-impact` endpoint. A round trip would either arrive after the
+    household already clicked, or show a figure for the previous amount while in
+    flight; a stale money figure is worse than none. The server keeps the
+    endpoint as the figure of record and for other clients — **the two must
+    change together.**
+  - When the wallet backs a goal but no amount is typed yet, the notice still
+    states the mechanism in words, so the household knows what the wallet does
+    before choosing the number.
+  - **The notice names WHICH half gives way**, never just the total: this
+    month's contribution reduced (a month of saving paused) and money set aside
+    taken back out (the goal moving backwards) are different events and not
+    equally serious. The pace is squeezed out first, so a spend that fits inside
+    it says so plainly instead of alarming about set-aside money that was not
+    touched.
+  - **Never show `before → after` per goal here.** "36,0 triệu → 34,0 triệu"
+    reads as money withdrawn from the goal's balance even when only the monthly
+    contribution moved — the same pair appears for both cases. Name the part
+    that shrank instead.
+  - **Keep it to 2–3 lines.** It sits between an amount field and a save button;
+    a block long enough to skim past has warned nobody. It was 7 lines and is
+    now a headline + a bar + one cause line, with per-goal lines only when more
+    than one goal is affected. The "you can still record this" reassurance was
+    dropped — nothing here blocks anything, so saying so invited the doubt it
+    answered.
+  - **`SpendImpactBar` carries the proportion**, which words cannot: 4tr out of
+    52tr and 4tr out of 5tr read identically as text. Four slices in the order
+    money gives way — pace, set aside (alert colour), goal remainder,
+    unassigned — and `aria-hidden`, because the sentences already say every
+    figure. Coloured dots on the per-goal lines tie them to their slice, so the
+    bar needs no legend.
+  - **The notice must explain WHY a wallet with money in it still costs a
+    goal.** It names the balance and how much of it is genuinely unassigned
+    (`freeAmount` — the same subtraction the write path enforces). Without that
+    line the figures read as the app taking money that was plainly sitting
+    there, and an unexplained number erodes trust in every other figure on the
+    screen. `freeAmount === 0` — the whole balance already promised — is the case
+    that looks wrong until it is said out loud.
+  - **The wallet picker shows each wallet's balance next to its name**
+    (`computeCurrentValue`, the single source of truth per repo convention).
+    Which wallet can carry the spend is the decision being made, and it cannot
+    be made from names alone.
+  - When the household has **no wallet at all**, an outflow cannot be saved; the
+    form says so rather than leaving the submit button silently refusing.
 - Any cashflow write invalidates the **forecast, flexible-money,
   financial-state, dashboard, events and attention** query families — not just
   the cashflow list.

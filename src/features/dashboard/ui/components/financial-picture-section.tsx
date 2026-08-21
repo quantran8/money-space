@@ -20,7 +20,7 @@ import { cn } from '@/shared/lib/utils'
  * here is an output of those same sources (§2.15).
  *
  * v11 drops the two status chips that used to sit above the hero. They stated a
- * verdict ("Nhà mình đang ổn") before the reader had seen anything to verify it
+ * verdict ("Tài chính ổn định") before the reader had seen anything to verify it
  * against, and both axes they carried are now shown as facts instead: staleness
  * is named source by source in the block below, and the state of the month is
  * the low point in §12.2, which says what happens and when.
@@ -48,7 +48,26 @@ export function FinancialPictureSection({
   })
   const coverage = freshness ? buildCoverage(freshness) : undefined
 
-  const flexible = flexibleMoney.lowestProjectedBalance
+  /**
+   * The hero figure, with goal money taken out.
+   *
+   * `lowestProjectedBalance` only removes bills. Money the household set aside
+   * behind a goal was still being offered back here as free money — leading with
+   * "22tr linh hoạt" when 20tr of it belongs to the car.
+   *
+   * Both terms are measured at the SAME point: the server now resolves
+   * `goalCommitments` against wallet values that already have the horizon's
+   * outflows taken out, because an outflow outranks the goals sharing its
+   * wallet. While it did not, an outflow was subtracted twice — once by the
+   * balance walk and once again by a goal claim still sized to today's
+   * untouched wallet — and a household that merely spent from a wallet its
+   * goals were saving into was told it had negative money.
+   *
+   * NOT clamped: negative is the signal this screen exists to surface (§26B),
+   * and it means the same thing here — more is committed than is held.
+   */
+  const flexible =
+    flexibleMoney.lowestProjectedBalance - (flexibleMoney.goalCommitments ?? 0)
   const isNegative = flexible < 0
   const hero = splitVndScale(flexible)
 

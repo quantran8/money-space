@@ -17,6 +17,8 @@ export type DebtForm = {
   expectedFinalDueDate: string
   ownerMemberId: string
   receivedToAssetId: string
+  /** Optional default wallet to repay from; pre-fills the repayment events. */
+  repaymentAssetId: string
   paymentFrequency: 'none' | 'monthly' | 'quarterly' | 'yearly'
   fixedPaymentAmount: string
   /** Whether the user has overridden the auto-computed payment amount. */
@@ -49,6 +51,7 @@ export const defaultValues: DebtForm = {
   expectedFinalDueDate: '',
   ownerMemberId: '',
   receivedToAssetId: '',
+  repaymentAssetId: '',
   paymentFrequency: 'none',
   fixedPaymentAmount: '',
   fixedPaymentTouched: false,
@@ -106,6 +109,15 @@ export function getStatusTone(status: DebtStatus) {
   return 'bg-attention-tint text-attention border-none'
 }
 
+/**
+ * The balance actually owed. Users only have to enter the borrowed amount; an
+ * empty balance means none of it has been repaid, so the two are equal.
+ */
+export function resolveOutstandingAmount(values: Pick<DebtForm, 'originalAmount' | 'outstandingAmount'>) {
+  const raw = values.outstandingAmount.trim()
+  return parseAmountInput(raw === '' ? values.originalAmount : raw)
+}
+
 export function buildDebtSchema(t: (key: string) => string) {
   return z
     .object({
@@ -113,12 +125,15 @@ export function buildDebtSchema(t: (key: string) => string) {
       lenderType: z.enum(['relative', 'bank_institution', 'other']),
       lenderName: z.string().trim().min(1, t('debts.form.validation.requiredLender')),
       originalAmount: z.string().trim().min(1, t('debts.form.validation.requiredOriginalAmount')),
-      outstandingAmount: z.string().trim().min(1, t('debts.form.validation.requiredOutstanding')),
+      // Optional: left blank it means "nothing repaid yet" and resolves to the
+      // borrowed amount (see `resolveOutstandingAmount`).
+      outstandingAmount: z.string().trim(),
       borrowedAt: z.string().min(1, t('debts.form.validation.requiredBorrowedAt')),
       firstPaymentDate: z.string(),
       expectedFinalDueDate: z.string(),
       ownerMemberId: z.string(),
       receivedToAssetId: z.string(),
+      repaymentAssetId: z.string(),
       paymentFrequency: z.enum(['none', 'monthly', 'quarterly', 'yearly']),
       fixedPaymentAmount: z.string(),
       fixedPaymentTouched: z.boolean(),
@@ -160,7 +175,7 @@ export function buildDebtSchema(t: (key: string) => string) {
           message: t('debts.form.validation.positiveOriginalAmount'),
         })
       }
-      if (parseAmountInput(value.outstandingAmount) <= 0) {
+      if (value.outstandingAmount.trim() !== '' && parseAmountInput(value.outstandingAmount) <= 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['outstandingAmount'],

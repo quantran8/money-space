@@ -98,7 +98,7 @@ App cần tạo được shared picture mà không buộc hai người phải me
 
 ## 4. Core Positioning
 
-**Giúp hai người cùng hiểu rõ tình hình tài chính nhà mình, biết những gì sắp tới và cân nhắc một quyết định hôm nay sẽ ảnh hưởng tới mục tiêu chung như thế nào.**
+**Giúp hai người cùng hiểu rõ tình hình tài chính gia đình, biết những gì sắp tới và cân nhắc một quyết định hôm nay sẽ ảnh hưởng tới mục tiêu chung như thế nào.**
 
 Phiên bản ngắn:
 
@@ -114,7 +114,7 @@ Không nên bắt đầu bằng:
 
 Nên bắt đầu từ pain dễ nhận ra hơn:
 
-> **Nhà mình thực sự đang có bao nhiêu và số tiền đó đang nằm ở đâu?**
+> **Gia đình thực sự đang có bao nhiêu và số tiền đó đang nằm ở đâu?**
 
 Sau đó:
 

@@ -4,8 +4,6 @@ import { localizedEmailField, localizedRequiredText } from '@/shared/lib/validat
 
 type Translate = (key: string, params?: Record<string, unknown>) => string
 
-export type AuthTab = 'login' | 'signup'
-
 export type LoginForm = {
   email: string
   password: string

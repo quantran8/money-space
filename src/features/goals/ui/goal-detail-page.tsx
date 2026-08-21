@@ -1,18 +1,24 @@
-import { ChevronLeft, Pencil, Plus } from 'lucide-react'
+import { ChevronLeft, Pencil } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import { Panel, PanelHeader, PanelSplit, Sunk } from '@/components/ui/panel'
-import { useAssets } from '@/features/assets/hooks/use-assets'
-import { useEvents } from '@/features/events/hooks/use-events'
+import { Panel, Sunk } from '@/components/ui/panel'
+import type { GoalAllocationRecord } from '@/features/goals/api/goals.repository'
+import { useGoalAllocations } from '@/features/goals/hooks/use-goal-allocations'
+import { useGoalMonthlyProgress } from '@/features/goals/hooks/use-goal-monthly-progress'
 import { useGoalsPage } from '@/features/goals/hooks/use-goals-page'
-import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
 import { goalAmount } from '@/features/goals/model/goals-form'
-import { GoalContributionDialog } from '@/features/goals/ui/components/goal-contribution-dialog'
+import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
+import { GoalAllocationDialog } from '@/features/goals/ui/components/goal-allocation-dialog'
+import { GoalAllocationsSection } from '@/features/goals/ui/components/goal-allocations-section'
+import { GoalMonthlyProgressSection } from '@/features/goals/ui/components/goal-monthly-progress-section'
+import { GoalScheduledOutflowsSection } from '@/features/goals/ui/components/goal-scheduled-outflows-section'
+import { useScheduledOutflowImpact } from '@/features/goals/hooks/use-scheduled-outflow-impact'
+import { GoalProgressChange } from '@/features/goals/ui/components/goal-progress-change'
+import { GoalRoadSection } from '@/features/goals/ui/components/goal-road-section'
 import { GoalFormDialog } from '@/features/goals/ui/components/goal-form-dialog'
-import { useMembers } from '@/features/members/hooks/use-members'
 import { formatVndScale, splitVndScale } from '@/shared/lib/format-money'
 
 /** Goal dates are month-precision; `'No deadline'` is the legacy empty marker. */
@@ -31,23 +37,16 @@ export function GoalDetailPage() {
   const { goalId } = useParams<{ goalId: string }>()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const [contributionOpen, setContributionOpen] = useState(false)
-  const [explainOpen, setExplainOpen] = useState(false)
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
-  const { events, isLoading: eventsLoading } = useEvents()
-  const { assets } = useAssets()
-  const { members } = useMembers()
   const {
     goals,
     isLoading,
     priorityLabels,
-    contributions,
-    setContribution,
-    contributionSources,
-    setContributionSource,
-    addContribution,
-    isContributing,
-    walletOptions,
+    assetOptions,
+    addAllocation,
+    editAllocation,
+    removeAllocation,
+    isSavingAllocation,
     form,
     isEditing,
     isSavingGoal,
@@ -58,24 +57,46 @@ export function GoalDetailPage() {
   } = useGoalsPage()
 
   const goal = goals.find((item) => item.id === goalId)
-  const contributionEvents = useMemo(
-    () =>
-      events
-        .filter((event) => event.type === 'goal_contribution' && event.financialGoalId === goalId)
-        .sort((a, b) => b.isoDate.localeCompare(a.isoDate)),
-    [events, goalId],
+  const { allocations } = useGoalAllocations(goalId)
+  // What money already scheduled to leave this goal's wallets will cost it.
+  // Null unless something is actually scheduled against them.
+  const { impact: scheduledOutflowImpact } = useScheduledOutflowImpact(goalId)
+  // The goal's own history — the ACTUAL line on the road chart. The same query
+  // backs the pace section below, so this costs nothing extra.
+  const { months: progressMonths } = useGoalMonthlyProgress(goalId)
+  // `?allocate=1` — set by the create flow, which lands here precisely because
+  // an asset-backed goal has nothing behind it until assets are chosen. Opening
+  // the dialog straight away makes "create" and "pick the assets" read as one
+  // action instead of two, the second of which the household has to find.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [allocationOpen, setAllocationOpen] = useState(
+    () => searchParams.get('allocate') === '1',
   )
-  const assetNames = useMemo(
-    () => new Map(assets.map((asset) => [asset.id, asset.name])),
-    [assets],
-  )
-  // `createdById` is an auth profile id; members carry it as `profileId`.
-  const memberNames = useMemo(
-    () => new Map(members.map((member) => [member.profileId, member.name])),
-    [members],
-  )
+  const [editingAllocation, setEditingAllocation] = useState<
+    GoalAllocationRecord | undefined
+  >(undefined)
 
-  if ((isLoading || eventsLoading) && !goal) {
+  function handleAllocationOpenChange(open: boolean) {
+    setAllocationOpen(open)
+    if (!open) setEditingAllocation(undefined)
+    // Drop the flag once handled, so a refresh or a back-navigation does not
+    // reopen a dialog the household already dismissed.
+    if (!open && searchParams.has('allocate')) {
+      const next = new URLSearchParams(searchParams)
+      next.delete('allocate')
+      setSearchParams(next, { replace: true })
+    }
+  }
+  // One live claim per (goal, asset) — an asset already counted here cannot be
+  // added a second time, so it is not offered.
+  const unallocatedAssets = useMemo(
+    () =>
+      assetOptions.filter(
+        (option) => !allocations.some((row) => row.assetId === option.value),
+      ),
+    [allocations, assetOptions],
+  )
+  if (isLoading && !goal) {
     return (
       <div className="space-y-4 pb-3">
         <Sunk className="h-9 w-40 animate-pulse" />
@@ -104,232 +125,193 @@ export function GoalDetailPage() {
   const projection = goal.projection
   const notSet = t('goals.table.notSet')
   const desiredDate = formatGoalDate(goal.targetDate, locale, notSet)
-  const projectedDate =
-    projection && hasProjectedDate(projection)
-      ? formatGoalDate(projection.projectedCompletionDate ?? undefined, locale, notSet)
-      : t('goals.demo.unknownProjection')
-  const requiredMonthly = projection?.requiredMonthlyContributionForTargetDate
   const plannedMonthly = goal.plannedMonthlyContribution
-
-  function handleContributionOpen() {
-    if (!goal) return
-    setContribution(goal.id, '')
-    setContributionOpen(true)
-  }
+  // One decimal, matching every other percentage on the screen.
+  const percentLabel = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(progress)
+  // Only shown when the projection is honest — a goal with no declared pace has
+  // no date, and inventing one would be a guess drawn as a fact.
+  const projectedLabel =
+    projection && hasProjectedDate(projection) && projection.projectedCompletionDate
+      ? formatGoalDate(projection.projectedCompletionDate, locale, notSet)
+      : null
 
   return (
     <div className="space-y-4 pb-3">
       <header className="px-1 py-1 sm:px-0">
         <BackLink onClick={() => navigate('/goals')} label={t('goals.detail.back')} />
 
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <h1 className="page-title min-w-0 truncate text-[30px] leading-tight sm:text-[36px]">
-            {goal.name}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <Button
-              variant="secondary"
-              className="h-10 px-4 text-[13px]"
-              onClick={() => openEdit(goal.id)}
-            >
-              <Pencil className="size-4" strokeWidth={1.75} />
-              {t('common.edit')}
-            </Button>
-            <Button className="h-10 px-4 text-[13px]" onClick={handleContributionOpen}>
-              <Plus className="size-4" strokeWidth={1.75} />
-              {t('goals.detail.addContribution')}
-            </Button>
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+          {/* Priority sits beside the name, not on the panel below: it
+              qualifies the goal, not the figure. */}
+          <div className="flex min-w-0 items-baseline gap-3">
+            <h1 className="page-title min-w-0 truncate text-[19px]">{goal.name}</h1>
+            <span className="shrink-0 text-[12px] text-ink3">{priorityLabels[goal.priority]}</span>
           </div>
+
+          <Button
+            variant="secondary"
+            className="h-9 shrink-0 px-4 text-[13px]"
+            onClick={() => openEdit(goal.id)}
+          >
+            <Pencil className="size-4" strokeWidth={1.75} />
+            {t('common.edit')}
+          </Button>
         </div>
       </header>
 
-      {/* The answer: how much is set aside, and what that means for the date. */}
+      {/* The current state, and nothing else. The hero used to carry the
+          projection too, which put three numbers of three different kinds
+          side by side and left the household to sort out which answered what.
+          The forecast now has a section of its own below. */}
       <Panel>
-        <PanelSplit className="mt-0">
-          <div>
-            <p className="label">{t('goals.detail.picture.saved')}</p>
-            <div className="mt-3 flex items-end gap-2">
-              <span className="money-number text-[44px] leading-none sm:text-[54px]">
+        <div className="grid gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="min-w-0">
+            <p className="label-vi">{t('goals.detail.picture.saved')}</p>
+
+            <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-1">
+              <span className="money-number text-[44px] leading-[.9] sm:text-[58px]">
                 {savedFigure.amount}
               </span>
-              <span className="mb-1 text-[15px] text-ink2">/ {formatVndScale(target)}</span>
+              <span className="num mb-1 text-[12px] text-ink3">/ {formatVndScale(target)}</span>
             </div>
 
-            <div
-              className="mt-6 h-1.5 overflow-hidden rounded-full bg-committed"
-              role="progressbar"
-              aria-label={t('goals.detail.picture.progressAria', {
-                current: formatVndScale(current),
-                target: formatVndScale(target),
-              })}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(progress)}
-            >
+            <div className="mt-6">
+              {/* Percentage and shortfall read as one line above the bar: the
+                  bar shows the shape, these two say what it amounts to. */}
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[13px]">
+                <span className="text-ink2">
+                  <Trans
+                    i18nKey="goals.detail.picture.achieved"
+                    values={{ percent: percentLabel }}
+                    components={[<strong key="percent" className="num font-medium text-accent" />]}
+                  />
+                </span>
+                <span className="text-ink2">
+                  <Trans
+                    i18nKey="goals.detail.picture.remaining"
+                    values={{ amount: formatVndScale(remaining) }}
+                    components={[<strong key="amount" className="num font-medium text-ink" />]}
+                  />
+                </span>
+              </div>
+
               <div
-                className="seg h-full min-w-[4px] rounded-full bg-accent"
-                style={{ width: `${progress}%` }}
-              />
+                className="h-1 overflow-hidden rounded-full bg-committed"
+                role="progressbar"
+                aria-label={t('goals.detail.picture.progressAria', {
+                  current: formatVndScale(current),
+                  target: formatVndScale(target),
+                })}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(progress)}
+              >
+                <div
+                  className="seg h-full min-w-[3px] rounded-full bg-accent"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
+
+            {/* Assets reprice on their own, so this figure can move with the
+                household having done nothing. Saying why is what keeps it
+                trustworthy — see the component. */}
+            <GoalProgressChange goalId={goal.id} />
           </div>
 
-          <dl className="grid gap-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-            <PictureMetric label={t('goals.detail.picture.desiredDate')} value={desiredDate} />
-            <PictureMetric label={t('goals.detail.picture.atCurrentPace')} value={projectedDate} />
-            <PictureMetric
-              label={t('goals.detail.picture.requiredMonthly')}
-              value={
-                requiredMonthly != null && requiredMonthly > 0
-                  ? t('goals.detail.picture.perMonth', { amount: formatVndScale(requiredMonthly) })
-                  : notSet
-              }
-            />
-          </dl>
-        </PanelSplit>
-      </Panel>
-
-      <Panel>
-        <PanelHeader
-          title={t('goals.detail.plan.title')}
-          action={
-            <button
-              type="button"
-              className="min-h-11 text-[13px] font-medium text-accent"
-              onClick={() => setExplainOpen((open) => !open)}
-              aria-expanded={explainOpen}
-            >
-              {explainOpen ? t('goals.detail.plan.hide') : t('goals.detail.plan.explain')}
-            </button>
-          }
-        />
-
-        <div className="mt-7 grid gap-4 lg:grid-cols-3">
-          <PlanTile
-            label={t('goals.detail.plan.monthly')}
-            value={
-              plannedMonthly != null && plannedMonthly > 0
-                ? formatVndScale(plannedMonthly)
-                : t('goals.projection.noPace')
-            }
-          />
-          <PlanTile label={t('goals.detail.plan.remaining')} value={formatVndScale(remaining)} />
-          <PlanTile label={t('goals.detail.plan.priority')} value={priorityLabels[goal.priority]} />
+          {/* The target and when this pace lands on it. Kept out of the figure
+              stack on the left so the two kinds of number — what is held now,
+              what is being aimed at — are never read as one series. */}
+          <div className="flex flex-col justify-center lg:items-end">
+            <p className="label-vi">{t('goals.detail.picture.targetLabel')}</p>
+            <div className="money-number mt-2 text-[30px]">{formatVndScale(target)}</div>
+            <p className="mt-1 text-[12px] text-ink3 lg:text-right">
+              {projectedLabel
+                ? t('goals.detail.picture.projectedOn', { date: projectedLabel })
+                : goal.targetDate && goal.targetDate !== 'No deadline'
+                  ? t('goals.detail.picture.wantByPlain', { date: desiredDate })
+                  : t('goals.detail.picture.noDeadline')}
+            </p>
+          </div>
         </div>
-
-        {/* Every projected number has to be explainable (design.md §16). */}
-        {explainOpen ? (
-          <Sunk className="mt-4 px-4 py-4 text-[13px] leading-6 text-ink2">
-            {projection ? (
-              <>
-                <p>{t(`goals.projection.reason.${projection.reason}`)}</p>
-                {hasProjectedDate(projection) ? (
-                  <dl className="mt-3 grid gap-x-4 gap-y-1.5 sm:grid-cols-[180px_1fr]">
-                    <dt>{t('goals.detail.plan.monthly')}</dt>
-                    <dd className="num font-medium text-ink">
-                      {formatVndScale(projection.plannedMonthlyContribution ?? 0)}
-                    </dd>
-                    <dt>{t('goals.detail.plan.remaining')}</dt>
-                    <dd className="num font-medium text-ink">
-                      {formatVndScale(projection.remainingAmount)}
-                    </dd>
-                    {projection.estimatedMonthsToGoal != null ? (
-                      <>
-                        <dt>{t('goals.detail.plan.estimatedMonths')}</dt>
-                        <dd className="num font-medium text-ink">
-                          {t('goals.projection.months', {
-                            count: projection.estimatedMonthsToGoal,
-                          })}
-                        </dd>
-                      </>
-                    ) : null}
-                  </dl>
-                ) : null}
-              </>
-            ) : (
-              <p>{t('goals.detail.plan.explainUnavailable')}</p>
-            )}
-          </Sunk>
-        ) : null}
       </Panel>
 
-      <Panel>
-        <PanelHeader
-          title={t('goals.detail.history.title')}
-          meta={t('goals.detail.history.count', { count: contributionEvents.length })}
-        />
+      {/* Directly under the figures it qualifies: the household reads "đang có
+          303,6tr", and if a bill is going to move that, the explanation is the
+          very next thing rather than something to discover further down. Renders
+          nothing when no outflow touches this goal's wallets. */}
+      <GoalScheduledOutflowsSection impact={scheduledOutflowImpact} target={target} />
 
-        {contributionEvents.length > 0 ? (
-          <div className="mt-6 overflow-x-auto">
-            <table className="table-dense w-full min-w-[640px] text-[14px]">
-              <thead>
-                <tr className="label">
-                  <th className="pb-3 text-left font-normal">
-                    {t('goals.detail.history.columns.date')}
-                  </th>
-                  <th className="pb-3 text-left font-normal">
-                    {t('goals.detail.history.columns.source')}
-                  </th>
-                  <th className="pb-3 text-left font-normal">
-                    {t('goals.detail.history.columns.recordedBy')}
-                  </th>
-                  <th className="pb-3 text-left font-normal">
-                    {t('goals.detail.history.columns.note')}
-                  </th>
-                  <th className="pb-3 text-right font-normal">
-                    {t('goals.detail.history.columns.amount')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {contributionEvents.map((event) => (
-                  <tr key={event.id ?? `${event.isoDate}-${event.amount}`}>
-                    <td className="py-3 font-mono text-[12px] text-ink3">
-                      {new Date(event.isoDate).toLocaleDateString(locale)}
-                    </td>
-                    <td className="py-3">
-                      {(event.fromAssetId ? assetNames.get(event.fromAssetId) : undefined) ??
-                        t('goals.detail.history.unknownSource')}
-                    </td>
-                    <td className="py-3">
-                      {(event.createdById ? memberNames.get(event.createdById) : undefined) ??
-                        t('goals.detail.history.unknownMember')}
-                    </td>
-                    <td className="py-3 text-ink2">
-                      {event.note || t('goals.detail.history.defaultNote')}
-                    </td>
-                    <td className="num py-3 text-right font-medium text-accent">
-                      +{formatVndScale(Math.abs(event.amount))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="mt-6 py-10 text-center text-[13px] text-ink2">
-            {t('goals.detail.history.empty')}
-          </p>
-        )}
-      </Panel>
+      {/* Is this pace going to get us there in time? — as a chart and a
+          sentence, because that question is a comparison. */}
+      <GoalRoadSection
+        current={current}
+        target={target}
+        remaining={remaining}
+        projection={projection}
+        plannedMonthly={plannedMonthly}
+        months={progressMonths}
+        targetDate={goal.targetDate}
+        formatDate={(value) => formatGoalDate(value, locale, notSet)}
+      />
 
-      <GoalContributionDialog
-        open={contributionOpen}
-        onOpenChange={setContributionOpen}
-        goal={goal}
-        amount={contributions[goal.id] ?? ''}
-        onAmountChange={(value) => setContribution(goal.id, value)}
-        sourceId={contributionSources[goal.id] ?? ''}
-        onSourceChange={(value) => setContributionSource(goal.id, value)}
-        walletOptions={walletOptions}
-        isSubmitting={isContributing}
-        onSubmit={() => addContribution(goal.id)}
+      {/* Month by month: what actually went in, against the declared pace.
+          Sits BEFORE the sources it summarises — the household asks "are we
+          keeping it up?" before "what is feeding this?", and the answer to the
+          second is only interesting once the first has been read. */}
+      <GoalMonthlyProgressSection goalId={goal.id} />
+
+      <GoalAllocationsSection
+        allocations={allocations}
+        assetOptions={assetOptions}
+        isBusy={isSavingAllocation}
+        canAdd={unallocatedAssets.length > 0}
+        onAdd={() => {
+          setEditingAllocation(undefined)
+          setAllocationOpen(true)
+        }}
+        onEdit={(allocation) => {
+          setEditingAllocation(allocation)
+          setAllocationOpen(true)
+        }}
+        onRemove={(allocationId) => void removeAllocation(goal.id, allocationId)}
+      />
+
+      <GoalAllocationDialog
+        // Remount per row so the dialog seeds its fields from `editing` without
+        // an effect syncing props into state.
+        key={editingAllocation?.id ?? 'new'}
+        open={allocationOpen}
+        onOpenChange={handleAllocationOpenChange}
+        goalName={goal.name}
+        // While editing, the asset is fixed — only its share changes.
+        assetOptions={
+          editingAllocation
+            ? assetOptions.filter((option) => option.value === editingAllocation.assetId)
+            : unallocatedAssets
+        }
+        editing={editingAllocation}
+        isSubmitting={isSavingAllocation}
+        onSubmit={(payload) =>
+          editingAllocation
+            ? editAllocation(goal.id, editingAllocation.id, {
+                kind: payload.kind,
+                allocatedAmount: payload.allocatedAmount,
+                percent: payload.percent,
+              })
+            : addAllocation(goal.id, payload)
+        }
       />
 
       <GoalFormDialog
+        key={formOpen ? 'goal-form-open' : 'goal-form-closed'}
         open={formOpen}
         onOpenChange={handleFormOpenChange}
         form={form}
+        assetOptions={assetOptions}
         isEditing={isEditing}
         isSubmitting={isSavingGoal}
         onSubmit={submit}
@@ -351,20 +333,3 @@ function BackLink({ onClick, label }: { onClick: () => void; label: string }) {
   )
 }
 
-function PictureMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[13px] text-ink2">{label}</dt>
-      <dd className="num mt-1 text-[20px] font-medium">{value}</dd>
-    </div>
-  )
-}
-
-function PlanTile({ label, value }: { label: string; value: string }) {
-  return (
-    <Sunk className="px-4 py-4">
-      <p className="text-[13px] text-ink2">{label}</p>
-      <p className="num mt-2 text-[22px] font-medium">{value}</p>
-    </Sunk>
-  )
-}

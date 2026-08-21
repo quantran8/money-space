@@ -47,6 +47,43 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
     `saving_deposit` is already outside the spendable pool. Any future "set this
     aside" feature must ride on that same column rather than subtracting a second
     time somewhere else — that double subtraction is what sank the reserve.
+- **Already owned vs. just bought** (`CreateAssetDto.fundingAssetId`) — two
+  different acts that the create form must tell apart, because they move net
+  worth differently:
+  - **Đã có sẵn** (no funding wallet, the default) — the household is declaring
+    something it holds, e.g. gold bought in 2020. Net worth **rises**: they are
+    no richer, just newly honest about what they have. No money event, no wallet
+    touched.
+  - **Vừa mua** (a wallet id) — a purchase. Net worth **stays put**: money left
+    the wallet and came back as the asset. Logs an `asset_purchase` **outflow**
+    carrying `from_asset_id` and debits that wallet.
+
+  Before this existed every entry behaved as the first, so buying 100tr of gold
+  appeared to create 100tr out of nothing. Both create paths honour it — a
+  brand-new asset (`logInitialPurchase`) and adding to an existing position
+  (`logAdditionalPurchase`).
+
+  - **The amount charged is the cost basis, not the live value**
+    (`resolvePurchaseCost`): a market position costs `quantity × purchasePrice`.
+    Buying 1 lượng at 80tr while the price says 82tr must take 80tr out of the
+    wallet — charging market price would invent a loss that never happened.
+  - **The wallet must cover it** (`assertFundingWalletCovers`, before the write
+    transaction). Unlike an expense — recorded after the fact, possibly against
+    a stale balance — a purchase is declared as it happens, so an amount the
+    wallet cannot cover means the balance is out of date or the money came from
+    elsewhere. Letting it through would hit the `Math.max(0, …)` floor in
+    `debitManualAsset`, leaving the wallet at 0 while the asset kept its full
+    value — re-inflating net worth, the very bug this removes. Spending a wallet
+    to exactly 0 is allowed; only overspending is rejected.
+  - **Not a column on `assets`** — it describes ONE acquisition, not the asset.
+    Buying more of the same position later would have no single value to store.
+    Purchase history lives in `money_events`, next to `asset_sale`.
+  - Offered only for types a household actually buys (`canBePurchased`): gold,
+    crypto, stock, real estate, foreign currency. Paying for a wallet out of a
+    wallet is a transfer, and a saving deposit has its own funding flow.
+  - Entry points: the asset form, and the **"Mua tài sản"** quick action on the
+    events page — which opens that form already set to "vừa mua", mirroring
+    "Bán tài sản". See [[money-events]].
 - **Delete** = soft-delete (`deletedAt`) + also delete the asset's valuations + unlink the asset from any money events.
 - **Status / lifecycle**: `status` (`active` | `sold` | `closed`, default `active`) + `soldAt`. Distinct from `deletedAt`: a **sold** asset is kept (quantity/value 0) for history, excluded from the liquidity buckets and net worth, but still listed (with a "Đã bán" badge; the list dropdown shows a "Bán" action for sellable, still-active assets). Selling is driven by an `asset_sale` money event — see [[asset-sale]].
 

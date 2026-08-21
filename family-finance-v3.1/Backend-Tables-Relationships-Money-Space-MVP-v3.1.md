@@ -881,7 +881,7 @@ Snapshot không phải ledger và cũng không phải source of truth cho foreca
 Snapshot trả lời:
 
 ```txt
-Nhà mình tại thời điểm đó đang thế nào?
+Gia đình tại thời điểm đó đang thế nào?
 Tiền thanh khoản là bao nhiêu?
 30 ngày sau snapshot có incoming/outgoing bao nhiêu?
 Lowest projected balance là bao nhiêu?
@@ -1003,7 +1003,7 @@ GET /snapshots
 Nó trả lời:
 
 ```txt
-Tiền nhà mình đang nằm ở đâu?
+Tiền gia đình đang nằm ở đâu?
 Có bao nhiêu tiền có thể dùng ngay?
 Có bao nhiêu tiền tiết kiệm?
 Có tài sản dài hạn gì?
@@ -2248,7 +2248,7 @@ Lưu mục tiêu tài chính và các input cần cho goal projection / What-if 
 Trả lời:
 
 ```txt
-Nhà mình đang hướng tới mục tiêu gì?
+Gia đình đang hướng tới mục tiêu gì?
 Hiện đã có bao nhiêu?
 Còn thiếu bao nhiêu?
 Muốn đạt vào khi nào?
@@ -2266,16 +2266,12 @@ name                          text not null
 category                      text not null
 
 target_amount                 numeric not null default 0
-current_amount                numeric not null default 0
-current_amount_updated_at     timestamptz
 
 target_date                   date
 planned_monthly_contribution  numeric
 
 priority                      text not null default 'medium'
 status                        text not null default 'active'
-
-linked_asset_id               uuid references assets(id)
 
 note                          text
 
@@ -2315,30 +2311,49 @@ status:
 - cancelled
 ```
 
-## Vì sao `current_amount` là cột thật?
+## Goal không giữ tiền của riêng nó
 
-User mới có thể onboarding với một goal đã có sẵn tiền từ trước khi dùng app.
-
-Ví dụ:
-
-```txt
-Goal mua nhà
-current_amount = 400M
-```
-
-Không nên bắt backend tạo fake historical `goal_contribution` events chỉ để reconstruct số hiện tại.
-
-Rule:
+Một goal **là một tập phần góp từ asset thật** — không hơn. Nó không lưu con số
+tiến độ nào; progress được cộng từ `goal_asset_allocations` theo giá trị asset
+hiện tại (xem §20B).
 
 ```txt
-financial_goals.current_amount
-= current state / source of truth cho goal progress
-
-money_events.goal_contribution
-= optional history / explanation cho contribution xảy ra trong app
+progress = Σ  kind='fixed'   → min(allocated_amount, asset.current_value)
+              kind='percent' → asset.current_value × percent / 100
 ```
 
-Nếu create `goal_contribution`, service update `current_amount` cùng transaction.
+**"Tiền chung" không phải một loại tiền riêng.** Để dành 100tr từ tiền chung của
+nhà = một phần góp cố định 100tr từ chính asset `cash`/`bank_account` đang giữ
+số đó — khai y hệt như một phần của vàng hay chứng khoán.
+
+### Hai lỗi đã sửa
+
+Bản trước có hai `backing_mode`: `earmark` (một con số lưu trong
+`current_amount`) và `asset_backed`. `earmark` là một con số lơ lửng không neo
+vào asset nào, nên:
+
+- Không ai trả lời được "100tr đó đang nằm ở đâu".
+- Vì là con số khai tay, nó có thể **vượt tổng tài sản thật** — buộc dashboard
+  phải `Math.min(totalAssets, …)`.
+
+Cả hai mode đã bị gỡ. Mọi tính chất tốt của model đều đến từ việc **neo vào
+asset**; `earmark` là ngoại lệ mang các vấn đề gốc quay lại. Cap ở dashboard
+cũng bỏ luôn: mỗi phần góp đã bị chặn bởi giá trị asset, và over-allocation được
+chặn lúc ghi, nên tổng luôn ≤ tổng tài sản theo cấu trúc.
+
+Trước đó `goal_contribution` cũng bị gỡ khỏi `MoneyEventType`, cùng với link
+`money_events.financial_goal_id` tới goal.
+
+## Bắt buộc có ít nhất một phần góp
+
+`POST /financial-goals` nhận **goal kèm `allocations[]`** trong cùng một
+transaction, và từ chối mảng rỗng. Một goal không có asset nào thì không có tiến
+độ và cũng không có cách nào tăng — nó sẽ đứng ở 0% mãi mãi.
+
+## Rút tiền khỏi goal
+
+Không có event nào cả. Tiêu tiền từ asset đứng sau goal là đủ: progress tự giảm
+ở lần đọc kế tiếp, vì phần `fixed` bị cap ở giá trị thực của asset.
 
 ## Derived values — không cần lưu
 
@@ -2359,14 +2374,149 @@ Nếu `planned_monthly_contribution` null hoặc <= 0 thì không show projected
 
 ```txt
 target_amount >= 0
-current_amount >= 0
 planned_monthly_contribution >= 0
 name <> ''
 ```
 
-## Note
+---
 
-`linked_asset_id` có thể dùng để nói goal hiện được giữ ở đâu, nhưng MVP không nên tự động derive `current_amount` từ asset nếu chưa có explicit tracking rule.
+# 20B. Table: goal_asset_allocations
+
+## Dùng để làm gì?
+
+Phần đóng góp của **một asset** vào **một goal `asset_backed`**.
+
+Asset được chia **theo phần, không gán trọn**: 100tr chứng khoán có thể góp 50tr
+cho goal mua xe, phần còn lại vẫn tự do hoặc nuôi goal khác. Vì vậy đây là một
+bảng, không phải một cột ở bất kỳ đầu nào.
+
+`role` khai **phần này là gì**: `contribution` (ví tiền chảy vào hàng tháng) hay
+`holding` (vàng/CK đang giữ). Cả hai vào tiến độ; **chỉ `contribution` vào nhịp
+góp** — ví không có giá thị trường nên số dư chỉ đổi khi nhà thu hoặc chi, còn
+biến động vàng thì không phải nhà giữ hay trượt nhịp. Mặc định suy từ loại asset
+(ví → `contribution`) nhưng **lưu chứ không suy lúc đọc**: nhà có ví chi tiêu và
+ví để dành phải nói được chỉ ví thứ hai mới tính.
+
+## Fields
+
+```txt
+id                 uuid primary key
+household_id       uuid not null references households(id)
+financial_goal_id  uuid not null references financial_goals(id) on delete cascade
+asset_id           uuid not null references assets(id) on delete cascade
+
+kind               text not null            -- 'fixed' | 'percent'
+allocated_amount   numeric                  -- NOT NULL khi kind='fixed'
+percent            numeric                  -- NOT NULL khi kind='percent'
+
+note               text
+created_by / created_at / updated_by / updated_at / deleted_at
+```
+
+## Công thức progress
+
+```txt
+kind='fixed'    → min(allocated_amount, asset.current_value)
+kind='percent'  → asset.current_value × percent / 100
+```
+
+`min()` ở nhánh `fixed` là ràng buộc quan trọng: nếu asset tụt xuống dưới mức đã
+khai, chỉ phần thực có mới được tính. Đó cũng là **lý do chi tiêu không cần ghi
+gì phía goal** — con số tự đúng lại ở lần đọc sau.
+
+## Constraints
+
+```txt
+UNIQUE (financial_goal_id, asset_id) WHERE deleted_at IS NULL
+CHECK (kind='fixed'   AND allocated_amount >= 0 AND percent IS NULL)
+   OR (kind='percent' AND percent > 0 AND percent <= 100 AND allocated_amount IS NULL)
+```
+
+**Over-allocation** không thể enforce bằng CHECK (cần tổng qua nhiều dòng + giá
+trị asset động), nên `GoalsService` kiểm tra lúc ghi, **qua tất cả goal**: cùng
+100tr không thể hứa cho cả goal xe lẫn goal nhà. Percent và fixed được quy về
+cùng giá trị asset hiện tại để so sánh.
+
+Biến động giá **sau đó không phải lỗi** — household không làm gì sai, và `min()`
+đã nói đúng sự thật.
+
+---
+
+# 20C. Table: snapshot_goal_values
+
+## Dùng để làm gì?
+
+Chốt **tiến độ của từng goal** vào mỗi snapshot, để trả lời câu hỏi theo tháng:
+
+```txt
+Đặt mục tiêu góp 10tr/tháng.
+Tháng 1 đúng 10tr.
+Tháng 2 tiêu mất 2tr, nên chỉ còn 8tr được góp vào.
+```
+
+## Fields
+
+```txt
+id                uuid primary key
+household_id      uuid not null references households(id)
+snapshot_id       uuid not null references snapshots(id) on delete cascade
+financial_goal_id uuid not null references financial_goals(id) on delete cascade
+
+goal_name         text not null       -- denormalized như snapshot_asset_values
+target_amount     numeric not null
+progress_amount   numeric not null    -- đã resolve tại thời điểm chốt
+contribution_progress_amount numeric not null default 0
+                                      -- phần role='contribution' của số trên
+
+created_at        timestamptz not null default now()
+
+UNIQUE (snapshot_id, financial_goal_id)
+```
+
+## Vì sao chốt số thay vì tính lại
+
+`goal_asset_allocations` **không có lịch sử**. Nếu tính lại tiến độ tháng 6 từ
+`snapshot_asset_values` với phân bổ hiện tại, thì hôm nay thêm một asset vào
+goal sẽ làm **tiến độ tháng 6 cũng tăng theo** — lịch sử kể một câu chuyện chưa
+từng xảy ra.
+
+## Hai con số, không phải một
+
+`progress_amount` là cả goal, gồm giá trị thị trường.
+`contribution_progress_amount` chỉ là phần `contribution` — các ví tiền chảy
+vào. **Nhịp góp đo con số thứ hai**, nên biến động vàng không còn trả lời hộ câu
+hỏi "tháng này có giữ được 10tr không?" (trước đây nó có, và sai theo cả hai
+chiều). Cả hai tính từ cùng bộ phân bổ và cùng giá trị asset trong một lượt, nên
+không thể lệch nhau trong cùng một ngày.
+
+Dòng ghi trước khi có cột này mang giá trị 0. Tổng > 0 mà contribution = 0 nghĩa
+là **chưa ghi nhận**, không phải "không góp gì" — API trả `null` để panel hiện
+"—" thay vì kết tội nhà trượt những tháng họ có thể đã giữ đúng. Cố ý **không**
+backfill, đúng lý do khiến con số được chốt ngay từ đầu.
+
+## Nhịp góp mỗi tháng
+
+```txt
+delta(tháng N) = contribution(cuối tháng N) − contribution(cuối tháng N−1)
+               + Σ(asset_purchase trong tháng N, from ∈ goal, to ∈ goal)
+```
+
+Vế cộng là **đổi hình thức nắm giữ trong cùng một goal**: mua 10tr vàng bằng ví
+đang góp cho goal làm ví tụt 10tr, nhưng tiến độ goal đứng yên — nhà không tiêu
+mất gì. Chỉ bù khi **cả hai đầu** đều thuộc goal; mua tài sản ngoài goal thì tiền
+thật sự rời khỏi mục tiêu. Chỉ khả thi từ khi `asset_purchase` mang
+`from_asset_id` (§7B) — trước đó ví tụt và vàng lên là hai sự kiện rời rạc, ghép
+lại là đoán.
+
+Delta này **đã gồm cả** tiền góp thêm, tiền tiêu ra khỏi asset, và biến động giá
+— không cần bảng audit nào khác.
+
+- Tháng đầu tiên có dữ liệu: `delta = null`, không phải bằng cả số dư (nhà mới
+  vào app với 200tr sẵn có không phải đã tiết kiệm 200tr trong tháng đó).
+- Tháng không có snapshot nào thì **bỏ qua**, không điền 0 — không có snapshot
+  nghĩa là không ai nhìn, khác với "không tiết kiệm được gì".
+
+Đọc qua `GET /financial-goals/:goalId/monthly-progress`.
 
 ---
 
@@ -3440,7 +3590,7 @@ advanced_recurring_rules
 
 ```txt
 households
-= nhà mình và cách household đang quản lý tài chính
+= gia đình và cách household đang quản lý tài chính
 
 assets
 = tiền/tài sản hiện đang nằm ở đâu, ai giữ, có được tính vào shared picture không
@@ -3458,7 +3608,7 @@ cashflow_events
 = trong tương lai tiền nào dự kiến vào / ra
 
 financial_goals
-= nhà mình đang hướng tới điều gì, hiện có bao nhiêu và pace đóng góp thế nào
+= gia đình đang hướng tới điều gì, hiện có bao nhiêu và pace đóng góp thế nào
 
 money_events
 = những sự kiện tài chính đáng ghi nhận đã thực sự xảy ra
@@ -3508,7 +3658,7 @@ Không phải app kế toán gia đình.
 Không phải app kiểm soát người kia.
 
 Clarity:
-Biết nhà mình đang có gì và tiền nằm ở đâu.
+Biết gia đình đang có gì và tiền nằm ở đâu.
 
 Foresight:
 Biết tiền nào sắp vào/ra và household có thời điểm nào bị tight không.

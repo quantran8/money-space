@@ -14,7 +14,7 @@
 
 # 2. Từ nên dùng
 
-- Nhà mình.
+- Gia đình.
 - Cùng xem.
 - Tình hình.
 - Sắp tới.
@@ -45,11 +45,11 @@
 
 ## Empty State
 
-> Thêm vài con số chính để cùng nhìn rõ tình hình tài chính nhà mình.
+> Thêm vài con số chính để cùng nhìn rõ tình hình tài chính gia đình.
 
 ## Financial State
 
-> **Nhà mình đang on track**
+> **Gia đình đang on track**
 
 > Các khoản đã biết trong 30 ngày tới đều được cover.
 
@@ -108,7 +108,7 @@ What-if là global contextual action, không nhất thiết là tab riêng.
 # 6. Home Wireframe
 
 ```text
-NHÀ MÌNH
+GIA ĐÌNH
 
 [ ON TRACK ]
 30 ngày tới các khoản đã biết đều được cover

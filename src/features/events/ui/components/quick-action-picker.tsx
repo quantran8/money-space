@@ -3,11 +3,14 @@ import { useTranslation } from 'react-i18next'
 import type { QuickAction } from '@/features/events/model/events-form'
 
 /** Picker entries include the real quick actions plus secondary navigations. */
-type PickerKey = QuickAction | 'sell_asset' | 'upcoming'
+type PickerKey = QuickAction | 'buy_asset' | 'sell_asset' | 'upcoming'
 
 type QuickActionPickerProps = {
   onSelect: (action: QuickAction) => void
   onBorrowMoney: () => void
+  /** Opens the asset form already set to "just bought" — coming in from here
+   *  means a purchase is being recorded, not a holding declared. */
+  onBuyAsset: () => void
   onSellAsset: () => void
   /** Leaves for `/upcoming` — an expected movement is a cashflow event, which
    *  this ledger page does not own. */
@@ -20,8 +23,8 @@ const ACTIONS: PickerKey[] = [
   'income',
   'transfer',
   'debt_borrow',
+  'buy_asset',
   'sell_asset',
-  'goal_contribution',
 ]
 
 /**
@@ -35,6 +38,7 @@ const ACTIONS: PickerKey[] = [
 export function QuickActionPicker({
   onSelect,
   onBorrowMoney,
+  onBuyAsset,
   onSellAsset,
   onPlanUpcoming,
 }: QuickActionPickerProps) {
@@ -53,6 +57,10 @@ export function QuickActionPicker({
             }
             if (action === 'sell_asset') {
               onSellAsset()
+              return
+            }
+            if (action === 'buy_asset') {
+              onBuyAsset()
               return
             }
             if (action === 'upcoming') {

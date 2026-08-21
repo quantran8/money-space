@@ -71,7 +71,6 @@ export function DatePicker({
           mode="single"
           selected={selected}
           defaultMonth={selected}
-          className="min-w-[22rem]"
           locale={locale}
           onSelect={(date) => {
             if (date) onChange(formatDateValue(date))

@@ -3,7 +3,12 @@ export type GoalPriority = 'high' | 'medium' | 'low'
 export type GoalItem = {
   id: string
   name: string
-  /** Raw VND amounts; the API sends these. Format for display client-side. */
+  /**
+   * Raw VND amounts; the API sends these. Format for display client-side.
+   *
+   * Already resolved server-side from the goal's allocations at live asset
+   * values — a goal stores no figure of its own.
+   */
   currentAmount?: number
   targetAmount?: number
   /** @deprecated legacy formatted strings — no longer sent by the API. */

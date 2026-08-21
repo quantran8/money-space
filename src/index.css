@@ -189,6 +189,28 @@
     border-radius: var(--radius-sunk);
   }
 
+  /**
+   * Scrolls when it must, but never paints scrollbar chrome.
+   *
+   * For a container whose content only overflows in the edge case (a dialog on
+   * a short viewport, say): `overflow-y-auto` alone still reserves a gutter or
+   * shows a track on platforms set to "always show scrollbars", so a dialog
+   * that fits perfectly well renders a dead scrollbar down its side. Hiding the
+   * bar keeps the scroll behaviour without the furniture.
+   *
+   * Only for containers that overflow RARELY. On one that scrolls as part of
+   * its normal use, the scrollbar is the affordance telling the user there is
+   * more — do not hide it there.
+   */
+  .no-scrollbar {
+    scrollbar-width: none;          /* Firefox */
+    -ms-overflow-style: none;       /* legacy Edge */
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;                  /* WebKit / Blink */
+  }
+
   /* --- Type (§10) ------------------------------------------------------- */
 
   /**
@@ -210,6 +232,29 @@
     font-size: 10px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
+    color: var(--ink3);
+  }
+
+  /**
+   * The same label slot for VIETNAMESE text (§10.1).
+   *
+   * §10.1 is a rule about which FONT may carry diacritics — mono only touches
+   * ASCII — not a licence to strip the accents off Vietnamese so it fits into
+   * mono. "TAI SAN DA DANH" is not Vietnamese; it is Vietnamese with the
+   * language removed, and §10.1 explicitly routes "mọi văn bản tiếng Việt"
+   * to Be Vietnam Pro.
+   *
+   * So an accented label keeps its accents and uses the sans face. Tracking is
+   * eased off mono's 0.15em because uppercase diacritics need the vertical room
+   * more than the horizontal.
+   */
+  .label-vi {
+    font-family: "Be Vietnam Pro", system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.5;
     color: var(--ink3);
   }
 

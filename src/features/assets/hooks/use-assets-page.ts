@@ -8,6 +8,7 @@ import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useAssetSale } from '@/features/assets/hooks/use-asset-sale'
 import {
   buildAssetSchema,
+  canBePurchased,
   defaultAssetFormValues,
   fromAsset,
   toAsset,
@@ -38,13 +39,39 @@ export function useAssetsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [createAcquisition, setCreateAcquisition] =
+    useState<AssetForm['acquisition']>('owned')
   const [query, setQuery] = useState('')
   const [liquidityFilter, setLiquidityFilter] = useState<AssetLiquidity | 'all'>('all')
 
   const isEditing = editingId !== null
   const isSubmitting = createAsset.isPending || updateAsset.isPending
 
-  const assetSchema = useMemo(() => buildAssetSchema(t), [t])
+  // Wallet (cash/bank) assets: they receive auto-credited saving interest, and
+  // they are what a purchase can be paid from. `balance` rides along so the
+  // form can show what each holds and reject an unaffordable purchase without a
+  // round-trip.
+  const walletOptions = useMemo(
+    () =>
+      assets
+        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .map((asset) => ({
+          value: asset.id,
+          label: asset.name,
+          balance: asset.currentValue ?? asset.manualValue ?? 0,
+        })),
+    [assets],
+  )
+
+  const walletBalances = useMemo(
+    () => new Map(walletOptions.map((option) => [option.value, option.balance])),
+    [walletOptions],
+  )
+
+  const assetSchema = useMemo(
+    () => buildAssetSchema(t, walletBalances),
+    [t, walletBalances],
+  )
 
   // §22.10 — the primary button is never disabled, so validation runs on submit
   // and errors explain what is missing. Re-validating on change afterwards is
@@ -61,14 +88,6 @@ export function useAssetsPage() {
 
   const selectedType = watch('type')
   const mode = valuationModeForType(selectedType)
-  // Wallet (cash/bank) assets that can receive auto-credited saving interest.
-  const walletOptions = useMemo(
-    () =>
-      assets
-        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
-        .map((asset) => ({ value: asset.id, label: asset.name })),
-    [assets],
-  )
 
   const totals = summary?.totals ?? EMPTY_TOTALS
   const total = totals.usable_now + totals.not_immediately_usable + totals.long_term
@@ -89,11 +108,22 @@ export function useAssetsPage() {
 
   useEffect(() => {
     if (!formOpen) return
-    reset(editingAsset ? fromAsset(editingAsset) : { ...defaultAssetFormValues })
-  }, [formOpen, editingAsset, reset])
+    reset(
+      editingAsset
+        ? fromAsset(editingAsset)
+        : { ...defaultAssetFormValues, acquisition: createAcquisition },
+    )
+  }, [formOpen, editingAsset, createAcquisition, reset])
 
-  function openCreate() {
+  /**
+   * `acquisition` defaults to `owned` — a household's first act is entering
+   * what it already has. Coming in through "Mua tài sản" on the events page
+   * says otherwise, so that entry point opens the form already set to
+   * `purchased`.
+   */
+  function openCreate(acquisition: AssetForm['acquisition'] = 'owned') {
     setEditingId(null)
+    setCreateAcquisition(acquisition)
     setFormOpen(true)
   }
 
@@ -134,6 +164,14 @@ export function useAssetsPage() {
         // `holderMemberId` sends null rather than '' so the backend stores an
         // absent value.
         holderMemberId: values.holderMemberId || null,
+        // Naming a wallet is what turns "we own this" into "we bought this":
+        // the server logs an `asset_purchase` and debits that wallet, so net
+        // worth stays put. `null` (not undefined) — `JSON.stringify` drops
+        // undefined keys, and the absence has to reach the server as an answer.
+        fundingAssetId:
+          values.acquisition === 'purchased' && canBePurchased(values.type)
+            ? values.fundingAssetId || null
+            : null,
       }
 
       if (editingId) {

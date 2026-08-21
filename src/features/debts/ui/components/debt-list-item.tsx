@@ -9,10 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { TableCell, TableRow } from '@/components/ui/table'
 import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import { formatDate } from '@/features/debts/model/debts-form'
 import type { DebtItem } from '@/features/debts/model/debts.types'
-import { formatVndCell, formatVndScale } from '@/shared/lib/format-money'
+import { formatVndCell } from '@/shared/lib/format-money'
 
 type DebtListItemProps = {
   debt: DebtItem
@@ -25,6 +26,23 @@ type DebtListItemProps = {
   onDelete: (id: string) => void
 }
 
+/**
+ * One debt, as a table row.
+ *
+ * A hand-built CSS grid used to stand in for a table here, which meant the
+ * header's column widths and the row's were two independent declarations that
+ * had to be kept in step by hand — and they had drifted: the header carried
+ * neither the row's `gap-x-4` nor its final column width, so every heading sat
+ * slightly left of its column and the narrow ones collided ("DƯ NỢKỲ TỚI").
+ * A real `<table>` shares one set of column widths by construction, so that
+ * class of bug cannot recur.
+ *
+ * The WHOLE row navigates to the debt. A "Chi tiết" link used to sit at the end
+ * of each row beside a menu that also offered "Xem chi tiết" — three ways to do
+ * one thing. `onClick` on the row handles the pointer; the name carries a real
+ * button so keyboard and screen-reader users get the same route, since a `<tr>`
+ * cannot be focused or announced as a control.
+ */
 export function DebtListItem({
   debt,
   ownerName,
@@ -36,66 +54,78 @@ export function DebtListItem({
   onDelete,
 }: DebtListItemProps) {
   const { t } = useTranslation()
-  const dueDate = nextPayment?.expectedDate
 
   return (
-    <article className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[1.2fr_1fr_.8fr_1.15fr_.65fr_.8fr_1fr_90px] lg:items-center">
-      <button type="button" onClick={() => onViewDetail(debt.id)} className="min-w-0 text-left">
-        <p className="truncate text-[13px] font-medium">{debt.name}</p>
-        <p className="mt-1 text-[11px] text-ink3">{t(`debts.demo.lenderType.${debt.lenderType}`)}</p>
-      </button>
-      <p className="mt-2 text-[12px] lg:mt-0">{debt.lenderName || t('debts.demo.unknownLender')}</p>
-      <p className="num col-start-2 row-start-1 text-right text-[14px] font-medium lg:col-auto lg:row-auto">
-        {formatVndCell(debt.outstandingAmountValue)}
-      </p>
-      <div className="mt-1 text-[12px] lg:mt-0">
-        {nextPayment ? (
-          <>
-            <p>{formatDate(dueDate)}</p>
-            <p className="mt-1 text-[11px] text-ink3">{formatVndScale(nextPayment.amount)}</p>
-          </>
-        ) : (
-          <p className="text-attention">{t('debts.demo.unconfirmed')}</p>
-        )}
-      </div>
-      <p className="num mt-1 text-[12px] lg:mt-0 lg:text-right">{debt.interestSummary ?? '—'}</p>
-      <p className="mt-1 text-[12px] lg:mt-0">{ownerName ?? t('debts.demo.householdOwner')}</p>
-      <p className="mt-1 text-[12px] text-ink2 lg:mt-0">
-        {debt.expectedFinalDueDate ? formatDate(debt.expectedFinalDueDate) : t('debts.demo.unknown')}
-      </p>
-      <div className="col-start-2 row-start-2 row-span-5 flex items-start justify-end gap-1 lg:col-auto lg:row-auto">
+    <TableRow className="cursor-pointer" onClick={() => onViewDetail(debt.id)}>
+      <TableCell>
+        {/* The row's keyboard equivalent. Styled as plain text — it is the
+            name, not a link, and underlining every row would be noise. */}
         <button
           type="button"
-          onClick={() => onViewDetail(debt.id)}
-          className="hidden text-[12px] font-medium text-accent xl:block"
+          onClick={(event) => {
+            event.stopPropagation()
+            onViewDetail(debt.id)
+          }}
+          className="truncate rounded-control text-left text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
-          {t('assets.demo.detail')}
+          {debt.name}
         </button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" className="size-8" aria-label={t('common.actions')}>
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onViewDetail(debt.id)}>
-              <Eye className="size-4" /> {t('goals.list.viewDetail')}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(debt.id)}>
-              <Pencil className="size-4" /> {t('common.edit')}
-            </DropdownMenuItem>
-            {debt.status !== 'paid_off' ? (
-              <DropdownMenuItem disabled={isUpdating} onClick={() => onMarkPaidOff(debt.id)}>
-                <CheckCircle2 className="size-4" /> {t('debts.demo.markPaid')}
+      </TableCell>
+      <TableCell className="text-[12px]">
+        {debt.lenderName || t('debts.demo.unknownLender')}
+      </TableCell>
+      <TableCell className="num text-right text-[14px] font-medium">
+        {formatVndCell(debt.outstandingAmountValue)}
+      </TableCell>
+      <TableCell className="text-[12px]">
+        {nextPayment ? (
+          formatDate(nextPayment.expectedDate)
+        ) : (
+          <span className="text-attention">{t('debts.demo.unconfirmed')}</span>
+        )}
+      </TableCell>
+      <TableCell className="num text-right text-[12px]">
+        {debt.interestSummary ?? '—'}
+      </TableCell>
+      <TableCell className="text-[12px]">
+        {ownerName ?? t('debts.demo.householdOwner')}
+      </TableCell>
+      <TableCell className="text-[12px] text-ink2">
+        {debt.expectedFinalDueDate ? formatDate(debt.expectedFinalDueDate) : t('debts.demo.unknown')}
+      </TableCell>
+      <TableCell className="w-14 text-right">
+        {/* Stops the row's own navigation: opening the menu is not a request to
+            leave the page. */}
+        <div onClick={(event) => event.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost" className="size-8" aria-label={t('common.actions')}>
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onViewDetail(debt.id)}>
+                <Eye className="size-4" /> {t('goals.list.viewDetail')}
               </DropdownMenuItem>
-            ) : null}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-alert focus:text-alert" onClick={() => onDelete(debt.id)}>
-              <Trash2 className="size-4" /> {t('common.delete')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </article>
+              <DropdownMenuItem onClick={() => onEdit(debt.id)}>
+                <Pencil className="size-4" /> {t('common.edit')}
+              </DropdownMenuItem>
+              {debt.status !== 'paid_off' ? (
+                <DropdownMenuItem disabled={isUpdating} onClick={() => onMarkPaidOff(debt.id)}>
+                  <CheckCircle2 className="size-4" /> {t('debts.demo.markPaid')}
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-alert focus:text-alert"
+                onClick={() => onDelete(debt.id)}
+              >
+                <Trash2 className="size-4" /> {t('common.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }

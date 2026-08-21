@@ -71,11 +71,31 @@ export function buildCashflowSchema(t: (key: string, params?: Record<string, unk
     recurrence: z.enum(['once', 'weekly', 'monthly', 'quarterly', 'yearly']),
     requirement: z.enum(['required', 'planned']),
     certainty: z.enum(['confirmed', 'estimated']),
-    // Optional by design — never block planning on a decision the household
-    // has not made yet. Completion is where it becomes required.
+    // Required for OUTGOING, optional for incoming — see the superRefine below.
     settlementAssetId: z.string(),
     note: localizedOptionalText(t, 120),
   })
+    .superRefine((values, ctx) => {
+      /**
+       * An outflow entered BY HAND must name the wallet it leaves from: an
+       * outflow outranks the goals sharing its wallet, and without a wallet the
+       * goal money it costs cannot be worked out, so the form could not show
+       * the trade before saving (`GoalImpactNotice`).
+       *
+       * This is a rule of this form, not of the domain. The server accepts an
+       * outgoing event with no wallet, because a debt is not tied to one —
+       * repayments generated months ahead cannot know which wallet will pay
+       * them, and `completeCashflowEvent` asks at payment time instead. See
+       * memory/debts.md.
+       */
+      if (values.direction === 'outgoing' && !values.settlementAssetId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['settlementAssetId'],
+          message: t('upcoming.complete.walletRequired'),
+        })
+      }
+    })
 }
 
 /** Parse a raw (separator-free) amount string into VND. */

@@ -18,6 +18,7 @@ type DebtListResponse = {
     status: DebtItem['status']
     ownerMemberId?: string
     receivedToAssetId?: string
+    repaymentAssetId?: string
     paymentFrequency?: DebtItem['paymentFrequency']
     fixedPaymentAmount?: number
     interestType?: string
@@ -42,6 +43,8 @@ export type DebtPayload = {
   status?: DebtItem['status']
   ownerMemberId?: string
   receivedToAssetId?: string
+  /** Optional default wallet to repay from. */
+  repaymentAssetId?: string
   paymentFrequency?: string
   fixedPaymentAmount?: number
   interestType?: string
@@ -93,6 +96,7 @@ function toDebtItem(record: DebtListResponse['items'][number]): DebtItem {
     status: record.status,
     ownerMemberId: record.ownerMemberId,
     receivedToAssetId: record.receivedToAssetId,
+    repaymentAssetId: record.repaymentAssetId,
     paymentFrequency: record.paymentFrequency,
     fixedPaymentAmount: formatCompact(record.fixedPaymentAmount),
     interestSummary,

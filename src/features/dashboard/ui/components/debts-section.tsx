@@ -2,6 +2,14 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { Panel, PanelHeader, TotalRow } from '@/components/ui/panel'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type { DebtSummary } from '@/features/dashboard/model/home-derivations'
 import { formatVndCell, formatVndScale, formatMonthYear } from '@/shared/lib/format-money'
 
@@ -38,37 +46,40 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
         <p className="mt-7 py-6 text-[13px] text-ink2">{t('home.debts.empty')}</p>
       ) : (
         <>
-          <div className="mt-7 -mx-2.5 overflow-x-auto">
-            <table className="table-dense w-full min-w-[360px] text-[14px]">
-              <thead>
-                <tr className="label">
-                  <th className="pb-3 text-left font-normal">{t('home.debts.column.item')}</th>
-                  <th className="pb-3 text-left font-normal">{t('home.debts.column.nextDue')}</th>
+          <div className="mt-7 -mx-2.5">
+            <Table className="min-w-[360px] text-[14px]">
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  {/* `.label-vi`: accented Vietnamese headings (§10.1). */}
+                  <TableHead className="label-vi">{t('home.debts.column.item')}</TableHead>
+                  <TableHead className="label-vi">{t('home.debts.column.nextDue')}</TableHead>
                   {/* §10.4: unit in the header, bare numbers in the cells. */}
-                  <th className="pb-3 text-right font-normal">
+                  <TableHead className="label-vi text-right">
                     {t('home.debts.column.outstandingUnit')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td className="py-2.5">
+                  <TableRow key={row.id}>
+                    <TableCell>
                       {row.lenderName ? `${row.name} · ${row.lenderName}` : row.name}
-                    </td>
-                    <td className="py-2.5 font-mono text-[12px] text-ink3">
+                    </TableCell>
+                    <TableCell className="font-mono text-[12px] text-ink3">
                       {row.nextPayment
                         ? t('home.debts.nextDue', {
                             date: formatDayMonth(row.nextPayment.date),
                             amount: formatVndScale(row.nextPayment.amount),
                           })
                         : t('home.debts.noNextDue')}
-                    </td>
-                    <td className="num py-2.5 text-right">{formatVndCell(row.outstanding)}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="num text-right">
+                      {formatVndCell(row.outstanding)}
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
           {totalCount > rows.length ? (

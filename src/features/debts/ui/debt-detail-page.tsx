@@ -1,4 +1,4 @@
-import { Calculator, Check, ChevronLeft, Pencil } from 'lucide-react'
+import { Check, ChevronLeft, Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -12,7 +12,6 @@ import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
 import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import { formatVndShort } from '@/shared/lib/format-money'
-import { useWhatIfStore } from '@/shared/stores/whatif-store'
 
 type RepaymentCalendarItem = {
   id: string
@@ -108,7 +107,6 @@ export function DebtDetailPage() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
-  const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
   const {
     debt,
     ownerName,
@@ -128,6 +126,7 @@ export function DebtDetailPage() {
     errors,
     isValid,
     setValue,
+    trigger,
     submit,
     selectedLenderType,
     isSavingDebt,
@@ -194,18 +193,6 @@ export function DebtDetailPage() {
       ? new Date(`${debt.firstPaymentDate}T00:00:00`).getDate()
       : null
 
-  function tryEarlyRepayment() {
-    if (!debt) return
-    openWhatIf({
-      amount:
-        debt.fixedPaymentAmountValue && debt.fixedPaymentAmountValue > 0
-          ? debt.fixedPaymentAmountValue
-          : undefined,
-      plannedDate: nextDate,
-      source: 'other',
-    })
-  }
-
   return (
     <div className="space-y-4 pb-3">
       <header className="px-0.5 pb-1">
@@ -231,16 +218,6 @@ export function DebtDetailPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {debt.status !== 'paid_off' ? (
-              <Button
-                variant="secondary"
-                className="h-10 px-4 text-[13px]"
-                onClick={tryEarlyRepayment}
-              >
-                <Calculator className="size-4" strokeWidth={1.75} />
-                {t('debts.detail.tryEarlyRepayment')}
-              </Button>
-            ) : null}
             <Button className="h-10 px-4 text-[13px]" onClick={() => openEdit(debt.id)}>
               <Pencil className="size-4" strokeWidth={1.75} />
               {t('common.edit')}
@@ -336,6 +313,14 @@ export function DebtDetailPage() {
             <LoanInfo
               label={t('debts.detail.loan.lender')}
               value={debt.lenderName || t('debts.detail.loan.notUpdated')}
+            />
+            {/* Moved here from the list row, which now shows the name alone.
+                The fact is worth keeping — a loan from a relative is not the
+                same kind of obligation as one from a bank — it just does not
+                need a line in a table that is one click away from this. */}
+            <LoanInfo
+              label={t('debts.detail.loan.lenderType')}
+              value={t(`debts.form.lenderType.${debt.lenderType}`)}
             />
             <LoanInfo
               label={t('debts.detail.loan.originalAmount')}
@@ -442,6 +427,7 @@ export function DebtDetailPage() {
         isValid={isValid}
         isSavingDebt={isSavingDebt}
         setValue={setValue}
+        trigger={trigger}
         selectedLenderType={selectedLenderType}
         showMoreDetails={showMoreDetails}
         setShowMoreDetails={setShowMoreDetails}

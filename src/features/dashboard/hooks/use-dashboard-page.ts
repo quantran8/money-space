@@ -44,6 +44,12 @@ export function useDashboardPage() {
     isReady: true as const,
     goals,
     goalTracks: buildGoalTracks(goals),
+    /**
+     * The set-aside split. Display only — `netWorth` is not reduced by it, and
+     * flexible money keeps its own formula (see DashboardOverview).
+     */
+    earmarkedForGoals: snapshot.earmarkedForGoals,
+    unassigned: snapshot.unassigned,
     forecast,
     flexibleMoney,
     freshness,

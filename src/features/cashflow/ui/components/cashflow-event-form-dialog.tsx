@@ -25,6 +25,8 @@ import {
   RECURRENCE_OPTIONS,
   type CashflowEventForm,
 } from '@/features/cashflow/model/cashflow-form'
+import { GoalImpactNotice } from '@/features/cashflow/ui/components/goal-impact-notice'
+import { cashflowAmountToVnd } from '@/features/cashflow/model/cashflow-form'
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { canSettleCashflow } from '@/features/assets/model/assets'
 import { cn } from '@/shared/lib/utils'
@@ -91,10 +93,70 @@ export function CashflowEventFormDialog({
 
   const direction = watch('direction')
   const certainty = watch('certainty')
+  const settlementAssetId = watch('settlementAssetId')
+  const amount = watch('amount')
   const { assets } = useAssets()
   // Only wallets the API will accept — flexible money that holds a balance.
   const settlementOptions = assets.filter(canSettleCashflow)
   const isOutgoing = direction === 'outgoing'
+
+  /**
+   * The wallet this event settles through.
+   *
+   * Rendered inline for OUTGOING and inside the disclosure for incoming, because
+   * the two directions ask different questions of it. An outflow must name its
+   * wallet — both `buildCashflowSchema` and the server reject one without — so
+   * hiding it behind "more details" left the submit button disabled with the
+   * blocking field and its error message out of sight. Incoming keeps it
+   * optional: money arriving backs no goal until it lands.
+   *
+   * Always rendered, even with no eligible wallet, so the requirement and its
+   * error stay visible rather than the form silently refusing to submit.
+   */
+  const walletSection =
+    settlementOptions.length > 0 ? (
+      <>
+        <CashflowField
+          label={t(isOutgoing ? 'upcoming.form.walletOut' : 'upcoming.form.walletIn')}
+          error={errors.settlementAssetId?.message}
+        >
+          <div
+            className={cn(
+              controlClass,
+              errors.settlementAssetId && 'border-alert',
+            )}
+          >
+            <Controller
+              control={control}
+              name="settlementAssetId"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className={selectClass}>
+                    <SelectValue placeholder={t('upcoming.complete.walletPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {settlementOptions.map((asset) => (
+                      <SelectItem key={asset.id} value={asset.id}>
+                        {asset.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+        </CashflowField>
+        <p className="px-1 text-[12px] leading-5 text-ink2">
+          {t(isOutgoing ? 'upcoming.form.walletHintOut' : 'upcoming.form.walletHintIn')}
+        </p>
+      </>
+    ) : (
+      /* No eligible wallet exists. An outflow cannot be saved at all in this
+         state, so say why instead of leaving the button dead. */
+      <p className="rounded-control bg-surface2 px-3 py-2.5 text-[13px] leading-5 text-ink2">
+        {t(isOutgoing ? 'upcoming.form.walletNoneOut' : 'upcoming.form.walletNoneIn')}
+      </p>
+    )
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) setDetailsOpen(false)
@@ -211,6 +273,21 @@ export function CashflowEventFormDialog({
                 </div>
               </CashflowField>
 
+              {/* Outgoing asks for the wallet up front: it is required, and the
+                  goal impact below cannot be worked out without it. */}
+              {isOutgoing ? walletSection : null}
+
+              {/* What this outflow takes from the goals saving into that wallet.
+                  Computed locally, so it appears as the amount is typed — the
+                  household sees the trade BEFORE saving, not on the goal screen
+                  afterwards. Renders nothing when no goal is affected. */}
+              {isOutgoing ? (
+                <GoalImpactNotice
+                  assetId={settlementAssetId || undefined}
+                  amount={cashflowAmountToVnd(amount)}
+                />
+              ) : null}
+
               <div>
                 <button
                   type="button"
@@ -306,51 +383,7 @@ export function CashflowEventFormDialog({
                       </p>
                     ) : null}
 
-                    {/* Optional here on purpose: at planning time the household
-                        often does not know which account this lands in yet.
-                        Confirming asks for one when it is still empty. */}
-                    {settlementOptions.length > 0 ? (
-                      <>
-                        <CashflowField
-                          label={t(
-                            isOutgoing
-                              ? 'upcoming.complete.walletOut'
-                              : 'upcoming.complete.walletIn',
-                          )}
-                        >
-                          <div className={controlClass}>
-                            <Controller
-                              control={control}
-                              name="settlementAssetId"
-                              render={({ field }) => (
-                                <Select
-                                  value={field.value}
-                                  onValueChange={field.onChange}
-                                >
-                                  <SelectTrigger className={selectClass}>
-                                    <SelectValue
-                                      placeholder={t(
-                                        'upcoming.complete.walletPlaceholder',
-                                      )}
-                                    />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {settlementOptions.map((asset) => (
-                                      <SelectItem key={asset.id} value={asset.id}>
-                                        {asset.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            />
-                          </div>
-                        </CashflowField>
-                        <p className="px-1 text-[12px] leading-5 text-ink2">
-                          {t('upcoming.complete.walletHint')}
-                        </p>
-                      </>
-                    ) : null}
+                    {isOutgoing ? null : walletSection}
 
                     <CashflowField
                       label={t('upcoming.form.note')}

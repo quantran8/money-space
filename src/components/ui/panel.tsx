@@ -2,6 +2,14 @@ import * as React from 'react'
 
 import { cn } from '@/shared/lib/utils'
 
+/** Any non-ASCII character — i.e. Vietnamese text that must not use mono. */
+function hasDiacritics(value: string): boolean {
+  for (const char of value) {
+    if (char.codePointAt(0)! > 127) return true
+  }
+  return false
+}
+
 /**
  * The v4.0 surface primitives (design.md §2.1, §11.1–11.2).
  *
@@ -38,7 +46,22 @@ export function PanelHeader({
   return (
     <div className={cn('flex items-baseline justify-between gap-4', className)}>
       <h2 className="section-title text-[16px]">{title}</h2>
-      {action ?? (meta ? <span className="font-mono text-[11px] text-ink3">{meta}</span> : null)}
+      {action ??
+        (meta ? (
+          // Mono only touches ASCII (§10.1): a Vietnamese `meta` keeps its
+          // accents and the sans face, which `.label-vi` provides. Mono metadata
+          // (dates, counts) is unaffected — it has no diacritics to lose.
+          <span
+            className={cn(
+              'text-[11px] text-ink3',
+              typeof meta === 'string' && hasDiacritics(meta)
+                ? 'label-vi text-[11px] tracking-normal normal-case'
+                : 'font-mono',
+            )}
+          >
+            {meta}
+          </span>
+        ) : null)}
     </div>
   )
 }

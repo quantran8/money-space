@@ -47,6 +47,7 @@ export type DebtItem = {
   ownerMemberId?: string
   ownerName?: string
   receivedToAssetId?: string
+  repaymentAssetId?: string
   receivedToAssetName?: string
   paymentFrequency?: 'none' | 'monthly' | 'quarterly' | 'yearly'
   fixedPaymentAmount?: string

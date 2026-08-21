@@ -65,7 +65,7 @@ Money Space là app dành cho các cặp đôi **25–37 tuổi, sắp cưới h
 
 App giúp household trả lời 5 câu hỏi:
 
-1. **Nhà mình đang có bao nhiêu?**
+1. **Gia đình đang có bao nhiêu?**
 2. **Tiền đang nằm ở đâu và ai đang phụ trách?**
 3. **Trong thời gian tới có những khoản nào sẽ vào hoặc ra?**
 4. **Sau các nghĩa vụ đã biết, còn bao nhiêu tiền thực sự linh hoạt?**
@@ -160,7 +160,7 @@ Money Space cần trả lời:
 
 Sản phẩm thành công khi một couple có thể nói:
 
-> “Trước đây muốn biết nhà mình đang thế nào thì phải hỏi nhau và tự cộng nhiều nơi. Giờ chỉ cần mở app.”
+> “Trước đây muốn biết gia đình đang thế nào thì phải hỏi nhau và tự cộng nhiều nơi. Giờ chỉ cần mở app.”
 
 Và trước một khoản chi lớn:
 
@@ -178,7 +178,7 @@ Sản phẩm có 8 domain. Không phải domain nào cũng có mặt trên Home.
 | Assets & money sources  | Có, section 4 — compact            | Trang `Tài sản`           | Context                |
 | **Debt**                | **Không** — chỉ qua hệ quả         | Trang `Tài sản`, tab `Nợ` | Obligation input       |
 | **Financial event log** | **Không** — chỉ qua `Cần cập nhật` | `Lịch sử cập nhật`        | Shared source of truth |
-| Household & privacy     | Không                              | Trang `Nhà mình`          | Trust                  |
+| Household & privacy     | Không                              | Trang `Gia đình`          | Trust                  |
 | What-if                 | Là action, không phải section      | Dialog / Sheet            | Decision support       |
 
 Nguyên tắc: **thêm feature không có nghĩa là thêm Home section.** Home giữ tối đa 5 section. Domain mới phải chứng minh nó thuộc Priority A hoặc B ở §1.1 trước khi được lên Home.
@@ -209,7 +209,7 @@ User mở Home và trong khoảng **3–5 giây** phải quét được những 
 
 ```txt
 Priority A
-1. Nhà mình đang ổn không?
+1. Tài chính gia đình có ổn không?
 2. Bức tranh này có đang dựa trên dữ liệu mới không?
 3. Có bao nhiêu tiền linh hoạt?
 4. Thấp nhất trong 30 ngày tới là bao nhiêu?
@@ -243,7 +243,7 @@ Debt                 → không có visual riêng trên Home.
 Hai chip trạng thái ở đầu section 1 là hai trục độc lập:
 
 ```txt
-● Nhà mình đang ổn              ● 2 nguồn cần cập nhật
+● Tài chính ổn định              ● 2 nguồn cần cập nhật
   ↑ tình trạng tài chính          ↑ tình trạng dữ liệu
 ```
 
@@ -354,7 +354,7 @@ Detail page = breakdown + history + edit + management
 Mỗi Home section chỉ trả lời một câu hỏi chính.
 
 ```txt
-Financial Picture → Nhà mình đang ổn không và còn bao nhiêu linh hoạt?
+Financial Picture → Tài chính ổn định không và còn bao nhiêu linh hoạt?
 30 ngày tới        → Dòng tiền sẽ đi qua những mốc nào và low point là bao nhiêu?
 Mục tiêu chính     → Theo tốc độ hiện tại khi nào đạt?
 Tiền đang ở đâu    → Money location và holder ra sao?
@@ -1059,7 +1059,7 @@ Tổng quan
 Sắp tới
 Mục tiêu
 Tài sản
-Nhà mình
+Gia đình
 ```
 
 Secondary:
@@ -1071,7 +1071,7 @@ Cài đặt
 
 **Nợ và Nhật ký không thêm nav item.** Nợ là tab thứ hai trong trang `Tài sản` (§14.9). Nhật ký là trang `Lịch sử cập nhật` đã có sẵn (§14.10). Nav 5 item là ràng buộc cứng vì mobile bottom nav không chứa được hơn.
 
-Mobile bottom nav khớp 1:1 với 5 item trên. `Lịch sử cập nhật` và `Cài đặt` vào trong `Nhà mình`.
+Mobile bottom nav khớp 1:1 với 5 item trên. `Lịch sử cập nhật` và `Cài đặt` vào trong `Gia đình`.
 
 Không có Discussion tab.
 
@@ -1368,7 +1368,7 @@ Không ghi “3 mới trong tuần” — user tự trừ được, và nó đ�
 ```tsx
 <p className="flex items-center gap-2 text-[13px]">
   <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-  Nhà mình đang ổn
+  Tài chính ổn định
 </p>
 ```
 
@@ -1399,7 +1399,7 @@ Thứ tự và nội dung giữ nguyên từ §9. Dưới đây là đặc tả 
 ## 12.1. Bức tranh hôm nay
 
 ```txt
-Hàng chip:      ● Nhà mình đang ổn        ● 2 nguồn cần cập nhật
+Hàng chip:      ● Tài chính ổn định        ● 2 nguồn cần cập nhật
 Cột trái:       .label “Sau các khoản đã có nhiệm vụ”
                 48,2 · triệu linh hoạt        ← 64px
                 SourceCoverageStrip           ← §11.5
@@ -1791,7 +1791,7 @@ Section padding p-5, radius giữ 14.
 Bảng chuyển hoàn toàn thành grouped row — không scroll ngang.
 Thứ tự trong Bức tranh: chip → hero → coverage strip → composition.
   Coverage strip KHÔNG được đẩy xuống dưới fold.
-Bottom nav 5 mục: Tổng quan · Sắp tới · Mục tiêu · Tài sản · Nhà mình.
+Bottom nav 5 mục: Tổng quan · Sắp tới · Mục tiêu · Tài sản · Gia đình.
 CTA mô phỏng sticky ở bottom, mở bottom sheet thay vì modal.
 Money value không truncate.
 ```
@@ -1835,7 +1835,7 @@ Nếu text chỉ tạo “mood” nhưng không thêm meaning, bỏ khỏi Home.
 
 ```txt
 Tình hình
-Nhà mình
+Gia đình
 Sắp tới
 Dự kiến
 Có thể linh hoạt
@@ -1892,7 +1892,7 @@ chip “chính” trong Mục tiêu chính     tên section đã nói
 Mỗi trạng thái đúng một dòng, dưới 10 từ, có số nếu có số.
 
 ```txt
-Ổn          Nhà mình đang ổn
+Ổn          Tài chính ổn định
 Ổn + lý do  Đủ cho các khoản 30 ngày tới.
 Watch       Một khoản sắp tới lớn so với tiền đang có.
 Thiếu data  2 nguồn cần cập nhật
@@ -2066,7 +2066,7 @@ Không cả metadata lẫn action link trong một section header.
 ## 20. Example Home Content
 
 ```txt
-● Nhà mình đang ổn                          ● 2 nguồn cần cập nhật
+● Tài chính ổn định                          ● 2 nguồn cần cập nhật
 
 SAU CÁC KHOẢN ĐÃ CÓ NHIỆM VỤ                ▬▬▬▬▬▬▬▬▬  ▬▬▬
 48,2 triệu linh hoạt
@@ -2365,7 +2365,7 @@ DỰ KIẾN ĐỦ VÀO    SO VỚI MONG MUỐN    ĐỂ ĐÚNG HẸN CẦN
 11/2029           chậm 5 tháng        20,2 tr/th
 
 Cũng sai — đúng ý nhưng dài gấp đôi
-Với 18,0 tr mỗi tháng, nhà mình dự kiến đủ vào 11/2029. Như vậy là chậm
+Với 18,0 tr mỗi tháng, gia đình dự kiến đủ vào 11/2029. Như vậy là chậm
 5 tháng so với ngày mong muốn — để về đúng hẹn thì cần 20,2 tr mỗi tháng.
 ```
 
@@ -2606,7 +2606,7 @@ Nếu một hướng trên được đề xuất lại, cần lý do gắn với
 Một cuốn sổ chung được giữ tử tế cho hai người đang xây cuộc sống chung.
 
 Mở Tổng quan là thấy ngay:
-- nhà mình đang ổn không
+- tài chính gia đình có ổn không
 - bức tranh này có mới không
 - còn bao nhiêu linh hoạt
 - thấp nhất sắp tới là bao nhiêu

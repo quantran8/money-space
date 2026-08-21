@@ -66,7 +66,7 @@ export function SymbolCombobox({
           <ChevronDown className="size-4 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] min-w-[260px] p-0" align="start">
+      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-[260px] p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
             value={search}

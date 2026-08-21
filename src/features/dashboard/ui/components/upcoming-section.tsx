@@ -14,6 +14,14 @@ import {
 
 import { Label, Panel, PanelHeader, PanelSplit, Sunk } from '@/components/ui/panel'
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
   buildDeltaSeries,
   buildOverdue,
   buildTimelineRows,
@@ -152,54 +160,57 @@ export function UpcomingSection({
             <p className="py-6 text-[13px] text-ink2">{t('home.upcoming.empty')}</p>
           ) : (
             <>
-              {/* A real <table> with a real <thead> — not a div grid (§24). */}
+              {/* A real <table> with a real <thead> (§24) — now the shared
+                  `Table` primitive, so this list is built the same way as every
+                  other one rather than re-declaring the same markup. */}
               <div className="-mx-2.5 hidden lg:block">
-                <table className="table-dense w-full text-[13px]">
-                  <thead>
-                    <tr className="label">
-                      <th className="pb-3 text-left font-normal">{t('home.upcoming.column.date')}</th>
-                      <th className="pb-3 text-left font-normal">{t('home.upcoming.column.item')}</th>
+                <Table className="text-[13px]">
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      {/* `.label-vi`: accented Vietnamese headings (§10.1). */}
+                      <TableHead className="label-vi">{t('home.upcoming.column.date')}</TableHead>
+                      <TableHead className="label-vi">{t('home.upcoming.column.item')}</TableHead>
                       {/* §10.4: the unit is declared ONCE here, not repeated
                           in every cell. */}
-                      <th className="pb-3 text-right font-normal">
+                      <TableHead className="label-vi text-right">
                         {t('home.upcoming.column.amountUnit')}
-                      </th>
-                      <th className="pb-3 text-right font-normal">
+                      </TableHead>
+                      <TableHead className="label-vi text-right">
                         {t('home.upcoming.column.remainingUnit')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {rows.map((row) => (
-                      <tr key={row.key}>
-                        <td className="py-2.5 font-mono text-[11px] whitespace-nowrap text-ink3">
+                      <TableRow key={row.key}>
+                        <TableCell className="font-mono text-[11px] whitespace-nowrap text-ink3">
                           {formatDayMonth(row.date)}
-                        </td>
-                        <td className="py-2.5">
+                        </TableCell>
+                        <TableCell>
                           {row.name}
                           {row.unconfirmed ? (
                             <span className="ml-2 font-mono text-[11px] text-attention">
                               {t('home.upcoming.needsConfirm')}
                             </span>
                           ) : null}
-                        </td>
-                        <td
+                        </TableCell>
+                        <TableCell
                           className={cn(
-                            'num py-2.5 text-right whitespace-nowrap',
+                            'num text-right whitespace-nowrap',
                             row.signedAmount > 0 && 'text-accent',
                           )}
                         >
                           {formatVndCellSigned(row.signedAmount)}
-                        </td>
-                        <td className="num py-2.5 text-right whitespace-nowrap text-ink2">
+                        </TableCell>
+                        <TableCell className="num text-right whitespace-nowrap text-ink2">
                           {row.runningBalance === undefined
                             ? '·'
                             : formatVndCell(row.runningBalance)}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
 
               {/* Below lg the four columns stop fitting, and a horizontally
@@ -270,7 +281,7 @@ function OverdueBlock({
     <section className="mt-7 rounded-sunk bg-attention-soft px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <p className="label text-attention">{t('home.upcoming.overdue.title')}</p>
+          <p className="label-vi text-attention">{t('home.upcoming.overdue.title')}</p>
           <p className="text-[13px] font-medium text-attention">
             {overdue.oldestDays === undefined
               ? t('home.upcoming.overdue.count', { count: overdue.totalCount })

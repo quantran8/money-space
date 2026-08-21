@@ -1,14 +1,23 @@
 import { ChevronLeft, Pencil, RefreshCw } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { useAssetDetail, type AssetEventEntry } from '@/features/assets/hooks/use-asset-detail'
 import { useAssetsPage } from '@/features/assets/hooks/use-assets-page'
 import { canUpdatePriceManually } from '@/features/assets/model/assets'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
+import { AssetGoalUsageSection } from '@/features/assets/ui/components/asset-goal-usage-section'
 import { AssetPriceUpdateDialog } from '@/features/assets/ui/components/asset-price-update-dialog'
 import { AssetValueChart } from '@/features/assets/ui/components/asset-value-chart'
 import { SavingWithdrawalPanel } from '@/features/assets/ui/components/saving-withdrawal-panel'
@@ -18,6 +27,9 @@ import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
 type ChartRange = 1 | 6 | 12
+
+/** Past this many, the labels collide and the line stops being readable. */
+const MAX_CHART_MARKERS = 4
 
 function SummaryValue({ value, sign = '' }: { value: number; sign?: string }) {
   const formatted = formatVndShort(Math.abs(value))
@@ -49,24 +61,12 @@ function MetricValue({ value, sign = '' }: { value: number; sign?: string }) {
   )
 }
 
-function InfoRow({
-  label,
-  value,
-  emphasized = false,
-}: {
-  label: string
-  value: ReactNode
-  emphasized?: boolean
-}) {
+/** One reference fact in the role panel: label left, value right. */
+function InfoRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div
-      className={cn(
-        'flex items-baseline justify-between gap-5 px-4 py-3',
-        emphasized && 'sunk py-3.5',
-      )}
-    >
-      <dt className="text-[12px] text-ink2">{label}</dt>
-      <dd className="max-w-[65%] text-right text-[13px] font-medium">{value}</dd>
+    <div className="flex items-baseline justify-between gap-8">
+      <dt className="text-ink3">{label}</dt>
+      <dd className="max-w-[65%] text-right font-medium">{value}</dd>
     </div>
   )
 }
@@ -76,29 +76,50 @@ function ActivityRow({ entry, locale }: { entry: AssetEventEntry; locale: string
   const isPositive = entry.amount >= 0
 
   return (
-    <tr className="group transition-colors hover:bg-sunk">
-      <td className="rounded-l-control py-3 pl-2 font-mono text-[11px] text-ink3">
+    <TableRow>
+      <TableCell className="font-mono text-[11px] text-ink3">
         {new Date(entry.isoDate).toLocaleDateString(locale)}
-      </td>
-      <td className="max-w-[280px] py-3">
+      </TableCell>
+      <TableCell className="max-w-[280px]">
         <p className="truncate font-medium">{entry.title}</p>
         {entry.note && entry.note !== entry.title ? (
           <p className="mt-1 truncate text-[11px] text-ink3">{entry.note}</p>
         ) : null}
-      </td>
-      <td className="py-3 text-ink2">
+      </TableCell>
+      <TableCell className="text-ink2">
         {t(`options.eventType.${entry.type}`, { defaultValue: entry.type })}
-      </td>
-      <td
-        className={cn(
-          'money-number rounded-r-control py-3 pr-2 text-right font-medium',
-          isPositive && 'text-accent',
-        )}
+      </TableCell>
+      <TableCell
+        className={cn('money-number text-right font-medium', isPositive && 'text-accent')}
       >
         {isPositive ? '+' : '−'}
         {formatVndShort(Math.abs(entry.amount))}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
+  )
+}
+
+/** The mobile form of `ActivityRow` — same data, stacked. */
+function ActivityCard({ entry, locale }: { entry: AssetEventEntry; locale: string }) {
+  const { t } = useTranslation()
+  const isPositive = entry.amount >= 0
+
+  return (
+    <div className="sunk px-4 py-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="font-mono text-[10px] text-ink3">
+          {new Date(entry.isoDate).toLocaleDateString(locale)}
+        </span>
+        <span className={cn('money-number text-[12px]', isPositive && 'text-accent')}>
+          {isPositive ? '+' : '−'}
+          {formatVndShort(Math.abs(entry.amount))}
+        </span>
+      </div>
+      <p className="mt-2 text-[13px]">{entry.title}</p>
+      <p className="mt-1 text-[11px] text-ink3">
+        {t(`options.eventType.${entry.type}`, { defaultValue: entry.type })}
+      </p>
+    </div>
   )
 }
 
@@ -148,6 +169,57 @@ export function AssetDetailPage() {
     threshold.setMonth(threshold.getMonth() - chartRange)
     return valueHistory.filter((point) => new Date(point.isoDate) >= threshold)
   }, [chartRange, valueHistory])
+
+  /**
+   * How much the total moved across the visible range, first point to last.
+   *
+   * Deliberately the WHOLE move, price and quantity together — that is what the
+   * line draws, and reporting only the price part beside it would describe a
+   * different chart. The note underneath is what separates the two causes.
+   */
+  const { rangeDelta, rangeDeltaPercent } = useMemo(() => {
+    if (filteredHistory.length < 2) return { rangeDelta: 0, rangeDeltaPercent: null }
+    const first = filteredHistory[0].value
+    const last = filteredHistory[filteredHistory.length - 1].value
+    return {
+      rangeDelta: last - first,
+      // A range that starts at zero has no percentage to give — a new asset
+      // going 0 → 50tr is not "+∞%", it is simply new.
+      rangeDeltaPercent: first > 0 ? ((last - first) / first) * 100 : null,
+    }
+  }, [filteredHistory])
+
+  /**
+   * Holding changes inside the visible range, taken from the money events that
+   * caused them — the value-history series carries no quantity of its own.
+   *
+   * Without these the line is ambiguous: a step up reads as the market moving
+   * when it may have been a purchase. Capped so a busy range does not turn the
+   * chart into a wall of labels.
+   */
+  const chartMarkers = useMemo(() => {
+    if (filteredHistory.length === 0) return []
+    const from = filteredHistory[0].isoDate
+    const to = filteredHistory[filteredHistory.length - 1].isoDate
+    const inRange = relatedEvents
+      .filter((entry) => entry.isoDate >= from && entry.isoDate <= to)
+      .slice()
+      .reverse()
+    // Keep the largest moves rather than the most recent ones. Taking the tail
+    // would strip every marker off the left half of a busy chart and leave it
+    // looking as though nothing happened there.
+    const kept =
+      inRange.length <= MAX_CHART_MARKERS
+        ? inRange
+        : [...inRange]
+            .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
+            .slice(0, MAX_CHART_MARKERS)
+            .sort((a, b) => (a.isoDate < b.isoDate ? -1 : a.isoDate > b.isoDate ? 1 : 0))
+    return kept.map((entry) => ({
+      isoDate: entry.isoDate,
+      label: `${entry.amount >= 0 ? '+' : '−'}${formatVndShort(Math.abs(entry.amount))}`,
+    }))
+  }, [filteredHistory, relatedEvents])
 
   if (isLoading && !asset) {
     return (
@@ -210,14 +282,17 @@ export function AssetDetailPage() {
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            {isSold ? (
-              <div className="flex flex-wrap items-center gap-2 text-[13px] text-ink2">
-                <span className="sunk px-2.5 py-1 text-[11px] font-medium text-ink2">
+            <h1 className="page-title truncate text-[22px] leading-tight">{asset.name}</h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-sunk px-2 py-1 text-[10px] text-ink2">
+                {t(`options.assetType.${asset.type}`)}
+              </span>
+              {isSold ? (
+                <span className="rounded-full bg-sunk px-2 py-1 text-[10px] font-medium text-ink2">
                   {t('options.assetStatus.sold')}
                 </span>
-              </div>
-            ) : null}
-            <h1 className="page-title mt-2 truncate text-[32px] leading-tight">{asset.name}</h1>
+              ) : null}
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -231,7 +306,11 @@ export function AssetDetailPage() {
                 {t('assets.priceUpdate.action')}
               </Button>
             ) : null}
-            <Button className="h-10 px-4 text-[13px]" onClick={() => openEdit(asset.id)}>
+            <Button
+              variant="secondary"
+              className="h-10 px-4 text-[13px]"
+              onClick={() => openEdit(asset.id)}
+            >
               <Pencil className="size-4" strokeWidth={1.75} />
               {t('common.edit')}
             </Button>
@@ -239,9 +318,15 @@ export function AssetDetailPage() {
         </div>
       </header>
 
+      {/* Value and performance in one row: what it is worth, what it cost,
+          what that difference is, and how much of the household's picture it
+          occupies. They are four readings of the same holding, so they share a
+          row rather than being split across panels. */}
       <Card>
         <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
-          <h2 className="section-title text-[16px]">{t('assets.detail.overview')}</h2>
+          <h2 className="section-title text-[16px]">
+            {t(isBalanceAsset ? 'assets.detail.overview' : 'assets.detail.hero.title')}
+          </h2>
           {updatedAt ? (
             <p className="text-[12px] text-ink3">
               {t(
@@ -254,26 +339,41 @@ export function AssetDetailPage() {
           ) : null}
         </div>
 
-        <div className="mt-8 grid gap-7 lg:grid-cols-[minmax(280px,.95fr)_minmax(0,1.45fr)] lg:items-end">
+        <div
+          className={cn(
+            'mt-7 grid gap-7 lg:items-end',
+            isMarketPriced
+              ? 'lg:grid-cols-[minmax(0,1.25fr)_repeat(3,minmax(120px,.7fr))]'
+              : 'lg:grid-cols-[minmax(0,1.25fr)_minmax(120px,.7fr)]',
+          )}
+        >
           <div className="min-w-0">
-            <p className="label">
+            <p className="label-vi">
               {t(isBalanceAsset ? 'assets.detail.hero.balance' : 'assets.detail.hero.currentValue')}
             </p>
             <SummaryValue value={currentValue} />
+            {/* Quantity and unit price on one line: for a market asset the
+                headline figure is a product of the two, and stating them
+                together is what makes it checkable. */}
             {isMarketPriced && position && quantity > 0 ? (
-              <div className="mt-5 flex flex-wrap items-baseline gap-2">
-                <span className="text-[12px] text-ink3">{t('assets.detail.hero.marketPrice')}</span>
-                <span className="money-number text-[14px]">
-                  {formatVndShort(currentUnitPrice)} / {position.unit}
-                </span>
-              </div>
+              <p className="mt-4 text-[12px] text-ink2">
+                <Trans
+                  i18nKey="assets.detail.hero.holdingLine"
+                  values={{
+                    quantity: position.quantity.toLocaleString(locale),
+                    unit: position.unit,
+                    price: formatVndShort(currentUnitPrice),
+                  }}
+                  components={[<span key="price" className="num font-medium text-ink" />]}
+                />
+              </p>
             ) : null}
           </div>
 
           {isMarketPriced ? (
-            <div className="grid gap-5 sm:grid-cols-3 lg:gap-7">
+            <>
               <div className="min-w-0">
-                <p className="label">{t('assets.detail.hero.costBasis')}</p>
+                <p className="label-vi">{t('assets.detail.hero.costBasis')}</p>
                 <MetricValue value={costBasis} />
               </div>
               <div
@@ -282,7 +382,7 @@ export function AssetDetailPage() {
                   profitLoss < 0 ? 'text-alert' : profitLoss > 0 ? 'text-accent' : undefined,
                 )}
               >
-                <p className="label">
+                <p className="label-vi">
                   {t(
                     profitLoss < 0
                       ? 'assets.detail.hero.estimatedLoss'
@@ -295,128 +395,210 @@ export function AssetDetailPage() {
                   {Math.abs(profitLossPercent).toLocaleString(locale, { maximumFractionDigits: 1 })}%
                 </p>
               </div>
-              <div className="min-w-0">
-                <p className="label">{t('assets.detail.hero.share')}</p>
-                <div className="mt-3 flex items-baseline gap-x-1.5">
-                  <span className="money-number text-[25px] leading-none">
-                    {share.toLocaleString(locale, { maximumFractionDigits: 1 })}
-                  </span>
-                  <span className="text-[13px] font-medium text-ink2">%</span>
-                </div>
-              </div>
+            </>
+          ) : null}
+
+          <div className="min-w-0">
+            <p className="label-vi">{t('assets.detail.hero.shareOfTotal')}</p>
+            <div className="mt-3 flex items-baseline gap-x-1.5">
+              <span className="money-number text-[25px] leading-none">
+                {share.toLocaleString(locale, { maximumFractionDigits: 1 })}
+              </span>
+              <span className="text-[13px] font-medium text-ink2">%</span>
             </div>
-          ) : (
-            <div className="min-w-0 lg:max-w-[260px]">
-              <p className="label">{t('assets.detail.hero.share')}</p>
-              <div className="mt-3 flex items-baseline gap-x-1.5">
-                <span className="money-number text-[25px] leading-none">
-                  {share.toLocaleString(locale, { maximumFractionDigits: 1 })}
-                </span>
-                <span className="text-[13px] font-medium text-ink2">%</span>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </Card>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,.75fr)]">
-          <Card>
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <h2 className="section-title text-[16px]">
-                {t(isBalanceAsset ? 'assets.detail.chart.balanceTitle' : 'assets.detail.chart.title')}
-              </h2>
-              <div className="sunk flex h-9 items-center p-1 text-[11px]">
-                {([1, 6, 12] as ChartRange[]).map((range) => (
-                  <button
-                    key={range}
-                    type="button"
-                    className={cn(
-                      'h-7 rounded-[7px] px-3 transition-colors',
-                      chartRange === range ? 'bg-panel font-medium text-ink' : 'text-ink2',
-                    )}
-                    onClick={() => setChartRange(range)}
-                  >
-                    {t(`assets.detail.chart.range${range}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="sunk mt-6 overflow-hidden p-4 sm:p-5">
-              <AssetValueChart points={filteredHistory} liquidity={asset.liquidity} />
-            </div>
-          </Card>
-
-          <Card>
-            <h2 className="section-title text-[16px]">{t('assets.detail.info.title')}</h2>
-            <dl className="mt-6 grid gap-1">
-              {position ? (
-                <>
-                  <InfoRow
-                    emphasized
-                    label={t('assets.detail.info.quantity')}
-                    value={`${position.quantity.toLocaleString(locale)} ${position.unit}`}
-                  />
-                  {position.purchasePrice ? (
-                    <InfoRow
-                      label={t('assets.detail.info.averagePurchasePrice')}
-                      value={formatVndShort(position.purchasePrice)}
-                    />
-                  ) : null}
-                </>
-              ) : (
-                <InfoRow
-                  emphasized
-                  label={t('assets.detail.info.type')}
-                  value={t(`options.assetType.${asset.type}`)}
-                />
+      {/* The value over time, and beside it the one sentence that reads it:
+          how much the total moved across the range, and what moved it. The line
+          alone cannot separate a price rally from a purchase, so the markers and
+          this note do. */}
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="section-title text-[16px]">
+              {t(isBalanceAsset ? 'assets.detail.chart.balanceTitle' : 'assets.detail.chart.title')}
+            </h2>
+            <p className="mt-1 text-[11px] text-ink3">
+              {t(
+                isBalanceAsset
+                  ? 'assets.detail.chart.balanceDescription'
+                  : 'assets.detail.chart.description',
               )}
-              <InfoRow
-                label={t('assets.detail.info.holder')}
-                value={holderName ?? t('assets.demo.householdOwner')}
-              />
-              {asset.areaSqm ? (
-                <InfoRow label={t('assets.detail.info.area')} value={`${asset.areaSqm} m²`} />
+            </p>
+          </div>
+          <div
+            className="sunk flex h-9 items-center p-1 text-[11px]"
+            role="group"
+            aria-label={t('assets.detail.chart.rangeLabel')}
+          >
+            {([1, 6, 12] as ChartRange[]).map((range) => (
+              <button
+                key={range}
+                type="button"
+                aria-pressed={chartRange === range}
+                className={cn(
+                  'h-7 rounded-[7px] px-3 transition-colors',
+                  chartRange === range ? 'bg-panel font-medium text-ink' : 'text-ink2',
+                )}
+                onClick={() => setChartRange(range)}
+              >
+                {t(`assets.detail.chart.range${range}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
+          <div className="sunk min-w-0 overflow-hidden p-4 sm:p-5">
+            <AssetValueChart
+              points={filteredHistory}
+              liquidity={asset.liquidity}
+              markers={chartMarkers}
+            />
+          </div>
+
+          <div className="flex flex-col justify-between gap-6">
+            <div>
+              <p className="text-[12px] text-ink2">{t('assets.detail.chart.rangeDelta')}</p>
+              <p
+                className={cn(
+                  'money-number mt-1 text-[22px]',
+                  rangeDelta < 0 ? 'text-alert' : rangeDelta > 0 ? 'text-accent' : undefined,
+                )}
+              >
+                {rangeDelta > 0 ? '+' : rangeDelta < 0 ? '−' : ''}
+                {formatVndShort(Math.abs(rangeDelta))}
+              </p>
+              {rangeDeltaPercent !== null ? (
+                <p className="money-number mt-1 text-[12px] text-ink3">
+                  {rangeDeltaPercent >= 0 ? '+' : '−'}
+                  {Math.abs(rangeDeltaPercent).toLocaleString(locale, {
+                    maximumFractionDigits: 1,
+                  })}
+                  %
+                </p>
               ) : null}
-              {asset.calculationTerm ? (
-                <>
-                  <InfoRow
-                    label={t('assets.detail.info.interestRate')}
-                    value={`${asset.calculationTerm.interestRate}%`}
-                  />
-                  <InfoRow
-                    label={t('assets.detail.info.interestPayment')}
-                    value={t(`options.interestPayment.${asset.calculationTerm.interestPayment}`)}
-                  />
-                  {asset.calculationTerm.maturityDate ? (
-                    <InfoRow
-                      label={t('assets.detail.info.maturity')}
-                      value={formatDate(asset.calculationTerm.maturityDate)}
-                    />
-                  ) : null}
-                </>
-              ) : null}
-              {!isBalanceAsset ? (
-                <InfoRow
-                  label={t('assets.detail.info.priceSource')}
-                  value={
-                    isAutoPriced
-                      ? t('assets.detail.info.automatic')
-                      : t('assets.detail.info.manual')
-                  }
-                />
-              ) : null}
-              {isSold && asset.soldAt ? (
-                <InfoRow label={t('assets.detail.info.soldAt')} value={formatDate(asset.soldAt)} />
-              ) : null}
-              <div className="mt-2 px-4 py-3">
-                <dt className="text-[12px] text-ink2">{t('assets.detail.notes.eyebrow')}</dt>
-                <dd className="mt-2 text-[13px] leading-5 text-ink3">
-                  {asset.note || t('common.noNote')}
-                </dd>
+            </div>
+
+            <div className="space-y-4 text-[12px]">
+              <div>
+                <p className="text-ink3">{t(`assets.detail.chart.inRange${chartRange}`)}</p>
+                <p className="mt-1 leading-5 text-ink2">
+                  {chartMarkers.length > 0
+                    ? chartMarkers.map((marker) => marker.label).join(' · ')
+                    : t('assets.detail.chart.noChange')}
+                </p>
               </div>
-            </dl>
-          </Card>
-      </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-[2px] w-5 rounded-full bg-accent" />
+                  <span>{t('assets.detail.chart.legendValue')}</span>
+                </div>
+                {chartMarkers.length > 0 ? (
+                  <div className="flex items-center gap-2 text-ink2">
+                    <span className="flex h-4 w-5 items-center justify-center">
+                      <span className="size-2 rounded-full border-2 border-ink3 bg-panel" />
+                    </span>
+                    <span>{t('assets.detail.chart.legendQuantity')}</span>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Reference on the left, live question on the right. "How much of this
+          is actually ours to use" is what people come to the asset page to ask,
+          so it sits beside the facts rather than below them. */}
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="section-title text-[16px]">{t('assets.detail.info.roleTitle')}</h2>
+        </div>
+
+        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:gap-14">
+          <dl className="space-y-5 text-[13px]">
+            {position ? (
+              <>
+                <InfoRow
+                  label={t('assets.detail.info.quantity')}
+                  value={`${position.quantity.toLocaleString(locale)} ${position.unit}`}
+                />
+                {position.purchasePrice ? (
+                  <InfoRow
+                    label={t('assets.detail.info.averagePurchasePrice')}
+                    value={formatVndShort(position.purchasePrice)}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <InfoRow
+                label={t('assets.detail.info.type')}
+                value={t(`options.assetType.${asset.type}`)}
+              />
+            )}
+            <InfoRow
+              label={t('assets.detail.info.holder')}
+              value={holderName ?? t('assets.demo.householdOwner')}
+            />
+            <InfoRow
+              label={t('assets.detail.info.countedIn')}
+              value={t(
+                asset.liquidity === 'usable_now'
+                  ? 'assets.detail.info.countedYes'
+                  : 'assets.detail.info.countedNo',
+              )}
+            />
+            {asset.areaSqm ? (
+              <InfoRow label={t('assets.detail.info.area')} value={`${asset.areaSqm} m²`} />
+            ) : null}
+            {asset.calculationTerm ? (
+              <>
+                <InfoRow
+                  label={t('assets.detail.info.interestRate')}
+                  value={`${asset.calculationTerm.interestRate}%`}
+                />
+                <InfoRow
+                  label={t('assets.detail.info.interestPayment')}
+                  value={t(`options.interestPayment.${asset.calculationTerm.interestPayment}`)}
+                />
+                {asset.calculationTerm.maturityDate ? (
+                  <InfoRow
+                    label={t('assets.detail.info.maturity')}
+                    value={formatDate(asset.calculationTerm.maturityDate)}
+                  />
+                ) : null}
+              </>
+            ) : null}
+            {!isBalanceAsset ? (
+              <InfoRow
+                label={t('assets.detail.info.priceSource')}
+                value={
+                  isAutoPriced
+                    ? t('assets.detail.info.automatic')
+                    : t('assets.detail.info.manual')
+                }
+              />
+            ) : null}
+            {updatedAt ? (
+              <InfoRow label={t('assets.detail.info.updatedLabel')} value={updatedAt} />
+            ) : null}
+            {isSold && asset.soldAt ? (
+              <InfoRow label={t('assets.detail.info.soldAt')} value={formatDate(asset.soldAt)} />
+            ) : null}
+            {asset.note ? (
+              <div>
+                <dt className="text-[12px] text-ink3">{t('assets.detail.notes.eyebrow')}</dt>
+                <dd className="mt-2 text-[13px] leading-5 text-ink2">{asset.note}</dd>
+              </div>
+            ) : null}
+          </dl>
+
+          <AssetGoalUsageSection assetId={asset.id} />
+        </div>
+      </Card>
 
       {asset.type === 'saving_deposit' &&
       asset.calculationTerm &&
@@ -425,34 +607,52 @@ export function AssetDetailPage() {
       ) : null}
 
       <Card>
-        <h2 className="section-title text-[16px]">{t('assets.detail.events.title')}</h2>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="section-title text-[16px]">{t('assets.detail.events.title')}</h2>
+          {relatedEvents.length > 0 ? (
+            <span className="num text-[11px] text-ink3">
+              {t('assets.detail.events.count', { count: relatedEvents.length })}
+            </span>
+          ) : null}
+        </div>
 
         {relatedEvents.length > 0 ? (
-          <div className="mt-5 overflow-x-auto">
-            <table className="w-full min-w-[640px] text-[13px]">
-              <thead>
-                <tr className="label">
-                  <th className="pb-3 pl-2 text-left font-normal">
-                    {t('assets.detail.events.date')}
-                  </th>
-                  <th className="pb-3 text-left font-normal">
-                    {t('assets.detail.events.event')}
-                  </th>
-                  <th className="pb-3 text-left font-normal">
-                    {t('assets.detail.events.type')}
-                  </th>
-                  <th className="pb-3 pr-2 text-right font-normal">
-                    {t('assets.detail.events.effect')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {relatedEvents.map((entry) => (
-                  <ActivityRow key={entry.id} entry={entry} locale={locale} />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            {/* The shared `Table` primitive rather than a hand-rolled `<table>`,
+                so this list is built the same way as every other one. Hidden
+                below `md` because four columns genuinely do not fit a phone —
+                here the cards below are a real reflow, not a fallback for a
+                horizontal scroll. */}
+            <div className="mt-5 hidden md:block">
+              <Table className="min-w-[640px] text-[13px]">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    {/* `.label-vi`: accented Vietnamese headings, which mono
+                        renders poorly (§10.1). */}
+                    <TableHead className="label-vi">{t('assets.detail.events.date')}</TableHead>
+                    <TableHead className="label-vi">{t('assets.detail.events.event')}</TableHead>
+                    <TableHead className="label-vi">{t('assets.detail.events.type')}</TableHead>
+                    <TableHead className="label-vi text-right">
+                      {t('assets.detail.events.effect')}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {relatedEvents.map((entry) => (
+                    <ActivityRow key={entry.id} entry={entry} locale={locale} />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Four columns do not survive a phone. The same rows become cards
+                that lead with what changed and by how much. */}
+            <div className="mt-4 space-y-2 md:hidden">
+              {relatedEvents.map((entry) => (
+                <ActivityCard key={entry.id} entry={entry} locale={locale} />
+              ))}
+            </div>
+          </>
         ) : (
           <p className="sunk mt-5 px-4 py-8 text-center text-[13px] text-ink2">
             {t('assets.detail.events.empty')}

@@ -71,6 +71,19 @@ App phải cho user xem assumptions.
 
 # 4. Goal Projection
 
+## 4.0 Current amount đến từ đâu
+
+```text
+current = Σ goal_asset_allocations:
+            kind='fixed'   → min(allocated_amount, asset value)
+            kind='percent' → asset value × percent / 100
+```
+
+Goal không giữ tiền của riêng nó — nó là **một tập phần góp từ asset thật**.
+"Để dành từ tiền chung" chỉ là một phần góp cố định từ asset `cash`/`bank_account`
+đang giữ số đó. Vì vậy net worth không bao giờ đổi khi gán tiền cho goal. Xem
+§20 / §20B.
+
 ```text
 Remaining amount
 =
@@ -107,6 +120,24 @@ Nếu tiền được lấy trực tiếp từ amount đã dành cho goal:
 
 1. Trừ khỏi current goal amount.
 2. Recalculate projected completion date.
+
+What-if chỉ là **preview, không persist** (§26D). Hành động thật tương ứng chỉ
+là **chi tiêu bình thường từ asset** đứng sau goal — progress tự giảm ở lần đọc
+sau, vì phần `fixed` bị cap ở giá trị thực của asset.
+
+Không có event "rút khỏi goal": một đường thứ hai chỉnh progress mà không có
+tiền thật di chuyển chính là lớp lỗi model này dẹp bỏ.
+
+## 5.2 Nhịp góp theo tháng
+
+```text
+delta(tháng N) = progress(snapshot cuối tháng N) − progress(snapshot cuối tháng N−1)
+gap            = delta − planned_monthly_contribution
+```
+
+Trả lời đúng câu hỏi household hay hỏi: "định góp 10tr/tháng, tháng này được bao
+nhiêu?". Delta đã gồm cả tiền góp thêm, tiền tiêu ra, và biến động giá. Nguồn dữ
+liệu là `snapshot_goal_values` (§20C).
 
 Simulation output:
 
@@ -181,20 +212,27 @@ Role:
 - Owner
 - Partner
 
-## MoneySource
+## Asset
+
+(Tên trong DB là `assets`. "MoneySource" là tên khái niệm cũ.)
 
 - id
 - household_id
 - name
 - type
+- valuation_mode
 - current_value
 - holder_member_id
 - liquidity
-- financial_nature
-- sharing_level
-- included_in_household_calculation
+- counts_as_flexible
+- status
 - updated_at
 - note
+
+`financial_nature`, `sharing_level`, `included_in_household_calculation` đã bị gỡ
+— ý định "khoản này có tính là tiền linh hoạt không" nay nằm ở
+`counts_as_flexible` và được materialize vào `liquidity`, cột duy nhất mọi nơi
+đọc.
 
 ## CashflowEvent
 
@@ -234,12 +272,24 @@ Certainty:
 - name
 - category
 - target_amount
-- current_amount
 - target_date
 - planned_monthly_contribution
 - priority
 - status
 - updated_at
+
+## GoalAssetAllocation
+
+Phần đóng góp của một asset vào một goal `asset_backed`.
+
+- id
+- household_id
+- financial_goal_id
+- asset_id
+- kind                  (fixed | percent)
+- allocated_amount      (khi kind = fixed)
+- percent               (khi kind = percent)
+- note
 
 ## Snapshot
 

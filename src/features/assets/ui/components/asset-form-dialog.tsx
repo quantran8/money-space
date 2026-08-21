@@ -34,6 +34,7 @@ import {
 } from '@/features/assets/model/assets'
 import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
 import {
+  canBePurchased,
   goldUnits,
   isInterestOptional,
   isWholeQuantityType,
@@ -45,7 +46,7 @@ import { useFlexibleMoney } from '@/features/forecast/hooks/use-forecast'
 import { formatMoney } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
-type WalletOption = { value: string; label: string }
+type WalletOption = { value: string; label: string; balance?: number }
 
 type AssetFormDialogProps = {
   open: boolean
@@ -183,6 +184,18 @@ export function AssetFormDialog({
                 errors={errors}
                 type={selectedType}
                 earnsInterest={earnsInterest}
+                t={t}
+              />
+            ) : null}
+
+            {/* Which act is this? It decides whether net worth moves, so it
+                belongs in the main section — not folded into the disclosure
+                with the optional details. */}
+            {!isEditing && canBePurchased(selectedType) ? (
+              <AcquisitionFields
+                control={control}
+                errors={errors}
+                walletOptions={walletOptions}
                 t={t}
               />
             ) : null}
@@ -412,6 +425,82 @@ function EffectBlock({ children }: { children: React.ReactNode }) {
     >
       {children}
     </p>
+  )
+}
+
+/**
+ * "Đã có sẵn" or "Vừa mua" — and, when bought, which wallet paid.
+ *
+ * The distinction is not a detail: declaring gold bought in 2020 RAISES net
+ * worth (the household is no richer, just newly honest about what it holds),
+ * while buying gold today leaves net worth PUT (money left a wallet and came
+ * back as gold). Without the question, every entry read as the first, and
+ * buying 100tr of gold appeared to create 100tr out of nothing.
+ *
+ * "Đã có sẵn" is the default because entering what you already own is the first
+ * thing anyone does in a manual-entry app.
+ */
+function AcquisitionFields({
+  control,
+  errors,
+  walletOptions,
+  t,
+}: {
+  control: Control
+  errors: Errors
+  walletOptions: WalletOption[]
+  t: Translate
+}) {
+  const acquisition = useWatch({ control, name: 'acquisition' })
+
+  return (
+    <>
+      <Field label={t('assets.form.acquisition')} error={errors.acquisition?.message}>
+        <Controller
+          control={control}
+          name="acquisition"
+          render={({ field }) => (
+            <Segmented
+              value={field.value}
+              onChange={field.onChange}
+              options={[
+                { value: 'owned', label: t('assets.form.acquisitionOwned') },
+                { value: 'purchased', label: t('assets.form.acquisitionPurchased') },
+              ]}
+            />
+          )}
+        />
+      </Field>
+
+      {acquisition === 'purchased' ? (
+        <Field label={t('assets.form.payFrom')} error={errors.fundingAssetId?.message}>
+          <div className={cn(fieldShell, errors.fundingAssetId && 'border-alert')}>
+            <Controller
+              control={control}
+              name="fundingAssetId"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className={fieldControlReset}>
+                    <SelectValue placeholder={t('assets.form.payFromPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {walletOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {/* The balance rides along so the choice can be made
+                            here, rather than by trial and error on save. */}
+                        {option.balance === undefined
+                          ? option.label
+                          : `${option.label} · ${formatMoney(option.balance)}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+        </Field>
+      ) : null}
+    </>
   )
 }
 

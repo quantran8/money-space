@@ -18,6 +18,33 @@ A `Snapshot` is a periodic (weekly/monthly) net-worth snapshot of a household. I
 
 Denormalizes **each asset's value/type/liquidity/visibility at snapshot time** (unique per `[snapshotId, assetId]`). This is what the dashboard's `assetTrend` reads.
 
+## SnapshotGoalValue
+
+Freezes **each goal's resolved progress** at snapshot time (unique per
+`[snapshotId, financialGoalId]`), alongside its name and target.
+
+**Why frozen rather than recomputed.** A goal's progress is derived from its
+allocations against live asset values, and allocations carry no history — so
+recomputing "what did this goal hold in June?" from `SnapshotAssetValue` would
+make an asset added today retroactively raise every past month. The history
+would tell a story that never happened.
+
+This is what makes the month-to-month question answerable: "we meant to set
+aside 10tr, we managed 8tr because we spent 2tr" is the difference between two
+month-end rows. Read by `GET /financial-goals/:goalId/monthly-progress` and
+`GET /financial-goals/:goalId/progress-change`.
+
+**Two figures per row, not one.** `progress_amount` is the whole goal, market
+value included. `contribution_progress_amount` is only the `contribution`-role
+share — the wallets money flows through. The pace is measured on the second: a
+wallet has no market price, so gold repricing can no longer answer "did we keep
+our 10tr?" (it used to, wrongly in both directions).
+
+Rows written before that column existed hold 0. A total > 0 with a contribution
+of 0 means **not recorded**, not "nothing went in" — the API reports `null` so
+the panel shows "—" rather than accusing a household of missing months it may
+well have kept. See [[goals]].
+
 ## Auto-snapshot (system-written, per-day, granular)
 
 Snapshots are written **automatically by the system** whenever net worth changes

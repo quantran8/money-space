@@ -1,5 +1,5 @@
 import { Plus, X } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import {
   Controller,
   useFieldArray,
@@ -8,6 +8,7 @@ import {
   type FieldErrors,
   type UseFormRegister,
   type UseFormSetValue,
+  type UseFormTrigger,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
@@ -40,6 +41,20 @@ const STEPS: Array<{ step: Step; key: string }> = [
   { step: 4, key: 'review' },
 ]
 
+/**
+ * The fields each step is allowed to block on. Advancing past a step validates
+ * only these, so a later step's missing value never traps the user on an earlier
+ * one. Fields that are conditionally required (`expectedFinalDueDate` and
+ * `interestPeriods` for bank loans, `firstPaymentDate` once a frequency is set)
+ * are listed on the step whose UI actually renders their error.
+ */
+const STEP_FIELDS: Record<Step, Array<keyof DebtForm>> = {
+  1: ['name', 'lenderName', 'originalAmount', 'outstandingAmount', 'borrowedAt'],
+  2: ['paymentFrequency', 'firstPaymentDate', 'fixedPaymentAmount', 'expectedFinalDueDate'],
+  3: ['interestPeriods'],
+  4: [],
+}
+
 const DUE_DATE_PRESETS = [
   { key: 'sixMonths', months: 6 },
   { key: 'oneYear', months: 12 },
@@ -71,11 +86,13 @@ type DebtFieldProps = {
   htmlFor?: string
   error?: string
   optional?: boolean
+  /** Quiet helper line under the control; an error takes its place. */
+  hint?: string
   action?: ReactNode
   children: ReactNode
 }
 
-function DebtField({ label, htmlFor, error, optional, action, children }: DebtFieldProps) {
+function DebtField({ label, htmlFor, error, optional, hint, action, children }: DebtFieldProps) {
   const { t } = useTranslation()
   return (
     <div>
@@ -87,7 +104,11 @@ function DebtField({ label, htmlFor, error, optional, action, children }: DebtFi
         {action}
       </div>
       {children}
-      {error ? <p className="mt-1.5 text-[12px] leading-[1.45] text-alert">{error}</p> : null}
+      {error ? (
+        <p className="mt-1.5 text-[12px] leading-[1.45] text-alert">{error}</p>
+      ) : hint ? (
+        <p className="mt-1.5 text-[12px] leading-[1.45] text-ink3">{hint}</p>
+      ) : null}
     </div>
   )
 }
@@ -132,6 +153,7 @@ type DebtFormDialogProps = {
   isValid: boolean
   isSavingDebt: boolean
   setValue: UseFormSetValue<DebtForm>
+  trigger: UseFormTrigger<DebtForm>
   selectedLenderType: LenderType
   showMoreDetails: boolean
   setShowMoreDetails: (updater: (value: boolean) => boolean) => void
@@ -139,7 +161,8 @@ type DebtFormDialogProps = {
   memberOptions: Option[]
   repaymentEstimate: RepaymentEstimate | null
   termMonths: number | null
-  onSubmit: () => void
+  /** RHF's handleSubmit(): needs the form event to call preventDefault(). */
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
   pasteAmountFromClipboard: () => void
 }
 
@@ -153,6 +176,7 @@ export function DebtFormDialog({
   isValid,
   isSavingDebt,
   setValue,
+  trigger,
   selectedLenderType,
   setShowMoreDetails,
   receiveAssetOptions,
@@ -164,6 +188,13 @@ export function DebtFormDialog({
 }: DebtFormDialogProps) {
   const { t } = useTranslation()
   const [step, setStep] = useState<Step>(1)
+  // Once the user types their own outstanding balance it stops following the
+  // borrowed amount. Editing an existing debt starts untouched too — its saved
+  // balance is already in the form, so nothing overwrites it.
+  const [outstandingTouched, setOutstandingTouched] = useState(false)
+  // An existing debt already has a real balance that has drifted from the
+  // borrowed amount through repayments — never let mirroring overwrite it.
+  const mirrorOutstanding = !outstandingTouched && !editingId
   const { fields: interestFields, append: appendInterest, remove: removeInterest } = useFieldArray({
     control,
     name: 'interestPeriods',
@@ -197,33 +228,86 @@ export function DebtFormDialog({
     setShowMoreDetails(() => nextStep > 1)
   }
 
+  /**
+   * Move forward only once every step between the current one and the target
+   * passes. Jumping back is always allowed — the user is returning to fix
+   * something, and re-validating there would flag fields they have not reached.
+   */
+  async function requestStep(nextStep: Step) {
+    if (nextStep <= step) {
+      goToStep(nextStep)
+      return
+    }
+    for (let current = step; current < nextStep; current += 1) {
+      const fields = STEP_FIELDS[current as Step]
+      // Sequential on purpose: steps must fail in order so the user lands on
+      // the earliest one that still needs input.
+      const ok = fields.length === 0 || (await trigger(fields, { shouldFocus: true }))
+      if (!ok) {
+        goToStep(current as Step)
+        return
+      }
+    }
+    goToStep(nextStep)
+  }
+
   function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen) goToStep(1)
+    if (!nextOpen) {
+      goToStep(1)
+      setOutstandingTouched(false)
+    }
     onOpenChange(nextOpen)
   }
 
-  function handleSubmit() {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    // Steps 1-3 are not a submit. Pressing Enter in any input triggers the
+    // browser's implicit submission, which would otherwise save (or, when the
+    // form was valid, bounce the user back to step 1). Swallow it and advance
+    // instead, which is what Enter should mean mid-wizard.
+    if (step < 4) {
+      event.preventDefault()
+      void requestStep((step + 1) as Step)
+      return
+    }
+    // `onSubmit` is RHF's handleSubmit(), which calls preventDefault() itself —
+    // but only when it receives the event. Forward it, or the browser performs a
+    // native submit and reloads the page.
     if (isValid) goToStep(1)
-    onSubmit()
+    onSubmit(event)
   }
 
+  /**
+   * The preset chips are a loan term, so they count from the first repayment —
+   * "1 năm" means a year of payments, not a year from the day the money landed.
+   * Before a first payment date is picked we anchor on the borrow date, which is
+   * the only other date we have.
+   */
+  const dueAnchor = firstPaymentDate || borrowedAt
+
   function applyDuePreset(months: number) {
-    if (!borrowedAt) return
-    setValue('expectedFinalDueDate', addMonthsIso(borrowedAt, months), {
+    if (!dueAnchor) return
+    setValue('expectedFinalDueDate', addMonthsIso(dueAnchor, months), {
       shouldDirty: true,
       shouldValidate: true,
     })
   }
 
   function updateOutstanding(value: string) {
+    setOutstandingTouched(true)
     setValue('outstandingAmount', value, { shouldDirty: true, shouldValidate: true })
-    if (!originalAmount) {
-      setValue('originalAmount', value, { shouldDirty: true, shouldValidate: true })
-    }
   }
 
+  /**
+   * The borrowed amount is the field the user must fill. While the outstanding
+   * balance is still untouched it tracks this value, so a loan nobody has repaid
+   * yet needs one number instead of the same number twice. Once the user edits
+   * the balance themselves, it stops mirroring.
+   */
   function updateOriginalAmount(value: string) {
     setValue('originalAmount', value, { shouldDirty: true, shouldValidate: true })
+    if (mirrorOutstanding) {
+      setValue('outstandingAmount', value, { shouldDirty: true, shouldValidate: true })
+    }
   }
 
   function toggleReceiveEvent(enabled: boolean) {
@@ -249,7 +333,7 @@ export function DebtFormDialog({
               <button
                 key={item.step}
                 type="button"
-                onClick={() => goToStep(item.step)}
+                onClick={() => void requestStep(item.step)}
                 className={cn(
                   'flex min-h-11 items-center gap-2 rounded-control px-2 text-left text-[13px] text-ink3',
                   step === item.step && 'font-medium text-ink',
@@ -288,23 +372,24 @@ export function DebtFormDialog({
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <DebtField
-                    label={t('debts.form.fields.outstanding')}
-                    htmlFor="debt-outstanding"
-                    error={errors.outstandingAmount?.message}
-                  >
-                    <Controller control={control} name="outstandingAmount" render={({ field }) => (
-                      <MoneyControl id="debt-outstanding" value={field.value} error={errors.outstandingAmount?.message} onChange={updateOutstanding} onBlur={field.onBlur} />
-                    )} />
-                  </DebtField>
-                  <DebtField
                     label={t('debts.form.fields.originalAmount')}
                     htmlFor="debt-original"
-                    optional
                     error={errors.originalAmount?.message}
                     action={<button type="button" onClick={pasteAmountFromClipboard} className="text-[12px] font-medium text-accent">{t('debts.form.pasteAmount')}</button>}
                   >
                     <Controller control={control} name="originalAmount" render={({ field }) => (
                       <MoneyControl id="debt-original" value={field.value} error={errors.originalAmount?.message} onChange={updateOriginalAmount} onBlur={field.onBlur} />
+                    )} />
+                  </DebtField>
+                  <DebtField
+                    label={t('debts.form.fields.outstanding')}
+                    htmlFor="debt-outstanding"
+                    optional
+                    error={errors.outstandingAmount?.message}
+                    hint={t('debts.form.fields.outstandingHint')}
+                  >
+                    <Controller control={control} name="outstandingAmount" render={({ field }) => (
+                      <MoneyControl id="debt-outstanding" value={field.value} error={errors.outstandingAmount?.message} onChange={updateOutstanding} onBlur={field.onBlur} />
                     )} />
                   </DebtField>
                 </div>
@@ -424,11 +509,28 @@ export function DebtFormDialog({
                   </DebtField>
                 </div>
 
+                {paymentFrequency !== 'none' ? (
+                  <DebtField
+                    label={t('debts.form.fields.repaymentAsset')}
+                    optional
+                    hint={t('debts.form.fields.repaymentAssetHint')}
+                  >
+                    <div className={controlClass}>
+                      <Controller control={control} name="repaymentAssetId" render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger className={selectClass}><SelectValue placeholder={t('debts.form.fields.repaymentAssetPlaceholder')} /></SelectTrigger>
+                          <SelectContent>{receiveAssetOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                      )} />
+                    </div>
+                  </DebtField>
+                ) : null}
+
                 <div className="flex flex-wrap gap-1.5">
                   {DUE_DATE_PRESETS.map((preset) => {
-                    const active = Boolean(borrowedAt) && expectedFinalDueDate === addMonthsIso(borrowedAt, preset.months)
+                    const active = Boolean(dueAnchor) && expectedFinalDueDate === addMonthsIso(dueAnchor, preset.months)
                     return (
-                      <button key={preset.months} type="button" disabled={!borrowedAt} onClick={() => applyDuePreset(preset.months)} className={cn('rounded-full bg-sunk px-3 py-1.5 text-[12px] font-medium text-ink2 transition disabled:opacity-40', active && 'bg-accent text-white')}>
+                      <button key={preset.months} type="button" disabled={!dueAnchor} onClick={() => applyDuePreset(preset.months)} className={cn('rounded-full bg-sunk px-3 py-1.5 text-[12px] font-medium text-ink2 transition disabled:opacity-40', active && 'bg-accent text-white')}>
                         {t(`debts.form.presets.${preset.key}`)}
                       </button>
                     )
@@ -541,7 +643,7 @@ export function DebtFormDialog({
             <div className="flex items-center gap-2.5">
               <Button type="button" variant="ghost" className="h-11 px-4 text-[13px]" onClick={() => handleOpenChange(false)}>{t('common.cancel')}</Button>
               {step < 4 ? (
-                <Button type="button" className="h-11 px-5 text-[13px]" onClick={() => goToStep((step + 1) as Step)}>
+                <Button type="button" className="h-11 px-5 text-[13px]" onClick={() => void requestStep((step + 1) as Step)}>
                   {t(step === 3 ? 'debts.form.actions.review' : 'debts.form.actions.continue')}
                 </Button>
               ) : (

@@ -11,6 +11,36 @@ export const queryKeys = {
     ['market-data', 'symbols', assetClass, query] as const,
   debts: (householdId: string) => ['households', householdId, 'debts'] as const,
   goals: (householdId: string) => ['households', householdId, 'goals'] as const,
+  /**
+   * One goal's asset allocations. Nested under `goals` so invalidating the goals
+   * list also refreshes every open allocation panel — an allocation IS the
+   * goal's progress, so the two can never be stale relative to each other.
+   */
+  goalAllocations: (householdId: string, goalId: string) =>
+    ['households', householdId, 'goals', goalId, 'allocations'] as const,
+  /**
+   * Which goals one ASSET is backing, and how much of it is still free.
+   *
+   * Nested under `goals` rather than `assets`: the answer changes when an
+   * allocation is written, and the goals prefix is what every allocation write
+   * already invalidates. Under `assets` it would go stale until the asset itself
+   * happened to change.
+   */
+  assetGoalUsage: (householdId: string, assetId: string) =>
+    ['households', householdId, 'goals', 'asset-usage', assetId] as const,
+  /** One goal's month-by-month history, frozen into snapshots. */
+  goalMonthlyProgress: (householdId: string, goalId: string) =>
+    ['households', householdId, 'goals', goalId, 'monthly-progress'] as const,
+  /**
+   * What scheduled outflows will cost one goal. Under the goals prefix so any
+   * allocation write refreshes it; cashflow writes invalidate the whole
+   * household, which covers the other direction.
+   */
+  goalScheduledOutflowImpact: (householdId: string, goalId: string) =>
+    ['households', householdId, 'goals', goalId, 'scheduled-outflow-impact'] as const,
+  /** Why one goal's figure moved since the last frozen point. */
+  goalProgressChange: (householdId: string, goalId: string) =>
+    ['households', householdId, 'goals', goalId, 'progress-change'] as const,
   goalProjection: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'projection'] as const,
   members: (householdId: string) => ['households', householdId, 'members'] as const,

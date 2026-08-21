@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { EventField, EventFieldInput, EventMoneyInput } from '@/components/ui/event-field'
+import { DatePicker } from '@/components/ui/date-picker'
+import {
+  EventField,
+  EventFieldInput,
+  EventMoneyInput,
+  eventDateTriggerClass,
+} from '@/components/ui/event-field'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -90,7 +96,22 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
         </ResponsiveDialogHeader>
 
         <div className="max-h-[60vh] space-y-4 overflow-y-auto">
-          <EventField label={t('whatif.form.amount')} htmlFor="whatif-amount">
+          {/* The note leads: naming the purchase first is what turns an abstract
+              number into the question the household is actually asking. */}
+          <EventField label={t('whatif.form.label')} htmlFor="whatif-label">
+            <EventFieldInput
+              id="whatif-label"
+              value={label}
+              onChange={(event) => setLabel(event.target.value)}
+              placeholder={t('whatif.form.labelPlaceholder')}
+            />
+          </EventField>
+
+          <EventField
+            label={t('whatif.form.amount')}
+            htmlFor="whatif-amount"
+            trailing={<span className="text-[13px] text-ink2">đ</span>}
+          >
             <EventMoneyInput
               id="whatif-amount"
               value={amount}
@@ -99,21 +120,13 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
             />
           </EventField>
 
-          <EventField label={t('whatif.form.plannedDate')} htmlFor="whatif-date">
-            <EventFieldInput
-              id="whatif-date"
-              type="date"
+          {/* No `htmlFor`: the picker's control is a button, not an input, so
+              a label pointing at an id would reference nothing. */}
+          <EventField label={t('whatif.form.plannedDate')}>
+            <DatePicker
               value={plannedDate}
-              onChange={(event) => setPlannedDate(event.target.value)}
-            />
-          </EventField>
-
-          <EventField label={t('whatif.form.label')} htmlFor="whatif-label">
-            <EventFieldInput
-              id="whatif-label"
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-              placeholder={t('whatif.form.labelPlaceholder')}
+              onChange={setPlannedDate}
+              className={eventDateTriggerClass}
             />
           </EventField>
 
@@ -131,8 +144,15 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
               </Button>
             </>
           ) : null}
+          {/* Once a result is on screen the button re-runs it against the
+              edited figures, so it stops reading as "show me" and becomes
+              "bring this up to date". */}
           <Button onClick={handleRun} disabled={!canRun || isRunning}>
-            {isRunning ? t('whatif.actions.running') : t('whatif.actions.run')}
+            {isRunning
+              ? t('whatif.actions.running')
+              : result
+                ? t('whatif.actions.update')
+                : t('whatif.actions.run')}
           </Button>
         </ResponsiveDialogFooter>
     </ResponsiveDialogContent>

@@ -168,7 +168,6 @@ export function useEventsPage() {
       toAssetId: event.toAssetId,
       toAssetName: event.toAssetName,
       cashflowEventId: event.cashflowEventId,
-      financialGoalId: event.financialGoalId,
       debtId: event.debtId,
       note: event.note,
     }))
@@ -187,11 +186,9 @@ export function useEventsPage() {
   const filteredRecords = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return timelineRecords.filter((record) => {
-      const isGoal = Boolean(record.financialGoalId) || record.eventType === 'goal_contribution'
       const isDebt = Boolean(record.debtId) || record.eventType === 'debt_update'
-      const isSource = !isGoal && !isDebt && Boolean(record.fromAssetId || record.toAssetId)
+      const isSource = !isDebt && Boolean(record.fromAssetId || record.toAssetId)
       if (tab === 'source' && !isSource) return false
-      if (tab === 'goal' && !isGoal) return false
       if (tab === 'debt' && !isDebt) return false
       if (!needle) return true
       return (
@@ -219,14 +216,9 @@ export function useEventsPage() {
   const recordCounts = useMemo(
     () => ({
       source: timelineRecords.filter((record) =>
-        !record.financialGoalId &&
         !record.debtId &&
-        record.eventType !== 'goal_contribution' &&
         record.eventType !== 'debt_update' &&
         Boolean(record.fromAssetId || record.toAssetId),
-      ).length,
-      goal: timelineRecords.filter(
-        (record) => Boolean(record.financialGoalId) || record.eventType === 'goal_contribution',
       ).length,
       debt: timelineRecords.filter(
         (record) => Boolean(record.debtId) || record.eventType === 'debt_update',
@@ -289,7 +281,6 @@ export function useEventsPage() {
         fromAssetId: event.fromAssetId ?? '',
         toAssetId: event.toAssetId ?? '',
         cashflowEventId: event.cashflowEventId ?? '',
-        financialGoalId: event.financialGoalId ?? '',
         attentionLevel: event.attentionLevel,
         isAttentionNeeded: event.isAttentionNeeded,
         note: event.note ?? '',
@@ -302,8 +293,6 @@ export function useEventsPage() {
       ? 'income'
       : quickAction === 'transfer'
         ? 'transfer'
-        : quickAction === 'goal_contribution'
-          ? 'goal_contribution'
           : quickAction === 'payment_paid'
             ? 'payment_paid'
             : 'expense'
@@ -347,6 +336,16 @@ export function useEventsPage() {
   function openSellAsset() {
     handleFormOpenChange(false)
     navigate('/networth')
+  }
+
+  /**
+   * Buying an asset is not a plain ledger row — it creates (or grows) a holding
+   * and debits the wallet that paid. That lives in the asset form, so hand the
+   * user over with the acquisition already answered.
+   */
+  function openBuyAsset() {
+    handleFormOpenChange(false)
+    navigate('/networth', { state: { buyAsset: true } })
   }
 
   /**
@@ -453,15 +452,13 @@ export function useEventsPage() {
           ? 'income'
           : resolvedAction === 'transfer'
             ? 'transfer'
-            : resolvedAction === 'goal_contribution'
-              ? 'goal_contribution'
               : 'payment_paid'
     const amount = Math.abs(parseAmountInput(values.amount))
     const fromAsset = assets.find((item) => item.id === values.fromAssetId)
     const toAsset = assets.find((item) => item.id === values.toAssetId)
     // `title` was dropped; the note now carries the event's description. When the
     // user leaves the note blank, auto-generate a descriptive one for the types
-    // that used to get an auto-title (transfer / goal_contribution).
+    // that used to get an auto-title (transfer).
     // Expense/income keep the user's note (or the empty-note placeholder). On
     // edit, the user's note wins; only create auto-generates.
     const userNote = values.note.trim()
@@ -470,8 +467,6 @@ export function useEventsPage() {
       : userNote ||
         (resolvedAction === 'transfer' && fromAsset && toAsset
           ? `Chuyển từ ${fromAsset.name} sang ${toAsset.name}`
-          : resolvedAction === 'goal_contribution'
-            ? `Góp vào ${values.financialGoalId.trim() || 'mục tiêu chung'}`
             : t('common.noAdditionalNote'))
     const payload = {
       amount,
@@ -489,7 +484,9 @@ export function useEventsPage() {
       feeAmount: editingEvent?.feeAmount,
       soldQuantity: editingEvent?.soldQuantity,
       soldValue: editingEvent?.soldValue,
-      financialGoalId: values.financialGoalId || undefined,
+      // `null`, not `undefined`, when the household clears the picker: the
+      // payload goes through JSON.stringify, which DROPS undefined keys — so an
+      // undefined here reached the API as "field absent" and the old link
       note: autoNote,
     }
 
@@ -538,7 +535,6 @@ export function useEventsPage() {
         toAssetId: event.toAssetId,
         // The cashflow link is deliberately NOT copied: it records which expected
         // movement this event settled, and only one event can settle it.
-        financialGoalId: event.financialGoalId,
         note: event.note ? `${event.note} (copy)` : '(copy)',
       })
       .then(() => toast.success('Da nhan ban record.'))
@@ -600,6 +596,7 @@ export function useEventsPage() {
     // handlers
     openCreate,
     openBorrowMoney,
+    openBuyAsset,
     openSellAsset,
     openPlanUpcoming,
     openEditEvent,
