@@ -1,15 +1,4 @@
-import {
-  Banknote,
-  ChartNoAxesCombined,
-  Gem,
-  Landmark,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Trash2,
-  Wallet,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -19,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Panel, PanelHeader, TotalRow } from '@/components/ui/panel'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 import type { GoalAllocationRecord } from '@/features/goals/api/goals.repository'
 import { formatAmount } from '@/features/goals/model/goals-form'
 
@@ -50,12 +39,18 @@ type GoalAllocationsSectionProps = {
  * quietly outlived the intention behind it. Every row is removable, and adding
  * goes through the same dialog flow every other create in the app uses.
  *
- * The rows are cards rather than table lines because the two kinds of source do
- * not answer the same question. A wallet answers *how much goes in each month*;
- * gold answers *how much is held right now*, and the market decides that figure,
- * not the household. Laying them in shared columns forced one of the two to be
- * read under the wrong heading — so each row states its own headline figure and
- * says which kind it is.
+ * ## Why two columns rather than one list
+ *
+ * The two kinds of source do not answer the same question. A holding answers
+ * *how much is behind this right now* — a stock of value, which the market
+ * moves. A wallet answers *how much goes in each month* — a rate, which the
+ * household sets. Interleaving them in one list forced a reader to check each
+ * row's badge before they knew which question its number answered, and put a
+ * "162,0 tr" directly above a "20,0 tr" that meant something entirely different.
+ *
+ * Split, each column gets a heading and a total of its own, and every figure
+ * under that heading is the same kind of thing. The rows can then be quiet —
+ * name, one number — because the column already said what the number means.
  *
  * A `fixed` share is capped at the asset's live value when the asset is worth
  * less than was declared. The row says so rather than silently showing the
@@ -71,7 +66,17 @@ export function GoalAllocationsSection({
   onRemove,
 }: GoalAllocationsSectionProps) {
   const { t } = useTranslation()
-  const total = allocations.reduce((sum, row) => sum + row.currentValue, 0)
+
+  const holdings = allocations.filter((row) => row.role !== 'contribution')
+  const contributions = allocations.filter((row) => row.role === 'contribution')
+
+  const holdingsTotal = holdings.reduce((sum, row) => sum + row.currentValue, 0)
+  // A wallet with no declared rate contributes nothing to the pace; summing it
+  // as zero is right, and the row itself says the rate is unset.
+  const monthlyTotal = contributions.reduce((sum, row) => sum + (row.monthlyContribution ?? 0), 0)
+
+  const nameFor = (row: GoalAllocationRecord) =>
+    assetOptions.find((option) => option.value === row.assetId)?.name ?? row.assetId
 
   return (
     <Panel>
@@ -85,40 +90,107 @@ export function GoalAllocationsSection({
             className="hidden min-h-11 items-center gap-1.5 text-[13px] font-medium text-accent disabled:text-ink3 sm:inline-flex"
           >
             <Plus className="size-4" strokeWidth={1.75} />
-            {t('goals.allocations.add')}
+            {t('goals.allocations.addSource')}
           </button>
         }
       />
 
-      <div className="mt-6 space-y-2">
-        {allocations.length === 0 ? (
-          // A statement with no button leaves a brand-new asset-backed goal
-          // reading as 0% with nothing to do about it. The invitation belongs
-          // where the household is already looking.
-          <div className="rounded-sunk bg-sunk px-4 py-10 text-center">
-            <p className="text-[13px] text-ink2">{t('goals.allocations.empty')}</p>
-            <Button
-              type="button"
-              variant="secondary"
-              className="mt-4 h-10 px-4 text-[13px]"
-              disabled={!canAdd || isBusy}
-              onClick={onAdd}
+      {allocations.length === 0 ? (
+        // A statement with no button leaves a brand-new asset-backed goal
+        // reading as 0% with nothing to do about it. The invitation belongs
+        // where the household is already looking.
+        <div className="mt-6 rounded-sunk bg-sunk px-4 py-10 text-center">
+          <p className="text-[13px] text-ink2">{t('goals.allocations.empty')}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-4 h-10 px-4 text-[13px]"
+            disabled={!canAdd || isBusy}
+            onClick={onAdd}
+          >
+            {t('goals.allocations.addSource')}
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-7 grid gap-x-14 gap-y-9 lg:grid-cols-2">
+          {/* Held value. Its total is the stock of money behind the goal. */}
+          {holdings.length > 0 ? (
+            <SourceColumn
+              label={t('goals.allocations.holdingsLabel')}
+              total={formatAmount(holdingsTotal)}
+              count={t('goals.allocations.sourceCount', { count: holdings.length })}
             >
-              {t('goals.allocations.add')}
-            </Button>
-          </div>
-        ) : null}
+              {holdings.map((row) => (
+                <SourceRow
+                  key={row.id}
+                  name={nameFor(row)}
+                  // What the household declared, in the words they declared it:
+                  // a percentage stays a percentage, a whole asset says so.
+                  note={
+                    row.kind === 'percent'
+                      ? t('goals.allocations.percentOfValue', { percent: row.percent ?? 0 })
+                      : row.currentValue >= row.assetValue
+                        ? t('goals.allocations.wholeAsset')
+                        : t('goals.allocations.partOfAsset')
+                  }
+                  value={formatAmount(row.currentValue)}
+                  // The declared claim outruns what the asset now holds: the row
+                  // reports the real figure and says why it moved.
+                  warning={
+                    row.kind === 'fixed' &&
+                    row.allocatedAmount !== null &&
+                    row.currentValue < row.allocatedAmount
+                      ? t('goals.allocations.capped')
+                      : null
+                  }
+                  onEdit={() => onEdit(row)}
+                  onRemove={() => onRemove(row.id)}
+                />
+              ))}
+            </SourceColumn>
+          ) : null}
 
-        {allocations.map((row) => (
-          <AllocationRow
-            key={row.id}
-            row={row}
-            asset={assetOptions.find((option) => option.value === row.assetId)}
-            onEdit={() => onEdit(row)}
-            onRemove={() => onRemove(row.id)}
-          />
-        ))}
-      </div>
+          {/* Monthly rate. Its total is the pace, which is what drives the
+              projected finish date on the chart above. */}
+          {contributions.length > 0 ? (
+            <SourceColumn
+              label={t('goals.allocations.recurringLabel')}
+              total={t('goals.allocations.perMonth', { amount: formatAmount(monthlyTotal) })}
+              count={t('goals.allocations.sourceCount', { count: contributions.length })}
+            >
+              {contributions.map((row) => (
+                <SourceRow
+                  key={row.id}
+                  name={nameFor(row)}
+                  note={t('goals.allocations.monthlySource')}
+                  value={
+                    row.monthlyContribution != null && row.monthlyContribution > 0
+                      ? formatAmount(row.monthlyContribution)
+                      : t('goals.allocations.noMonthly')
+                  }
+                  // Money already sitting in the wallet for this goal counts
+                  // toward progress too — it just is not part of the rate.
+                  warning={null}
+                  sub={
+                    row.currentValue > 0
+                      ? t('goals.allocations.setAside', { amount: formatAmount(row.currentValue) })
+                      : null
+                  }
+                  onEdit={() => onEdit(row)}
+                  onRemove={() => onRemove(row.id)}
+                />
+              ))}
+            </SourceColumn>
+          ) : null}
+        </div>
+      )}
+
+      {/* A holding's figure moves without the household touching it. Saying so
+          once, under the column it applies to, is what stops the goal's
+          progress looking arbitrary. */}
+      {holdings.length > 0 ? (
+        <p className="mt-7 text-[11px] text-ink3">{t('goals.allocations.marketNote')}</p>
+      ) : null}
 
       {/* Mobile has no room for a header action, so the invitation sits at the
           end of the list — where the household finishes reading it. */}
@@ -130,150 +202,107 @@ export function GoalAllocationsSection({
           className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-control bg-sunk text-[13px] font-medium text-accent disabled:text-ink3 sm:hidden"
         >
           <Plus className="size-4" strokeWidth={1.75} />
-          {t('goals.allocations.add')}
+          {t('goals.allocations.addSource')}
         </button>
-      ) : null}
-
-      {/* The ACTUAL total. What scheduled outflows will leave it at is said once,
-          in `GoalScheduledOutflowsSection`, not restated here. */}
-      {allocations.length > 0 ? (
-        <TotalRow label={t('goals.allocations.totalLabel')} value={formatAmount(total)} />
       ) : null}
     </Panel>
   )
 }
 
-function AllocationRow({
-  row,
-  asset,
+/** One kind of source: a heading, the total for that kind, and its rows. */
+function SourceColumn({
+  label,
+  total,
+  count,
+  children,
+}: {
+  label: string
+  total: string
+  count: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="flex items-baseline justify-between gap-4">
+        <div className="min-w-0">
+          <p className="label-vi">{label}</p>
+          <div className="money-number mt-2 text-[22px]">{total}</div>
+        </div>
+        <span className="label-vi shrink-0">{count}</span>
+      </div>
+
+      <div className="mt-5 space-y-1">{children}</div>
+    </div>
+  )
+}
+
+/**
+ * One source. Quiet by design — the column heading above already said what kind
+ * of number this is, so the row only has to name the asset and state it.
+ */
+function SourceRow({
+  name,
+  note,
+  value,
+  sub,
+  warning,
   onEdit,
   onRemove,
 }: {
-  row: GoalAllocationRecord
-  asset: AllocationAssetOption | undefined
+  name: string
+  note: string
+  value: string
+  sub?: string | null
+  warning: string | null
   onEdit: () => void
   onRemove: () => void
 }) {
   const { t } = useTranslation()
-  const isContribution = row.role === 'contribution'
-  const name = asset?.name ?? row.assetId
-  // The declared claim outruns what the asset now holds: the row reports the
-  // real figure and says why it moved.
-  const capped =
-    row.kind === 'fixed' && row.allocatedAmount !== null && row.currentValue < row.allocatedAmount
-  const monthly = row.monthlyContribution ?? null
 
   return (
-    <article className="rounded-sunk bg-sunk p-4 sm:p-5">
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-        <div className="flex min-w-0 items-start gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-control bg-panel text-ink2">
-            <AssetIcon type={asset?.type} role={row.role} />
-          </span>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <h3 className="truncate text-[14px] font-medium">{name}</h3>
-              <span className="rounded-full bg-panel px-2 py-1 text-[10px] text-ink2">
-                {isContribution
-                  ? t('goals.allocations.badgeContribution')
-                  : t('goals.allocations.badgeHolding')}
-              </span>
-            </div>
-            <p className="num mt-1 text-[11px] text-ink3">
-              {isContribution
-                ? t('goals.allocations.assetHolding', { value: formatAmount(row.assetValue) })
-                : t('goals.allocations.assetCurrentValue', {
-                    value: formatAmount(row.assetValue),
-                  })}
-            </p>
+    <div className="flex items-center justify-between gap-4 rounded-control px-3 py-2.5 transition-colors hover:bg-sunk">
+      <div className="min-w-0">
+        <div className="truncate text-[14px]">{name}</div>
+        <div className="mt-0.5 truncate text-[11px] text-ink3">{note}</div>
+        {warning ? (
+          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-attention">
+            <span className="size-1.5 shrink-0 rounded-full bg-attention" />
+            {warning}
           </div>
-        </div>
-
-        <div className="flex items-start justify-between gap-5 sm:justify-end">
-          <div className="text-left sm:text-right">
-            {/* A wallet's headline figure is its monthly pace; a holding's is
-                what it is worth to the goal today. Same slot, different
-                question — so the label says which one is being answered. */}
-            <p className="text-[11px] text-ink3">
-              {isContribution
-                ? t('goals.allocations.monthlyLabelShort')
-                : t('goals.allocations.countedLabelShort')}
-            </p>
-            <p className="money-number mt-1 text-[16px]">
-              {isContribution
-                ? monthly != null && monthly > 0
-                  ? formatAmount(monthly)
-                  : t('goals.allocations.noMonthly')
-                : formatAmount(row.currentValue)}
-            </p>
-            <p className="num mt-1 text-[11px] text-ink3">
-              {isContribution
-                ? t('goals.allocations.setAside', { amount: formatAmount(row.currentValue) })
-                : row.kind === 'percent'
-                  ? t('goals.allocations.percentOfValue', { percent: row.percent ?? 0 })
-                  : formatAmount(row.allocatedAmount ?? 0)}
-            </p>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-9 shrink-0 hover:bg-panel"
-                aria-label={t('goals.allocations.menuFor', { name })}
-              >
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {/* Without this, changing "50tr of my stocks" to 80tr meant
-                  removing the row and adding it back — and the add dialog hides
-                  already-allocated assets, so that round trip was not even
-                  obvious. */}
-              <DropdownMenuItem onSelect={onEdit}>
-                <Pencil className="size-4" /> {t('common.edit')}
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-alert focus:text-alert" onSelect={onRemove}>
-                <Trash2 className="size-4" /> {t('goals.allocations.remove')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        ) : null}
       </div>
 
-      {capped ? (
-        <p className="mt-3 flex items-center gap-2 pl-12 text-[11px] text-attention">
-          <span className="size-1.5 shrink-0 rounded-full bg-attention" />
-          {t('goals.allocations.capped')}
-        </p>
-      ) : null}
+      <div className="flex shrink-0 items-center gap-3">
+        <div className="text-right">
+          <div className="num text-[14px] font-medium">{value}</div>
+          {sub ? <div className="num mt-0.5 text-[11px] text-ink3">{sub}</div> : null}
+        </div>
 
-      {/* A holding's figure moves without the household touching it. Saying so
-          on the row is what stops the goal's progress looking arbitrary. */}
-      {!isContribution ? (
-        <p className="mt-3 pl-12 text-[11px] text-ink3">{t('goals.allocations.marketNote')}</p>
-      ) : null}
-    </article>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-9 shrink-0 text-ink3 hover:bg-panel"
+              aria-label={t('goals.allocations.menuFor', { name })}
+            >
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {/* Without this, changing "50tr of my stocks" to 80tr meant
+                removing the row and adding it back — and the add dialog hides
+                already-allocated assets, so that round trip was not even
+                obvious. */}
+            <DropdownMenuItem onSelect={onEdit}>
+              <Pencil className="size-4" /> {t('common.edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-alert focus:text-alert" onSelect={onRemove}>
+              <Trash2 className="size-4" /> {t('goals.allocations.remove')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
   )
-}
-
-/** The asset's own kind, falling back to what its role in the goal implies. */
-const ICON_BY_ASSET_TYPE: Record<string, LucideIcon> = {
-  cash: Banknote,
-  bank_account: Landmark,
-  saving_deposit: Landmark,
-  certificate_of_deposit: Landmark,
-  gold: Gem,
-  stock: ChartNoAxesCombined,
-  fund: ChartNoAxesCombined,
-  bond: ChartNoAxesCombined,
-  crypto: ChartNoAxesCombined,
-  investment: ChartNoAxesCombined,
-}
-
-function AssetIcon({ type, role }: { type: string | undefined; role: string }) {
-  const Icon =
-    (type ? ICON_BY_ASSET_TYPE[type] : undefined) ?? (role === 'contribution' ? Wallet : Gem)
-  return <Icon className="size-4" strokeWidth={1.75} />
 }

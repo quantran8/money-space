@@ -62,13 +62,16 @@ Recurrence is `once | weekly | monthly | quarterly | yearly`. There is no
   - Offer only assets passing `canSettleCashflow` (`features/assets/model/assets.ts`):
     `liquidity === 'usable_now'` **and** type `cash`/`bank_account`. That mirrors
     the server check, so the picker cannot produce a 400.
-  - `settlementAssetId` is **required at create for OUTGOING** events (zod
-    `superRefine` on the form, and `assertValid` on the server); it stays
-    optional for incoming, and is pre-selected in the confirm dialog when set.
-    It used to be optional on both, because planning often predates the decision.
-    That changed when an outflow started to **outrank the goals sharing its
-    wallet**: without a wallet, the goal money the outflow costs cannot be worked
-    out, so the form could not show the trade before saving. See [[dashboard]].
+  - `settlementAssetId` is **required by the manual cashflow form for OUTGOING**
+    events (zod `superRefine`), optional for incoming, and pre-selected in the
+    confirm dialog when set. The reason is the goal trade-off: an outflow
+    outranks the goals sharing its wallet, so without a wallet the form cannot
+    show what the outflow costs before saving. See [[dashboard]].
+  - **The server does NOT require it.** A debt is not tied to one wallet, and
+    repayments generated months ahead cannot know which wallet will pay them, so
+    `assertValid` accepts an outgoing event with no wallet. The guarantee lives
+    at `complete` instead (above). Debt repayments carry the debt's optional
+    default wallet as a pre-fill — see [[debts]].
   - **The form shows what the outflow takes from the goals on that wallet**
     (`GoalImpactNotice`). Per goal, `before → after`, biggest loser first. It
     states a consequence and is **never a block**: it does not gate the submit

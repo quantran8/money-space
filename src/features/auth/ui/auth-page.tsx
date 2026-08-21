@@ -1,52 +1,29 @@
-import { useAuthPage } from '@/features/auth/hooks/use-auth-page'
+import type { ReactNode } from 'react'
+
 import { AuthBrandPanel } from '@/features/auth/ui/components/auth-brand-panel'
 import { AuthMobileHeader } from '@/features/auth/ui/components/auth-mobile-header'
-import { AuthTabs } from '@/features/auth/ui/components/auth-tabs'
-import { LoginView } from '@/features/auth/ui/components/login-view'
-import { SignupView } from '@/features/auth/ui/components/signup-view'
 
-export function AuthPage() {
-  const {
-    tab,
-    setTab,
-    googlePending,
-    loginForm,
-    signupForm,
-    submitLogin,
-    submitSignup,
-    onGoogle,
-  } = useAuthPage()
-
+/**
+ * Shell shared by `/auth` and `/auth/signup`.
+ *
+ * Login and signup are separate routes, not tabs: each is a destination people
+ * link to and land on directly, and a tab would make the URL lie about which
+ * one is showing.
+ */
+export function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <main className="min-h-screen bg-[hsl(var(--background))] p-4 text-[hsl(var(--foreground))] md:p-6">
-      <div className="mx-auto grid min-h-[calc(100vh-2rem)] max-w-7xl overflow-hidden rounded-[32px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-[0_18px_48px_rgba(0,0,0,0.06)] md:min-h-[calc(100vh-3rem)] lg:grid-cols-[1.05fr_.95fr]">
-        <AuthBrandPanel />
+    <main className="min-h-screen bg-app text-ink antialiased">
+      <div className="mx-auto flex min-h-screen w-full max-w-[1360px] items-stretch px-5 py-5 sm:px-7 sm:py-7 lg:px-10 lg:py-10">
+        <div className="grid w-full gap-5 lg:grid-cols-[1.08fr_.92fr] lg:gap-8">
+          <AuthBrandPanel />
 
-        <section className="flex items-center justify-center px-5 py-8 sm:px-10 md:px-14 lg:px-16">
-          <div className="w-full max-w-md">
-            <AuthMobileHeader />
-
-            <AuthTabs tab={tab} onTabChange={setTab} />
-
-            {tab === 'login' ? (
-              <LoginView
-                form={loginForm}
-                onSubmit={submitLogin}
-                onGoogle={onGoogle}
-                googlePending={googlePending}
-                onSwitchToSignup={() => setTab('signup')}
-              />
-            ) : (
-              <SignupView
-                form={signupForm}
-                onSubmit={submitSignup}
-                onGoogle={onGoogle}
-                googlePending={googlePending}
-                onSwitchToLogin={() => setTab('login')}
-              />
-            )}
-          </div>
-        </section>
+          <section className="flex items-center justify-center">
+            <div className="w-full max-w-[500px] rounded-panel bg-panel px-6 py-8 sm:px-10 sm:py-10 lg:px-11 lg:py-11">
+              <AuthMobileHeader />
+              {children}
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   )

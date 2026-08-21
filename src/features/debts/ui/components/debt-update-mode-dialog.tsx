@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -253,10 +253,9 @@ export function DebtUpdateModeDialog({
               <p className="text-[13px] font-medium text-[#6e6e73]">
                 Thay đổi này áp dụng từ ngày nào?
               </p>
-              <Input
-                type="date"
+              <DatePicker
                 value={effectiveDate}
-                onChange={(event) => setEffectiveDate(event.target.value)}
+                onChange={setEffectiveDate}
                 className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]"
               />
             </div>

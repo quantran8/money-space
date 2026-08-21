@@ -172,7 +172,7 @@ Primary:
 
 Survey:
 
-- “Tôi hiểu rõ hơn tài chính nhà mình.”
+- “Tôi hiểu rõ hơn tài chính gia đình.”
 - “Tôi biết tiền đang nằm ở đâu.”
 - “Tôi biết bao nhiêu tiền thực sự linh hoạt.”
 - “Tôi ít phải hỏi người kia hơn.”

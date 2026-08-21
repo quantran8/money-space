@@ -1,8 +1,16 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarClock, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import { Panel, PanelHeader } from '@/components/ui/panel'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { GoalMonthProgress } from '@/features/goals/api/goals.repository'
 import { useGoalMonthlyProgress } from '@/features/goals/hooks/use-goal-monthly-progress'
@@ -52,13 +60,24 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
   )
   // Newest first: the month a household is asking about is almost always a
   // recent one, and page 1 should already hold it.
-  const ordered = useMemo(() => [...rows].reverse(), [rows])
+  //
+  // The RUNNING month is excluded outright: a month that has not ended is not
+  // history, and listing it as a record invited the row to be read as a result
+  // ("thiếu 17,1tr") when it is simply unfinished. It has its own card above,
+  // which is the right place for a figure that is still moving.
+  const ordered = useMemo(
+    () => rows.filter((month) => !month.inProgress).reverse(),
+    [rows],
+  )
 
   // A goal backed only by gold has no pace to keep. The server withholds
   // `planned` for it, and showing "0 / 10tr · thiếu 10tr" every month would pass
   // judgement on a plan nobody made — so those two columns come off entirely and
   // what is left is what the goal actually is: value being held.
   const hasPace = months.some((month) => month.planned !== null)
+  // The declared rate, for the header. Any month carrying one carries the same
+  // one, so the first is representative.
+  const plannedRate = months.find((month) => month.planned !== null)?.planned ?? null
   const running = months.find((month) => month.inProgress)
   const chartMonths = rows.slice(-CHART_MONTHS)
 
@@ -68,7 +87,14 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
 
   return (
     <Panel>
-      <PanelHeader title={t('goals.monthly.title')} />
+      <PanelHeader
+        title={t('goals.monthly.title')}
+        meta={
+          plannedRate != null
+            ? t('goals.monthly.rateMeta', { amount: formatAmount(plannedRate) })
+            : undefined
+        }
+      />
 
       {/* A wallet feeding this goal also feeds another at the same priority, and
           nobody has said how it divides. The figure below is a share-by-pace
@@ -97,35 +123,43 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
             <RecentMonthsChart months={chartMonths} hasPace={hasPace} />
           </div>
 
-          <div className="mt-7 overflow-x-auto">
-            <table className="table-dense w-full min-w-[480px] text-[13px]">
-              <thead>
-                <tr className="label">
-                  <th className="pb-3 text-left font-normal">
-                    {t('goals.monthly.columns.month')}
-                  </th>
-                  <th className="pb-3 text-right font-normal">
-                    {t('goals.monthly.columns.actual')}
-                  </th>
-                  {hasPace ? (
-                    <>
-                      <th className="pb-3 text-right font-normal">
-                        {t('goals.monthly.columns.planned')}
-                      </th>
-                      <th className="pb-3 text-right font-normal">
-                        {t('goals.monthly.columns.gap')}
-                      </th>
-                    </>
-                  ) : null}
-                </tr>
-              </thead>
-              <tbody>
-                {pageRows.map((month) => (
-                  <MonthRow key={month.month} month={month} hasPace={hasPace} />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <h3 className="mt-7 text-[14px] font-medium">{t('goals.monthly.historyTitle')}</h3>
+
+          {/* A goal in its first month has a running month and nothing else.
+              Column headings over an empty body would promise a record that
+              does not exist yet. */}
+          {ordered.length === 0 ? (
+            <div className="mt-3 grid place-items-center gap-3 rounded-sunk bg-sunk px-4 py-10 text-center">
+              <CalendarClock className="size-6 text-ink3" strokeWidth={1.5} />
+              <p className="text-[13px] text-ink2">{t('goals.monthly.historyEmpty')}</p>
+            </div>
+          ) : (
+          <Table className="mt-3 min-w-[480px] text-[13px]">
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="label-vi">{t('goals.monthly.columns.month')}</TableHead>
+                <TableHead className="label-vi text-right">
+                  {t('goals.monthly.columns.actual')}
+                </TableHead>
+                {hasPace ? (
+                  <>
+                    <TableHead className="label-vi text-right">
+                      {t('goals.monthly.columns.planned')}
+                    </TableHead>
+                    <TableHead className="label-vi text-right">
+                      {t('goals.monthly.columns.gap')}
+                    </TableHead>
+                  </>
+                ) : null}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {pageRows.map((month) => (
+                <MonthRow key={month.month} month={month} hasPace={hasPace} />
+              ))}
+            </TableBody>
+          </Table>
+          )}
 
           {ordered.length > PAGE_SIZE ? (
             <div className="mt-3 flex items-center justify-between gap-3 px-1">
@@ -179,7 +213,7 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
   const left = planned != null ? Math.max(planned - actual, 0) : null
 
   return (
-    <div className="rounded-sunk bg-sunk p-4 sm:p-5">
+    <div className="p-1">
       <p className="text-[12px] font-medium">
         {t('goals.monthly.currentMonth', { month: monthNumber(month.month) })}
       </p>
@@ -187,11 +221,19 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
 
       <div className="mt-5 flex items-end justify-between gap-4">
         <div>
-          {/* "Đã góp": the figure is measured against the wallet as it stands,
-              with scheduled outflows still in it. Money that has not moved has
-              not been spent. What those outflows will cost is reported on its
-              own line below, never folded into this number. */}
-          <p className="text-[11px] text-ink3">{t('goals.monthly.contributed')}</p>
+          {/* Two different figures wear this slot, and they must not share a
+              label. An OBSERVED delta is money that moved: "đã góp". The
+              headroom estimate is capacity the wallets still have — nothing may
+              have moved at all — so calling it "đã góp" would claim something
+              the number does not say. See `isEstimate` in the repository type.
+              Either way the figure is measured against the wallet as it stands,
+              with scheduled outflows still in it; what those will cost is
+              reported on its own line, never folded into this number. */}
+          <p className="text-[11px] text-ink3">
+            {month.isEstimate
+              ? t('goals.monthly.couldContribute')
+              : t('goals.monthly.contributed')}
+          </p>
           <p className="money-number mt-1 text-[30px]">{formatAmount(actual)}</p>
         </div>
         {planned != null ? (
@@ -221,6 +263,8 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
       <p className="mt-4 text-[12px] leading-5 text-ink2">
         {left === null ? (
           t('goals.monthly.noRate')
+        ) : month.isEstimate ? (
+          t('goals.monthly.estimateNote')
         ) : left > 0 ? (
           <Trans
             i18nKey="goals.monthly.leftThisMonth"
@@ -330,59 +374,46 @@ function RecentMonthsChart({
   )
 }
 
+/**
+ * One CLOSED month. The running month never reaches here — it is not history —
+ * so this needs no "still going" branch: every row is a settled result.
+ */
+/**
+ * One CLOSED month. The running month never reaches here — it is not history —
+ * so this needs no "still going" branch: every row is a settled result.
+ */
 function MonthRow({ month, hasPace }: { month: GoalMonthProgress; hasPace: boolean }) {
   const { t } = useTranslation()
   const short = month.gap !== null && month.gap < 0
 
   return (
-    <tr>
-      <td className="py-3 font-mono text-[11px] text-ink3">
-        {month.month}
-        {month.inProgress ? (
-          <span className="ml-2 font-sans text-[11px] text-ink3">
-            {t('goals.monthly.inProgress')}
-          </span>
-        ) : null}
-      </td>
-      <td
+    <TableRow>
+      <TableCell className="font-mono text-[11px] text-ink3">{month.month}</TableCell>
+      <TableCell
         className={cn(
-          'num py-3 text-right font-medium',
+          'num text-right font-medium',
           // A negative month means more went out of the backing assets than came
           // in — the signal, shown as it is.
           (month.delta ?? 0) < 0 && 'text-attention',
         )}
       >
         {month.delta === null ? '—' : formatAmount(month.delta)}
-      </td>
+      </TableCell>
       {hasPace ? (
         <>
-          <td className="num py-3 text-right text-ink2">
+          <TableCell className="num text-right text-ink2">
             {month.planned === null ? '—' : formatAmount(month.planned)}
-          </td>
-          <td
-            className={cn(
-              'num py-3 text-right',
-              // A running month is not behind — it is unfinished. Only a closed
-              // month can fall short, so the live row states what is left to go
-              // and stays neutral.
-              short && !month.inProgress ? 'text-attention' : 'text-ink2',
-            )}
-          >
+          </TableCell>
+          <TableCell className={cn('num text-right', short ? 'text-attention' : 'text-ink2')}>
             {month.gap === null
               ? '—'
-              : month.inProgress
-                ? short
-                  ? t('goals.monthly.remaining', {
-                      amount: formatAmount(Math.abs(month.gap)),
-                    })
-                  : t('goals.monthly.paceMet')
-                : short
-                  ? t('goals.monthly.short', { amount: formatAmount(Math.abs(month.gap)) })
-                  : t('goals.monthly.onPace')}
-          </td>
+              : short
+                ? t('goals.monthly.short', { amount: formatAmount(Math.abs(month.gap)) })
+                : t('goals.monthly.onPace')}
+          </TableCell>
         </>
       ) : null}
-    </tr>
+    </TableRow>
   )
 }
 

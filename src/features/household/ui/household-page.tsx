@@ -20,7 +20,7 @@ import { InviteQrDialog } from '@/features/invites/ui/components/invite-qr-dialo
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
 
 /**
- * `/household` — "Nhà mình" (Phase 10).
+ * `/household` — "Gia đình" (Phase 10).
  *
  * A **composition slice**: it owns no data logic of its own. It mounts the
  * existing members components beside the reserve card, an assets summary and
@@ -30,7 +30,7 @@ import { MembersListSection } from '@/features/members/ui/components/members-lis
 export function HouseholdPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { activeHouseholdId, activeHousehold } = useActiveHousehold()
+  const { activeHouseholdId } = useActiveHousehold()
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const {
     members,
@@ -106,7 +106,6 @@ export function HouseholdPage() {
       <InviteQrDialog
         open={invite.open}
         onOpenChange={invite.handleOpenChange}
-        householdName={activeHousehold?.name}
         invite={invite.invite}
         joinUrl={invite.joinUrl}
         isPreparing={invite.isPreparing}

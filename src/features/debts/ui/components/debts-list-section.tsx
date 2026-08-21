@@ -5,6 +5,14 @@ import { Link } from 'react-router-dom'
 
 import { Panel } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type { Asset } from '@/features/assets/model/assets.types'
 import type { CashflowEvent } from '@/features/cashflow/model/cashflow.types'
 import type { DebtItem } from '@/features/debts/model/debts.types'
@@ -71,44 +79,68 @@ export function DebtsListSection({
         </label>
       </div>
 
-      <div className="mt-7 hidden grid-cols-[1.2fr_1fr_.8fr_1.15fr_.65fr_.8fr_1fr_90px] px-3 lg:grid">
-        <p className="label">{t('debts.demo.columns.item')}</p>
-        <p className="label">{t('debts.demo.columns.lender')}</p>
-        <p className="label text-right">{t('debts.demo.columns.outstanding')}</p>
-        <p className="label">{t('debts.demo.columns.nextPayment')}</p>
-        <p className="label text-right">{t('debts.demo.columns.interest')}</p>
-        <p className="label">{t('debts.demo.columns.owner')}</p>
-        <p className="label">{t('debts.demo.columns.payoff')}</p>
-        <span />
-      </div>
+      {/* A real table: the header and every row share ONE set of column widths,
+          so a heading can no longer drift out of line with its column. */}
+      {/* `min-w` so the container SCROLLS on a narrow screen rather than
+          squeezing eight columns into an unreadable width. */}
+      <Table className="mt-5 min-w-[900px]">
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            {/* `.label-vi`, not `.label`: these headings are accented
+                Vietnamese, and mono renders diacritics poorly (§10.1). */}
+            <TableHead className="label-vi">{t('debts.demo.columns.item')}</TableHead>
+            <TableHead className="label-vi">{t('debts.demo.columns.lender')}</TableHead>
+            <TableHead className="label-vi text-right">
+              {t('debts.demo.columns.outstanding')}
+            </TableHead>
+            <TableHead className="label-vi">{t('debts.demo.columns.nextPayment')}</TableHead>
+            <TableHead className="label-vi text-right">
+              {t('debts.demo.columns.interest')}
+            </TableHead>
+            <TableHead className="label-vi">{t('debts.demo.columns.owner')}</TableHead>
+            <TableHead className="label-vi">{t('debts.demo.columns.payoff')}</TableHead>
+            <TableHead className="w-14" />
+          </TableRow>
+        </TableHeader>
 
-      <div className="mt-2 space-y-1">
-        {isLoading
-          ? Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} className="h-14 w-full rounded-control" />
-            ))
-          : null}
-        {!isLoading && visibleDebts.length === 0 ? (
-          <p className="rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">
-            {debts.length === 0 ? t('debts.demo.empty') : t('debts.demo.emptySearch')}
-          </p>
-        ) : null}
-        {!isLoading
-          ? visibleDebts.map((debt) => (
-              <DebtListItem
-                key={debt.id}
-                debt={debt}
-                ownerName={members.find((member) => member.id === debt.ownerMemberId)?.name}
-                nextPayment={nextPaymentFor(debt.id)}
-                isUpdating={isUpdating}
-                onEdit={onEdit}
-                onMarkPaidOff={onMarkPaidOff}
-                onViewDetail={onViewDetail}
-                onDelete={onDelete}
-              />
-            ))
-          : null}
-      </div>
+        <TableBody>
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, index) => (
+                <TableRow key={index} className="hover:bg-transparent">
+                  <TableCell colSpan={8} className="py-2">
+                    <Skeleton className="h-9 w-full rounded-control" />
+                  </TableCell>
+                </TableRow>
+              ))
+            : null}
+
+          {!isLoading && visibleDebts.length === 0 ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={8}>
+                <p className="rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">
+                  {debts.length === 0 ? t('debts.demo.empty') : t('debts.demo.emptySearch')}
+                </p>
+              </TableCell>
+            </TableRow>
+          ) : null}
+
+          {!isLoading
+            ? visibleDebts.map((debt) => (
+                <DebtListItem
+                  key={debt.id}
+                  debt={debt}
+                  ownerName={members.find((member) => member.id === debt.ownerMemberId)?.name}
+                  nextPayment={nextPaymentFor(debt.id)}
+                  isUpdating={isUpdating}
+                  onEdit={onEdit}
+                  onMarkPaidOff={onMarkPaidOff}
+                  onViewDetail={onViewDetail}
+                  onDelete={onDelete}
+                />
+              ))
+            : null}
+        </TableBody>
+      </Table>
 
       {!isLoading && missingScheduleCount > 0 ? (
         <div className="sunk mt-5 flex flex-col gap-1.5 px-4 py-3.5 sm:flex-row sm:items-baseline sm:justify-between">

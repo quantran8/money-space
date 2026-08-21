@@ -19,6 +19,22 @@ The quick-pick chips (`quickLenderTypes`) and the "Loại khoản vay" select bo
 
 A debt links to the asset that received the money (`receivedToAssetId`). Borrowing raises an asset **and** a debt equally → **net worth unchanged**. See [[domain-overview]].
 
+### The repayment wallet is a default, not a binding
+
+**A debt is not tied to one wallet.** The household repays it from whichever
+`cash` / `bank_account` wallet suits them that month, so nothing may force one
+at create time.
+
+`repaymentAssetId` (optional, "Ví trả nợ mặc định" on step 2 of the debt form,
+shown only when a repayment frequency is set) records the wallet they *usually*
+repay from. The backend stamps it onto each generated repayment as that event's
+`settlementAssetId`, so confirming a payment is one tap. It is only a pre-fill —
+completing a payment can always name a different wallet, and leaving it empty
+just means the wallet is chosen at completion time.
+
+This is why an outgoing cashflow event does **not** require a settlement wallet
+when it is created — see [[forecast-and-flexible-money]].
+
 **`receivedToAssetId` can only be a spendable wallet — `cash` or `bank_account`.** Borrowed money lands in a wallet, never in a valued asset (gold, stock, savings…). The create/edit form's "Nhận nợ vào đâu?" select filters assets to these two types (same rule the events page applies to its "nguồn tiền" source select). The create default seeds from the first such wallet.
 
 ## Repayment terms live on the `debts` row

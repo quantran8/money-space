@@ -43,6 +43,16 @@ export interface LocalGoalSpendImpact {
   goalName: string
   before: number
   after: number
+  /**
+   * What THIS MONTH'S CONTRIBUTION was drawing from this wallet before the
+   * spend. The form reports "phần góp tháng này: 17,1 → 12,1", and that first
+   * figure is this — not `reduction`, which is what the spend takes. Summing
+   * the reductions would report the pace as having held exactly what the bill
+   * removed, i.e. always ending at zero.
+   */
+  paceBefore: number
+  /** Money already sitting behind the goal in this wallet, before the spend. */
+  setAsideBefore: number
   reduction: number
   /**
    * How much of `reduction` comes out of THIS MONTH'S CONTRIBUTION — the pace
@@ -68,6 +78,10 @@ export interface LocalSpendImpact {
   totalPaceReduction: number
   /** Across every goal — money already set aside taken back out. */
   totalSetAsideReduction: number
+  /** Across every goal — what this month's contribution held before the spend. */
+  totalPaceBefore: number
+  /** Across every goal — money already set aside, before the spend. */
+  totalSetAsideBefore: number
   goals: LocalGoalSpendImpact[]
   exceedsWallet: boolean
 }
@@ -250,8 +264,19 @@ export function computeSpendImpact(
   let totalPaceReduction = 0
   let totalSetAsideReduction = 0
 
+  let totalPaceBefore = 0
+  let totalSetAsideBefore = 0
+
   for (const [goalId, beforeParts] of before) {
     const afterParts = after.get(goalId) ?? { setAside: 0, pace: 0 }
+
+    // The BEFORE totals span every goal on the wallet, including those this
+    // spend does not touch. They answer "what was this month's contribution
+    // holding", which is a fact about the wallet, not about the spend — summing
+    // only the affected goals would understate it whenever one goal absorbs the
+    // whole bill.
+    totalPaceBefore += beforeParts.pace
+    totalSetAsideBefore += beforeParts.setAside
 
     const beforeValue = beforeParts.setAside + beforeParts.pace
     const afterValue = afterParts.setAside + afterParts.pace
@@ -275,6 +300,8 @@ export function computeSpendImpact(
       goalName: names.get(goalId) ?? '—',
       before: beforeValue,
       after: afterValue,
+      paceBefore: beforeParts.pace,
+      setAsideBefore: beforeParts.setAside,
       reduction,
       paceReduction,
       setAsideReduction,
@@ -292,6 +319,8 @@ export function computeSpendImpact(
     totalReduction,
     totalPaceReduction,
     totalSetAsideReduction,
+    totalPaceBefore,
+    totalSetAsideBefore,
     goals,
     exceedsWallet: spend > assetValue,
   }

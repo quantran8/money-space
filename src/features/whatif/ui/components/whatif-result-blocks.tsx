@@ -4,6 +4,10 @@ import { SubSection } from '@/components/ui/sub-section'
 import { AssumptionsNote } from '@/features/forecast/ui/components/assumptions-note'
 import { SpendImpactBar } from '@/features/cashflow/ui/components/spend-impact-bar'
 import { RESULT_TYPE_CLASS, type WhatIfResult } from '@/features/whatif/model/whatif.types'
+import type {
+  AssumptionCode,
+  CalculationAssumption,
+} from '@/features/forecast/model/forecast.types'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
@@ -97,18 +101,16 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
             </p>
           ) : null}
 
-          {/* The same bar the cashflow form uses: it carries the proportion,
-              which words cannot — 4tr out of 52tr and 4tr out of 5tr read
-              identically as text and are not the same situation. */}
+          {/* The same bar the cashflow form uses: what this spend costs the
+              goals, split across where it comes from — this month's
+              contribution first, money already set aside only once that is
+              gone. The order IS the rule, and the bar states it without a
+              sentence. */}
           <SpendImpactBar
             className="mb-2.5"
-            spendFromPace={result.goalImpact.totalPaceReduction}
-            spendFromSetAside={result.goalImpact.totalSetAsideReduction}
-            goalRemaining={result.goalImpact.goals.reduce(
-              (sum, goal) => sum + goal.after,
-              0,
-            )}
-            unassigned={0}
+            fromPace={result.goalImpact.totalPaceReduction}
+            fromSetAside={result.goalImpact.totalSetAsideReduction}
+            formatAmount={formatVndShort}
           />
 
           <ul className="space-y-1.5">
@@ -164,8 +166,37 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
       ) : null}
 
       {/* 4 — Assumptions */}
-      <AssumptionsNote assumptions={result.assumptions} />
+      <AssumptionsNote assumptions={whatIfAssumptions(result.assumptions)} />
     </div>
+  )
+}
+
+/**
+ * Assumptions that describe how the FORECAST is built rather than what this
+ * particular purchase changes.
+ *
+ * The horizon, the same-day ordering of outflows and the fact that planned
+ * outflows are still subtracted are all true of every number the app shows —
+ * they belong on `/upcoming`, where the forecast itself is the subject. Here
+ * the reader asked one question about one purchase, and repeating the standing
+ * rules of the engine buries the two or three lines that actually answer it.
+ *
+ * What survives is anything CONDITIONAL — stale sources, no confirmed inflow,
+ * estimated income held back — because those qualify this answer.
+ */
+// Typed as `AssumptionCode` so renaming a code upstream breaks the build here
+// rather than silently leaving the line on screen.
+const FORECAST_WIDE_ASSUMPTIONS = new Set<AssumptionCode>([
+  'horizon_days',
+  'same_day_outflows_ordered_first',
+  'planned_outflows_included',
+])
+
+function whatIfAssumptions(
+  assumptions: CalculationAssumption[],
+): CalculationAssumption[] {
+  return assumptions.filter(
+    (assumption) => !FORECAST_WIDE_ASSUMPTIONS.has(assumption.code),
   )
 }
 

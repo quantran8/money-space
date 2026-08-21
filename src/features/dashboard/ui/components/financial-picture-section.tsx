@@ -20,7 +20,7 @@ import { cn } from '@/shared/lib/utils'
  * here is an output of those same sources (§2.15).
  *
  * v11 drops the two status chips that used to sit above the hero. They stated a
- * verdict ("Nhà mình đang ổn") before the reader had seen anything to verify it
+ * verdict ("Tài chính ổn định") before the reader had seen anything to verify it
  * against, and both axes they carried are now shown as facts instead: staleness
  * is named source by source in the block below, and the state of the month is
  * the low point in §12.2, which says what happens and when.

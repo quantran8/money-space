@@ -61,7 +61,7 @@
 
 Đưa user từ:
 
-> “Tôi muốn hiểu tài chính nhà mình.”
+> “Tôi muốn hiểu tài chính gia đình.”
 
 tới:
 
@@ -98,7 +98,7 @@ và cuối cùng:
 
 User lần đầu thấy:
 
-> “Nhà mình hiện có X và sau các khoản đã biết còn Y linh hoạt.”
+> “Gia đình hiện có X và sau các khoản đã biết còn Y linh hoạt.”
 
 ## Activation 2 — Consequence Moment
 

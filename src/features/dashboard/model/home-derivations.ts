@@ -181,6 +181,11 @@ export function buildCoverage(freshness: DataFreshnessResult): CoverageSummary {
 
 export type TimelineRow = {
   key: string
+  /**
+   * When the event actually happens. For an overdue occurrence the forecast
+   * clamps `occurrence.date` onto today so it still weighs on today's cash;
+   * this stays the real date, since the column states when it happens.
+   */
   date: string
   name: string
   amount: number
@@ -218,7 +223,7 @@ export function buildTimelineRows(
 
     return {
       key: occurrence.occurrenceKey,
-      date: occurrence.date,
+      date: occurrence.originalDate ?? occurrence.date,
       name: occurrence.name,
       amount: occurrence.amount,
       signedAmount,

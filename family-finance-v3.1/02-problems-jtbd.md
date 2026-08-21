@@ -136,7 +136,7 @@ Value của app phải nằm ở:
 
 ## JTBD 1 — Shared Financial Clarity
 
-> Khi tôi muốn hiểu tài chính nhà mình, tôi muốn nhìn được một bức tranh chung mà không phải mở nhiều app hoặc hỏi người kia từng khoản.
+> Khi tôi muốn hiểu tài chính gia đình, tôi muốn nhìn được một bức tranh chung mà không phải mở nhiều app hoặc hỏi người kia từng khoản.
 
 ## JTBD 2 — Money Location
 
@@ -218,7 +218,7 @@ Người dùng không cần biết:
 
 Họ cần biết:
 
-- Nhà mình đang có bao nhiêu?
+- Gia đình đang có bao nhiêu?
 - Tiền ở đâu?
 - Ai phụ trách khoản nào?
 - Phần nào đã được dành cho việc khác?

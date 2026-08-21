@@ -77,13 +77,16 @@ export function buildCashflowSchema(t: (key: string, params?: Record<string, unk
   })
     .superRefine((values, ctx) => {
       /**
-       * An outflow must name the wallet it leaves from.
-       *
-       * This was optional on both directions, on the reasoning that at planning
-       * time the household often does not know yet. That does not hold once an
-       * outflow outranks the goals sharing its wallet: without a wallet the
+       * An outflow entered BY HAND must name the wallet it leaves from: an
+       * outflow outranks the goals sharing its wallet, and without a wallet the
        * goal money it costs cannot be worked out, so the form could not show
-       * the trade before saving — and the server rejects it anyway.
+       * the trade before saving (`GoalImpactNotice`).
+       *
+       * This is a rule of this form, not of the domain. The server accepts an
+       * outgoing event with no wallet, because a debt is not tied to one —
+       * repayments generated months ahead cannot know which wallet will pay
+       * them, and `completeCashflowEvent` asks at payment time instead. See
+       * memory/debts.md.
        */
       if (values.direction === 'outgoing' && !values.settlementAssetId) {
         ctx.addIssue({

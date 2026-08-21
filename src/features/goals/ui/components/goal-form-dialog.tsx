@@ -4,6 +4,7 @@ import { Controller, useWatch, type FieldErrors, type UseFormReturn } from 'reac
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
+import { MonthPicker } from '@/components/ui/month-picker'
 import {
   Field,
   MoneyField,
@@ -54,10 +55,6 @@ function toNumber(raw: string | undefined): number {
 function toMonthValue(value: string): string {
   const match = value.match(/^(\d{4}-\d{2})/)
   return match?.[1] ?? ''
-}
-
-function fromMonthValue(value: string): string {
-  return value ? `${value}-01` : ''
 }
 
 function monthLabel(value: string, empty: string): string {
@@ -453,18 +450,17 @@ function PlanDatePriorityFields({
   const { t } = useTranslation()
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field label={t('goals.builder.targetMonth')} htmlFor="goal-target-month">
+      {/* No `htmlFor`: the picker's control is a button, not an input. */}
+      <Field label={t('goals.builder.targetMonth')}>
         <div className={cn(fieldShell, 'h-12')}>
           <Controller
             control={control}
             name="targetDate"
             render={({ field }) => (
-              <input
-                id="goal-target-month"
-                type="month"
-                value={toMonthValue(targetDate)}
-                onChange={(event) => field.onChange(fromMonthValue(event.target.value))}
-                className={cn(fieldInput, 'num')}
+              <MonthPicker
+                value={targetDate}
+                onChange={field.onChange}
+                className={fieldControlReset}
               />
             )}
           />

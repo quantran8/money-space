@@ -1,49 +1,53 @@
-import { Wallet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-/** The dark, full-height brand panel shown alongside the auth form on large screens. */
+import { AuthLogo } from '@/features/auth/ui/components/auth-logo'
+
+/**
+ * The left half of the auth screen on large screens.
+ *
+ * Sits directly on `--app` with no panel of its own: the form to its right is
+ * the only white surface, so the page reads as one sheet with a single focal
+ * point rather than two competing cards (design.md §2.1).
+ */
 export function AuthBrandPanel() {
   const { t } = useTranslation()
 
   const stats = [
-    { label: t('auth.brand.stats.usableLabel'), value: t('auth.brand.stats.usableValue') },
-    { label: t('auth.brand.stats.dueLabel'), value: t('auth.brand.stats.dueValue') },
-    { label: t('auth.brand.stats.goalLabel'), value: t('auth.brand.stats.goalValue') },
+    { value: t('auth.brand.stats.usableValue'), label: t('auth.brand.stats.usableLabel') },
+    { value: t('auth.brand.stats.dueValue'), label: t('auth.brand.stats.dueLabel') },
+    { value: t('auth.brand.stats.goalValue'), label: t('auth.brand.stats.goalLabel') },
   ]
 
   return (
-    <section className="relative hidden overflow-hidden bg-[hsl(var(--primary))] p-10 text-[hsl(var(--primary-foreground))] lg:flex lg:flex-col lg:justify-between">
-      <div className="absolute -right-24 -top-24 size-80 rounded-full bg-white/5 blur-3xl" />
-      <div className="absolute -bottom-32 -left-24 size-96 rounded-full bg-accent-tint blur-3xl" />
+    <section className="hidden min-h-[720px] flex-col justify-between px-3 py-2 lg:flex">
+      <AuthLogo markClassName="size-11 rounded-[12px] bg-panel" className="text-[18px]" />
 
-      <div className="relative z-10 inline-flex items-center gap-3">
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-white text-[hsl(var(--primary))] shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
-          <Wallet className="size-6" />
-        </span>
-        <span className="text-lg font-semibold tracking-[-0.03em]">{t('auth.brand.appName')}</span>
-      </div>
+      <div className="max-w-[650px] pb-10">
+        <p className="mb-5 text-[13px] font-medium text-accent">{t('auth.brand.eyebrow')}</p>
 
-      <div className="relative z-10 max-w-xl">
-        <span className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium text-white/80">
-          {t('auth.brand.eyebrow')}
-        </span>
-        <h1 className="mt-6 text-5xl font-semibold leading-[1.05] tracking-[-0.055em]">
-          {t('auth.brand.title')}
+        <h1 className="max-w-[630px] text-[50px] font-medium leading-[1.08] tracking-[-0.035em] xl:text-[58px]">
+          {t('auth.brand.titleLine1')}
+          <br />
+          {t('auth.brand.titleLine2')}
         </h1>
-        <p className="mt-5 max-w-lg text-base leading-7 text-white/65">
+
+        <p className="mt-6 max-w-[580px] text-[16px] leading-7 text-ink2">
           {t('auth.brand.description')}
         </p>
       </div>
 
-      <div className="relative z-10 grid grid-cols-3 gap-3">
-        {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-3xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur"
-          >
-            <p className="text-xs font-medium text-white/50">{stat.label}</p>
-            <p className="money-number mt-2 text-xl font-semibold tracking-[-0.04em]">
-              {stat.value}
+      {/* Sample figures, not the household's own — nobody is signed in yet.
+          Kept inline and unboxed so they read as a caption under the pitch,
+          never as live metrics the way a MetricCell would. */}
+      <div className="mb-2 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-ink2">
+        {stats.map((stat, index) => (
+          <div key={stat.label} className="flex items-center gap-6">
+            {index > 0 ? (
+              <span className="h-1 w-1 rounded-full bg-ink3/60" aria-hidden="true" />
+            ) : null}
+            <p>
+              <span className="money-number font-medium text-ink">{stat.value}</span>
+              <span className="ml-1">{stat.label}</span>
             </p>
           </div>
         ))}

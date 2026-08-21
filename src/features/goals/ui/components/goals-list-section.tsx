@@ -104,7 +104,7 @@ export function GoalsListSection({
             <div className="hidden lg:block">
               <table className="w-full table-fixed text-left text-[14px]" aria-label={t('goals.table.ariaLabel')}>
                 <thead>
-                  <tr className="label">
+                  <tr className="label-vi">
                     <th className="w-[23%] pb-3 pl-3 font-normal">{t('goals.table.goal')}</th>
                     <th className="w-[30%] pb-3 font-normal">{t('goals.table.progress')}</th>
                     <th className="w-[28%] pb-3 font-normal">{t('goals.table.plan')}</th>

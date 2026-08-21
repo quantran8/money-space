@@ -6,7 +6,7 @@ Sản phẩm là một app dành cho các cặp đôi **25–37 tuổi, sắp c�
 
 App giúp household trả lời 5 câu hỏi:
 
-1. **Nhà mình đang có bao nhiêu?**
+1. **Gia đình đang có bao nhiêu?**
 2. **Tiền đang nằm ở đâu và ai đang phụ trách?**
 3. **Trong thời gian tới có những khoản nào sẽ vào hoặc ra?**
 4. **Sau các nghĩa vụ đã biết, còn bao nhiêu tiền thực sự linh hoạt?**
@@ -90,7 +90,7 @@ Sản phẩm này cần trả lời:
 
 ### Financial Clarity
 
-**Biết nhà mình đang thế nào.**
+**Biết gia đình đang thế nào.**
 
 ### Financial Foresight
 
@@ -106,7 +106,7 @@ Sản phẩm này cần trả lời:
 
 User bắt đầu dùng vì:
 
-> **“Tôi muốn hiểu rõ tài chính nhà mình.”**
+> **“Tôi muốn hiểu rõ tài chính gia đình.”**
 
 User quay lại vì:
 
@@ -122,7 +122,7 @@ User trả tiền vì:
 
 Sản phẩm thành công khi một couple có thể nói:
 
-> “Trước đây muốn biết nhà mình đang thế nào thì phải hỏi nhau và tự cộng nhiều nơi. Giờ chỉ cần mở app.”
+> “Trước đây muốn biết gia đình đang thế nào thì phải hỏi nhau và tự cộng nhiều nơi. Giờ chỉ cần mở app.”
 
 Và trước một khoản chi lớn:
 

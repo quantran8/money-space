@@ -1,5 +1,6 @@
 import type { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -7,6 +8,7 @@ import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AuthDivider, GoogleButton } from '@/features/auth/ui/components/google-button'
+import { AuthLegalNote } from '@/features/auth/ui/components/auth-legal-note'
 import { PasswordInput } from '@/features/auth/ui/components/password-input'
 import type { LoginForm } from '@/features/auth/model/auth-form'
 
@@ -15,30 +17,29 @@ type LoginViewProps = {
   onSubmit: () => void
   onGoogle: () => void
   googlePending: boolean
-  onSwitchToSignup: () => void
 }
 
-export function LoginView({
-  form,
-  onSubmit,
-  onGoogle,
-  googlePending,
-  onSwitchToSignup,
-}: LoginViewProps) {
+export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginViewProps) {
   const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
   const {
     register,
     formState: { errors, isSubmitting },
   } = form
 
+  // `next` is why someone was sent here at all (an invite QR, most often), so
+  // it has to survive the hop to signup too.
+  const next = searchParams.get('next')
+  const signupPath = next ? `/auth/signup?next=${encodeURIComponent(next)}` : '/auth/signup'
+
   return (
-    <div className="mt-8">
+    <div>
       <div>
-        <p className="text-sm font-medium text-accent">{t('auth.login.eyebrow')}</p>
-        <h2 className="mt-2 text-4xl font-semibold tracking-[-0.05em]">{t('auth.login.title')}</h2>
-        <p className="mt-3 text-[15px] leading-6 text-ink2">
-          {t('auth.login.description')}
-        </p>
+        <p className="text-[13px] font-medium text-accent">{t('auth.login.eyebrow')}</p>
+        <h2 className="mt-2 text-[34px] font-medium leading-tight tracking-[-0.035em]">
+          {t('auth.login.title')}
+        </h2>
+        <p className="mt-3 text-[14px] leading-6 text-ink2">{t('auth.login.description')}</p>
       </div>
 
       <GoogleButton
@@ -49,7 +50,7 @@ export function LoginView({
 
       <AuthDivider />
 
-      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+      <form className="space-y-5" onSubmit={onSubmit} noValidate>
         <FormField label={t('auth.fields.email')} error={errors.email?.message}>
           <Input
             type="email"
@@ -61,9 +62,9 @@ export function LoginView({
         </FormField>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-3">
             <Label>{t('auth.fields.password')}</Label>
-            <button type="button" className="text-sm font-medium text-accent hover:underline">
+            <button type="button" className="text-[13px] font-medium text-accent hover:underline">
               {t('auth.login.forgotPassword')}
             </button>
           </div>
@@ -74,15 +75,13 @@ export function LoginView({
             {...register('password')}
           />
           {errors.password?.message ? (
-            <p className="text-xs font-medium text-alert">
-              {errors.password.message}
-            </p>
+            <p className="text-xs font-medium text-alert">{errors.password.message}</p>
           ) : null}
         </div>
 
-        <label className="flex cursor-pointer items-center gap-3 text-sm text-ink2">
-          <Checkbox {...register('remember')} />
-          {t('auth.login.remember')}
+        <label className="flex cursor-pointer items-start gap-3 text-[13px] text-ink2">
+          <Checkbox className="mt-[2px]" {...register('remember')} />
+          <span>{t('auth.login.remember')}</span>
         </label>
 
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
@@ -90,16 +89,14 @@ export function LoginView({
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-ink2">
+      <p className="mt-7 text-center text-[13px] text-ink2">
         {t('auth.login.noAccount')}{' '}
-        <button
-          type="button"
-          onClick={onSwitchToSignup}
-          className="font-semibold text-accent hover:underline"
-        >
+        <Link to={signupPath} className="font-medium text-accent hover:underline">
           {t('auth.tabs.signup')}
-        </button>
+        </Link>
       </p>
+
+      <AuthLegalNote />
     </div>
   )
 }

@@ -1,4 +1,5 @@
-import { Check, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -41,6 +42,37 @@ type TimelineRow = {
   runningBalance?: number
 }
 
+type MonthGroup = {
+  key: string
+  rows: TimelineRow[]
+}
+
+/** Matches the money-events history table so both lists page identically. */
+const PAGE_SIZE = 10
+
+/**
+ * Split the flat timeline into month buckets, preserving order. The timeline is
+ * already chronological, so the first time a month is seen fixes its position —
+ * no re-sorting, which would fight the overdue-clamped ordering upstream.
+ */
+function groupByMonth(rows: TimelineRow[]): MonthGroup[] {
+  const groups: MonthGroup[] = []
+  const indexByKey = new Map<string, number>()
+  for (const row of rows) {
+    // Group by the date the money actually moves — the same date the running
+    // balance uses — so an overdue item counted today sits under today's month.
+    const key = row.occurrence.date.slice(0, 7)
+    const at = indexByKey.get(key)
+    if (at === undefined) {
+      indexByKey.set(key, groups.length)
+      groups.push({ key, rows: [row] })
+    } else {
+      groups[at].rows.push(row)
+    }
+  }
+  return groups
+}
+
 export function ForecastTimeline({
   days,
   ownerNameByEventId = {},
@@ -52,7 +84,20 @@ export function ForecastTimeline({
   onDelete,
 }: ForecastTimelineProps) {
   const { t } = useTranslation()
-  const rows = flattenTimeline(days)
+  const rows = useMemo(() => flattenTimeline(days), [days])
+  const [page, setPage] = useState(1)
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
+  // Clamp rather than reset: shrinking the horizon (60 → 7 ngày) can drop the
+  // page count below the current page, and a stale `page` would render empty.
+  const safePage = Math.min(page, totalPages)
+  const visibleRows = rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const groups = useMemo(() => groupByMonth(visibleRows), [visibleRows])
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
+    (value) => totalPages <= 5 || value === 1 || value === totalPages || Math.abs(value - safePage) <= 1,
+  )
+  const firstVisible = rows.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1
+  const lastVisible = Math.min(safePage * PAGE_SIZE, rows.length)
 
   if (isLoading) {
     return (
@@ -104,7 +149,7 @@ export function ForecastTimeline({
       <div className="mt-7">
         <table className="w-full lg:table-fixed">
           <thead className="hidden lg:table-header-group">
-            <tr className="label">
+            <tr className="label-vi">
               <th scope="col" className="w-[84px] pb-3 text-left font-normal">
                 {t('upcoming.timeline.columns.date')}
               </th>
@@ -126,21 +171,93 @@ export function ForecastTimeline({
             </tr>
           </thead>
 
-          <tbody className="block lg:table-row-group">
-            {rows.map(({ occurrence, runningBalance }) => (
-              <OccurrenceRow
-                key={occurrence.occurrenceKey}
-                occurrence={occurrence}
-                runningBalance={runningBalance}
-                ownerName={ownerNameByEventId[occurrence.sourceEventId]}
-                onComplete={onComplete}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            ))}
-          </tbody>
+          {groups.map((group) => {
+            const [year, month] = group.key.split('-')
+            return (
+              <tbody key={group.key} className="block lg:table-row-group">
+                <tr className="block lg:table-row">
+                  <th
+                    scope="colgroup"
+                    colSpan={6}
+                    className="label block px-3 pb-2 pt-5 text-left font-normal lg:table-cell"
+                  >
+                    {t('upcoming.timeline.monthGroup', {
+                      month: Number(month),
+                      year,
+                    })}
+                  </th>
+                </tr>
+                {group.rows.map(({ occurrence, runningBalance }) => (
+                  <OccurrenceRow
+                    key={occurrence.occurrenceKey}
+                    occurrence={occurrence}
+                    runningBalance={runningBalance}
+                    ownerName={ownerNameByEventId[occurrence.sourceEventId]}
+                    onComplete={onComplete}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
+                ))}
+              </tbody>
+            )
+          })}
         </table>
       </div>
+
+      {rows.length > PAGE_SIZE ? (
+        <div className="sunk mt-6 flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[12px] text-ink2">
+            {t('upcoming.timeline.showing', {
+              from: firstVisible,
+              to: lastVisible,
+              total: rows.length,
+            })}
+          </p>
+          <nav className="flex items-center gap-1" aria-label={t('upcoming.timeline.pagination')}>
+            <button
+              type="button"
+              disabled={safePage === 1}
+              className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] text-ink3 hover:bg-panel disabled:opacity-40"
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+            >
+              <ChevronLeft className="size-4" strokeWidth={1.75} />
+              {t('upcoming.timeline.previous')}
+            </button>
+            {pageNumbers.map((pageNumber, index) => {
+              const previous = pageNumbers[index - 1]
+              return (
+                <span key={pageNumber} className="contents">
+                  {previous && pageNumber - previous > 1 ? (
+                    <span className="grid size-9 place-items-center text-[12px] text-ink3">…</span>
+                  ) : null}
+                  <button
+                    type="button"
+                    aria-current={safePage === pageNumber ? 'page' : undefined}
+                    className={cn(
+                      'grid size-9 place-items-center rounded-control text-[12px]',
+                      safePage === pageNumber
+                        ? 'bg-panel font-medium text-ink'
+                        : 'text-ink2 hover:bg-panel',
+                    )}
+                    onClick={() => setPage(pageNumber)}
+                  >
+                    {pageNumber}
+                  </button>
+                </span>
+              )
+            })}
+            <button
+              type="button"
+              disabled={safePage === totalPages}
+              className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] font-medium text-accent hover:bg-panel disabled:opacity-40"
+              onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+            >
+              {t('upcoming.timeline.next')}
+              <ChevronRight className="size-4" strokeWidth={1.75} />
+            </button>
+          </nav>
+        </div>
+      ) : null}
     </Panel>
   )
 }
@@ -170,7 +287,12 @@ function OccurrenceRow({
   return (
     <tr className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:table-row lg:px-0 lg:py-0">
       <td className="col-start-1 row-start-1 font-mono text-[12px] text-ink3 lg:rounded-l-[8px] lg:py-3 lg:pl-3 lg:align-middle">
-        {formatDayMonth(occurrence.date)}
+        {/* An overdue occurrence is pulled onto today so it still weighs on
+            today's cash, but the date column states when the event happens —
+            so it shows the real one. The clamp stays in `occurrence.date`,
+            which is what the running balance and day grouping use, and the
+            `overdue` marker is what tells the user it is being counted now. */}
+        {formatDayMonth(occurrence.originalDate ?? occurrence.date)}
       </td>
 
       <td className="col-start-1 row-start-2 mt-1 min-w-0 lg:mt-0 lg:py-3 lg:pr-8 lg:align-middle">

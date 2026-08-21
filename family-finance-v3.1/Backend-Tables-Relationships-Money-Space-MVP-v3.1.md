@@ -881,7 +881,7 @@ Snapshot không phải ledger và cũng không phải source of truth cho foreca
 Snapshot trả lời:
 
 ```txt
-Nhà mình tại thời điểm đó đang thế nào?
+Gia đình tại thời điểm đó đang thế nào?
 Tiền thanh khoản là bao nhiêu?
 30 ngày sau snapshot có incoming/outgoing bao nhiêu?
 Lowest projected balance là bao nhiêu?
@@ -1003,7 +1003,7 @@ GET /snapshots
 Nó trả lời:
 
 ```txt
-Tiền nhà mình đang nằm ở đâu?
+Tiền gia đình đang nằm ở đâu?
 Có bao nhiêu tiền có thể dùng ngay?
 Có bao nhiêu tiền tiết kiệm?
 Có tài sản dài hạn gì?
@@ -2248,7 +2248,7 @@ Lưu mục tiêu tài chính và các input cần cho goal projection / What-if 
 Trả lời:
 
 ```txt
-Nhà mình đang hướng tới mục tiêu gì?
+Gia đình đang hướng tới mục tiêu gì?
 Hiện đã có bao nhiêu?
 Còn thiếu bao nhiêu?
 Muốn đạt vào khi nào?
@@ -3590,7 +3590,7 @@ advanced_recurring_rules
 
 ```txt
 households
-= nhà mình và cách household đang quản lý tài chính
+= gia đình và cách household đang quản lý tài chính
 
 assets
 = tiền/tài sản hiện đang nằm ở đâu, ai giữ, có được tính vào shared picture không
@@ -3608,7 +3608,7 @@ cashflow_events
 = trong tương lai tiền nào dự kiến vào / ra
 
 financial_goals
-= nhà mình đang hướng tới điều gì, hiện có bao nhiêu và pace đóng góp thế nào
+= gia đình đang hướng tới điều gì, hiện có bao nhiêu và pace đóng góp thế nào
 
 money_events
 = những sự kiện tài chính đáng ghi nhận đã thực sự xảy ra
@@ -3658,7 +3658,7 @@ Không phải app kế toán gia đình.
 Không phải app kiểm soát người kia.
 
 Clarity:
-Biết nhà mình đang có gì và tiền nằm ở đâu.
+Biết gia đình đang có gì và tiền nằm ở đâu.
 
 Foresight:
 Biết tiền nào sắp vào/ra và household có thời điểm nào bị tight không.

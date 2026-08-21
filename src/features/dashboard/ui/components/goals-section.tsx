@@ -24,24 +24,19 @@ export function GoalsSection({
   tracks,
   goalCount,
   earmarkedForGoals,
-  unassigned,
 }: {
   tracks: GoalTrack[]
   goalCount: number
   /** Money already pointed at a goal. See DashboardOverview — display only. */
   earmarkedForGoals?: number
-  /** What is left over. */
-  unassigned?: number
 }) {
   const { t } = useTranslation()
 
   const hasMilestone = tracks.some((track) => track.requiredPercent !== undefined)
-  // Shown only once there is something to split — a household with no goals
-  // does not need to be told that all of its money is unassigned.
+  // Shown only once money has actually been pointed at a goal — a household
+  // with no goals does not need a cell reading 0.
   const showSplit =
-    typeof earmarkedForGoals === 'number' &&
-    typeof unassigned === 'number' &&
-    earmarkedForGoals > 0
+    typeof earmarkedForGoals === 'number' && earmarkedForGoals > 0
 
   return (
     <Panel>
@@ -61,18 +56,14 @@ export function GoalsSection({
 
       {/* Where the household's money stands relative to its goals. Deliberately
           NOT framed as a deduction: nothing has been spent and net worth is
-          unchanged — this only says how much already has a job. Two metric
-          cells so it reads at the same level as every other pair of figures
-          in the app (§11.2 — a breakdown lives on `--sunk`). */}
+          unchanged — this only says how much already has a job. A metric cell
+          so it reads at the same level as every other figure in the app
+          (§11.2 — a breakdown lives on `--sunk`). */}
       {showSplit ? (
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="mt-5">
           <MetricCell
             label={t('home.goals.earmarked')}
             value={formatVndScale(earmarkedForGoals!)}
-          />
-          <MetricCell
-            label={t('home.goals.unassigned')}
-            value={formatVndScale(unassigned!)}
           />
         </div>
       ) : null}

@@ -27,12 +27,10 @@ export function GoogleButton({ label, pending, onClick }: GoogleButtonProps) {
 export function AuthDivider() {
   const { t } = useTranslation()
   return (
-    <div className="my-6 flex items-center gap-4">
-      <div className="h-px flex-1 bg-[hsl(var(--border))]" />
-      <span className="text-xs font-medium text-ink2">
-        {t('auth.or')}
-      </span>
-      <div className="h-px flex-1 bg-[hsl(var(--border))]" />
+    <div className="my-5 flex items-center gap-4 py-1">
+      <div className="h-px flex-1 bg-hair" />
+      <span className="text-[11px] uppercase tracking-[0.12em] text-ink3">{t('auth.or')}</span>
+      <div className="h-px flex-1 bg-hair" />
     </div>
   )
 }

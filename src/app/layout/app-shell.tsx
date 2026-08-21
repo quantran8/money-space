@@ -40,7 +40,7 @@ type NavItem = {
  * Sidebar nav, grouped by what the household is DOING (design.md §7.4, §8).
  *
  * The groups are not decoration: "Bức tranh" answers where we stand, "Quyết
- * định" is what the product is actually paid for, "Nhà mình" is the shared
+ * định" is what the product is actually paid for, "Gia đình" is the shared
  * record. Icons use stroke 1.75 and appear only here and on buttons (§18).
  */
 const NAV_GROUPS: { labelKey: string; items: NavItem[] }[] = [

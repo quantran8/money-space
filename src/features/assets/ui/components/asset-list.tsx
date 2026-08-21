@@ -8,6 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { computeCurrentValue, isSellableAssetType, type Asset } from '@/features/assets/model/assets'
 import type { MemberItem } from '@/features/members/model/members.types'
 import { formatVndCell } from '@/shared/lib/format-money'
@@ -36,17 +44,29 @@ export function AssetList({
   const memberNameById = new Map(members.map((member) => [member.id, member.name]))
 
   return (
-    <div className="mt-7">
-      <div className="hidden grid-cols-[1.5fr_.8fr_.8fr_1fr_.8fr_110px] px-3 lg:grid">
-        <p className="label">{t('assets.demo.columns.source')}</p>
-        <p className="label">{t('assets.demo.columns.owner')}</p>
-        <p className="label">{t('assets.demo.columns.role')}</p>
-        <p className="label">{t('assets.demo.columns.updated')}</p>
-        <p className="label text-right">{t('assets.demo.columns.balance')}</p>
-        <span />
-      </div>
+    // A real table: the header and every row share ONE set of column widths.
+    // These used to be two independent `grid-cols-[…]` declarations that had to
+    // be kept in step by hand, and they had already drifted — the header carried
+    // none of the row's `gap-x-4`, so every heading sat a little left of the
+    // column it named. `min-w` makes the container SCROLL on a narrow screen
+    // rather than squeezing six columns to an unreadable width.
+    <Table className="mt-7 min-w-[840px]">
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          {/* `.label-vi`, not `TableHead`'s default `.label`: these headings are
+              accented Vietnamese, and mono renders diacritics poorly (§10.1). */}
+          <TableHead className="label-vi">{t('assets.demo.columns.source')}</TableHead>
+          <TableHead className="label-vi">{t('assets.demo.columns.owner')}</TableHead>
+          <TableHead className="label-vi">{t('assets.demo.columns.role')}</TableHead>
+          <TableHead className="label-vi">{t('assets.demo.columns.updated')}</TableHead>
+          <TableHead className="label-vi text-right">
+            {t('assets.demo.columns.balance')}
+          </TableHead>
+          <TableHead className="w-14" />
+        </TableRow>
+      </TableHeader>
 
-      <div className="mt-2 space-y-1">
+      <TableBody>
         {assets.map((asset) => {
           const value = computeCurrentValue(asset, asOf)
           const isSold = asset.status === 'sold'
@@ -54,70 +74,96 @@ export function AssetList({
           const freshness = formatFreshness(asset.valueUpdatedAt, t)
 
           return (
-            <article
+            <TableRow
               key={asset.id}
-              role="button"
-              tabIndex={0}
+              className="cursor-pointer"
               onClick={() => onOpen?.(asset.id)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault()
-                  onOpen?.(asset.id)
-                }
-              }}
-              className="grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:grid-cols-[1.5fr_.8fr_.8fr_1fr_.8fr_110px] lg:items-center"
             >
-              <div className="min-w-0 text-left">
-                <p className="truncate text-[13px] font-medium">{asset.name}</p>
-                <p className="mt-1 text-[11px] text-ink3">{t(`options.assetType.${asset.type}`)}</p>
-              </div>
+              <TableCell>
+                {/* The row's keyboard equivalent. A `<tr>` cannot be focused or
+                    announced as a control, so the click handler alone would
+                    leave keyboard and screen-reader users with no way in. The
+                    asset TYPE moves under the name here rather than taking a
+                    column of its own — it qualifies the name, and reads as part
+                    of it. */}
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onOpen?.(asset.id)
+                  }}
+                  className="min-w-0 max-w-full rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  <span className="block truncate text-[13px] font-medium">{asset.name}</span>
+                  <span className="mt-1 block truncate text-[11px] text-ink3">
+                    {t(`options.assetType.${asset.type}`)}
+                  </span>
+                </button>
+              </TableCell>
 
-              <p className="mt-2 text-[12px] text-ink2 lg:mt-0">
-                {asset.holderMemberId
-                  ? memberNameById.get(asset.holderMemberId) ?? t('assets.demo.householdOwner')
-                  : t('assets.demo.householdOwner')}
-              </p>
-              <p className="mt-1 text-[12px] lg:mt-0">{t(`options.liquidity.${asset.liquidity}`)}</p>
-              <p className={cn('mt-1 text-[12px] lg:mt-0', freshness.stale ? 'text-attention' : 'text-ink2')}>
-                {freshness.label}
-              </p>
-              <p className={cn('num col-start-2 row-start-1 text-right text-[14px] font-medium lg:col-auto lg:row-auto', isSold && 'text-ink3 line-through')}>
-                {value === null ? t('assets.list.priceUnavailable') : formatVndCell(value)}
-              </p>
-
-              <div
-                className="col-start-2 row-start-2 row-span-4 flex items-start justify-end gap-1 lg:col-auto lg:row-auto"
-                onClick={(event) => event.stopPropagation()}
+              <TableCell className="text-[12px] text-ink2">
+                {(asset.holderMemberId ? memberNameById.get(asset.holderMemberId) : undefined) ??
+                  t('assets.demo.householdOwner')}
+              </TableCell>
+              <TableCell className="text-[12px]">
+                {t(`options.liquidity.${asset.liquidity}`)}
+              </TableCell>
+              <TableCell
+                className={cn('text-[12px]', freshness.stale ? 'text-attention' : 'text-ink2')}
               >
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-8" aria-label={t('common.actions')}>
-                      <MoreVertical className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => onEdit(asset.id)}>
-                      <Pencil className="size-4" />
-                      {t('common.edit')}
-                    </DropdownMenuItem>
-                    {canSell && onSell ? (
-                      <DropdownMenuItem onSelect={() => onSell(asset.id)}>
-                        <HandCoins className="size-4" />
-                        {t('assets.sale.action')}
+                {freshness.label}
+              </TableCell>
+              <TableCell
+                className={cn(
+                  'num text-right text-[14px] font-medium',
+                  isSold && 'text-ink3 line-through',
+                )}
+              >
+                {value === null ? t('assets.list.priceUnavailable') : formatVndCell(value)}
+              </TableCell>
+
+              <TableCell className="w-14 text-right">
+                {/* Stops the row's own navigation: opening the menu is not a
+                    request to leave the page. */}
+                <div onClick={(event) => event.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        aria-label={t('common.actions')}
+                      >
+                        <MoreVertical className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => onEdit(asset.id)}>
+                        <Pencil className="size-4" />
+                        {t('common.edit')}
                       </DropdownMenuItem>
-                    ) : null}
-                    <DropdownMenuItem className="text-alert focus:text-alert" onSelect={() => onDelete(asset.id)}>
-                      <Trash2 className="size-4" />
-                      {t('common.delete')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </article>
+                      {canSell && onSell ? (
+                        <DropdownMenuItem onSelect={() => onSell(asset.id)}>
+                          <HandCoins className="size-4" />
+                          {t('assets.sale.action')}
+                        </DropdownMenuItem>
+                      ) : null}
+                      <DropdownMenuItem
+                        className="text-alert focus:text-alert"
+                        onSelect={() => onDelete(asset.id)}
+                      >
+                        <Trash2 className="size-4" />
+                        {t('common.delete')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </TableCell>
+            </TableRow>
           )
         })}
-      </div>
-    </div>
+      </TableBody>
+    </Table>
   )
 }
 

@@ -1,43 +1,44 @@
 import { cn } from '@/shared/lib/utils'
 
 /**
- * The wallet as a bar, with the part this spend takes marked off.
+ * The SPEND, split across where the money comes from.
  *
- * The text alone made the household do arithmetic to picture it: which slice of
- * the wallet is moving, and how big is it next to what stays. A bar answers both
- * at a glance, and the proportion is the whole point — 4tr out of 52tr and 4tr
- * out of 5tr are very different situations that read identically as words.
+ * The earlier version drew the WALLET with the spend marked off inside it. That
+ * answered "how big is this next to the balance", which is a real question but
+ * not the one being asked here — and at small amounts it answered it as a sliver
+ * nobody could read. The question this block exists for is *where does this
+ * money come from*, so the bar is now the spend itself at full width, divided
+ * into the parts that pay for it.
  *
- * Four parts, left to right, in the order the money gives way:
+ * Two parts, in the order the money gives way:
  *
- *  1. **spendFromPace** — this month's contribution, given up first.
- *  2. **spendFromSetAside** — money already behind a goal, only once the pace is
- *     gone. Marked in the alert colour because this is the goal moving
- *     backwards, not a month of saving paused.
- *  3. **goalRemaining** — what the goals still hold afterwards.
- *  4. **unassigned** — the part of the wallet no goal has claimed.
+ *  1. **fromPace** — this month's contribution, given up first. Accent: a month
+ *     of saving paused is the ordinary case, not a wound.
+ *  2. **fromSetAside** — money already behind a goal, only once the pace is
+ *     gone. Attention, never alert: the goal moving backwards is worth marking,
+ *     but the household is scheduling a bill, not making a mistake (§16).
  *
- * Purely decorative: `aria-hidden`, because the sentences beside it already say
- * every figure in words (§24) and a screen reader should not hear them twice.
+ * The segments are labelled in place when they are wide enough to hold a figure,
+ * which is what lets the bar replace a legend rather than need one.
+ *
+ * `aria-hidden`: every figure here is stated in words beside it (§24), and a
+ * screen reader should not hear them twice.
  */
 export function SpendImpactBar({
-  spendFromPace,
-  spendFromSetAside,
-  goalRemaining,
-  unassigned,
+  fromPace,
+  fromSetAside,
+  formatAmount,
   className,
 }: {
-  spendFromPace: number
-  spendFromSetAside: number
-  goalRemaining: number
-  unassigned: number
+  fromPace: number
+  fromSetAside: number
+  /** Renders a slice's own figure, for the in-bar label. */
+  formatAmount: (value: number) => string
   className?: string
 }) {
   const parts = [
-    { key: 'pace', amount: spendFromPace, fill: 'var(--ink3)' },
-    { key: 'setAside', amount: spendFromSetAside, fill: 'var(--alert)' },
-    { key: 'goal', amount: goalRemaining, fill: 'var(--committed)' },
-    { key: 'unassigned', amount: unassigned, fill: 'var(--accent)' },
+    { key: 'pace', amount: fromPace, fill: 'var(--accent)' },
+    { key: 'setAside', amount: fromSetAside, fill: 'var(--attention)' },
   ].filter((part) => part.amount > 0)
 
   const total = parts.reduce((sum, part) => sum + part.amount, 0)
@@ -45,27 +46,23 @@ export function SpendImpactBar({
 
   return (
     <div
-      className={cn('flex h-2 gap-0.5 overflow-hidden', className)}
+      className={cn('flex h-10 overflow-hidden rounded-control bg-panel', className)}
       aria-hidden="true"
     >
-      {parts.map((part, index) => (
-        <div
-          key={part.key}
-          className={cn(
-            // A slice that rounds to nothing still has to be visible: a small
-            // spend against a large wallet is exactly when seeing how small it
-            // is carries the meaning.
-            'min-w-[3px]',
-            index === 0 && 'rounded-l-full',
-            index === parts.length - 1 && 'rounded-r-full',
-          )}
-          style={{
-            flexGrow: part.amount,
-            flexBasis: 0,
-            background: part.fill,
-          }}
-        />
-      ))}
+      {parts.map((part) => {
+        const share = (part.amount / total) * 100
+        return (
+          <div
+            key={part.key}
+            className="flex min-w-[3px] items-center justify-center px-2 text-[12px] font-medium text-white"
+            style={{ flexGrow: part.amount, flexBasis: 0, background: part.fill }}
+          >
+            {/* A sliver cannot hold a figure legibly, and a clipped number is
+                worse than none — the lines below carry it either way. */}
+            {share >= 14 ? formatAmount(part.amount) : null}
+          </div>
+        )
+      })}
     </div>
   )
 }

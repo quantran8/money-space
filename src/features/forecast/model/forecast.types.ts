@@ -59,6 +59,12 @@ export type ForecastOccurrence = {
   exclusionReason?: OccurrenceExclusionReason
   /** An overdue occurrence pulled onto day 0. */
   wasClampedFromPast: boolean
+  /**
+   * The date the user actually entered, present only when the clamp moved
+   * `date` off it. Shown on the row so a clamped date is not mistaken for the
+   * due date being rewritten.
+   */
+  originalDate?: string
   financialGoalId?: string | null
   debtId?: string | null
 }

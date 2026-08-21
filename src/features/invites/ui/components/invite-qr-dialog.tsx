@@ -17,7 +17,6 @@ import type { HouseholdInvite } from '@/features/invites/model/invites.types'
 type InviteQrDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  householdName?: string | null
   invite: HouseholdInvite | null
   joinUrl: string | null
   isPreparing: boolean
@@ -39,7 +38,6 @@ type InviteQrDialogProps = {
 export function InviteQrDialog({
   open,
   onOpenChange,
-  householdName,
   invite,
   joinUrl,
   isPreparing,
@@ -52,16 +50,20 @@ export function InviteQrDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      <ResponsiveDialogContent className="gap-0 p-0 sm:max-w-[480px]">
+      {/* `no-scrollbar`: this dialog is short — a QR, a link, a footer — so on
+          any normal viewport it does not scroll at all. The primitive's
+          `overflow-y-auto` still has to stay for short screens, but it should
+          not paint a dead scrollbar down the side of a dialog that fits. */}
+      <ResponsiveDialogContent className="no-scrollbar gap-0 p-0 sm:max-w-[480px]">
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
-          <p className="text-sm font-medium text-ink2">{t('invites.qr.eyebrow')}</p>
           <ResponsiveDialogTitle className="text-[26px] font-semibold tracking-[-0.035em] sm:text-[28px]">
             {t('invites.qr.title')}
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
-            {householdName
-              ? t('invites.qr.helperNamed', { name: householdName })
-              : t('invites.qr.helper')}
+          {/* Radix warns without a description, and a dialog with none is
+              unannounced to a screen reader — so the title's job is restated
+              here for assistive tech only, not shown. */}
+          <ResponsiveDialogDescription className="sr-only">
+            {t('invites.qr.title')}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
@@ -73,9 +75,14 @@ export function InviteQrDialog({
               <Skeleton className="size-[232px] rounded-card" />
             )}
 
-            <p className="max-w-[280px] text-center text-[12px] leading-5 text-ink2">
-              {error ?? (isPreparing ? t('invites.qr.preparing') : t('invites.qr.scanHint'))}
-            </p>
+            {/* Only speaks up when there is something to say: a failure, or the
+                wait while the code is minted. The steady state is the code
+                itself, which needs no caption. */}
+            {error || isPreparing ? (
+              <p className="max-w-[280px] text-center text-[12px] leading-5 text-ink2">
+                {error ?? t('invites.qr.preparing')}
+              </p>
+            ) : null}
           </div>
 
           {/*

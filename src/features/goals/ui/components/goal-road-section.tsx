@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import { Panel, PanelHeader, Sunk } from '@/components/ui/panel'
+import type { GoalMonthProgress } from '@/features/goals/api/goals.repository'
 import type { GoalProjection } from '@/features/goals/model/goal-projection.types'
 import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
 import { formatVndScale } from '@/shared/lib/format-money'
@@ -13,6 +14,8 @@ type GoalRoadSectionProps = {
   remaining: number
   projection: GoalProjection | undefined
   plannedMonthly: number | null | undefined
+  /** The goal's own history — the ACTUAL line. Empty until snapshots exist. */
+  months: GoalMonthProgress[]
   /** `YYYY-MM-DD`, month-precision. `'No deadline'` is the legacy empty marker. */
   targetDate: string | undefined
   /** Renders a `YYYY-MM-DD` as `MM/YYYY` in the active locale. */
@@ -20,14 +23,24 @@ type GoalRoadSectionProps = {
 }
 
 /**
- * "Đường tới mục tiêu" — the projection, as a picture and one sentence.
+ * "Đường tới mục tiêu" — the plan and the reality, on one timeline.
  *
- * The old plan panel stated three numbers side by side and left the household to
- * work out what they meant together. The question they actually ask is a
- * comparison — *is this pace going to get us there in time?* — and a comparison
- * is what a chart answers in one glance: the line they are on against the line
- * they would need. The conclusion card then says it in words, because a chart
- * nobody can restate is decoration.
+ * The question a household asks here is a comparison — *are we keeping up?* —
+ * and a comparison is what a chart answers in one glance. So this draws two
+ * lines against the same months:
+ *
+ *  - **Thực tế** — where the goal actually stood at each month's close, taken
+ *    from the frozen snapshots (`endAmount`). It stops at the current month,
+ *    because that is where the record stops. Drawing it further would be
+ *    forecasting dressed up as history.
+ *  - **Theo kế hoạch** — where the declared pace says the goal should have been
+ *    in those same months, and where it will be in the months ahead. It runs
+ *    from the goal's starting point to the target.
+ *
+ * The gap between the two AT THE CURRENT MONTH is the answer, so it is drawn
+ * explicitly: a dashed connector and the figure beside it. Earlier attempts drew
+ * only forward-looking rays from today, which could show a pace but never
+ * whether it had been kept.
  *
  * Being behind is drawn in `--attention`, never `--alert`: a savings pace
  * falling short is information, not a fault (design.md §16).
@@ -38,6 +51,7 @@ export function GoalRoadSection({
   remaining,
   projection,
   plannedMonthly,
+  months,
   targetDate,
   formatDate,
 }: GoalRoadSectionProps) {
@@ -49,17 +63,17 @@ export function GoalRoadSection({
     projection && hasProjectedDate(projection)
       ? (projection.projectedCompletionDate ?? undefined)
       : undefined
-  const desiredIso =
-    targetDate && targetDate !== 'No deadline' ? targetDate : undefined
+  const desiredIso = targetDate && targetDate !== 'No deadline' ? targetDate : undefined
   const requiredMonthly = projection?.requiredMonthlyContributionForTargetDate
   const gapMonths = projection?.paceGapMonths ?? null
 
   const chart = useMemo(
-    () => buildChart({ current, target, projectedIso, desiredIso }),
-    [current, target, projectedIso, desiredIso],
+    () => buildChart({ current, target, pace, months, projectedIso, desiredIso }),
+    [current, target, pace, months, projectedIso, desiredIso],
   )
 
-  const paceLabel = pace != null ? t('goals.detail.road.perMonth', { amount: formatVndScale(pace) }) : null
+  const paceLabel =
+    pace != null ? t('goals.detail.road.perMonth', { amount: formatVndScale(pace) }) : null
   const projectedLabel = projectedIso ? formatDate(projectedIso) : null
   const desiredLabel = desiredIso ? formatDate(desiredIso) : null
 
@@ -79,30 +93,89 @@ export function GoalRoadSection({
         }
       />
 
-      <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.55fr)] lg:gap-10">
-        <div className="min-w-0 rounded-sunk bg-sunk px-3 pb-3 pt-4 sm:px-5 sm:pt-5">
-          <div className="flex items-center justify-between gap-4 px-1">
-            <span className="text-[11px] text-ink3">{t('goals.detail.road.targetValue')}</span>
-            <span className="num text-[11px] font-medium text-ink2">{formatVndScale(target)}</span>
+      <div className="mt-7 grid gap-x-14 gap-y-9 lg:grid-cols-[minmax(0,300px)_1fr]">
+        {/* The answer in words on the left, the same answer as a shape on the
+            right. `PanelSplit`'s order (§7.2): answer first. */}
+        <div className="flex min-w-0 flex-col justify-center">
+          <PaceVerdict
+            gapMonths={gapMonths}
+            hasDeadline={Boolean(desiredIso)}
+            remaining={remaining}
+          />
+
+          {/* How far the actual line sits from the plan line right now. This is
+              the chart's headline, so it is stated as a figure too. */}
+          {chart.gapAtNow !== null ? (
+            <div className="mt-5">
+              <p className="label-vi">{t('goals.detail.road.vsPlan')}</p>
+              <div
+                className={cn(
+                  'money-number mt-2 text-[30px]',
+                  chart.gapAtNow < 0 && 'text-attention',
+                )}
+              >
+                {chart.gapAtNow >= 0 ? '+' : '−'}
+                {formatVndScale(Math.abs(chart.gapAtNow))}
+              </div>
+              <p className="mt-1 text-[12px] text-ink3">{chart.nowLabel}</p>
+            </div>
+          ) : (
+            <p className="mt-4 text-[14px] leading-7 text-ink2">
+              {paceLabel && projectedLabel ? (
+                <Trans
+                  i18nKey="goals.detail.road.conclusion"
+                  values={{ pace: paceLabel, date: projectedLabel }}
+                  components={[
+                    <strong key="pace" className="num font-medium text-ink" />,
+                    <strong key="date" className="num font-medium text-ink" />,
+                  ]}
+                />
+              ) : (
+                t('goals.detail.road.noPaceConclusion')
+              )}
+            </p>
+          )}
+
+          <div className="mt-7">
+            <p className="label-vi">{t('goals.detail.road.atCurrentPace')}</p>
+            <p className="money-number mt-2 font-mono text-[20px]">
+              {projectedLabel ?? t('goals.detail.road.noDate')}
+            </p>
+            {requiredMonthly != null && requiredMonthly > 0 && desiredLabel ? (
+              <p className="mt-2 text-[12px] text-ink3">
+                {t('goals.detail.road.toBeOnTime', { date: desiredLabel })}
+                {' · '}
+                {t('goals.detail.road.perMonth', { amount: formatVndScale(requiredMonthly) })}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="min-w-0 rounded-sunk bg-sunk p-3 sm:p-5">
+          <div className="mb-1 flex flex-wrap items-center justify-end gap-x-5 gap-y-2 px-1 text-[10px] text-ink3">
+            <span className="flex items-center gap-2">
+              <span className="size-2.5 rounded-full bg-accent" />
+              {t('goals.detail.road.actualLine')}
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="h-[2px] w-5 rounded-full bg-protect" />
+              {t('goals.detail.road.plannedLine')}
+            </span>
           </div>
 
           <RoadChart
             chart={chart}
-            paceLabel={paceLabel}
-            requiredLabel={
-              requiredMonthly != null && requiredMonthly > 0
-                ? t('goals.detail.road.perMonth', { amount: formatVndScale(requiredMonthly) })
-                : null
-            }
-            desiredMark={t('goals.detail.road.desiredMark')}
             ariaLabel={
-              paceLabel && projectedLabel
-                ? t('goals.detail.road.chartAria', {
+              chart.gapAtNow !== null
+                ? t('goals.detail.road.chartAriaCompare', {
                     current: formatVndScale(current),
-                    pace: formatVndScale(pace ?? 0),
+                    month: chart.nowLabel,
+                    gap: formatVndScale(Math.abs(chart.gapAtNow)),
+                    state:
+                      chart.gapAtNow < 0
+                        ? t('goals.detail.road.behindWord')
+                        : t('goals.detail.road.aheadWord'),
                     target: formatVndScale(target),
-                    projected: projectedLabel,
-                    desired: desiredLabel ?? t('goals.detail.road.noDeadline'),
                   })
                 : t('goals.detail.road.chartAriaNoPace', {
                     current: formatVndScale(current),
@@ -111,49 +184,13 @@ export function GoalRoadSection({
             }
           />
 
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-1 pb-1 text-[10px] text-ink3">
-            <span className="flex items-center gap-2">
-              <span className="h-[3px] w-5 rounded-full bg-accent" />
-              {t('goals.detail.road.currentPace')}
-            </span>
-            {chart.needed ? (
-              <span className="flex items-center gap-2">
-                <span className="w-5 border-t-2 border-dashed border-attention" />
-                {t('goals.detail.road.neededPace')}
-              </span>
-            ) : null}
-          </div>
-        </div>
-
-        {/* The same conclusion in words. `--accent-soft` because this is the
-            section's answer, not a warning — the badge carries the verdict. */}
-        <div className="rounded-sunk bg-accent-soft p-5 sm:p-6">
-          <PaceVerdict gapMonths={gapMonths} hasDeadline={Boolean(desiredIso)} remaining={remaining} />
-
-          <p className="mt-5 text-[14px] leading-7 text-ink2">
-            {paceLabel && projectedLabel ? (
-              <Trans
-                i18nKey="goals.detail.road.conclusion"
-                values={{ pace: paceLabel, date: projectedLabel }}
-                components={[
-                  <strong key="pace" className="num font-medium text-ink" />,
-                  <strong key="date" className="num font-medium text-ink" />,
-                ]}
-              />
-            ) : (
-              t('goals.detail.road.noPaceConclusion')
-            )}
-          </p>
-
-          {requiredMonthly != null && requiredMonthly > 0 && desiredLabel ? (
-            <div className="mt-6">
-              <p className="text-[11px] text-ink3">
-                {t('goals.detail.road.toBeOnTime', { date: desiredLabel })}
-              </p>
-              <p className="money-number mt-1 text-[30px] text-ink">
-                {t('goals.detail.road.perMonth', { amount: formatVndScale(requiredMonthly) })}
-              </p>
-            </div>
+          {/* Snapshots only start when the goal does, so an eight-month-old
+              household has eight months of line and no more. Saying so stops a
+              short actual line reading as a gap in the saving. */}
+          {chart.actual.length < 2 ? (
+            <p className="mt-2 px-1 text-[11px] text-ink3">
+              {t('goals.detail.road.notEnoughHistory')}
+            </p>
           ) : null}
         </div>
       </div>
@@ -168,6 +205,7 @@ export function GoalRoadSection({
                 pace: formatVndScale(pace),
               })
             : t('goals.detail.road.calcNoPace', { remaining: formatVndScale(remaining) })}
+          <span className="mt-2 block">{t('goals.detail.road.calcLines')}</span>
           {projection ? (
             <span className="mt-2 block">{t(`goals.projection.reason.${projection.reason}`)}</span>
           ) : null}
@@ -236,186 +274,398 @@ function Badge({ tone, label }: { tone: 'accent' | 'attention' | 'muted'; label:
   )
 }
 
-/** Chart geometry in the 680×260 viewBox the section draws into. */
-const VIEW = { width: 680, height: 260 }
-const PLOT = { left: 58, right: 644, top: 34, bottom: 176 }
+/** Chart geometry in the 760×270 viewBox the section draws into. */
+const VIEW = { width: 760, height: 270 }
+const PLOT = { left: 46, right: 726, top: 34, bottom: 205 }
+/** How many months of plan to draw past the target, so the line has somewhere to end. */
+const MAX_POINTS = 14
+
+type Point = { x: number; y: number; month: string; value: number }
 
 type ChartModel = {
-  /** Start and end of the line the current pace is actually on. */
-  current: { x1: number; y1: number; x2: number; y2: number } | null
-  /** The steeper line that would land on the target date. */
-  needed: { x1: number; y1: number; x2: number; y2: number } | null
-  /** Where the target date falls on the x axis, when there is one in range. */
-  desiredX: number | null
-  labels: { start: string; end: string; desired: string | null }
-  values: { top: string; bottom: string }
+  /** Where the goal actually stood, month by month. Stops at the current month. */
+  actual: Point[]
+  /** Where the declared pace says it should be, across the whole timeline. */
+  plan: Point[]
+  /** Plan minus actual at the current month; null when either side is unknown. */
+  gapAtNow: number | null
+  /** The current month's point on each line, for the delta connector. */
+  nowActual: Point | null
+  nowPlan: Point | null
+  nowLabel: string
+  /** Horizontal guides, top to bottom, with their axis figures. */
+  guides: { y: number; label: string }[]
+  /** Which months get an x-axis tick. */
+  ticks: { x: number; label: string }[]
+  /**
+   * One entry per month on the timeline, carrying whatever each line has there.
+   * This is what a hover or a tap resolves to — a MONTH, not a dot, so the
+   * pointer does not have to find a 4px circle.
+   */
+  columns: {
+    month: string
+    label: string
+    x: number
+    actual: number | null
+    plan: number | null
+  }[]
+  /** Half the gap between columns — the hit area's reach on each side. */
+  columnWidth: number
+  /** The y scale itself, so a selected value maps back exactly as it was drawn. */
+  yAt: (value: number) => number
 }
 
 /**
- * Lay the two lines out on a shared timeline.
+ * Lay both lines out on one shared timeline.
  *
- * The x axis runs from this month to whichever comes later — the projected
- * completion or the target date — so both endpoints are always on screen. When
- * there is no projection (no declared pace) only the needed line is drawn:
- * inventing a slope for a pace nobody set would be a guess drawn as a fact.
+ * The x axis runs from the first month on record (or this month, for a goal with
+ * no history yet) to whichever comes later — the target date or the projected
+ * completion. Both lines are plotted against the SAME months, which is the only
+ * way the vertical distance between them means anything.
+ *
+ * The y axis runs 0 → target, so "the top of the chart" is always the goal.
  */
 function buildChart({
   current,
   target,
+  pace,
+  months,
   projectedIso,
   desiredIso,
 }: {
   current: number
   target: number
+  pace: number | null
+  months: GoalMonthProgress[]
   projectedIso: string | undefined
   desiredIso: string | undefined
 }): ChartModel {
-  const start = startOfThisMonth()
-  const projected = projectedIso ? monthIndexFrom(start, projectedIso) : null
-  const desired = desiredIso ? monthIndexFrom(start, desiredIso) : null
+  // Only months that actually closed with a figure. `endAmount` is total
+  // progress at that close — market value included — which is the same quantity
+  // the headline figure reports, so the line ends where the hero says it should.
+  const history = months.filter((month) => Number.isFinite(month.endAmount))
+  const firstMonth = history[0]?.month ?? monthKey(startOfThisMonth())
+  const nowMonth = monthKey(startOfThisMonth())
 
-  // At least one month of span, so a goal landing this month still draws a line
-  // rather than collapsing onto a single point.
-  const span = Math.max(projected ?? 0, desired ?? 0, 1)
-  // A date that has already passed clamps to month 0, which would draw a line
-  // with no length and stack both pace tags on the start point. Anything
-  // landing at or before this month gets a short visible run instead — the
-  // label above it is what carries the meaning, and it needs somewhere to sit.
-  const MIN_RUN = 0.12
-  const xFor = (months: number) =>
-    PLOT.left + Math.min(Math.max(months / span, MIN_RUN), 1) * (PLOT.right - PLOT.left)
+  const lastMonth = [desiredIso, projectedIso]
+    .filter((iso): iso is string => Boolean(iso))
+    .map((iso) => iso.slice(0, 7))
+    .reduce((latest, month) => (month > latest ? month : latest), nowMonth)
 
-  const startY = PLOT.bottom
-  const endY = PLOT.top
+  const timeline = monthRange(firstMonth, lastMonth).slice(0, MAX_POINTS)
+  const span = Math.max(timeline.length - 1, 1)
+  const top = Math.max(target, current, 1)
+
+  const xAt = (index: number) =>
+    PLOT.left + (index / span) * (PLOT.right - PLOT.left)
+  const yAt = (value: number) =>
+    PLOT.bottom - (Math.min(Math.max(value, 0), top) / top) * (PLOT.bottom - PLOT.top)
+
+  const byMonth = new Map(history.map((month) => [month.month, month]))
+  // The plan starts where the goal did — the first month on record — and climbs
+  // by the declared pace. Without a pace there is no plan line to draw, and
+  // inventing a slope would be a guess drawn as a fact.
+  const planStart = history[0]?.endAmount ?? current
+  const actual: Point[] = []
+  const plan: Point[] = []
+
+  timeline.forEach((month, index) => {
+    if (pace != null) {
+      const planned = Math.min(planStart + pace * index, top)
+      plan.push({ x: xAt(index), y: yAt(planned), month, value: planned })
+    }
+    const record = byMonth.get(month)
+    // The actual line stops at the current month: past it there is no record,
+    // and continuing it would be a forecast pretending to be history.
+    if (record && month <= nowMonth) {
+      actual.push({
+        x: xAt(index),
+        y: yAt(record.endAmount),
+        month,
+        value: record.endAmount,
+      })
+    }
+  })
+
+  const nowActual = actual.find((point) => point.month === nowMonth) ?? actual.at(-1) ?? null
+  const nowPlan = nowActual ? (plan.find((point) => point.month === nowActual.month) ?? null) : null
+  const gapAtNow = nowActual && nowPlan ? nowActual.value - nowPlan.value : null
+
+  // Four guides, evenly spaced, labelled in millions — enough to read a level
+  // off the chart without turning it into a grid.
+  const guides = [0, 1, 2, 3].map((step) => {
+    const value = top * (1 - step / 3)
+    return { y: yAt(value), label: shortMillions(value) }
+  })
+
+  // At most six ticks, so the labels never collide on a narrow well.
+  const step = Math.max(1, Math.ceil(timeline.length / 6))
+  const ticks = timeline
+    .map((month, index) => ({ month, index }))
+    .filter(({ index }) => index % step === 0 || index === timeline.length - 1)
+    .map(({ month, index }) => ({ x: xAt(index), label: shortMonth(month) }))
+
+  const actualByMonth = new Map(actual.map((point) => [point.month, point.value]))
+  const planByMonth = new Map(plan.map((point) => [point.month, point.value]))
+  const columns = timeline.map((month, index) => ({
+    month,
+    label: shortMonth(month),
+    x: xAt(index),
+    actual: actualByMonth.get(month) ?? null,
+    plan: planByMonth.get(month) ?? null,
+  }))
 
   return {
-    current:
-      projected !== null
-        ? { x1: PLOT.left, y1: startY, x2: xFor(projected), y2: endY }
-        : null,
-    // Only worth drawing when it differs from the pace already being kept.
-    needed:
-      desired !== null && (projected === null || desired < projected)
-        ? { x1: PLOT.left, y1: startY, x2: xFor(desired), y2: endY }
-        : null,
-    desiredX: desired !== null ? xFor(desired) : null,
-    labels: {
-      start: monthLabel(start),
-      end: monthLabel(addMonths(start, span)),
-      desired: desiredIso ? monthLabel(new Date(`${desiredIso}T00:00:00Z`)) : null,
-    },
-    values: { top: shortMillions(target), bottom: shortMillions(current) },
+    actual,
+    plan,
+    gapAtNow,
+    nowActual,
+    nowPlan,
+    nowLabel: shortMonth(nowActual?.month ?? nowMonth),
+    guides,
+    ticks,
+    columns,
+    columnWidth: (PLOT.right - PLOT.left) / span / 2,
+    yAt,
   }
 }
 
-function RoadChart({
-  chart,
-  paceLabel,
-  requiredLabel,
-  desiredMark,
-  ariaLabel,
-}: {
-  chart: ChartModel
-  paceLabel: string | null
-  requiredLabel: string | null
-  desiredMark: string
-  ariaLabel: string
-}) {
-  const { current, needed, desiredX, labels, values } = chart
+/**
+ * The chart, with a month readable on hover or tap.
+ *
+ * The hit areas are full-height COLUMNS, one per month, not the dots — asking a
+ * pointer to land on a 4px circle (and a fingertip to do it at all) would make
+ * the detail effectively unreachable. Anywhere in a month's column selects it.
+ *
+ * `pointer-events` stay off everything else so the lines never swallow a hover
+ * meant for the column behind them.
+ */
+function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string }) {
+  const { t } = useTranslation()
+  const { actual, plan, guides, ticks, nowActual, nowPlan, gapAtNow, columns, columnWidth } = chart
+  const [selected, setSelected] = useState<string | null>(null)
+
+  const active = columns.find((column) => column.month === selected) ?? null
 
   return (
     <svg
       viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
-      className="mt-2 h-auto w-full"
+      className="h-auto w-full touch-manipulation"
       role="img"
       aria-label={ariaLabel}
+      onMouseLeave={() => setSelected(null)}
     >
-      {[PLOT.top, (PLOT.top + PLOT.bottom) / 2, PLOT.bottom].map((y) => (
-        <line key={y} x1={PLOT.left} y1={y} x2={PLOT.right} y2={y} stroke="var(--committed)" strokeWidth={1} />
+      {guides.map((guide, index) => (
+        <g key={guide.y}>
+          <line
+            x1={PLOT.left}
+            y1={guide.y}
+            x2={PLOT.right}
+            y2={guide.y}
+            // The target line is the one that matters, so it alone is solid.
+            stroke={index === 0 ? 'var(--committed)' : 'var(--hair)'}
+            strokeWidth={1}
+          />
+          <ChartText x={PLOT.left - 12} y={guide.y + 4} anchor="end">
+            {guide.label}
+          </ChartText>
+        </g>
       ))}
 
-      {desiredX !== null ? (
+      {plan.length > 1 ? (
+        <polyline
+          points={plan.map((point) => `${point.x},${point.y}`).join(' ')}
+          fill="none"
+          stroke="var(--protect)"
+          strokeWidth={3}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ) : null}
+
+      {actual.length > 1 ? (
+        <polyline
+          points={actual.map((point) => `${point.x},${point.y}`).join(' ')}
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth={4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ) : null}
+
+      {plan.map((point) => (
+        <circle key={`p-${point.month}`} cx={point.x} cy={point.y} r={3.5} fill="var(--protect)" />
+      ))}
+      {actual.map((point, index) => (
+        <circle
+          key={`a-${point.month}`}
+          cx={point.x}
+          cy={point.y}
+          // The latest actual point is where the household is standing.
+          r={index === actual.length - 1 ? 6 : 4}
+          fill="var(--accent)"
+        />
+      ))}
+
+      {/* The gap at the current month, drawn as a connector between the two
+          lines. This is the chart's whole point, so it is labelled. */}
+      {nowActual && nowPlan && gapAtNow !== null && Math.abs(nowActual.y - nowPlan.y) > 6 ? (
         <>
           <line
-            x1={desiredX}
-            y1={PLOT.top - 10}
-            x2={desiredX}
-            y2={PLOT.bottom + 14}
-            stroke="var(--protect)"
+            x1={nowActual.x}
+            y1={nowPlan.y}
+            x2={nowActual.x}
+            y2={nowActual.y}
+            stroke="var(--attention)"
             strokeWidth={1.5}
-            strokeDasharray="4 5"
+            strokeDasharray="4 4"
           />
-          <ChartText x={desiredX} y={219} anchor="middle">
-            {labels.desired}
-          </ChartText>
-          <ChartText x={desiredX} y={238} anchor="middle" fill="var(--attention)">
-            {desiredMark}
-          </ChartText>
+          <ChartTag
+            x={nowActual.x}
+            y={(nowActual.y + nowPlan.y) / 2}
+            fill="var(--attention)"
+            label={`${gapAtNow >= 0 ? '+' : '−'}${shortMillions(Math.abs(gapAtNow))} tr`}
+          />
         </>
       ) : null}
 
-      <ChartText x={PLOT.left} y={219} anchor="start">
-        {labels.start}
-      </ChartText>
-      <ChartText x={PLOT.right} y={219} anchor="end">
-        {labels.end}
-      </ChartText>
+      {ticks.map((tick) => (
+        <ChartText key={tick.x} x={tick.x} y={247} anchor="middle">
+          {tick.label}
+        </ChartText>
+      ))}
 
-      <ChartText x={PLOT.left - 10} y={PLOT.top + 4} anchor="end">
-        {values.top}
-      </ChartText>
-      <ChartText x={PLOT.left - 10} y={PLOT.bottom + 4} anchor="end">
-        {values.bottom}
-      </ChartText>
+      {/* The selected month: a rule down the chart and a ring on each line that
+          has a value there, so the eye lands on what the readout describes. */}
+      {active ? (
+        <g pointerEvents="none">
+          <line
+            x1={active.x}
+            y1={PLOT.top - 8}
+            x2={active.x}
+            y2={PLOT.bottom + 8}
+            stroke="var(--protect)"
+            strokeWidth={1}
+          />
+          {active.plan !== null ? (
+            <circle
+              cx={active.x}
+              cy={chart.yAt(active.plan)}
+              r={5.5}
+              fill="var(--protect)"
+              stroke="var(--panel)"
+              strokeWidth={2}
+            />
+          ) : null}
+          {active.actual !== null ? (
+            <circle
+              cx={active.x}
+              cy={chart.yAt(active.actual)}
+              r={6.5}
+              fill="var(--accent)"
+              stroke="var(--panel)"
+              strokeWidth={2}
+            />
+          ) : null}
+          <Readout column={active} t={t} />
+        </g>
+      ) : null}
 
-      {current ? (
-        <line
-          x1={current.x1}
-          y1={current.y1}
-          x2={current.x2}
-          y2={current.y2}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth={3}
-          strokeLinecap="round"
-        />
-      ) : null}
-      {needed ? (
-        <line
-          x1={needed.x1}
-          y1={needed.y1}
-          x2={needed.x2}
-          y2={needed.y2}
-          fill="none"
-          stroke="var(--attention)"
-          strokeWidth={2}
-          strokeDasharray="5 5"
-          strokeLinecap="round"
-        />
-      ) : null}
-
-      <circle cx={PLOT.left} cy={PLOT.bottom} r={5} fill="var(--accent)" />
-      {current ? <circle cx={current.x2} cy={current.y2} r={5} fill="var(--accent)" /> : null}
-      {needed ? <circle cx={needed.x2} cy={needed.y2} r={4.5} fill="var(--attention)" /> : null}
-
-      {/* Each pace labelled on its own line, so the two are never read as one. */}
-      {current && paceLabel ? (
-        <ChartTag
-          x={(current.x1 + current.x2) / 2}
-          y={(current.y1 + current.y2) / 2}
-          fill="var(--accent)"
-          label={paceLabel}
-        />
-      ) : null}
-      {needed && requiredLabel ? (
-        <ChartTag
-          x={(needed.x1 + needed.x2) / 2}
-          y={(needed.y1 + needed.y2) / 2 - 18}
-          fill="var(--attention)"
-          label={requiredLabel}
-        />
-      ) : null}
+      {/* Hit areas last, so they sit above the lines and win the pointer. */}
+      {columns.map((column) => (
+        <rect
+          key={column.month}
+          x={column.x - columnWidth}
+          y={PLOT.top - 12}
+          width={columnWidth * 2}
+          height={PLOT.bottom - PLOT.top + 32}
+          fill="transparent"
+          className="cursor-pointer"
+          onMouseEnter={() => setSelected(column.month)}
+          // Tap works where hover does not, and tapping the open month closes it.
+          onClick={() => setSelected((value) => (value === column.month ? null : column.month))}
+        >
+          <title>{column.label}</title>
+        </rect>
+      ))}
     </svg>
+  )
+}
+
+/**
+ * The values for the selected month, on a plate beside the rule.
+ *
+ * Flips to the left of the rule near the right edge so it never runs off the
+ * chart — the readout has to stay whole to be worth showing.
+ */
+function Readout({
+  column,
+  t,
+}: {
+  column: ChartModel['columns'][number]
+  t: (key: string, options?: Record<string, unknown>) => string
+}) {
+  const width = 168
+  const rows = [
+    column.actual !== null
+      ? { label: t('goals.detail.road.actualLine'), value: column.actual, fill: 'var(--accent)' }
+      : null,
+    column.plan !== null
+      ? { label: t('goals.detail.road.plannedLine'), value: column.plan, fill: 'var(--protect)' }
+      : null,
+  ].filter((row): row is { label: string; value: number; fill: string } => row !== null)
+
+  const height = 34 + rows.length * 20
+  const flip = column.x + width + 16 > PLOT.right
+  const x = flip ? column.x - width - 12 : column.x + 12
+
+  return (
+    <g pointerEvents="none">
+      <rect
+        x={x}
+        y={PLOT.top}
+        width={width}
+        height={height}
+        rx={8}
+        fill="var(--panel)"
+        stroke="var(--hair)"
+        strokeWidth={1}
+      />
+      <ChartText x={x + 12} y={PLOT.top + 20} anchor="start" fill="var(--ink)">
+        {column.label}
+      </ChartText>
+      {rows.map((row, index) => (
+        <g key={row.label}>
+          <circle cx={x + 16} cy={PLOT.top + 36 + index * 20} r={3.5} fill={row.fill} />
+          <ChartText x={x + 26} y={PLOT.top + 40 + index * 20} anchor="start" fill="var(--ink2)">
+            {row.label}
+          </ChartText>
+          <ChartText
+            x={x + width - 12}
+            y={PLOT.top + 40 + index * 20}
+            anchor="end"
+            fill="var(--ink)"
+          >
+            {`${shortMillions(row.value)} tr`}
+          </ChartText>
+        </g>
+      ))}
+      {/* The gap is the reason both lines are on one chart, so it is stated
+          rather than left to be eyeballed. */}
+      {rows.length === 2 ? (
+        <ChartText
+          x={x + width - 12}
+          y={PLOT.top + height - 9}
+          anchor="end"
+          fill={column.actual! < column.plan! ? 'var(--attention)' : 'var(--accent)'}
+        >
+          {`${column.actual! >= column.plan! ? '+' : '−'}${shortMillions(
+            Math.abs(column.actual! - column.plan!),
+          )} tr`}
+        </ChartText>
+      ) : null}
+    </g>
   )
 }
 
@@ -447,16 +697,16 @@ function ChartText({
 }
 
 /**
- * A pace label sitting on top of its own line. The white plate underneath is
- * what keeps it readable where the two lines cross — the chart well is `--sunk`,
- * so plain text on the line itself is not legible.
+ * A label on a white plate. The plate is what keeps it readable where it sits on
+ * top of a line — the chart well is `--sunk`, so plain text on the line itself
+ * is not legible.
  */
 function ChartTag({ x, y, fill, label }: { x: number; y: number; fill: string; label: string }) {
-  const width = Math.max(84, label.length * 7 + 20)
-  const clampedX = Math.min(Math.max(x, PLOT.left + width / 2), PLOT.right - width / 2)
+  const width = Math.max(78, label.length * 7 + 20)
+  const clampedX = Math.min(Math.max(x + width / 2 + 10, PLOT.left + width / 2), PLOT.right - width / 2)
   return (
     <>
-      <rect x={clampedX - width / 2} y={y - 14} width={width} height={28} rx={8} fill="var(--panel)" />
+      <rect x={clampedX - width / 2} y={y - 14} width={width} height={28} rx={7} fill="var(--panel)" />
       <ChartText x={clampedX} y={y + 4} anchor="middle" fill={fill}>
         {label}
       </ChartText>
@@ -476,20 +726,24 @@ function startOfThisMonth(): Date {
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))
 }
 
-function addMonths(date: Date, months: number): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1))
+/** `Date` → `'2026-08'`. */
+function monthKey(date: Date): string {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
 }
 
-/** Whole months from `start` to a `YYYY-MM-DD`; never negative. */
-function monthIndexFrom(start: Date, iso: string): number | null {
-  const date = new Date(`${iso}T00:00:00Z`)
-  if (Number.isNaN(date.getTime())) return null
-  const months =
-    (date.getUTCFullYear() - start.getUTCFullYear()) * 12 +
-    (date.getUTCMonth() - start.getUTCMonth())
-  return Math.max(months, 0)
+/** `'2026-08'` → `'08/26'`. */
+function shortMonth(month: string): string {
+  const [year, m] = month.split('-')
+  return `${m}/${year.slice(2)}`
 }
 
-function monthLabel(date: Date): string {
-  return `${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`
+/** Every month from `from` to `to` inclusive, as `YYYY-MM`. */
+function monthRange(from: string, to: string): string[] {
+  const [fy, fm] = from.split('-').map(Number)
+  const [ty, tm] = to.split('-').map(Number)
+  const count = (ty - fy) * 12 + (tm - fm)
+  if (!Number.isFinite(count) || count < 0) return [from]
+  return Array.from({ length: count + 1 }, (_, index) =>
+    monthKey(new Date(Date.UTC(fy, fm - 1 + index, 1))),
+  )
 }

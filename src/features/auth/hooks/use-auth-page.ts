@@ -16,7 +16,6 @@ import {
   buildSignupSchema,
   loginDefaultValues,
   signupDefaultValues,
-  type AuthTab,
   type LoginForm,
   type SignupForm,
 } from '@/features/auth/model/auth-form'
@@ -25,7 +24,11 @@ import { getErrorMessage } from '@/shared/lib/get-error-message'
 
 const GOOGLE_REDIRECT_PATH = '/auth/callback'
 
-export function useAuthPage() {
+/**
+ * The half both auth routes share: where to land after success, and the Google
+ * hand-off. Split out so `/auth` never builds the signup form and vice versa.
+ */
+function useAuthShared() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -38,56 +41,7 @@ export function useAuthPage() {
    */
   const nextPath = resolveNextPath(searchParams.get('next'))
 
-  const [tab, setTab] = useState<AuthTab>('login')
   const [googlePending, setGooglePending] = useState(false)
-
-  const loginSchema = useMemo(() => buildLoginSchema(t), [t])
-  const signupSchema = useMemo(() => buildSignupSchema(t), [t])
-
-  const loginForm = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: loginDefaultValues,
-    mode: 'onChange',
-  })
-
-  const signupForm = useForm<SignupForm>({
-    resolver: zodResolver(signupSchema),
-    defaultValues: signupDefaultValues,
-    mode: 'onChange',
-  })
-
-  async function onLogin(values: LoginForm) {
-    try {
-      const result = await loginRequest({ email: values.email, password: values.password })
-      if (!result.session) throw new Error(t('auth.errors.loginFailed'))
-      setAuth(result.user, result.session)
-      toast.success(t('auth.toast.loginSuccess'))
-      navigate(nextPath, { replace: true, state: authHandoffState })
-    } catch (error) {
-      toast.error(getErrorMessage(error, t('auth.errors.loginFailed')))
-    }
-  }
-
-  async function onSignup(values: SignupForm) {
-    try {
-      const result = await signupRequest({
-        email: values.email,
-        password: values.password,
-        fullName: values.fullName,
-      })
-      // With email confirmation enabled the backend returns no session yet.
-      if (result.session) {
-        setAuth(result.user, result.session)
-        toast.success(t('auth.toast.signupSuccess', { name: values.fullName }))
-        navigate(nextPath, { replace: true, state: authHandoffState })
-      } else {
-        toast.success(t('auth.toast.confirmEmail'))
-        setTab('login')
-      }
-    } catch (error) {
-      toast.error(getErrorMessage(error, t('auth.errors.signupFailed')))
-    }
-  }
 
   async function onGoogle() {
     setGooglePending(true)
@@ -106,14 +60,83 @@ export function useAuthPage() {
     }
   }
 
+  return { t, navigate, setAuth, nextPath, googlePending, onGoogle }
+}
+
+export function useLoginPage() {
+  const { t, navigate, setAuth, nextPath, googlePending, onGoogle } = useAuthShared()
+
+  const loginSchema = useMemo(() => buildLoginSchema(t), [t])
+
+  const form = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: loginDefaultValues,
+    mode: 'onChange',
+  })
+
+  async function onLogin(values: LoginForm) {
+    try {
+      const result = await loginRequest({ email: values.email, password: values.password })
+      if (!result.session) throw new Error(t('auth.errors.loginFailed'))
+      setAuth(result.user, result.session)
+      toast.success(t('auth.toast.loginSuccess'))
+      navigate(nextPath, { replace: true, state: authHandoffState })
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('auth.errors.loginFailed')))
+    }
+  }
+
   return {
-    tab,
-    setTab,
     googlePending,
-    loginForm,
-    signupForm,
-    submitLogin: loginForm.handleSubmit(onLogin),
-    submitSignup: signupForm.handleSubmit(onSignup),
+    form,
+    submit: form.handleSubmit(onLogin),
     onGoogle,
   }
+}
+
+export function useSignupPage() {
+  const { t, navigate, setAuth, nextPath, googlePending, onGoogle } = useAuthShared()
+
+  const signupSchema = useMemo(() => buildSignupSchema(t), [t])
+
+  const form = useForm<SignupForm>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: signupDefaultValues,
+    mode: 'onChange',
+  })
+
+  async function onSignup(values: SignupForm) {
+    try {
+      const result = await signupRequest({
+        email: values.email,
+        password: values.password,
+        fullName: values.fullName,
+      })
+      // With email confirmation enabled the backend returns no session yet.
+      if (result.session) {
+        setAuth(result.user, result.session)
+        toast.success(t('auth.toast.signupSuccess', { name: values.fullName }))
+        navigate(nextPath, { replace: true, state: authHandoffState })
+      } else {
+        toast.success(t('auth.toast.confirmEmail'))
+        // Send them to the sign-in route to wait for the confirmation mail,
+        // preserving `next` so a pending invite still survives the detour.
+        navigate(buildLoginPath(nextPath), { replace: true })
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('auth.errors.signupFailed')))
+    }
+  }
+
+  return {
+    googlePending,
+    form,
+    submit: form.handleSubmit(onSignup),
+    onGoogle,
+  }
+}
+
+/** `/auth`, carrying `next` forward so a bounced destination is not lost. */
+export function buildLoginPath(nextPath: string) {
+  return nextPath === '/' ? '/auth' : `/auth?next=${encodeURIComponent(nextPath)}`
 }

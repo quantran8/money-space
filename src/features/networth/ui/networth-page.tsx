@@ -225,6 +225,7 @@ export function NetWorthPage() {
         isValid={debtsPage.isValid}
         isSavingDebt={debtsPage.isSavingDebt}
         setValue={debtsPage.setValue}
+        trigger={debtsPage.trigger}
         selectedLenderType={debtsPage.selectedLenderType}
         showMoreDetails={debtsPage.showMoreDetails}
         setShowMoreDetails={debtsPage.setShowMoreDetails}

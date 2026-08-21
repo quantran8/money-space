@@ -5,6 +5,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { useAssetDetail, type AssetEventEntry } from '@/features/assets/hooks/use-asset-detail'
 import { useAssetsPage } from '@/features/assets/hooks/use-assets-page'
 import { canUpdatePriceManually } from '@/features/assets/model/assets'
@@ -68,29 +76,26 @@ function ActivityRow({ entry, locale }: { entry: AssetEventEntry; locale: string
   const isPositive = entry.amount >= 0
 
   return (
-    <tr className="group transition-colors hover:bg-sunk">
-      <td className="rounded-l-control py-3 pl-2 font-mono text-[11px] text-ink3">
+    <TableRow>
+      <TableCell className="font-mono text-[11px] text-ink3">
         {new Date(entry.isoDate).toLocaleDateString(locale)}
-      </td>
-      <td className="max-w-[280px] py-3">
+      </TableCell>
+      <TableCell className="max-w-[280px]">
         <p className="truncate font-medium">{entry.title}</p>
         {entry.note && entry.note !== entry.title ? (
           <p className="mt-1 truncate text-[11px] text-ink3">{entry.note}</p>
         ) : null}
-      </td>
-      <td className="py-3 text-ink2">
+      </TableCell>
+      <TableCell className="text-ink2">
         {t(`options.eventType.${entry.type}`, { defaultValue: entry.type })}
-      </td>
-      <td
-        className={cn(
-          'money-number rounded-r-control py-3 pr-2 text-right font-medium',
-          isPositive && 'text-accent',
-        )}
+      </TableCell>
+      <TableCell
+        className={cn('money-number text-right font-medium', isPositive && 'text-accent')}
       >
         {isPositive ? '+' : '−'}
         {formatVndShort(Math.abs(entry.amount))}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 
@@ -343,7 +348,7 @@ export function AssetDetailPage() {
           )}
         >
           <div className="min-w-0">
-            <p className="label">
+            <p className="label-vi">
               {t(isBalanceAsset ? 'assets.detail.hero.balance' : 'assets.detail.hero.currentValue')}
             </p>
             <SummaryValue value={currentValue} />
@@ -368,7 +373,7 @@ export function AssetDetailPage() {
           {isMarketPriced ? (
             <>
               <div className="min-w-0">
-                <p className="label">{t('assets.detail.hero.costBasis')}</p>
+                <p className="label-vi">{t('assets.detail.hero.costBasis')}</p>
                 <MetricValue value={costBasis} />
               </div>
               <div
@@ -377,7 +382,7 @@ export function AssetDetailPage() {
                   profitLoss < 0 ? 'text-alert' : profitLoss > 0 ? 'text-accent' : undefined,
                 )}
               >
-                <p className="label">
+                <p className="label-vi">
                   {t(
                     profitLoss < 0
                       ? 'assets.detail.hero.estimatedLoss'
@@ -394,7 +399,7 @@ export function AssetDetailPage() {
           ) : null}
 
           <div className="min-w-0">
-            <p className="label">{t('assets.detail.hero.shareOfTotal')}</p>
+            <p className="label-vi">{t('assets.detail.hero.shareOfTotal')}</p>
             <div className="mt-3 flex items-baseline gap-x-1.5">
               <span className="money-number text-[25px] leading-none">
                 {share.toLocaleString(locale, { maximumFractionDigits: 1 })}
@@ -613,30 +618,31 @@ export function AssetDetailPage() {
 
         {relatedEvents.length > 0 ? (
           <>
-            <div className="mt-5 hidden overflow-x-auto md:block">
-              <table className="table-dense w-full min-w-[640px] text-[13px]">
-                <thead>
-                  <tr className="label">
-                    <th className="pb-3 text-left font-normal">
-                      {t('assets.detail.events.date')}
-                    </th>
-                    <th className="pb-3 text-left font-normal">
-                      {t('assets.detail.events.event')}
-                    </th>
-                    <th className="pb-3 text-left font-normal">
-                      {t('assets.detail.events.type')}
-                    </th>
-                    <th className="pb-3 text-right font-normal">
+            {/* The shared `Table` primitive rather than a hand-rolled `<table>`,
+                so this list is built the same way as every other one. Hidden
+                below `md` because four columns genuinely do not fit a phone —
+                here the cards below are a real reflow, not a fallback for a
+                horizontal scroll. */}
+            <div className="mt-5 hidden md:block">
+              <Table className="min-w-[640px] text-[13px]">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    {/* `.label-vi`: accented Vietnamese headings, which mono
+                        renders poorly (§10.1). */}
+                    <TableHead className="label-vi">{t('assets.detail.events.date')}</TableHead>
+                    <TableHead className="label-vi">{t('assets.detail.events.event')}</TableHead>
+                    <TableHead className="label-vi">{t('assets.detail.events.type')}</TableHead>
+                    <TableHead className="label-vi text-right">
                       {t('assets.detail.events.effect')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {relatedEvents.map((entry) => (
                     <ActivityRow key={entry.id} entry={entry} locale={locale} />
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {/* Four columns do not survive a phone. The same rows become cards

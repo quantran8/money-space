@@ -211,6 +211,12 @@ export function useGoalsPage() {
       reset({
         name: editingGoal.name,
         target: amountToRaw(goalAmount(editingGoal.targetAmount)),
+        // Edit mode neither renders nor sends shares — they are edited one at a
+        // time through the allocations panel — but the field must still be an
+        // array. `reset` replaces every value, so omitting it left `undefined`
+        // here, and the schema's `z.array` rejected it on a field this dialog
+        // does not show: the save then failed with nothing to point at.
+        allocations: [],
         // Read-only context for the dialog's summary; the API ignores it.
         current: amountToRaw(goalAmount(editingGoal.currentAmount)),
         plannedMonthly: amountToRaw(editingGoal.plannedMonthlyContribution ?? undefined),

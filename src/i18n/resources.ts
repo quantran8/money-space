@@ -23,6 +23,9 @@ export const resources = {
         quick: 'Nhanh',
         takesTwoMinutes: 'Mất 2 phút',
         selectDate: 'Chọn ngày',
+        selectMonth: 'Chọn tháng',
+        previousYear: 'Năm trước',
+        nextYear: 'Năm sau',
         notCalculated: 'Đang tính',
         noNote: 'Chưa có ghi chú',
         noAdditionalNote: 'Chưa có ghi chú thêm.',
@@ -96,9 +99,9 @@ export const resources = {
         redesign: {
           eyebrow: 'Tổng quan · Financial snapshot hiện tại',
           pageTitle: {
-            stable: 'Nhà mình đang khá ổn.',
-            attention: 'Nhà mình cần xem lại vài khoản.',
-            tense: 'Tháng này nhà mình hơi căng.',
+            stable: 'Tài chính gia đình đang ổn định.',
+            attention: 'Có vài khoản cần xem lại.',
+            tense: 'Tháng này tài chính hơi căng.',
           },
           netWorthLabel: 'Tài sản ròng',
           netWorthUnit: 'triệu',
@@ -107,7 +110,7 @@ export const resources = {
             attention: 'Cần chú ý vài khoản',
             tense: 'Cần cân đối lại',
           },
-          netWorthNote: 'Sau khi thanh toán các khoản trong 30 ngày tới, nhà mình dự kiến còn {{amount}} để sử dụng.',
+          netWorthNote: 'Sau khi thanh toán các khoản trong 30 ngày tới, dự kiến còn {{amount}} để sử dụng.',
           totalAssets: 'Tổng tài sản',
           debt: 'Dư nợ',
           available: {
@@ -182,23 +185,23 @@ export const resources = {
         heroButton: 'Cập nhật',
         quickCardTitle: 'Cập nhật',
         hero: {
-          netWorthLabel: 'Tổng tài sản nhà mình',
+          netWorthLabel: 'Tổng tài sản gia đình',
           statusLine: {
-            stable: 'Theo dữ liệu hiện có, nhà mình đang ổn.',
+            stable: 'Theo dữ liệu hiện có, tài chính đang ổn định.',
             attention: 'Có một vài khoản cần xem lại.',
             tense: 'Tháng này có thể hơi căng.',
           },
           liquidLabel: 'Tiền có thể dùng ngay',
           liquidCaption: 'Đủ bao phủ các khoản được ghi nhận trong thời gian gần.',
           overviewEyebrow: 'Tổng quan',
-          overviewTitle: 'Tình hình nhà mình',
+          overviewTitle: 'Tình hình tài chính gia đình',
           overviewSubtitle:
-            'Một vài tín hiệu chính để biết nhà mình đang ở đâu, không cần xem toàn bộ chi tiết.',
+            'Một vài tín hiệu chính để nắm được tình hình, không cần xem toàn bộ chi tiết.',
           netWorthMetric: 'Giá trị ròng',
           upcomingMetric: 'Sắp trả',
           discussMetric: 'Cần bàn',
-          assuranceTitle: 'Theo dữ liệu hiện có, nhà mình đang ổn.',
-          assuranceLine: 'Kết luận này dùng toàn bộ dữ liệu nhà mình đã ghi.',
+          assuranceTitle: 'Theo dữ liệu hiện có, tài chính đang ổn định.',
+          assuranceLine: 'Kết luận này dựa trên toàn bộ dữ liệu đã ghi nhận.',
         },
         metrics: {
           liquid: 'Dùng ngay',
@@ -210,7 +213,7 @@ export const resources = {
         sections: {
           money: {
             eyebrow: 'Bức tranh hiện tại',
-            title: 'Tiền nhà mình',
+            title: 'Tiền của gia đình',
             subtitle: 'Hai nhóm số quan trọng nhất, không trộn lẫn.',
             liquidity: 'Thanh khoản',
             liquidityCaption: 'Tiền có thể sử dụng nhanh',
@@ -257,7 +260,7 @@ export const resources = {
             subtitle: 'Mục tiêu chính đang tiến triển tốt',
             mainGoal: 'Mục tiêu chính',
             noGoal: 'Chưa có mục tiêu',
-            noGoalSubtitle: 'Tạo mục tiêu đầu tiên cho nhà mình.',
+            noGoalSubtitle: 'Tạo mục tiêu đầu tiên cho gia đình.',
             progressLabel: 'Đã hoàn thành {{value}}%',
             have: 'Đã có {{value}}',
             target: 'Mục tiêu {{value}}',
@@ -274,7 +277,7 @@ export const resources = {
             empty: 'Chưa có hoạt động nào gần đây.',
           },
         },
-        footerNote: 'Các số liệu phản ánh toàn bộ dữ liệu nhà mình đã ghi trong Money Space.',
+        footerNote: 'Các số liệu phản ánh toàn bộ dữ liệu đã ghi nhận trong Money Space.',
       },
       activity: {
         header: {
@@ -302,7 +305,7 @@ export const resources = {
           'record.visibility_changed': 'Cập nhật "{{object}}"',
           'household.created': 'Tạo không gian chung',
           'household.deleted': 'Xoá không gian chung',
-          'household.member_joined': 'Tham gia nhà mình',
+          'household.member_joined': 'Tham gia gia đình',
           'household.member_removed': 'Gỡ một thành viên',
           'household.invite_created': 'Gửi lời mời',
           'household.invite_revoked': 'Thu hồi lời mời',
@@ -321,7 +324,7 @@ export const resources = {
       assets: {
         header: {
           eyebrow: 'Tài sản và nguồn tiền',
-          title: 'Tiền nhà mình đang nằm ở đâu',
+          title: 'Tiền của gia đình đang nằm ở đâu',
           description:
             'Chia tài sản theo nhóm để cả hai cùng nhìn được tiền dùng ngay, tiết kiệm và phần dài hạn.',
         },
@@ -406,7 +409,7 @@ export const resources = {
           title: 'Ghi một khoản mới',
           editEyebrow: 'Chỉnh sửa tài sản',
           editTitle: 'Cập nhật tài sản',
-          help: 'Ghi lại một khoản tài sản để tài sản ròng của nhà mình luôn đúng.',
+          help: 'Ghi lại một khoản tài sản để tài sản ròng của gia đình luôn chính xác.',
           name: 'Tên tài sản',
           namePlaceholder: 'Ví dụ: Sổ tiết kiệm ACB',
           type: 'Loại tài sản',
@@ -414,7 +417,7 @@ export const resources = {
           value: 'Giá trị ước tính',
           // Tiền mặt / tài khoản ngân hàng là con số đã biết chắc, không phải ước tính.
           balance: 'Số dư',
-          // Nhà mình tự quyết khoản nào là tiền dùng được, không để loại tài sản quyết thay.
+          // Gia đình tự quyết khoản nào là tiền dùng được, không để loại tài sản quyết thay.
           countsAsFlexible: 'Tính vào tiền linh hoạt',
           valuePlaceholder: 'Ví dụ: 20.000.000',
           areaSqm: 'Diện tích',
@@ -502,7 +505,7 @@ export const resources = {
           remove: 'Gỡ nguồn tiền',
           // §22.7 — one sentence, never a labelled metric grid.
           effectUsable:
-            'Thêm {{amount}} vào phần dùng ngay. Tiền linh hoạt của nhà mình thành {{flexible}}.',
+            'Thêm {{amount}} vào phần dùng ngay. Tiền linh hoạt của gia đình thành {{flexible}}.',
           effectOther: 'Thêm {{amount}} vào tổng tài sản. Phần này chưa dùng ngay được.',
           // §22.8 — a sentence, never a before/after table.
           changeValue: 'Bạn đã đổi giá trị từ {{from}} thành {{to}}.',
@@ -512,7 +515,7 @@ export const resources = {
           changeFlexibleOff: 'Khoản này sẽ không còn được tính vào tiền linh hoạt.',
           // §22.11 — the right verb, and the consequence stated in money.
           removeTitle: 'Gỡ nguồn tiền này?',
-          removeBody: '{{amount}} sẽ không còn được tính vào bức tranh của nhà mình.',
+          removeBody: '{{amount}} sẽ không còn được tính vào bức tranh tài chính của gia đình.',
           removeConfirm: 'Gỡ nguồn tiền',
           removing: 'Đang gỡ...',
           incomplete: 'Còn thiếu thông tin để lưu khoản này.',
@@ -571,9 +574,9 @@ export const resources = {
             aria: '{{claimed}} đã dành cho mục tiêu, {{free}} còn tự do',
             sharePercent: '{{percent}}% giá trị tài sản',
             columns: {
-              goal: 'MUC TIEU',
-              counted: 'DANG TINH',
-              monthly: 'GOP MOI THANG',
+              goal: 'Mục tiêu',
+              counted: 'Đang tính',
+              monthly: 'Góp mỗi tháng',
             },
           },
           updatedAt: 'Cập nhật gần nhất: {{value}}',
@@ -626,7 +629,7 @@ export const resources = {
           info: {
             eyebrow: 'Thông tin tài sản',
             title: 'Thông tin nắm giữ',
-            roleTitle: 'Vai trò trong nhà mình',
+            roleTitle: 'Vai trò trong gia đình',
             countedIn: 'Tính vào bức tranh',
             countedYes: 'Có',
             countedNo: 'Không',
@@ -694,7 +697,7 @@ export const resources = {
         },
         demo: {
           eyebrow: 'Tài sản và nguồn tiền',
-          title: 'Tiền nhà mình đang nằm ở đâu',
+          title: 'Tiền của gia đình đang nằm ở đâu',
           add: 'Thêm khoản nợ',
           overview: 'Tổng quan nợ',
           count: '{{count}} khoản',
@@ -709,7 +712,7 @@ export const resources = {
           missingSchedule: 'Cần lịch trả hoặc khoản đóng góp định kỳ.',
           listTitle: 'Các khoản nợ',
           search: 'Tìm khoản nợ…',
-          empty: 'Nhà mình chưa có khoản nợ nào.',
+          empty: 'Gia đình chưa có khoản nợ nào.',
           emptySearch: 'Không có khoản nợ phù hợp.',
           missingPaymentCount: '{{count}} khoản chưa có lịch trả sắp tới.',
           addSchedule: 'Thêm lịch trả',
@@ -717,11 +720,6 @@ export const resources = {
           unconfirmed: 'Chưa xác nhận kỳ tới',
           householdOwner: 'Cả nhà',
           markPaid: 'Đánh dấu tất toán',
-          lenderType: {
-            bank_institution: 'Ngân hàng / tổ chức',
-            relative: 'Người thân',
-            other: 'Khác',
-          },
           columns: {
             item: 'Khoản nợ',
             lender: 'Bên cho vay',
@@ -759,6 +757,7 @@ export const resources = {
             remainingMonths: 'Khoảng {{count}} tháng',
             noTerm: 'Chưa chốt thời hạn',
             lender: 'Bên cho vay',
+            lenderType: 'Loại bên cho vay',
             originalAmount: 'Khoản vay ban đầu',
             interest: 'Lãi suất',
             noInterest: 'Không tính lãi',
@@ -809,6 +808,10 @@ export const resources = {
             lender: 'Chủ nợ / tổ chức',
             lenderPlaceholder: 'Ví dụ: VPBank hoặc Mẹ',
             outstanding: 'Dư nợ còn lại',
+            outstandingHint: 'Để trống nếu chưa trả khoản nào.',
+            repaymentAsset: 'Ví trả nợ mặc định',
+            repaymentAssetPlaceholder: 'Chọn khi trả',
+            repaymentAssetHint: 'Chỉ là gợi ý sẵn. Mỗi lần trả vẫn chọn được ví khác.',
             originalAmount: 'Số tiền vay ban đầu',
             lenderType: 'Loại khoản nợ',
             owner: 'Người phụ trách',
@@ -947,6 +950,7 @@ export const resources = {
         actions: {
           run: 'Xem thử',
           running: 'Đang tính...',
+          update: 'Cập nhật',
           tryAnother: 'Thử số khác',
           share: 'Chia sẻ',
           shareCopied: 'Đã sao chép tóm tắt.',
@@ -989,30 +993,34 @@ export const resources = {
           // nhường chỗ, phần góp tháng này giảm trước, hết mới tới phần đã dành.
           // Chỉ nêu điều sẽ xảy ra — không khuyên nên hay không nên chi (§Voice).
           goalImpact: {
+            spendLabel: 'Khoản chi',
+            takenFrom: 'Lấy từ',
+            paceOnly: 'Phần góp tháng này',
+            twoSources: '2 phần tiền',
+            allocationLabel: '{{amount}} được lấy từ đâu',
+            legendPace: 'Phần góp tháng này',
+            legendSetAside: 'Tiền đã dành cho mục tiêu',
+            paceRemainingLabel: 'Phần góp tháng này còn lại',
+            goalTotalLabel: 'Tiền đã dành cho mục tiêu',
+            goalPaceShort: 'góp tháng này −{{amount}}',
+            goalSetAsideShort: 'đã dành −{{amount}}',
+            explainPace:
+              'Khoản này chưa vượt phần góp còn lại của tháng nên chưa dùng tới tiền đã dành cho mục tiêu.',
+            explainSetAside:
+              'Dùng hết {{pace}} còn lại của tháng; phần vượt {{setAside}} lấy từ tiền đã dành nên mục tiêu giảm {{setAside}}.',
             // Một dòng nói hết: ví đã dành hết cho mục tiêu, nên khoản chi lấy
             // từ đâu. Trước đây khối này dài 7 dòng — dài quá thì không ai đọc.
-            titlePace: 'Tháng này góp cho mục tiêu ít đi {{amount}}',
-            titleSetAside: 'Mục tiêu giảm {{amount}}, trong đó {{setAside}} lấy từ phần đã dành',
             // Dòng phụ, chỉ 1 dòng: vì sao ví còn tiền mà vẫn trừ vào mục tiêu.
             subtitle: '{{wallet}} có {{value}}, đã dành hết cho mục tiêu.',
             subtitleSomeFree: '{{wallet}} có {{value}}, chỉ {{free}} chưa gán mục tiêu.',
             // Từng mục tiêu: nói RÕ giảm ở phần nào, không dùng "36tr → 34tr"
             // vì con số đó trông như phần đã dành bị rút ra.
-            goalPace: '{{name}}: góp tháng này −{{amount}}',
-            goalSetAside: '{{name}}: đã dành −{{amount}}',
-            goalBoth: '{{name}}: góp tháng này −{{pace}}, đã dành −{{setAside}}',
+            goalBoth: 'góp tháng này −{{pace}}, đã dành −{{setAside}}',
             exceedsWallet: 'Ví này hiện có {{value}}, ít hơn khoản chi.',
             // Hiện ngay khi chọn ví, chưa cần biết con số: khoản chi được ưu
             // tiên trước mục tiêu trên cùng ví, nên phần mục tiêu sẽ giảm. Nói
             // trước cơ chế để lát nữa thấy mục tiêu giảm thì hiểu vì sao.
             pending: 'Ví này đang dành tiền cho mục tiêu. Khoản chi sẽ lấy từ đó, phần mục tiêu giảm tương ứng.',
-            // Câu trả lời cho "ví vẫn còn tiền mà, sao lại trừ vào mục tiêu?".
-            // Ví còn số dư, nhưng số dư đó đã được hứa cho mục tiêu rồi — nên
-            // khoản chi không có chỗ nào khác để lấy.
-            whyNoFree:
-              'Ví {{wallet}} có {{value}} nhưng đã dành hết cho mục tiêu, không còn phần nào chưa gán.',
-            whySomeFree:
-              'Ví {{wallet}} có {{value}}, trong đó chỉ {{free}} là chưa gán cho mục tiêu.',
           },
           noWallet:
             'Chưa có ví nào được tính vào tiền linh hoạt. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng trước đã.',
@@ -1024,7 +1032,7 @@ export const resources = {
           editEyebrow: 'Sửa khoản sắp tới',
           title: 'Thêm khoản sắp tới',
           editTitle: 'Sửa khoản sắp tới',
-          help: 'Những khoản này là căn cứ để tính trước dòng tiền của nhà mình.',
+          help: 'Những khoản này là căn cứ để tính trước dòng tiền của gia đình.',
           submit: 'Thêm khoản',
           saveEdit: 'Lưu thay đổi',
           direction: {
@@ -1096,6 +1104,11 @@ export const resources = {
             remaining: 'Còn lại',
           },
           householdOwner: 'Cả nhà',
+          monthGroup: 'Tháng {{month}}/{{year}}',
+          showing: 'Hiển thị {{from}}–{{to}} trong {{total}} khoản',
+          pagination: 'Phân trang',
+          previous: 'Trước',
+          next: 'Sau',
           ending: 'Cuối kỳ dự kiến còn lại',
           closing: 'Cuối ngày',
           empty: 'Chưa có khoản nào trong kỳ này. Thêm một khoản để thấy trước dòng tiền.',
@@ -1120,10 +1133,10 @@ export const resources = {
               'Các khoản dự định vẫn được trừ, vì tiền vẫn rời tài khoản.',
             no_confirmed_inflow_in_horizon:
               'Chưa có khoản tiền vào nào đủ chắc chắn trong kỳ này.',
-            // Khoản quá hạn chỉ được LIỆT KÊ ở hôm nay để nhà mình thấy, việc
-            // đánh dấu đã xong là do nhà mình bấm — app không tự làm thay.
+            // Khoản quá hạn chỉ được LIỆT KÊ ở hôm nay để gia đình thấy, việc
+            // đánh dấu đã xong là do gia đình bấm — app không tự làm thay.
             overdue_events_clamped_to_today:
-              'Khoản quá hạn được xếp vào hôm nay để nhà mình thấy, mỗi khoản một lần.',
+              'Khoản quá hạn được xếp vào hôm nay để gia đình thấy, mỗi khoản một lần.',
             stale_asset_values:
               '{{count}} nguồn tiền lâu chưa cập nhật, số dư có thể chưa sát.',
             same_day_outflows_ordered_first:
@@ -1143,12 +1156,12 @@ export const resources = {
           },
           removeMember: {
             title: 'Gỡ thành viên',
-            description: 'Người đó sẽ không còn thấy dữ liệu của nhà mình.',
+            description: 'Người đó sẽ không còn thấy dữ liệu của gia đình.',
             pick: 'Chọn thành viên',
           },
         },
         merged: {
-          householdName: 'Tên nhà mình',
+          householdName: 'Tên gia đình',
           generalSettings: 'Thiết lập chung',
           sourceSummary: '{{count}} nguồn tiền đang được tính vào bức tranh · {{freshness}}.',
           updatedThisWeek: 'cập nhật trong tuần',
@@ -1161,7 +1174,7 @@ export const resources = {
           otherReminders: 'Các nhắc nhở khác',
           newDataOnly: 'Chỉ áp dụng cho dữ liệu mới',
           categoryCount: '{{system}} hệ thống · {{custom}} riêng',
-          householdData: 'Dữ liệu của nhà mình',
+          householdData: 'Dữ liệu của gia đình',
           viewSources: 'Xem nguồn tiền',
         },
         assets: {
@@ -1171,7 +1184,7 @@ export const resources = {
         },
       },
       home: {
-        eyebrow: 'Nhà mình',
+        eyebrow: 'Gia đình',
         title: 'Tình hình hiện tại',
         financialState: {
           eyebrow: 'Tình hình tài chính',
@@ -1225,7 +1238,7 @@ export const resources = {
           flexibleLabel: 'Sau các khoản đã có nhiệm vụ',
           flexibleUnit: 'triệu linh hoạt',
           // The hero's own explanation of the calculation (§2.15 dòng 2).
-          // Không gọi là "tiền mặt": nhà mình tự chọn khoản nào được tính, nên
+          // Không gọi là "tiền mặt": gia đình tự chọn khoản nào được tính, nên
           // ở đây có thể có cả vàng hay sổ tiết kiệm đã đánh dấu dùng được.
           totals: 'trên tổng {{cash}} có thể dùng ngay',
           totalsWithNetWorth: 'trên tổng {{cash}} có thể dùng ngay · giá trị ròng {{netWorth}}',
@@ -1251,13 +1264,13 @@ export const resources = {
             amount: 'Số tiền',
           },
           // Trước đây câu này liệt kê theo loại tài sản. Từ khi mỗi khoản có
-          // công tắc riêng, chỉ có lựa chọn của nhà mình mới nói đúng.
-          excluded: 'Đây là những khoản nhà mình đánh dấu là dùng được.',
+          // công tắc riêng, chỉ có lựa chọn của gia đình mới nói đúng.
+          excluded: 'Đây là những khoản gia đình đánh dấu là dùng được.',
           action: 'Cập nhật nhanh',
           empty: 'Chưa có nguồn tiền nào để tính.',
         },
         state: {
-          on_track: 'Nhà mình đang ổn',
+          on_track: 'Tài chính ổn định',
           watch: 'Có một thời điểm cần để ý',
           tight: 'Có một thời điểm chưa được cover',
           incomplete: 'Chưa đủ dữ liệu để nói',
@@ -1276,8 +1289,8 @@ export const resources = {
             count: '{{count}} khoản',
             summary: '{{count}} khoản · cũ nhất {{days}} ngày',
             // Nói đúng ba điều: đã tính vào số bên dưới, vẫn đang chờ, và chỉ
-            // nhà mình mới xác nhận được. Không trách, không giục.
-            note: 'Đã qua ngày dự kiến và vẫn đang được tính vào các số bên dưới. Các khoản này ở đây tới khi nhà mình xác nhận.',
+            // gia đình mới xác nhận được. Không trách, không giục.
+            note: 'Đã qua ngày dự kiến và vẫn đang được tính vào các số bên dưới. Các khoản này ở đây tới khi gia đình xác nhận.',
             markDone: 'Xác nhận',
             marking: 'Đang lưu…',
             viewAll: 'Xem tất cả',
@@ -1358,7 +1371,7 @@ export const resources = {
           viewAll: 'Xem các khoản nợ',
           total: 'Tổng dư nợ còn lại',
           more: 'và {{count}} khoản khác',
-          empty: 'Nhà mình chưa có khoản nợ nào.',
+          empty: 'Gia đình chưa có khoản nợ nào.',
           nextDue: '{{date}} · {{amount}}',
           noNextDue: 'không có kỳ nào trong 30 ngày tới',
           repaidOn: 'Đã trả được của {{name}}',
@@ -1377,7 +1390,7 @@ export const resources = {
           totalCash: 'Tổng tiền mặt',
           // "Phụ trách", never "ai tiêu" — the map names who holds a source.
           group: {
-            // Chia theo lựa chọn của nhà mình, không theo loại tài sản — đúng
+            // Chia theo lựa chọn của gia đình, không theo loại tài sản — đúng
             // bằng nhóm mà "Bức tranh hôm nay" đang cộng vào.
             usable_now: 'Dùng được ngay · {{count}} khoản',
             held: 'Đang giữ · {{count}} khoản',
@@ -1431,7 +1444,7 @@ export const resources = {
             ok: 'Theo dữ liệu hiện có.',
             already_complete: 'Mục tiêu đã hoàn thành.',
             no_contribution:
-              'Nhà mình chưa đặt mức góp hàng tháng, nên chưa thể nói trước ngày hoàn thành. Đặt một mức góp để thấy dự kiến.',
+              'Chưa đặt mức góp hàng tháng, nên chưa thể dự kiến ngày hoàn thành. Đặt một mức góp để thấy dự kiến.',
             no_target_date: 'Mục tiêu chưa có ngày mong muốn.',
             target_date_passed: 'Ngày mong muốn đã qua.',
             goal_inactive: 'Mục tiêu đang tạm dừng.',
@@ -1549,16 +1562,31 @@ export const resources = {
         },
         scheduledOutflows: {
           title: 'Sắp tới có {{amount}} rời ví',
+          heading: 'Ảnh hưởng đến mục tiêu',
+          count: '{{count}} khoản',
+          after: 'còn',
+          show: 'Xem tác động',
+          hide: 'Thu gọn',
+          remainingLabel: 'Còn thiếu',
+          percentLabel: 'Hoàn thành',
+          beforeLabel: 'Trước',
+          afterLabel: 'Sau khoản chi',
           description:
             'Những khoản này chưa chi, nên các con số phía trên vẫn là hiện tại. Đây là mức sau khi chúng diễn ra.',
           totalLabel: 'Đang có cho mục tiêu',
           paceLabel: 'Góp trong tháng này',
           fromWallet: 'từ ví {{wallet}}',
           paceNote:
-            'Chỉ tính trong tháng này. Ngày đạt mục tiêu vẫn tính theo mức góp nhà mình đã đặt.',
+            'Chỉ tính trong tháng này. Ngày đạt mục tiêu vẫn tính theo mức góp gia đình đã đặt.',
         },
         monthly: {
           title: 'Nhịp góp',
+          rateMeta: '{{amount}} / tháng',
+          couldContribute: 'Có thể góp',
+          estimateNote:
+            'Ước tính theo số dư ví còn trống trong tháng — chưa phải số đã chuyển vào.',
+          historyEmpty: 'Chưa có tháng nào kết thúc.',
+          historyTitle: 'Lịch sử đóng góp',
           currentMonth: 'Tháng {{month}}',
           contributed: 'Đã góp',
           monthlyRate: 'Mức tháng',
@@ -1577,7 +1605,7 @@ export const resources = {
           marketNote: 'Biến động giá tài sản không tính là tiền góp.',
           allSources: 'các nguồn góp',
           empty:
-            'Chưa đủ dữ liệu theo tháng. Sau vài tuần nhà mình sẽ thấy mỗi tháng góp được bao nhiêu.',
+            'Chưa đủ dữ liệu theo tháng. Sau vài tuần gia đình sẽ thấy mỗi tháng góp được bao nhiêu.',
           onPace: 'Đủ nhịp',
           short: 'thiếu {{amount}}',
           inProgress: 'đang diễn ra',
@@ -1586,13 +1614,13 @@ export const resources = {
           remaining: 'còn {{amount}}',
           paceMet: 'Đã đủ nhịp',
           shareUndecided:
-            'Ví góp cho mục tiêu này cũng đang góp cho mục tiêu khác cùng mức ưu tiên. Khi ví không đủ, phần còn lại đang tạm chia theo mức góp — nhà mình vào sửa mục tiêu để tự đặt tỉ lệ.',
+            'Ví góp cho mục tiêu này cũng đang góp cho mục tiêu khác cùng mức ưu tiên. Khi ví không đủ, phần còn lại đang tạm chia theo mức góp — vào sửa mục tiêu để tự đặt tỉ lệ.',
           columns: {
-            month: 'THANG',
-            source: 'NGUON GOP',
-            actual: 'DA GOP',
-            planned: 'DU DINH',
-            gap: 'SO VOI MUC',
+            month: 'Tháng',
+            source: 'Nguồn góp',
+            actual: 'Đã góp',
+            planned: 'Dự định',
+            gap: 'So với mức',
           },
         },
         builder: {
@@ -1602,7 +1630,7 @@ export const resources = {
           stepPlan: 'Mục tiêu',
           stepSources: 'Nguồn tiền',
           stepReview: 'Xem lại',
-          planQuestion: 'Nhà mình đang hướng tới điều gì?',
+          planQuestion: 'Gia đình đang hướng tới điều gì?',
           planDescription: 'Chỉ cần tên, số tiền và thời điểm mong muốn. Nguồn tiền sẽ chọn ở bước sau.',
           targetLabel: 'Cần bao nhiêu',
           targetMonth: 'Muốn đạt vào',
@@ -1663,6 +1691,14 @@ export const resources = {
         allocations: {
           title: 'Nguồn tạo tiến độ',
           add: 'Thêm tài sản',
+          addSource: 'Thêm nguồn',
+          holdingsLabel: 'Tài sản đã dành',
+          recurringLabel: 'Đóng góp định kỳ',
+          sourceCount: '{{count}} nguồn',
+          perMonth: '{{amount}} / tháng',
+          wholeAsset: 'Đã dành toàn bộ',
+          partOfAsset: 'Dành một phần',
+          monthlySource: 'Nguồn góp hàng tháng',
           badgeContribution: 'Góp hàng tháng',
           badgeHolding: 'Đã tích lũy',
           assetHolding: 'Đang có {{value}}',
@@ -1678,11 +1714,6 @@ export const resources = {
           capped: 'Tính theo số thực có',
           assetHolds: 'Tài sản này đang có {{value}}',
           totalLabel: 'Đang có cho mục tiêu này',
-          columns: {
-            asset: 'TAI SAN',
-            share: 'PHAN GOP',
-            counted: 'DANG TINH',
-          },
           dialogTitle: 'Thêm tài sản góp vào mục tiêu',
           editTitle: 'Sửa phần tài sản góp vào',
           assetLabel: 'Tài sản',
@@ -1696,8 +1727,8 @@ export const resources = {
           contributionEmpty:
             'Nhập số đang có sẵn, hoặc mức góp mỗi tháng từ ví này — chưa để dành đồng nào cũng không sao.',
           shareLabel: 'Phần của mục tiêu này khi ví không đủ',
-          shareHelp: 'Ví này còn dành cho: {{goals}}. Khi ví không đủ cho cả hai, phần còn lại chia theo tỉ lệ nhà mình đặt.',
-          shareRequired: 'Nhập phần của mục tiêu này (1–100%) để nhà mình chủ động khi ví không đủ.',
+          shareHelp: 'Ví này còn dành cho: {{goals}}. Khi ví không đủ cho cả hai, phần còn lại chia theo tỉ lệ gia đình đặt.',
+          shareRequired: 'Nhập phần của mục tiêu này (1–100%) để gia đình chủ động khi ví không đủ.',
           holdingNote: 'theo giá thị trường, giá trị sẽ thay đổi',
           kindLabel: 'Cách tính phần góp',
           kindFixed: 'Số tiền cố định',
@@ -1723,7 +1754,11 @@ export const resources = {
             description: 'Mục tiêu này có thể đã bị xóa hoặc không còn tồn tại.',
           },
           picture: {
-            saved: 'Đang được tính cho mục tiêu',
+            saved: 'Tiến độ mục tiêu',
+            targetLabel: 'Mục tiêu',
+            achieved: 'Đã đạt <0>{{percent}}%</0>',
+            projectedOn: 'Dự kiến đạt {{date}}',
+            wantByPlain: 'Mong muốn đạt {{date}}',
             progressAria: 'Đã dành {{current}} trên mục tiêu {{target}}',
             desiredDate: 'Ngày mong muốn',
             atCurrentPace: 'Theo tốc độ hiện tại',
@@ -1752,8 +1787,21 @@ export const resources = {
             // The conclusion, in one sentence: this pace lands on that month.
             conclusion: '<0>{{pace}}</0> → dự kiến đủ <1>{{date}}</1>.',
             noPaceConclusion:
-              'Nhà mình chưa đặt mức góp hàng tháng, nên chưa thể nói trước ngày hoàn thành.',
+              'Chưa đặt mức góp hàng tháng, nên chưa thể dự kiến ngày hoàn thành.',
             toBeOnTime: 'Để kịp {{date}}',
+            toBeOnTimeShort: 'Để đúng hẹn cần',
+            vsPlan: 'So với kế hoạch',
+            actualLine: 'Thực tế',
+            plannedLine: 'Theo kế hoạch',
+            behindWord: 'thấp hơn',
+            aheadWord: 'cao hơn',
+            notEnoughHistory: 'Chưa đủ dữ liệu tháng để vẽ đường thực tế.',
+            chartAriaCompare:
+              'Biểu đồ hai đường: thực tế hiện có {{current}}, {{state}} kế hoạch {{gap}} tại tháng {{month}}. Mục tiêu {{target}}.',
+            calcLines:
+              'Đường thực tế lấy từ tiến độ đã chốt mỗi tháng. Đường kế hoạch đi lên đều theo mức góp gia đình đã đặt.',
+            atCurrentPace: 'Theo tốc độ hiện tại',
+            noDate: 'Chưa có',
             lateBy: 'Chậm khoảng {{count}} tháng',
             earlyBy: 'Sớm khoảng {{count}} tháng',
             onTime: 'Đang đúng hẹn',
@@ -1805,13 +1853,13 @@ export const resources = {
           namePlaceholder: 'Ví dụ: Mua xe',
           current: 'Đã có',
           currentPlaceholder: 'Ví dụ: 10.000.000',
-          currentHelp: 'Số tiền nhà mình đã dành cho mục tiêu này trước khi dùng app. Sau khi tạo, số này chỉ thay đổi qua các lần đóng góp.',
+          currentHelp: 'Số tiền gia đình đã dành cho mục tiêu này trước khi dùng app. Sau khi tạo, số này chỉ thay đổi qua các lần đóng góp.',
           currentLocked: 'Đã có',
           currentLockedHelp: 'Thay đổi qua các lần đóng góp, không sửa trực tiếp ở đây.',
           currentExceedsTarget: 'Số đã có không thể lớn hơn mục tiêu.',
           allocations: 'Tài sản góp vào mục tiêu',
           allocationsRequired:
-            'Chọn ít nhất một tài sản. Mục tiêu được tính từ chính số tiền nhà mình đang có.',
+            'Chọn ít nhất một tài sản. Mục tiêu được tính từ chính số tiền gia đình đang có.',
           walletRequired:
             'Chọn thêm ít nhất một ví tiền mặt hoặc tài khoản ngân hàng — tiền góp mỗi tháng đi ra từ đó.',
           allocationInvalid: 'Nhập phần góp vào lớn hơn 0.',
@@ -1823,7 +1871,7 @@ export const resources = {
           monthlyPlaceholder: 'Ví dụ: 5.000.000',
           monthlyHelp: 'Có mức góp thì mới ước tính được ngày hoàn thành.',
           monthlyEmpty:
-            'Chưa đặt mức góp ở ví nào — nhà mình sẽ chỉ thấy tiến độ, chưa thấy ngày dự kiến.',
+            'Chưa đặt mức góp ở ví nào — bạn sẽ chỉ thấy tiến độ, chưa thấy ngày dự kiến.',
           deadline: 'Ngày mong muốn',
           remaining: 'Còn thiếu',
           estimate: 'Dự kiến hoàn thành',
@@ -2124,13 +2172,9 @@ export const resources = {
        */
       invites: {
         qr: {
-          eyebrow: 'Mời người mới',
           title: 'Quét mã để tham gia',
-          helper: 'Người kia mở Money Space trên máy của họ và quét mã này để cùng vào nhà mình.',
-          helperNamed: 'Người kia quét mã này để cùng vào “{{name}}”.',
-          scanHint: 'Mỗi mã dùng cho một người. Sau khi họ tham gia, bạn tạo mã mới cho người tiếp theo.',
           preparing: 'Đang tạo mã mời...',
-          imageAlt: 'Mã QR để tham gia nhà mình',
+          imageAlt: 'Mã QR để tham gia gia đình',
           linkLabel: 'Hoặc gửi liên kết này nếu không quét được mã',
           copy: 'Sao chép',
           copied: 'Đã sao chép liên kết mời.',
@@ -2159,15 +2203,15 @@ export const resources = {
           title: 'Cùng vào “{{name}}”?',
           invitedBy: '{{name}} mời bạn cùng nhìn bức tranh tài chính của nhà.',
           invitedByUnknown: 'Bạn được mời cùng nhìn bức tranh tài chính của nhà.',
-          equalMembers: 'Hai người có quyền như nhau: cùng xem và cùng cập nhật số liệu của nhà mình.',
+          equalMembers: 'Hai người có quyền như nhau: cùng xem và cùng cập nhật số liệu của gia đình.',
           accept: 'Tham gia',
-          autoJoining: 'Đang đưa bạn vào nhà mình...',
+          autoJoining: 'Đang đưa bạn vào gia đình...',
           autoJoiningNamed: 'Đang đưa bạn vào “{{name}}”...',
           autoJoiningHint: 'Chỉ một chút nữa thôi.',
           joining: 'Đang tham gia...',
           later: 'Để sau',
           back: 'Về trang chính',
-          success: 'Bạn đã vào nhà mình.',
+          success: 'Bạn đã tham gia gia đình.',
           alreadyMember: 'Bạn đã ở trong nhà này rồi.',
           failed: 'Chưa tham gia được.',
           notFound: 'Không tìm thấy lời mời này.',
@@ -2184,7 +2228,7 @@ export const resources = {
       settings: {
         header: {
           eyebrow: 'Không gian gia đình',
-          title: 'Cài đặt nhà mình',
+          title: 'Cài đặt gia đình',
           description:
             'Quản lý thông tin chung, nhịp cập nhật và thông báo.',
           save: 'Lưu thay đổi',
@@ -2224,7 +2268,7 @@ export const resources = {
         categories: {
           eyebrow: 'Phân loại',
           title: 'Nhóm sự kiện',
-          description: 'Nhóm chi tiêu và thu nhập của nhà mình. Danh mục hệ thống có sẵn; bạn có thể thêm danh mục riêng.',
+          description: 'Nhóm chi tiêu và thu nhập của gia đình. Danh mục hệ thống có sẵn; bạn có thể thêm danh mục riêng.',
           system: 'Hệ thống',
           empty: 'Chưa có danh mục nào.',
           addTitle: 'Thêm danh mục',
@@ -2417,22 +2461,26 @@ export const resources = {
         currentExceedsTarget: 'Số đã có không được lớn hơn mục tiêu',
       },
       auth: {
-        or: 'HOẶC',
+        or: 'hoặc',
         brand: {
           appName: 'Money Space',
-          eyebrow: 'Không gian tài chính riêng tư',
-          title: 'Cùng nhìn tình hình nhà mình, nhẹ nhàng hơn.',
+          eyebrow: 'Không gian tài chính chung',
+          // Two lines by design — the break is part of the layout, so it is
+          // authored here rather than left to wrapping.
+          titleLine1: 'Tài chính chung,',
+          titleLine2: 'rõ trong một chỗ.',
           description:
-            'Một nơi chung để xem tiền dùng ngay, khoản sắp tới và mục tiêu dài hạn — rõ ràng nhưng không tạo cảm giác kiểm soát.',
+            'Cùng nhìn tiền hôm nay, các khoản sắp tới và mục tiêu chung — đủ rõ để hai người quyết định nhẹ nhàng hơn.',
           stats: {
-            usableLabel: 'Dùng ngay',
-            usableValue: '24,5M đ',
-            dueLabel: 'Sắp trả',
-            dueValue: '3 khoản',
-            goalLabel: 'Mục tiêu',
+            usableLabel: 'linh hoạt',
+            usableValue: '24,5 tr',
+            dueLabel: 'khoản sắp tới',
+            dueValue: '3',
+            goalLabel: 'mục tiêu',
             goalValue: '72%',
           },
         },
+        legal: 'Bằng cách tiếp tục, bạn đồng ý với Điều khoản sử dụng và Chính sách quyền riêng tư.',
         tabs: {
           login: 'Đăng nhập',
           signup: 'Tạo tài khoản',
@@ -2455,7 +2503,7 @@ export const resources = {
         login: {
           eyebrow: 'Chào mừng trở lại',
           title: 'Đăng nhập',
-          description: 'Tiếp tục vào không gian tài chính chung của nhà mình.',
+          description: 'Tiếp tục vào không gian tài chính chung.',
           googleCta: 'Tiếp tục với Google',
           forgotPassword: 'Quên mật khẩu?',
           remember: 'Ghi nhớ đăng nhập trên thiết bị này',
@@ -2529,8 +2577,8 @@ export const resources = {
           THB: 'THB · Thai Baht',
         },
         toast: {
-          created: 'Đã tạo nhà mình. Chào bạn!',
-          failed: 'Chưa tạo được nhà mình.',
+          created: 'Đã tạo gia đình. Chào bạn!',
+          failed: 'Chưa tạo được gia đình.',
         },
       },
     },
@@ -2559,6 +2607,9 @@ export const resources = {
         quick: 'Quick',
         takesTwoMinutes: 'Takes 2 minutes',
         selectDate: 'Select date',
+        selectMonth: 'Select month',
+        previousYear: 'Previous year',
+        nextYear: 'Next year',
         notCalculated: 'Calculating',
         noNote: 'No note yet',
         noAdditionalNote: 'No extra note yet.',
@@ -3243,11 +3294,6 @@ export const resources = {
           unconfirmed: 'Next payment unconfirmed',
           householdOwner: 'Household',
           markPaid: 'Mark paid off',
-          lenderType: {
-            bank_institution: 'Bank / institution',
-            relative: 'Relative',
-            other: 'Other',
-          },
           columns: {
             item: 'Debt',
             lender: 'Lender',
@@ -3287,6 +3333,7 @@ export const resources = {
             remainingMonths_other: 'About {{count}} months',
             noTerm: 'No term set',
             lender: 'Lender',
+            lenderType: 'Lender type',
             originalAmount: 'Original loan',
             interest: 'Interest rate',
             noInterest: 'No interest',
@@ -3337,6 +3384,10 @@ export const resources = {
             lender: 'Lender / institution',
             lenderPlaceholder: 'Example: VPBank or family',
             outstanding: 'Outstanding balance',
+            outstandingHint: 'Leave empty if nothing has been repaid yet.',
+            repaymentAsset: 'Default repayment wallet',
+            repaymentAssetPlaceholder: 'Choose at payment time',
+            repaymentAssetHint: 'Only a pre-fill. Each payment can still use a different wallet.',
             originalAmount: 'Original loan amount',
             lenderType: 'Debt type',
             owner: 'Owner',
@@ -3470,6 +3521,7 @@ export const resources = {
         actions: {
           run: 'See what happens',
           running: 'Working it out...',
+          update: 'Update',
           tryAnother: 'Try another number',
           share: 'Share',
           shareCopied: 'Summary copied.',
@@ -3502,19 +3554,26 @@ export const resources = {
             'Knowing which wallet this leaves lets us work out what your goals are left holding.',
           walletRequired: 'Choose the wallet this comes out of.',
           goalImpact: {
-            titlePace: "This month's goal saving drops by {{amount}}",
-            titleSetAside: 'Goals go down {{amount}}, {{setAside}} of it from money set aside',
+            spendLabel: 'This spend',
+            takenFrom: 'Comes from',
+            paceOnly: "This month's contribution",
+            twoSources: '2 sources',
+            allocationLabel: 'Where {{amount}} comes from',
+            legendPace: "This month's contribution",
+            legendSetAside: 'Money set aside for goals',
+            paceRemainingLabel: "This month's contribution left",
+            goalTotalLabel: 'Money set aside for goals',
+            goalPaceShort: 'this month −{{amount}}',
+            goalSetAsideShort: 'set aside −{{amount}}',
+            explainPace:
+              "This does not exceed what is left of this month's contribution, so none of the money set aside for goals is touched.",
+            explainSetAside:
+              'It uses the {{pace}} left this month; the {{setAside}} beyond that comes from money set aside, so goals go down {{setAside}}.',
             subtitle: '{{wallet}} holds {{value}}, all of it already for goals.',
             subtitleSomeFree: '{{wallet}} holds {{value}}, only {{free}} unassigned.',
-            goalPace: '{{name}}: this month −{{amount}}',
-            goalSetAside: '{{name}}: set aside −{{amount}}',
-            goalBoth: '{{name}}: this month −{{pace}}, set aside −{{setAside}}',
+            goalBoth: 'this month −{{pace}}, set aside −{{setAside}}',
             exceedsWallet: 'This wallet holds {{value}}, less than the amount.',
             pending: 'This wallet is saving towards a goal. What you spend comes out of that, and the goal goes down to match.',
-            whyNoFree:
-              '{{wallet}} holds {{value}}, and all of it is already promised to a goal — none of it is unassigned.',
-            whySomeFree:
-              '{{wallet}} holds {{value}}, of which only {{free}} is not promised to a goal.',
           },
           noWallet:
             'No wallet counts as flexible money yet. Add a cash or bank account first.',
@@ -3598,6 +3657,11 @@ export const resources = {
             remaining: 'Remaining',
           },
           householdOwner: 'Household',
+          monthGroup: '{{month}}/{{year}}',
+          showing: 'Showing {{from}}–{{to}} of {{total}} items',
+          pagination: 'Pagination',
+          previous: 'Previous',
+          next: 'Next',
           ending: 'Projected balance at period end',
           closing: 'End of day',
           empty: 'Nothing in this window yet. Add an item to see your cashflow ahead.',
@@ -4030,6 +4094,15 @@ export const resources = {
         },
         scheduledOutflows: {
           title: '{{amount}} is scheduled to leave',
+          heading: 'Impact on this goal',
+          count: '{{count}} scheduled',
+          after: 'leaves',
+          show: 'See the impact',
+          hide: 'Collapse',
+          remainingLabel: 'Still to go',
+          percentLabel: 'Reached',
+          beforeLabel: 'BEFORE',
+          afterLabel: 'AFTER THIS SPEND',
           description:
             'None of it has been spent yet, so the figures above are what is true now. This is where they land afterwards.',
           totalLabel: 'Held for this goal',
@@ -4039,6 +4112,12 @@ export const resources = {
         },
         monthly: {
           title: 'Contribution rhythm',
+          rateMeta: '{{amount}} / MONTH',
+          couldContribute: 'Could go in',
+          estimateNote:
+            'Estimated from the room left in the wallets this month — not money already moved.',
+          historyEmpty: 'No month has closed yet.',
+          historyTitle: 'Contribution history',
           currentMonth: 'Month {{month}}',
           contributed: 'Contributed',
           monthlyRate: 'Monthly rate',
@@ -4143,6 +4222,14 @@ export const resources = {
         allocations: {
           title: 'What drives progress',
           add: 'Add asset',
+          addSource: 'Add a source',
+          holdingsLabel: 'SET ASIDE',
+          recurringLabel: 'MONTHLY CONTRIBUTION',
+          sourceCount: '{{count}} SOURCES',
+          perMonth: '{{amount}} / month',
+          wholeAsset: 'All of it set aside',
+          partOfAsset: 'Part of it set aside',
+          monthlySource: 'Contributes each month',
           badgeContribution: 'Monthly contribution',
           badgeHolding: 'Already held',
           assetHolding: 'Holding {{value}}',
@@ -4158,11 +4245,6 @@ export const resources = {
           capped: 'Counted at actual value',
           assetHolds: 'This asset currently holds {{value}}',
           totalLabel: 'Currently behind this goal',
-          columns: {
-            asset: 'ASSET',
-            share: 'SHARE',
-            counted: 'COUNTED',
-          },
           dialogTitle: 'Add an asset to this goal',
           editTitle: 'Edit this asset share',
           assetLabel: 'Asset',
@@ -4202,7 +4284,11 @@ export const resources = {
             description: 'This goal may have been deleted or no longer exists.',
           },
           picture: {
-            saved: 'Counting towards this goal',
+            saved: 'Goal progress',
+            targetLabel: 'TARGET',
+            achieved: '<0>{{percent}}%</0> reached',
+            projectedOn: 'On track for {{date}}',
+            wantByPlain: 'Aiming for {{date}}',
             progressAria: 'Set aside {{current}} of a {{target}} goal',
             desiredDate: 'Target date',
             atCurrentPace: 'At the current pace',
@@ -4232,6 +4318,19 @@ export const resources = {
             noPaceConclusion:
               'No monthly contribution has been set, so there is no honest completion date yet.',
             toBeOnTime: 'To make {{date}}',
+            toBeOnTimeShort: 'TO BE ON TIME',
+            vsPlan: 'AGAINST THE PLAN',
+            actualLine: 'Actual',
+            plannedLine: 'Planned',
+            behindWord: 'below',
+            aheadWord: 'above',
+            notEnoughHistory: 'Not enough monthly data to draw the actual line yet.',
+            chartAriaCompare:
+              'Two-line chart: actual is {{current}}, {{state}} the plan by {{gap}} as of {{month}}. Target {{target}}.',
+            calcLines:
+              'The actual line comes from the progress frozen at each month close. The planned line climbs by the rate you set.',
+            atCurrentPace: 'AT THE CURRENT PACE',
+            noDate: 'Not yet',
             lateBy: 'About {{count}} months late',
             earlyBy: 'About {{count}} months early',
             onTime: 'On time',
@@ -4599,11 +4698,7 @@ export const resources = {
        */
       invites: {
         qr: {
-          eyebrow: 'Invite someone',
           title: 'Scan to join',
-          helper: 'They open Money Space on their own device and scan this code to join your household.',
-          helperNamed: 'They scan this code to join “{{name}}”.',
-          scanHint: 'Each code is for one person. Once they join, create a new code for the next one.',
           preparing: 'Creating the invite code...',
           imageAlt: 'QR code for joining the household',
           linkLabel: 'Or send this link if the code will not scan',
@@ -4891,22 +4986,24 @@ export const resources = {
         currentExceedsTarget: 'Current amount cannot exceed the target',
       },
       auth: {
-        or: 'OR',
+        or: 'or',
         brand: {
           appName: 'Money Space',
-          eyebrow: 'A private space for your finances',
-          title: 'See your household finances, calmly and together.',
+          eyebrow: 'A shared space for your finances',
+          titleLine1: 'Shared finances,',
+          titleLine2: 'clear in one place.',
           description:
-            'One shared place for money you can use now, what is coming up, and long-term goals — clear, without feeling like control.',
+            'Money today, what is coming up, and shared goals — clear enough to decide together, calmly.',
           stats: {
-            usableLabel: 'Usable now',
-            usableValue: '24.5M đ',
-            dueLabel: 'Due soon',
-            dueValue: '3 items',
-            goalLabel: 'Goals',
+            usableLabel: 'flexible',
+            usableValue: '24.5M',
+            dueLabel: 'coming up',
+            dueValue: '3',
+            goalLabel: 'goals',
             goalValue: '72%',
           },
         },
+        legal: 'By continuing, you agree to the Terms of Use and the Privacy Policy.',
         tabs: {
           login: 'Sign in',
           signup: 'Create account',
@@ -4929,7 +5026,7 @@ export const resources = {
         login: {
           eyebrow: 'Welcome back',
           title: 'Sign in',
-          description: 'Continue into your household’s shared finance space.',
+          description: 'Continue into your shared finance space.',
           googleCta: 'Continue with Google',
           forgotPassword: 'Forgot password?',
           remember: 'Remember me on this device',

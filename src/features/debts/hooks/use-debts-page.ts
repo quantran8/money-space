@@ -15,6 +15,7 @@ import {
   buildDebtSchema,
   defaultValues,
   parseAmountInput,
+  resolveOutstandingAmount,
   type DebtForm,
   type DebtSummary,
 } from '@/features/debts/model/debts-form'
@@ -96,6 +97,7 @@ export function useDebtsPage() {
     handleSubmit,
     reset,
     setValue,
+    trigger,
     formState: { errors, isValid },
   } = form
 
@@ -229,6 +231,7 @@ export function useDebtsPage() {
         expectedFinalDueDate: editingDebt.expectedFinalDueDate ?? '',
         ownerMemberId: editingDebt.ownerMemberId ?? '',
         receivedToAssetId: editingDebt.receivedToAssetId ?? '',
+        repaymentAssetId: editingDebt.repaymentAssetId ?? '',
         paymentFrequency: editingDebt.paymentFrequency ?? 'none',
         fixedPaymentAmount: amountToRaw(editingDebt.fixedPaymentAmountValue),
         // Editing a saved debt: keep whatever amount is stored as-is.
@@ -248,6 +251,7 @@ export function useDebtsPage() {
       // Creating a debt must not move money until the user explicitly enables
       // "Ghi nhận sự kiện nhận tiền" in step 2.
       receivedToAssetId: '',
+      repaymentAssetId: '',
     })
   }, [creatorMemberId, dialogOpen, editingDebt, reset])
 
@@ -294,7 +298,7 @@ export function useDebtsPage() {
         lenderType: values.lenderType,
         lenderName: values.lenderName.trim() || undefined,
         originalAmount: parseAmountInput(values.originalAmount),
-        outstandingAmount: parseAmountInput(values.outstandingAmount),
+        outstandingAmount: resolveOutstandingAmount(values),
         currency: 'VND',
         borrowedAt: values.borrowedAt || undefined,
         firstPaymentDate: values.firstPaymentDate || undefined,
@@ -304,6 +308,7 @@ export function useDebtsPage() {
           : 'active') as DebtStatus,
         ownerMemberId: values.ownerMemberId || undefined,
         receivedToAssetId: values.receivedToAssetId || undefined,
+        repaymentAssetId: values.repaymentAssetId || undefined,
         paymentFrequency: values.paymentFrequency === 'none' ? undefined : values.paymentFrequency,
         fixedPaymentAmount: values.fixedPaymentAmount.trim()
           ? parseAmountInput(values.fixedPaymentAmount)
@@ -475,6 +480,7 @@ export function useDebtsPage() {
     errors,
     isValid,
     setValue,
+    trigger,
     submit: handleSubmit(onSubmit),
     selectedLenderType,
     originalAmountValue,

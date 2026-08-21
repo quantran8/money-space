@@ -1,5 +1,6 @@
 import type { UseFormReturn } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -14,30 +15,28 @@ type SignupViewProps = {
   onSubmit: () => void
   onGoogle: () => void
   googlePending: boolean
-  onSwitchToLogin: () => void
 }
 
-export function SignupView({
-  form,
-  onSubmit,
-  onGoogle,
-  googlePending,
-  onSwitchToLogin,
-}: SignupViewProps) {
+export function SignupView({ form, onSubmit, onGoogle, googlePending }: SignupViewProps) {
   const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
   const {
     register,
     formState: { errors, isSubmitting },
   } = form
 
+  // Same reason as on the login side: `next` must survive the hop back.
+  const next = searchParams.get('next')
+  const loginPath = next ? `/auth?next=${encodeURIComponent(next)}` : '/auth'
+
   return (
-    <div className="mt-8">
+    <div>
       <div>
-        <p className="text-sm font-medium text-accent">{t('auth.signup.eyebrow')}</p>
-        <h2 className="mt-2 text-4xl font-semibold tracking-[-0.05em]">{t('auth.signup.title')}</h2>
-        <p className="mt-3 text-[15px] leading-6 text-ink2">
-          {t('auth.signup.description')}
-        </p>
+        <p className="text-[13px] font-medium text-accent">{t('auth.signup.eyebrow')}</p>
+        <h2 className="mt-2 text-[34px] font-medium leading-tight tracking-[-0.035em]">
+          {t('auth.signup.title')}
+        </h2>
+        <p className="mt-3 text-[14px] leading-6 text-ink2">{t('auth.signup.description')}</p>
       </div>
 
       <GoogleButton
@@ -48,7 +47,7 @@ export function SignupView({
 
       <AuthDivider />
 
-      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+      <form className="space-y-5" onSubmit={onSubmit} noValidate>
         <FormField label={t('auth.fields.fullName')} error={errors.fullName?.message}>
           <Input
             autoComplete="name"
@@ -88,7 +87,7 @@ export function SignupView({
         </FormField>
 
         <div>
-          <label className="flex cursor-pointer items-start gap-3 text-sm leading-5 text-ink2">
+          <label className="flex cursor-pointer items-start gap-3 text-[13px] leading-5 text-ink2">
             <Checkbox className="mt-0.5" {...register('agreeTerms')} />
             <span>
               <Trans
@@ -112,15 +111,11 @@ export function SignupView({
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-ink2">
+      <p className="mt-7 text-center text-[13px] text-ink2">
         {t('auth.signup.haveAccount')}{' '}
-        <button
-          type="button"
-          onClick={onSwitchToLogin}
-          className="font-semibold text-accent hover:underline"
-        >
+        <Link to={loginPath} className="font-medium text-accent hover:underline">
           {t('auth.tabs.login')}
-        </button>
+        </Link>
       </p>
     </div>
   )

@@ -3,7 +3,8 @@ import { Navigate, createBrowserRouter, useLocation } from 'react-router-dom'
 import { AppShell } from '@/app/layout/app-shell'
 import { AssetDetailPage } from '@/features/assets/ui/asset-detail-page'
 import { AuthCallbackPage } from '@/features/auth/ui/auth-callback-page'
-import { AuthPage } from '@/features/auth/ui/auth-page'
+import { LoginPage } from '@/features/auth/ui/login-page'
+import { SignupPage } from '@/features/auth/ui/signup-page'
 import { RequireAuth } from '@/features/auth/ui/require-auth'
 import { DebtDetailPage } from '@/features/debts/ui/debt-detail-page'
 import { DashboardPage } from '@/features/dashboard/ui/dashboard-page'
@@ -31,7 +32,13 @@ function RedirectToNetWorth() {
 export const router = createBrowserRouter([
   {
     path: '/auth',
-    element: <AuthPage />,
+    element: <LoginPage />,
+  },
+  // Its own route, not a tab: people link straight to signup, and the URL has
+  // to say which of the two is showing.
+  {
+    path: '/auth/signup',
+    element: <SignupPage />,
   },
   {
     path: '/auth/callback',

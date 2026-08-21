@@ -66,7 +66,6 @@ export function DashboardPage() {
     freshness,
     goalTracks,
     earmarkedForGoals,
-    unassigned,
     goals,
     moneyLocation,
     assets,
@@ -121,7 +120,6 @@ export function DashboardPage() {
           tracks={goalTracks}
           goalCount={goals.length}
           earmarkedForGoals={earmarkedForGoals}
-          unassigned={unassigned}
         />
       ) : null}
 

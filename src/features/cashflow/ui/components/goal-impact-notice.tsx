@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { SpendImpactBar } from '@/features/cashflow/ui/components/spend-impact-bar'
@@ -21,39 +22,33 @@ import { formatVndShort } from '@/shared/lib/format-money'
  * to race, and nothing stale to show while a request is in flight. Someone who
  * types an amount and saves immediately has still seen what it costs.
  *
- * When the wallet backs a goal but no amount is typed yet, the mechanism is
- * still stated in words — the household should know what this wallet does before
- * they decide the number.
+ * ## The shape: allocate the SPEND, then show only what changed
+ *
+ * The block leads with the spend and divides it into where the money comes
+ * from — this month's contribution first, set-aside money only once the pace is
+ * used up. That ordering is the entire mechanism, and a divided bar states it
+ * without a paragraph.
+ *
+ * Underneath, before → after for the things that ACTUALLY MOVED, and nothing
+ * else. A spend that fits inside this month's contribution moves one figure, so
+ * it shows one row; the goal's own total is untouched and saying "303,6 →
+ * 303,6" would manufacture a consequence. Only once set-aside money is reached
+ * does the goal total appear as a second row — which is exactly when the
+ * household needs to see it.
  *
  * ## Answering "but the wallet still HAS money"
  *
  * The obvious objection to seeing a goal drop: the account clearly holds enough
  * to cover the bill, so why is a goal paying for it? Because a balance is not
  * the same as free money — most or all of it is already promised. Kept to ONE
- * quiet line under the headline: it answers the objection for whoever has it,
- * without taxing everyone else.
- *
- * ## Kept short on purpose
- *
- * This sits mid-form, between an amount and a save button, and it competes with
- * the household's patience — a block long enough to skim past has warned nobody.
- * It was 7 lines (title, cause, total, two split lines, a row per goal, a
- * reassurance) and is now 2–3: a headline carrying the whole decision, per-goal
- * lines only when more than one goal is affected, and the cause underneath.
- *
- * Dropped along the way: the "you can still record this" reassurance (nothing
- * here blocks anything, so saying so invited the doubt it answered) and the
- * `36,0 → 34,0` before/after pairs, which read as money being withdrawn from a
- * goal even when only the monthly contribution had moved.
- *
- * The order goals give way in is shown rather than explained: this month's
- * contribution goes first, and only then money already set aside. The
- * before → after per goal makes that visible without a paragraph about it.
+ * quiet line at the end: it answers the objection for whoever has it, without
+ * taxing everyone else.
  *
  * Deliberately NOT a warning, NOT a block, and it never gates the submit button.
  * The household may well go ahead — a bill is a bill. This states a consequence
  * and never a recommendation (Voice: never say someone should or should not
- * spend).
+ * spend). Set-aside money is marked `--attention`, never `--alert`: scheduling a
+ * bill is not an error (§16).
  */
 export function GoalImpactNotice({
   assetId,
@@ -63,7 +58,7 @@ export function GoalImpactNotice({
   amount?: number
 }) {
   const { t } = useTranslation()
-  const { items, assetValue, claimedAmount, committedAmount, unassignedAmount } =
+  const { items, assetValue, claimedAmount, unassignedAmount } =
     useAssetGoalUsage(assetId)
   const { assets } = useAssets()
 
@@ -76,154 +71,201 @@ export function GoalImpactNotice({
 
   const impact = computeSpendImpact(items, assetValue, amount ?? 0)
   const hasFigures = impact.totalReduction > 0
-  const walletName =
-    assets.find((asset) => asset.id === assetId)?.name ?? ''
+  const walletName = assets.find((asset) => asset.id === assetId)?.name ?? ''
 
-  /**
-   * Why a wallet with money in it still costs a goal.
-   *
-   * `unassignedAmount` — the balance minus everything the goals claim ALL IN,
-   * money set aside plus what this month's paces will draw. Deliberately not
-   * `freeAmount`, which only subtracts what is set aside: that figure answers
-   * "what may a new allocation take", and using it here would state a
-   * contradiction — "còn 32tr chưa gán" directly above a list showing every
-   * đồng of those 32tr coming out of the goals.
-   *
-   * 0 means the whole balance is spoken for, which is the case that looks wrong
-   * until it is said out loud.
-   */
-  /**
-   * One line that carries the decision.
-   *
-   * The pace is always squeezed out first, so a spend that fits inside this
-   * month's contribution is a month of saving reduced — not the goal moving
-   * backwards. Leading with the milder, far more common case keeps the block
-   * from crying wolf; the harsher headline appears only once set-aside money is
-   * genuinely being taken back out, and names how much.
-   */
-  const headline =
-    impact.totalSetAsideReduction > 0
-      ? t('upcoming.complete.goalImpact.titleSetAside', {
-          amount: formatVndShort(impact.totalReduction),
-          setAside: formatVndShort(impact.totalSetAsideReduction),
-        })
-      : t('upcoming.complete.goalImpact.titlePace', {
-          amount: formatVndShort(impact.totalReduction),
-        })
-
-  /**
-   * Why a wallet with money in it still costs a goal, in ONE line.
-   *
-   * `unassignedAmount`, not `freeAmount`: the latter only subtracts what is set
-   * aside, so it would claim money is free directly above a list showing that
-   * same money coming out of the goals.
-   */
-  const subtitle = t(
-    unassignedAmount > 0
-      ? 'upcoming.complete.goalImpact.subtitleSomeFree'
-      : 'upcoming.complete.goalImpact.subtitle',
-    {
-      wallet: walletName,
-      value: formatVndShort(assetValue),
-      free: formatVndShort(unassignedAmount),
-    },
-  )
-
-  /**
-   * Per goal, saying WHICH part shrinks — never "36tr → 34tr".
-   *
-   * A before/after pair reads as money being taken out of the goal's balance,
-   * which is exactly wrong when only the monthly contribution moved: the same
-   * "36,0 → 34,0" appeared whether 2tr of pace was skipped or 2tr of set-aside
-   * money was withdrawn. Naming the part removes the ambiguity that a pair of
-   * totals cannot.
-   */
-  const goalLine = (goal: (typeof impact.goals)[number]) => {
-    if (goal.paceReduction > 0 && goal.setAsideReduction > 0) {
-      return t('upcoming.complete.goalImpact.goalBoth', {
-        name: goal.goalName,
-        pace: formatVndShort(goal.paceReduction),
-        setAside: formatVndShort(goal.setAsideReduction),
-      })
-    }
-    return t(
-      goal.setAsideReduction > 0
-        ? 'upcoming.complete.goalImpact.goalSetAside'
-        : 'upcoming.complete.goalImpact.goalPace',
-      {
-        name: goal.goalName,
-        amount: formatVndShort(goal.reduction),
-      },
-    )
-  }
-
-  return (
-    <div className="rounded-control bg-surface2 px-3 py-2.5">
-      {hasFigures ? (
-        <>
-          <p className="text-[13px] font-medium leading-5">{headline}</p>
-
-          {/* The wallet, with the part this spend takes marked off. Carries the
-              proportion, which words cannot: 4tr out of 52tr and 4tr out of 5tr
-              read identically as text and are not remotely the same situation. */}
-          <SpendImpactBar
-            className="mt-2"
-            spendFromPace={impact.totalPaceReduction}
-            spendFromSetAside={impact.totalSetAsideReduction}
-            goalRemaining={Math.max(
-              0,
-              committedAmount - impact.totalReduction,
-            )}
-            unassigned={unassignedAmount}
-          />
-
-          {/* Only when more than one goal shares the wallet. With a single goal
-              the headline already said everything, and repeating it under a
-              name is a line nobody needs to read.
-
-              The dot ties each line to its slice in the bar above, so the bar
-              needs no legend of its own — a legend here would cost more lines
-              than the bar saves. */}
-          {impact.goals.length > 1 ? (
-            <ul className="mt-1.5 space-y-0.5">
-              {impact.goals.map((goal) => (
-                <li
-                  key={goal.goalId}
-                  className="flex items-center gap-1.5 text-[12px] leading-5 text-ink2"
-                >
-                  <span
-                    className="size-1.5 shrink-0 rounded-full"
-                    style={{
-                      background:
-                        goal.setAsideReduction > 0
-                          ? 'var(--alert)'
-                          : 'var(--ink3)',
-                    }}
-                    aria-hidden="true"
-                  />
-                  {goalLine(goal)}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          <p className="mt-1.5 text-[12px] leading-5 text-ink3">{subtitle}</p>
-
-          {/* A shortfall is a different fact from "your goal shrinks", so it
-              gets its own line rather than being folded into the headline. */}
-          {impact.exceedsWallet ? (
-            <p className="mt-1.5 text-[12px] leading-5 text-alert">
-              {t('upcoming.complete.goalImpact.exceedsWallet', {
-                value: formatVndShort(impact.assetValue),
-              })}
-            </p>
-          ) : null}
-        </>
-      ) : (
+  if (!hasFigures) {
+    return (
+      <div className="rounded-sunk bg-sunk px-4 py-3">
         <p className="text-[13px] leading-5 text-ink2">
           {t('upcoming.complete.goalImpact.pending')}
         </p>
-      )}
+      </div>
+    )
+  }
+
+  // The pace is always squeezed first, so this is the figure that moves in every
+  // case — which is why it leads. `totalPaceBefore` is what the contribution was
+  // HOLDING, not what the spend takes from it.
+  const reachesSetAside = impact.totalSetAsideReduction > 0
+
+  // The goals' own set-aside total on this wallet. Only shown when set-aside
+  // money is actually reached — otherwise it does not move, and a row saying so
+  // would invent a consequence.
+  const goalTotalBefore = impact.totalSetAsideBefore
+
+  // One goal is the common case and its name is already in the heading, so the
+  // per-goal breakdown only earns its lines when the wallet feeds several.
+  const showPerGoal = impact.goals.length > 1
+
+  return (
+    <section className="rounded-sunk bg-sunk p-4 sm:p-5">
+      {/* The spend, and the one-phrase answer to where it comes from. */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="label-vi">{t('upcoming.complete.goalImpact.spendLabel')}</p>
+          <p className="money-number mt-1 text-[26px]">
+            {formatVndShort(impact.totalReduction)}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-[11px] text-ink3">{t('upcoming.complete.goalImpact.takenFrom')}</p>
+          <p
+            className={`mt-1 text-[13px] font-medium ${
+              reachesSetAside ? 'text-attention' : 'text-accent'
+            }`}
+          >
+            {reachesSetAside
+              ? t('upcoming.complete.goalImpact.twoSources')
+              : t('upcoming.complete.goalImpact.paceOnly')}
+          </p>
+        </div>
+      </div>
+
+      {/* The spend divided across its sources — the mechanism, drawn. */}
+      <div className="mt-5">
+        <p className="text-[11px] text-ink3">
+          {t('upcoming.complete.goalImpact.allocationLabel', {
+            amount: formatVndShort(impact.totalReduction),
+          })}
+        </p>
+        <SpendImpactBar
+          className="mt-2"
+          fromPace={impact.totalPaceReduction}
+          fromSetAside={impact.totalSetAsideReduction}
+          formatAmount={formatVndShort}
+        />
+
+        {/* A legend only when there are two slices to tell apart. */}
+        {reachesSetAside && impact.totalPaceReduction > 0 ? (
+          <div className="mt-2 grid gap-2 text-[11px] sm:grid-cols-2">
+            <LegendItem fill="var(--accent)" label={t('upcoming.complete.goalImpact.legendPace')} />
+            <LegendItem
+              fill="var(--attention)"
+              label={t('upcoming.complete.goalImpact.legendSetAside')}
+            />
+          </div>
+        ) : null}
+      </div>
+
+      {/* Only the consequences that actually moved. */}
+      <div className="mt-6 space-y-5">
+        <ChangeRow
+          label={t('upcoming.complete.goalImpact.paceRemainingLabel')}
+          before={formatVndShort(impact.totalPaceBefore)}
+          after={formatVndShort(
+            Math.max(0, impact.totalPaceBefore - impact.totalPaceReduction),
+          )}
+        />
+
+        {reachesSetAside ? (
+          <ChangeRow
+            label={t('upcoming.complete.goalImpact.goalTotalLabel')}
+            before={formatVndShort(goalTotalBefore)}
+            after={formatVndShort(Math.max(0, goalTotalBefore - impact.totalSetAsideReduction))}
+            delta={`−${formatVndShort(impact.totalSetAsideReduction)}`}
+          />
+        ) : null}
+      </div>
+
+      {/* Which goal pays what, when the wallet feeds more than one. */}
+      {showPerGoal ? (
+        <ul className="mt-5 space-y-1 border-t border-hair pt-4">
+          {impact.goals.map((goal) => (
+            <li
+              key={goal.goalId}
+              className="flex items-baseline justify-between gap-4 text-[12px] leading-5"
+            >
+              <span className="min-w-0 truncate text-ink2">{goal.goalName}</span>
+              <span className="num shrink-0 text-ink2">
+                {goal.setAsideReduction > 0 && goal.paceReduction > 0
+                  ? t('upcoming.complete.goalImpact.goalBoth', {
+                      pace: formatVndShort(goal.paceReduction),
+                      setAside: formatVndShort(goal.setAsideReduction),
+                    })
+                  : t(
+                      goal.setAsideReduction > 0
+                        ? 'upcoming.complete.goalImpact.goalSetAsideShort'
+                        : 'upcoming.complete.goalImpact.goalPaceShort',
+                      { amount: formatVndShort(goal.reduction) },
+                    )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {/* The sentence that explains the whole thing, sized to be read. */}
+      <p className="mt-4 text-[12px] leading-5 text-ink2">
+        {reachesSetAside
+          ? t('upcoming.complete.goalImpact.explainSetAside', {
+              pace: formatVndShort(impact.totalPaceReduction),
+              setAside: formatVndShort(impact.totalSetAsideReduction),
+            })
+          : t('upcoming.complete.goalImpact.explainPace')}
+      </p>
+
+      {/* Why a wallet with money in it still costs a goal. `unassignedAmount`,
+          not `freeAmount`: the latter only subtracts what is set aside, so it
+          would claim money is free directly above a list showing that same money
+          coming out of the goals. */}
+      <p className="mt-2 text-[12px] leading-5 text-ink3">
+        {t(
+          unassignedAmount > 0
+            ? 'upcoming.complete.goalImpact.subtitleSomeFree'
+            : 'upcoming.complete.goalImpact.subtitle',
+          {
+            wallet: walletName,
+            value: formatVndShort(assetValue),
+            free: formatVndShort(unassignedAmount),
+          },
+        )}
+      </p>
+
+      {/* A shortfall is a different fact from "your goal shrinks", so it gets
+          its own line rather than being folded into anything above. */}
+      {impact.exceedsWallet ? (
+        <p className="mt-2 text-[12px] leading-5 text-alert">
+          {t('upcoming.complete.goalImpact.exceedsWallet', {
+            value: formatVndShort(impact.assetValue),
+          })}
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
+/** One before → after pair. The arrow carries the direction, so no word has to. */
+function ChangeRow({
+  label,
+  before,
+  after,
+  delta,
+}: {
+  label: string
+  before: string
+  after: string
+  delta?: string
+}) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-x-5 gap-y-1">
+      <div className="min-w-0">
+        <p className="text-[11px] text-ink3">{label}</p>
+        <div className="mt-1.5 flex items-center gap-3">
+          <span className="num text-[15px] text-ink3">{before}</span>
+          <ArrowRight className="size-4 shrink-0 text-ink3" strokeWidth={1.5} aria-hidden="true" />
+          <span className="money-number text-[22px]">{after}</span>
+        </div>
+      </div>
+      {delta ? <span className="num mb-1 text-[12px] font-medium text-attention">{delta}</span> : null}
     </div>
+  )
+}
+
+function LegendItem({ fill, label }: { fill: string; label: string }) {
+  return (
+    <span className="flex items-center gap-2 text-ink2">
+      <span className="size-2 shrink-0 rounded-full" style={{ background: fill }} />
+      {label}
+    </span>
   )
 }

@@ -6,7 +6,7 @@
 
 Trả lời:
 
-> “Nhà mình hiện đang có gì?”
+> “Gia đình hiện đang có gì?”
 
 Bao gồm:
 
@@ -271,7 +271,7 @@ tụt xuống dưới, và flexible money bị trừ đi mức đó.
 thì không được mount ở đâu cả — nhập một lần rồi vĩnh viễn không đổi được, trong
 khi con số đó vẫn trừ thẳng vào figure Home hiển thị đầu tiên.
 
-Chỗ đúng cho "nhà mình muốn để riêng 100 triệu" là **Financial Goal**: goal không
+Chỗ đúng cho "gia đình muốn để riêng 100 triệu" là **Financial Goal**: goal không
 target date chính là một quỹ có tên, có số dư và có lịch sử đóng góp — và nó
 sửa được.
 

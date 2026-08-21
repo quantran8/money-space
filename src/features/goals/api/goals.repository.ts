@@ -261,6 +261,12 @@ export type GoalMonthProgress = {
    * household can see where it stands without waiting for the month to end.
    */
   inProgress: boolean
+  /**
+   * `delta` is the HEADROOM estimate — what the wallets could STILL put in this
+   * month — rather than money observed moving. Only ever true on a running month
+   * with no prior close, and the reason the panel must not call it "đã góp".
+   */
+  isEstimate?: boolean
 }
 
 /** One goal's claim on an asset, as the asset's own page reads it. */

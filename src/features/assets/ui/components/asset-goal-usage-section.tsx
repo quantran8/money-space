@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router-dom'
 
 import { MoneyCompositionBar } from '@/components/ui/money-composition-bar'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { useAssetGoalUsage } from '@/features/goals/hooks/use-asset-goal-usage'
 import { formatVndShort } from '@/shared/lib/format-money'
 
@@ -110,30 +118,40 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
         />
       </div>
 
-      <div className="mt-5 overflow-x-auto">
-        <table className="table-dense w-full min-w-[360px] text-[14px]">
-          <thead>
-            <tr className="label">
-              <th className="pb-3 text-left font-normal">
-                {t('assets.detail.goals.columns.goal')}
-              </th>
-              <th className="pb-3 text-right font-normal">
-                {t('assets.detail.goals.columns.counted')}
-              </th>
-              <th className="pb-3 text-right font-normal">
-                {t('assets.detail.goals.columns.monthly')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr
-                key={item.allocationId}
-                className="cursor-pointer border-t border-hairline transition-colors hover:bg-sunk"
-                onClick={() => navigate(`/goals/${item.goalId}`)}
-              >
-                <td className="py-3">
-                  <span className="text-ink">{item.goalName}</span>
+      <Table className="mt-5 min-w-[360px] text-[14px]">
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            {/* `.label-vi`: accented Vietnamese headings (§10.1). */}
+            <TableHead className="label-vi">
+              {t('assets.detail.goals.columns.goal')}
+            </TableHead>
+            <TableHead className="label-vi text-right">
+              {t('assets.detail.goals.columns.counted')}
+            </TableHead>
+            <TableHead className="label-vi text-right">
+              {t('assets.detail.goals.columns.monthly')}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => (
+            <TableRow
+              key={item.allocationId}
+              className="cursor-pointer"
+              onClick={() => navigate(`/goals/${item.goalId}`)}
+            >
+              <TableCell>
+                {/* The row's keyboard equivalent — a `<tr>` cannot be focused or
+                    announced as a control. */}
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    navigate(`/goals/${item.goalId}`)
+                  }}
+                  className="rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  <span className="block text-ink">{item.goalName}</span>
                   {/* A percent claim tracks the asset, so it is worth saying
                       which kind this is — "25% of it" and "25tr of it" behave
                       differently the next time the price moves. */}
@@ -142,25 +160,23 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
                       ? t('assets.detail.goals.sharePercent', { percent: item.percent ?? 0 })
                       : t(`options.priority.${item.priority}`)}
                   </span>
-                </td>
-                <td className="py-3 text-right num text-ink">
-                  {/* `countedValue`, not `currentValue`: the column says "đang
-                      tính", which is everything this goal is counted as holding
-                      — set aside plus its share of the month's pace. Showing the
-                      set-aside half alone put "0đ" next to a goal the dashboard
-                      counts 16tr behind. */}
-                  {formatVndShort(item.countedValue)}
-                </td>
-                <td className="py-3 text-right num text-ink2">
-                  {item.monthlyContribution
-                    ? formatVndShort(item.monthlyContribution)
-                    : '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </button>
+              </TableCell>
+              <TableCell className="num text-right text-ink">
+                {/* `countedValue`, not `currentValue`: the column says "đang
+                    tính", which is everything this goal is counted as holding
+                    — set aside plus its share of the month's pace. Showing the
+                    set-aside half alone put "0đ" next to a goal the dashboard
+                    counts 16tr behind. */}
+                {formatVndShort(item.countedValue)}
+              </TableCell>
+              <TableCell className="num text-right text-ink2">
+                {item.monthlyContribution ? formatVndShort(item.monthlyContribution) : '—'}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }
