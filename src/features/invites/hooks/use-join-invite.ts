@@ -73,7 +73,11 @@ export function useJoinInvite() {
     mutationFn: () => acceptInvite(token),
     onSuccess: async (result) => {
       setActiveHouseholdId(result.householdId)
-      await queryClient.invalidateQueries({ queryKey: queryKeys.households })
+      // REFETCH, not invalidate — same reason as onboarding: /join sits outside
+      // `RequireHousehold`, so the `households` query has no active observer here
+      // and `invalidateQueries` (refetchType 'active' by default) would resolve
+      // without fetching, landing the new member on an empty list.
+      await queryClient.refetchQueries({ queryKey: queryKeys.households })
       toast.success(
         result.alreadyMember ? t('invites.join.alreadyMember') : t('invites.join.success'),
       )

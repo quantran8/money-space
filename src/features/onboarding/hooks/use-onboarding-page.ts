@@ -43,10 +43,19 @@ export function useOnboardingPage() {
     mutationFn: createHousehold,
     onSuccess: async (household) => {
       setActiveHouseholdId(household.id)
-      // Awaited ON PURPOSE: the submit flow navigates into the app immediately
-      // after, and `RequireHousehold` reads this list. Landing before it has
-      // refreshed bounces the user straight back to /onboarding.
-      await queryClient.invalidateQueries({ queryKey: queryKeys.households })
+      /**
+       * REFETCH, not invalidate. `RequireHousehold` is the only reader of this
+       * query and it is not mounted while we are on /onboarding, so the
+       * `households` entry has no active observer. `invalidateQueries` defaults
+       * to `refetchType: 'active'` — with nothing observing, it marks the entry
+       * stale and resolves WITHOUT fetching, so awaiting it guaranteed nothing.
+       * The gate then mounted against an empty (or absent) list and bounced the
+       * user straight back here.
+       *
+       * `refetchQueries` fetches regardless of observers, so the cache holds the
+       * new household before we navigate.
+       */
+      await queryClient.refetchQueries({ queryKey: queryKeys.households })
     },
   })
 
