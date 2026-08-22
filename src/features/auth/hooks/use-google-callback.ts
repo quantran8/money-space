@@ -26,6 +26,7 @@ export function useGoogleCallback() {
     handled.current = true
 
     const code = searchParams.get('code')
+    const state = searchParams.get('state')
     const oauthError = searchParams.get('error_description') ?? searchParams.get('error')
     const nextPath = resolveNextPath(searchParams.get('next'))
     const authPath =
@@ -37,12 +38,14 @@ export function useGoogleCallback() {
       return
     }
 
-    if (!code) {
+    // `state` is required: without it the backend cannot find the PKCE verifier,
+    // so there is nothing to exchange the code against.
+    if (!code || !state) {
       navigate(authPath, { replace: true })
       return
     }
 
-    googleCallback(code)
+    googleCallback(code, state)
       .then((result) => {
         if (!result.session) throw new Error(t('auth.errors.googleFailed'))
         setAuth(result.user, result.session)

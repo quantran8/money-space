@@ -37,11 +37,14 @@ export function getGoogleAuthUrl(redirectTo: string) {
   )
 }
 
-/** Exchange the OAuth `code` (from the redirect) for a session. */
-export function googleCallback(code: string) {
+/**
+ * Exchange the OAuth `code` (from the redirect) for a session. `state` is what
+ * lets the backend find the PKCE verifier it minted when the URL was built.
+ */
+export function googleCallback(code: string, state: string) {
   return apiRequest<AuthResult>('/api/auth/google/callback', {
     method: 'POST',
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({ code, state }),
     skipAuth: true,
   })
 }
