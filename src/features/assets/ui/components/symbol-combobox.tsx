@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Check, ChevronDown, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -24,25 +24,31 @@ type SymbolComboboxProps = {
   onChange: (symbol: string) => void
   /** Fired with the full reference when a suggestion is picked (for prefill). */
   onSelectSymbol?: (symbol: SymbolReference) => void
+  /** Shown on the trigger before anything is picked. */
+  placeholder?: string
 }
 
 /**
- * Searchable symbol picker for stock/crypto asset creation. Opens showing the
- * curated default list; filters via the backend (Twelve Data) as the user
- * types. Selecting a row fills the symbol and lets the caller prefill unit /
- * currency. Falls back to whatever the user typed so a symbol not in the list
- * can still be entered.
+ * Searchable instrument picker for every market-priced class — equities,
+ * crypto, precious metals and foreign currency. Opens on the curated default
+ * list and filters through the backend as the user types; each row is an
+ * instrument the price feed can actually quote.
+ *
+ * Selecting a row fills the symbol and hands the caller the full reference so
+ * it can carry the venue/brand and unit across.
  */
 export function SymbolCombobox({
   assetClass,
   value,
   onChange,
   onSelectSymbol,
+  placeholder,
 }: SymbolComboboxProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const { symbols, isFetching } = useSymbolSearch(assetClass, search, open)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   function handleSelect(item: SymbolReference) {
     onChange(item.symbol)
@@ -52,7 +58,12 @@ export function SymbolCombobox({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    // `modal` keeps the list's clicks from reaching a parent Dialog's
+    // interact-outside handler. Without it the popover is portaled outside the
+    // dialog's DOM, the dialog reads every click on a row as an outside click,
+    // and the list closes the instant it is touched — nothing can be picked.
+    // Same reason `DatePicker` sets it.
+    <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -60,15 +71,26 @@ export function SymbolCombobox({
           aria-expanded={open}
           className="flex w-full items-center justify-between gap-2 text-[17px] font-medium text-foreground outline-none"
         >
-          <span className={cn(!value && 'text-ink2')}>
-            {value || t('assets.form.symbolPlaceholder')}
+          <span className={cn('truncate text-left', !value && 'text-ink2')}>
+            {value || placeholder || t('assets.form.symbolPlaceholder')}
           </span>
           <ChevronDown className="size-4 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-[260px] p-0" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) min-w-[260px] p-0"
+        align="start"
+        // Rendered in place, not portaled to <body>: this popover holds a
+        // search box, and the parent Dialog's focus guard yanks focus back out
+        // of anything outside its DOM — which left the field unfocusable and
+        // every keystroke swallowed. Staying inside the dialog keeps it within
+        // the focus trap. (`DatePicker` portals fine because a calendar needs
+        // no typing.)
+        unportalled
+      >
         <Command shouldFilter={false}>
           <CommandInput
+            ref={inputRef}
             value={search}
             onValueChange={setSearch}
             placeholder={t('assets.form.symbolSearchPlaceholder')}
@@ -98,10 +120,10 @@ export function SymbolCombobox({
                         : 'opacity-0',
                     )}
                   />
-                  <span className="font-semibold">{item.symbol}</span>
-                  <span className="truncate text-sm text-muted-foreground">
-                    {item.name}
-                  </span>
+                  {/* Title + brand only. `name` is the same phrase spelled out
+                      again for metals, and three columns in a dialog-width
+                      popover wrapped the title one word per line. */}
+                  <span className="truncate font-medium">{item.symbol}</span>
                   {item.exchange ? (
                     <span className="ml-auto shrink-0 text-xs text-muted-foreground/70">
                       {item.exchange}

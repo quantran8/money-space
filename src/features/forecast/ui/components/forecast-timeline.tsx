@@ -18,6 +18,7 @@ import type {
 import {
   BALANCE_TONE_CLASS,
   balanceTone,
+  canProjectBalance,
   occurrenceMarkers,
   runningBalancesForDay,
 } from '@/features/forecast/model/forecast-presentation'
@@ -29,6 +30,8 @@ type ForecastTimelineProps = {
   ownerNameByEventId?: Record<string, string | undefined>
   isLoading?: boolean
   isEmpty?: boolean
+  /** Gates the running-balance column — see `canProjectBalance`. */
+  usableNowAssetCount?: number
   /** Opens the create dialog from the empty state. */
   onAdd?: () => void
   /** Row actions. Keyed by `sourceEventId` — occurrences are not rows (§18). */
@@ -78,13 +81,18 @@ export function ForecastTimeline({
   ownerNameByEventId = {},
   isLoading = false,
   isEmpty = false,
+  usableNowAssetCount,
   onAdd,
   onComplete,
   onEdit,
   onDelete,
 }: ForecastTimelineProps) {
   const { t } = useTranslation()
-  const rows = useMemo(() => flattenTimeline(days), [days])
+  const hasLiquidSource = canProjectBalance(usableNowAssetCount)
+  const rows = useMemo(
+    () => flattenTimeline(days, hasLiquidSource),
+    [days, hasLiquidSource],
+  )
   const [page, setPage] = useState(1)
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
@@ -377,15 +385,22 @@ function OccurrenceRow({
   )
 }
 
-function flattenTimeline(days: ForecastDay[]): TimelineRow[] {
+function flattenTimeline(
+  days: ForecastDay[],
+  hasLiquidSource: boolean,
+): TimelineRow[] {
   return days.flatMap((day) => {
     const balances = runningBalancesForDay(day)
     return day.occurrences.map((occurrence) => ({
       occurrence,
-      // A displayed-but-excluded amount must not claim a resulting balance.
-      runningBalance: occurrence.countedInBalance
-        ? balances.get(occurrence.occurrenceKey)
-        : undefined,
+      // Two reasons a row claims no resulting balance, and they mean the same
+      // thing to the reader: this number cannot be stated. One is per-row (the
+      // amount is displayed but excluded from the balance); the other is
+      // household-wide (there is no wallet for a balance to be OF).
+      runningBalance:
+        occurrence.countedInBalance && hasLiquidSource
+          ? balances.get(occurrence.occurrenceKey)
+          : undefined,
     }))
   })
 }

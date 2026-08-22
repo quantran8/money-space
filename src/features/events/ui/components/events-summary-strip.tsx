@@ -1,112 +1,80 @@
 import { useTranslation } from 'react-i18next'
 
-import { Card } from '@/components/ui/card'
-import { formatVndShort } from '@/shared/lib/format-money'
-
-type EventsSummary = {
-  upcomingIn30DaysCount: number
-  upcomingIn30DaysAmount: number
-  recordedThisMonth: number
-  attentionCount: number
-  totalIncome: number
-  totalOutcome: number
-  netChange: number
-}
+import { Label, Panel, PanelHeader } from '@/components/ui/panel'
+import type { PeriodSummary } from '@/features/events/model/events-form'
+import { formatVndScale } from '@/shared/lib/format-money'
+import { cn } from '@/shared/lib/utils'
 
 type EventsSummaryStripProps = {
-  summary: EventsSummary
+  summary: PeriodSummary
+  /** `YYYY-MM` — the period the figures describe, echoed as the panel title. */
+  month: string
 }
 
-export function EventsSummaryStrip({ summary }: EventsSummaryStripProps) {
+function monthLabel(monthKey: string, locale: string) {
+  const [year, month] = monthKey.split('-').map(Number)
+  if (locale === 'vi-VN') return `Tháng ${month}`
+  return new Date(year, month - 1, 1).toLocaleDateString(locale, { month: 'long' })
+}
+
+/**
+ * What this month came to, above the timeline that lists it row by row.
+ *
+ * Only records that actually happened are counted — an unpaid or postponed row
+ * is money that has not moved, and folding it in here would report a month that
+ * has not finished happening. That is why the count says "đã xảy ra" and not
+ * simply how many rows are below.
+ */
+export function EventsSummaryStrip({ summary, month }: EventsSummaryStripProps) {
   const { t, i18n } = useTranslation()
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
-  const month = new Date().toLocaleDateString(locale, { month: 'long' })
-  const isNetPositive = summary.netChange >= 0
 
   return (
-    <section className="grid gap-4 xl:grid-cols-12">
-      <div className="rounded-[28px] bg-[#1d1d1f] p-6 text-white shadow-[0_14px_38px_rgba(0,0,0,0.08)] sm:p-8 xl:col-span-8">
-        <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-sm font-medium text-white/45">
-                {t('events.redesign.summary.month', { month })}
-              </p>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/55">
-                {t('events.redesign.summary.recordedCount', {
-                  count: summary.recordedThisMonth,
-                })}
-              </span>
-            </div>
-            <p className="money-number mt-4 text-5xl font-semibold tracking-[-0.055em] sm:text-6xl">
-              {isNetPositive ? '+' : '-'}
-              {formatVndShort(Math.abs(summary.netChange))}
-            </p>
-            <p className="mt-4 text-sm text-white/40">
-              {t('events.redesign.summary.netDescription')}
-            </p>
-          </div>
-
-          <div className="grid min-w-[280px] gap-5 sm:grid-cols-2 sm:gap-3">
-            <HeroMetric
-              label={t('events.redesign.summary.income')}
-              value={formatVndShort(summary.totalIncome)}
-            />
-            <HeroMetric
-              label={t('events.redesign.summary.outcome')}
-              value={formatVndShort(summary.totalOutcome)}
-            />
-          </div>
-        </div>
+    <Panel>
+      <PanelHeader
+        title={<span className="capitalize">{monthLabel(month, locale)}</span>}
+        meta={t('events.summary.recordedCount', { count: summary.recordedCount })}
+      />
+      <div className="mt-7 grid gap-5 sm:grid-cols-3 sm:gap-0">
+        <Metric
+          label={t('events.summary.received')}
+          value={`+${formatVndScale(summary.totalIncome)}`}
+          className="sm:pr-7"
+          valueClassName="text-accent"
+        />
+        <Metric
+          label={t('events.summary.spent')}
+          value={`−${formatVndScale(summary.totalOutcome)}`}
+          className="sm:border-l sm:border-hair sm:px-7"
+        />
+        {/* The one figure that answers "did this month add up or not", so it
+            carries the sign and takes its colour from the answer. */}
+        <Metric
+          label={t('events.summary.net')}
+          value={`${summary.netChange < 0 ? '−' : '+'}${formatVndScale(Math.abs(summary.netChange))}`}
+          className="sm:border-l sm:border-hair sm:pl-7"
+          valueClassName={summary.netChange < 0 ? 'text-alert' : 'text-accent'}
+        />
       </div>
-
-      <Card className="xl:col-span-4">
-        <h2 className="section-title text-xl font-semibold">
-          {t('events.redesign.status.title')}
-        </h2>
-        <div className="mt-5 divide-y divide-border">
-          <StatusRow
-            label={t('events.redesign.status.upcoming')}
-            note={t('events.redesign.status.upcomingCount', {
-              count: summary.upcomingIn30DaysCount,
-            })}
-            value={formatVndShort(summary.upcomingIn30DaysAmount)}
-          />
-          <StatusRow
-            label={t('events.redesign.status.recorded')}
-            note={t('events.redesign.status.currentMonth')}
-            value={t('events.redesign.status.eventCount', {
-              count: summary.recordedThisMonth,
-            })}
-          />
-          <StatusRow
-            label={t('events.redesign.status.attention')}
-            note={t('events.redesign.status.attentionNote')}
-            value={t('events.redesign.status.itemCount', { count: summary.attentionCount })}
-          />
-        </div>
-      </Card>
-    </section>
+    </Panel>
   )
 }
 
-function HeroMetric({ label, value }: { label: string; value: string }) {
+function Metric({
+  label,
+  value,
+  className,
+  valueClassName,
+}: {
+  label: string
+  value: string
+  className?: string
+  valueClassName?: string
+}) {
   return (
-    <div className="border-l border-white/10 pl-4">
-      <p className="text-xs text-white/40">{label}</p>
-      <p className="money-number mt-3 text-xl font-semibold">{value}</p>
-    </div>
-  )
-}
-
-function StatusRow({ label, note, value }: { label: string; note: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-      <div>
-        <p className="text-sm font-medium">{label}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{note}</p>
-      </div>
-      <p className="money-number shrink-0 text-lg font-semibold">{value}</p>
+    <div className={className}>
+      <Label>{label}</Label>
+      <p className={cn('money-number mt-2 text-[30px]', valueClassName)}>{value}</p>
     </div>
   )
 }

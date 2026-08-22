@@ -29,7 +29,9 @@ import {
   type OverdueSummary,
   type TimelineRow,
 } from '@/features/dashboard/model/home-derivations'
+import type { EventsSummaryResponse } from '@/features/events/api/events.repository'
 import type { ForecastResult } from '@/features/forecast/model/forecast.types'
+import { canProjectBalance } from '@/features/forecast/model/forecast-presentation'
 import { chartAxis, chartGrid, chartSeparator } from '@/shared/constants/colors'
 import { formatVndCell, formatVndCellSigned, formatVndScale } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
@@ -53,11 +55,14 @@ const MIN_EVENTS_FOR_CHART = 6
  */
 export function UpcomingSection({
   forecast,
+  eventsSummary,
   cashflowEvents = [],
   onCompleteOverdue,
   completingEventId,
 }: {
   forecast: ForecastResult
+  /** Thu/chi/ròng already RECORDED this month. Omitted → the block is skipped. */
+  eventsSummary?: EventsSummaryResponse
   /** Source events, joined for an overdue row's real due date (`expectedDate`). */
   cashflowEvents?: { id: string; expectedDate: string }[]
   /** Marks one overdue occurrence resolved. The ONLY way it leaves the list. */
@@ -73,6 +78,10 @@ export function UpcomingSection({
 
   const lowest = forecast.lowestProjectedBalance
   const dip = forecast.startingLiquidBalance - lowest
+  // No wallet means no balance for a low point to be OF — see
+  // `canProjectBalance`. The outflows alone would render as a red deficit
+  // against money the household never said it had.
+  const canProject = canProjectBalance(forecast.usableNowAssetCount)
 
   const showChart = totalCount >= MIN_EVENTS_FOR_CHART && points.length > 1
 
@@ -99,6 +108,11 @@ export function UpcomingSection({
         pendingId={completingEventId}
       />
 
+      {/* What already happened, before what is projected. The section then
+          reads in the order the household lives it: money that moved this
+          month → what that came to → what is still coming (§12.2). */}
+      <RecordedThisMonth summary={eventsSummary} asOfDate={forecast.asOfDate} />
+
       <div className="mt-9">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h3 className="text-[14px] font-medium">{t('home.upcoming.title')}</h3>
@@ -114,18 +128,23 @@ export function UpcomingSection({
           <div>
             <Label>{t('home.upcoming.lowestLabel')}</Label>
 
-          {/* MAY BE NEGATIVE — never clamped. */}
+          {/* MAY BE NEGATIVE — never clamped when it can be stated at all.
+              With no wallet there is nothing to state, and an em-dash reads as
+              "zero" rather than "not computable" (§23) — so it says so. */}
           <p
             className={cn(
-              'num mt-3 text-[30px] font-medium tracking-[-.03em]',
-              lowest < 0 && 'text-alert',
+              'mt-3 text-[30px] font-medium tracking-[-.03em]',
+              canProject && 'num',
+              canProject && lowest < 0 && 'text-alert',
             )}
           >
-            {formatVndScale(lowest)}
+            {canProject ? formatVndScale(lowest) : t('home.upcoming.lowestUnavailable')}
           </p>
 
           <p className="mt-3 text-[13px] leading-5 text-ink2">
-            {dip > 0 ? (
+            {!canProject ? (
+              t('home.upcoming.lowestNoSourceShort')
+            ) : dip > 0 ? (
               <>
                 {t('home.upcoming.lowestNoteDipBefore', {
                   date: formatDayMonth(forecast.lowestProjectedBalanceDate),
@@ -138,6 +157,27 @@ export function UpcomingSection({
               })
             )}
           </p>
+
+          {/* The one thing that unblocks the figure above, stated as an action
+              rather than as an instruction buried in a sentence (§2.10). */}
+          {!canProject ? (
+            <Sunk className="mt-5 p-4">
+              <div className="flex items-start gap-3">
+                <span className="mt-[6px] size-1.5 shrink-0 rounded-full bg-attention" />
+                <div className="min-w-0">
+                  <p className="text-[13px] leading-5 text-ink2">
+                    {t('home.upcoming.lowestNoSourceHint')}
+                  </p>
+                  <Link
+                    to="/networth"
+                    className="mt-3 inline-flex h-9 items-center rounded-control bg-accent px-4 text-[13px] font-medium text-panel transition-opacity hover:opacity-90"
+                  >
+                    {t('home.upcoming.addSource')}
+                  </Link>
+                </div>
+              </div>
+            </Sunk>
+          ) : null}
 
           {showChart ? (
             <Sunk className="mt-6 p-4">
@@ -224,6 +264,15 @@ export function UpcomingSection({
             </>
           )}
 
+          {/* The "Còn lại" column is dashes without a wallet, and a column of
+              dashes with no explanation reads as missing data rather than as a
+              thing the household can fix. */}
+          {!canProject && rows.length > 0 ? (
+            <p className="mt-3 text-[12px] leading-5 text-ink3">
+              {t('home.upcoming.remainingUnavailable')}
+            </p>
+          ) : null}
+
           {/* Only when the table is actually truncated — "Xem timeline" already
               sits in the section header, so an unconditional link here would be
               the same destination offered twice. */}
@@ -241,6 +290,89 @@ export function UpcomingSection({
         </PanelSplit>
       </div>
     </Panel>
+  )
+}
+
+/**
+ * The month so far: what has ACTUALLY been recorded, as context for the
+ * forecast below it.
+ *
+ * Deliberately quiet. This is the past, and the section's primary answer is
+ * "thấp nhất dự kiến" — giving the recorded figures hero weight put three
+ * 26px numbers above the one number the section exists for, and the eye landed
+ * on the wrong thing (§1.2, §2.8). A sunk strip with 20px figures reads as
+ * ngữ cảnh, which is what it is.
+ *
+ * There is no "Ròng" figure: vào minus ra is the same fact a third time, and
+ * §2.10 allows a number one place on a page. The net result the household
+ * actually acts on is the projected low point below.
+ *
+ * Figures come from the backend's money-events summary, never re-derived here.
+ * Renders nothing when the summary is unavailable — two zeroes would state that
+ * nothing moved this month, which is a different claim from not knowing (§23).
+ */
+function RecordedThisMonth({
+  summary,
+  asOfDate,
+}: {
+  summary?: EventsSummaryResponse
+  /** Today, per the forecast — the month is only recorded up to here. */
+  asOfDate: string
+}) {
+  const { t } = useTranslation()
+
+  if (!summary) return null
+
+  return (
+    <Sunk className="mt-7 px-4 py-4 sm:px-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <Label>{t('home.cashflow.recordedEyebrow')}</Label>
+          <p className="mt-2 text-[13px] text-ink2">
+            {t('home.cashflow.recordedNote', { date: formatDayMonth(asOfDate) })}
+          </p>
+        </div>
+
+        <div className="flex items-baseline gap-7 sm:gap-10">
+          {/* `formatVndCellSigned` owns the sign, including the real U+2212
+              minus (§10.4) — `totalOutcome` arrives positive, so negate it. */}
+          <Figure
+            label={t('home.cashflow.in')}
+            value={formatVndCellSigned(summary.totalIncome)}
+            valueClassName="text-accent"
+          />
+          <Figure
+            label={t('home.cashflow.out')}
+            value={formatVndCellSigned(-summary.totalOutcome)}
+          />
+        </div>
+      </div>
+    </Sunk>
+  )
+}
+
+function Figure({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string
+  value: string
+  valueClassName?: string
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <div>
+      <p className="text-[12px] text-ink3">{label}</p>
+      <p className={cn('num mt-1 text-[20px] font-medium', valueClassName)}>
+        {value}{' '}
+        {/* §10.4 — the unit is stated once, beside the figure, not baked into it. */}
+        <span className="font-mono text-[11px] font-normal text-ink3">
+          {t('units.million')}
+        </span>
+      </p>
+    </div>
   )
 }
 

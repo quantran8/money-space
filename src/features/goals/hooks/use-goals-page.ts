@@ -16,7 +16,6 @@ import {
   defaultGoalFormValues,
   formatAmount,
   goalAmount,
-  isWalletAssetType,
   priorityRank,
   suggestedPace,
   type GoalAllocationDraft,
@@ -122,17 +121,6 @@ export function useGoalsPage() {
     }))
   }, [goals, stats.saved])
 
-  // The household's wallets. A goal needs one behind it — money is only ever put
-  // in through a wallet — and the form says so while it is being filled rather
-  // than leaving the server to refuse the submit.
-  const walletAssetIds = useMemo(
-    () =>
-      new Set(
-        assets.filter((asset) => isWalletAssetType(asset.type)).map((asset) => asset.id),
-      ),
-    [assets],
-  )
-
   /**
    * The other goals already drawing on each wallet, excluding the one being
    * edited. The schema matches their priority against the form's own, so the
@@ -154,8 +142,8 @@ export function useGoalsPage() {
   // Rebuilt when the mode flips: `current` is create-only (the API rejects it on
   // PATCH), so the schema must stop validating it once we are editing.
   const goalSchema = useMemo(
-    () => buildGoalSchema(t, isEditing, walletAssetIds, walletRivals),
-    [t, isEditing, walletAssetIds, walletRivals],
+    () => buildGoalSchema(t, isEditing, walletRivals),
+    [t, isEditing, walletRivals],
   )
 
   const priorityLabels: Record<GoalPriority, string> = {

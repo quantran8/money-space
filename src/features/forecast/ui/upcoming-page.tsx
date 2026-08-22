@@ -73,6 +73,7 @@ export function UpcomingPage() {
         ownerNameByEventId={ownerNameByEventId}
         isLoading={isLoading}
         isEmpty={isEmpty}
+        usableNowAssetCount={forecast?.usableNowAssetCount}
         onAdd={() => cashflowForm.openCreate('outgoing')}
         onComplete={(sourceEventId, occurrenceDate) =>
           // `occurrenceDate` is the idempotency key — passing it stops a

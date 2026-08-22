@@ -182,12 +182,6 @@ export function buildGoalSchema(
   t: (key: string, params?: Record<string, unknown>) => string,
   isEditing = false,
   /**
-   * Ids of the household's cash / bank accounts. A goal needs one behind it —
-   * money is only ever put in through a wallet — and checking it here means the
-   * household is told while filling the form, rather than by a 400 on submit.
-   */
-  walletAssetIds: ReadonlySet<string> = new Set(),
-  /**
    * Which OTHER goals already draw on each wallet, and at what priority.
    *
    * A share is only asked for when a wallet already feeds another goal at the
@@ -228,20 +222,12 @@ export function buildGoalSchema(
           message: t('goals.form.allocationsRequired'),
         })
       }
-      // Gold and stocks can back a goal, but nothing is ever paid INTO them on a
-      // schedule; without a wallet the goal moves on the market alone and "did we
-      // keep our pace?" has no source to read.
-      if (
-        !isEditing &&
-        values.allocations.length > 0 &&
-        !values.allocations.some((row) => walletAssetIds.has(row.assetId))
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['allocations'],
-          message: t('goals.form.walletRequired'),
-        })
-      }
+      // A goal with no wallet behind it is no longer REFUSED — the server stopped
+      // refusing it too, because deleting an asset can leave a goal in exactly
+      // that state and a form-only rule would then block editing the goal back
+      // into legality. It is still worth saying, so the wallet field carries a
+      // notice instead of an error, and the goal shows a `goal_without_wallet`
+      // attention item for as long as it stays that way.
       for (const [index, row] of values.allocations.entries()) {
         if (row.kind === 'percent') {
           if (!(Number(row.percent) > 0 && Number(row.percent) <= 100)) {

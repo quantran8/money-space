@@ -161,6 +161,15 @@ export type FlexibleMoneyResult = {
   asOfDate: string
   horizonDays: number
   currentSharedLiquidMoney: number
+  /**
+   * How many `usable_now` assets that figure is the sum of.
+   *
+   * 0đ is ambiguous on its own — a wallet holding nothing and no wallet at all
+   * both sum to zero — and only the second means there is no balance for a
+   * projection to be about. Optional so an older server reads as "unknown",
+   * which every consumer treats as "there is a source" rather than blanking.
+   */
+  usableNowAssetCount?: number
   /** §26B conservative form. MAY BE NEGATIVE. */
   flexibleMoneyToday: number
   requiredOutflowsBeforeNextInflow: number

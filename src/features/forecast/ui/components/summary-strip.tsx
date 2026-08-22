@@ -5,6 +5,7 @@ import type { ForecastResult } from '@/features/forecast/model/forecast.types'
 import {
   BALANCE_TONE_CLASS,
   balanceTone,
+  canProjectBalance,
 } from '@/features/forecast/model/forecast-presentation'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
@@ -13,6 +14,9 @@ import { cn } from '@/shared/lib/utils'
 export function SummaryStrip({ forecast }: { forecast: ForecastResult }) {
   const { t } = useTranslation()
 
+  // `Tiền vào` / `Tiền ra` beside it are unaffected: those are sums of real
+  // events and do not depend on a balance existing.
+  const hasLiquidSource = canProjectBalance(forecast.usableNowAssetCount)
   const lowestTone = balanceTone(forecast.lowestProjectedBalance)
 
   return (
@@ -26,12 +30,21 @@ export function SummaryStrip({ forecast }: { forecast: ForecastResult }) {
         {/* Projected low leads: it is the primary read of this screen. */}
         <Metric
           label={t('upcoming.summary.lowest')}
-          // Never clamped: a negative lowest balance is the point of the screen.
-          value={formatVndShort(forecast.lowestProjectedBalance)}
-          note={t('upcoming.summary.lowestNote', {
-            date: formatDayMonth(forecast.lowestProjectedBalanceDate),
-          })}
-          valueClassName={BALANCE_TONE_CLASS[lowestTone]}
+          // Never clamped when it CAN be stated: a negative low point is the
+          // point of the screen. Only the no-wallet case blanks it.
+          value={
+            hasLiquidSource
+              ? formatVndShort(forecast.lowestProjectedBalance)
+              : '—'
+          }
+          note={
+            hasLiquidSource
+              ? t('upcoming.summary.lowestNote', {
+                  date: formatDayMonth(forecast.lowestProjectedBalanceDate),
+                })
+              : t('upcoming.summary.lowestNoSource')
+          }
+          valueClassName={hasLiquidSource ? BALANCE_TONE_CLASS[lowestTone] : undefined}
           className="sm:pr-7"
         />
         <Metric

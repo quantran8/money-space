@@ -21,16 +21,16 @@ type EventsTimelineCardProps = {
   onTabChange: (tab: RecordTab) => void
   groupedRecords: Array<[string, FinancialRecordItem[]]>
   memberOptions: Option[]
+  /** `YYYY-MM`. Owned by the page so the summary strip describes the same rows. */
+  selectedMonth: string
+  onMonthChange: (monthKey: string) => void
+  selectedMember: string
+  onMemberChange: (memberId: string) => void
   isLoading?: boolean
   onEditEvent: (id: string) => void
   onDuplicateEvent: (id: string) => void
   onToggleEventAttention: (id: string) => void
   onDeleteEvent: (id: string) => void
-}
-
-function currentMonthKey() {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 
 function shiftMonth(monthKey: string, delta: number) {
@@ -53,6 +53,10 @@ export function EventsTimelineCard({
   onTabChange,
   groupedRecords,
   memberOptions,
+  selectedMonth,
+  onMonthChange,
+  selectedMember,
+  onMemberChange,
   isLoading = false,
   onEditEvent,
   onDuplicateEvent,
@@ -61,23 +65,16 @@ export function EventsTimelineCard({
 }: EventsTimelineCardProps) {
   const { t, i18n } = useTranslation()
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
-  const [selectedMonth, setSelectedMonth] = useState(currentMonthKey)
-  const [selectedMember, setSelectedMember] = useState('all')
   const [page, setPage] = useState(1)
 
-  const records = useMemo(
-    () => groupedRecords.flatMap(([, items]) => items),
-    [groupedRecords],
-  )
+  // Month and person are already applied upstream — `groupedRecords` arrives
+  // filtered — so this only flattens and orders what it was handed.
   const filteredRecords = useMemo(
     () =>
-      records
-        .filter((record) => record.date.slice(0, 7) === selectedMonth)
-        .filter(
-          (record) => selectedMember === 'all' || record.ownerMemberId === selectedMember,
-        )
+      groupedRecords
+        .flatMap(([, items]) => items)
         .sort((left, right) => right.date.localeCompare(left.date)),
-    [records, selectedMember, selectedMonth],
+    [groupedRecords],
   )
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
@@ -101,7 +98,7 @@ export function EventsTimelineCard({
   }
 
   function changeMonth(delta: number) {
-    setSelectedMonth((value) => shiftMonth(value, delta))
+    onMonthChange(shiftMonth(selectedMonth, delta))
     setPage(1)
   }
 
@@ -148,7 +145,7 @@ export function EventsTimelineCard({
             label={t('events.history.person')}
             value={selectedMember}
             onChange={(value) => {
-              setSelectedMember(value)
+              onMemberChange(value)
               setPage(1)
             }}
             options={[

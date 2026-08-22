@@ -99,6 +99,19 @@ export function CashflowEventFormDialog({
   // Only wallets the API will accept — flexible money that holds a balance.
   const settlementOptions = assets.filter(canSettleCashflow)
   const isOutgoing = direction === 'outgoing'
+  /**
+   * The event names a wallet that is no longer among the household's assets —
+   * it was deleted while this event kept pointing at it.
+   *
+   * Worth its own state because `Select` renders a value with no matching
+   * option as BLANK, which reads exactly like "no wallet chosen". The household
+   * would then either re-pick without knowing anything was lost, or save the
+   * form and silently rewrite the event's wallet. Saying it plainly is the
+   * whole point: the event is still real, its wallet is not.
+   */
+  const settlementAssetMissing =
+    Boolean(settlementAssetId) &&
+    !settlementOptions.some((asset) => asset.id === settlementAssetId)
 
   /**
    * The wallet this event settles through.
@@ -146,6 +159,11 @@ export function CashflowEventFormDialog({
             />
           </div>
         </CashflowField>
+        {settlementAssetMissing ? (
+          <p className="rounded-control bg-surface2 px-3 py-2.5 text-[13px] leading-5 text-alert">
+            {t('upcoming.form.walletDeleted')}
+          </p>
+        ) : null}
         <p className="px-1 text-[12px] leading-5 text-ink2">
           {t(isOutgoing ? 'upcoming.form.walletHintOut' : 'upcoming.form.walletHintIn')}
         </p>

@@ -9,6 +9,9 @@ export const queryKeys = {
     ['households', householdId, 'assets', assetId, 'value-history'] as const,
   symbolSearch: (assetClass: string, query: string) =>
     ['market-data', 'symbols', assetClass, query] as const,
+  /** Live quote for one instrument, for the asset-create form. */
+  marketQuote: (assetClass: string, symbol: string, market: string) =>
+    ['market-data', 'quote', assetClass, symbol, market] as const,
   debts: (householdId: string) => ['households', householdId, 'debts'] as const,
   goals: (householdId: string) => ['households', householdId, 'goals'] as const,
   /**
@@ -28,6 +31,15 @@ export const queryKeys = {
    */
   assetGoalUsage: (householdId: string, assetId: string) =>
     ['households', householdId, 'goals', 'asset-usage', assetId] as const,
+  /**
+   * What deleting one asset would detach.
+   *
+   * Under the goals prefix for the same reason as `assetGoalUsage`: most of the
+   * answer is goal claims, which change on allocation writes. Event and debt
+   * links change on their own writes, and those invalidate the whole household.
+   */
+  assetDeleteImpact: (householdId: string, assetId: string) =>
+    ['households', householdId, 'goals', 'asset-delete-impact', assetId] as const,
   /** One goal's month-by-month history, frozen into snapshots. */
   goalMonthlyProgress: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'monthly-progress'] as const,

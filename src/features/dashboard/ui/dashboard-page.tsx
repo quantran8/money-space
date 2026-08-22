@@ -64,6 +64,7 @@ export function DashboardPage() {
     forecast,
     flexibleMoney,
     freshness,
+    eventsSummary,
     goalTracks,
     earmarkedForGoals,
     goals,
@@ -96,6 +97,7 @@ export function DashboardPage() {
       {forecast ? (
         <UpcomingSection
           forecast={forecast}
+          eventsSummary={eventsSummary}
           cashflowEvents={cashflowEvents}
           completingEventId={
             completeCashflowEvent.isPending ? completing?.eventId : null

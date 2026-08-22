@@ -6,6 +6,7 @@ import { SourceFreshnessList } from '@/components/ui/source-freshness-list'
 import { buildCoverage, buildMoneyComposition } from '@/features/dashboard/model/home-derivations'
 import type { DataFreshnessResult } from '@/features/freshness/model/freshness.types'
 import type { FlexibleMoneyResult } from '@/features/forecast/model/forecast.types'
+import { canProjectBalance } from '@/features/forecast/model/forecast-presentation'
 import { formatVndScale, splitVndScale } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
@@ -68,8 +69,19 @@ export function FinancialPictureSection({
    */
   const flexible =
     flexibleMoney.lowestProjectedBalance - (flexibleMoney.goalCommitments ?? 0)
-  const isNegative = flexible < 0
-  const hero = splitVndScale(flexible)
+  /**
+   * ...but only when there IS a balance to subtract from.
+   *
+   * With no `usable_now` asset the whole chain starts from a
+   * `startingLiquidBalance` of 0 that no wallet stands behind, so the hero
+   * becomes the outflows negated — "−1,0 triệu" in red, reported as money the
+   * household is short when it never said it had any. See `canProjectBalance`.
+   * The figure is withheld rather than guessed; `no_liquid_sources` is the
+   * financial-state reason that explains it.
+   */
+  const canProject = canProjectBalance(flexibleMoney.usableNowAssetCount)
+  const isNegative = canProject && flexible < 0
+  const hero = canProject ? splitVndScale(flexible) : { amount: '—', unit: '' }
 
   /** "35 ngày" / "hôm nay" / "chưa cập nhật" — always a number when there is one (§10.5). */
   const formatAge = (days: number | null) => {
@@ -111,7 +123,11 @@ export function FinancialPictureSection({
           </div>
 
           <p className="mt-3 text-[13px] leading-5 text-ink2">
-            {t('home.picture.totals', { cash: formatVndScale(composition.totalLiquid) })}
+            {canProject
+              ? t('home.picture.totals', {
+                  cash: formatVndScale(composition.totalLiquid),
+                })
+              : t('home.picture.noSource')}
           </p>
         </div>
 
