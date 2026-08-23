@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "description": "Money Space frontend — web (Vite) and mobile (Expo) sharing @money-space/core.",
   "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "pnpm --filter family-finance-app dev",
     "build": "pnpm --filter family-finance-app build",

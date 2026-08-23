@@ -38,3 +38,6 @@ yarn.lock
 bun.lockb
 expo-env.d.ts
 mobile/.expo/
+
+# Vercel
+.vercel
