@@ -5,8 +5,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useJoinInvite } from '@money-space/core/features/invites/hooks/use-join-invite'
 
+import { Button } from '@/components/ui'
+
 import { RequireAuth } from '@/features/auth/require-auth'
-import { Button } from '@/components/ui/button'
 
 /**
  * Where a scanned invite QR lands: `moneyspace://join?household=…&token=…`.

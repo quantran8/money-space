@@ -7,10 +7,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useOnboardingPage } from '@money-space/core/features/onboarding/hooks/use-onboarding-page'
 import { currencyOptions } from '@money-space/core/features/onboarding/model/onboarding-form'
 
+import { Button, Field, Segmented } from '@/components/ui'
+
 import { RequireAuth } from '@/features/auth/require-auth'
-import { Button } from '@/components/ui/button'
-import { Field } from '@/components/ui/field'
-import { Segmented } from '@/components/ui/segmented'
 import { TOUCH_TARGET } from '@/theme/tokens'
 
 /**

@@ -6,9 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useSignupPage } from '@money-space/core/features/auth/hooks/use-auth-page'
 
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Field } from '@/components/ui/field'
+import { Button, Checkbox, Field } from '@/components/ui'
+
 
 export default function SignupScreen() {
   const { t } = useTranslation()

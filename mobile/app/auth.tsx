@@ -6,8 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useLoginPage } from '@money-space/core/features/auth/hooks/use-auth-page'
 
-import { Button } from '@/components/ui/button'
-import { Field } from '@/components/ui/field'
+import { Button, Field } from '@/components/ui'
+
 
 /**
  * Sign in.
