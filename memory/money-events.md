@@ -214,7 +214,7 @@ Not trustworthy for **system-generated** events (saving-interest accrual): those
 
 ## Timeline grouping (`getTimelineGroupKey`)
 
-Upcoming payments → "upcoming"; else by date → today / this-week / this-month / older. Week is Mon–Sun. Uses hardcoded `TODAY = '2026-07-08'` (see [[domain-overview]]).
+Upcoming payments → "upcoming"; else by date → today / this-week / this-month / older. Week is Mon–Sun. Anchored on `TODAY`, which is now the **real** clock (`todayIsoDate()`), not the old `'2026-07-08'` seed — `AS_OF` for assets is still hardcoded, see [[domain-overview]].
 
 ## Attention rule (`isAttentionRecord`)
 

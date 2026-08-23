@@ -30,11 +30,16 @@ A Vietnamese-first **family/couple finance dashboard** — explicitly **not** a 
 
 ## Hardcoded "now" (demo state)
 
-The app is in a seed/demo state. A hardcoded valuation date is used across asset/date math instead of the real clock:
-- frontend-web: `AS_OF = '2026-07-06'` (assets); `TODAY = '2026-07-08'` (events).
+Partly migrated off the seed/demo clock. As of 2026-08-23:
+- **`TODAY` (events) is the real clock** — `packages/core/.../events-form.ts` calls
+  `todayIsoDate()`. It is no longer the `'2026-07-08'` seed.
+- **`AS_OF` (assets) is still hardcoded** — `'2026-07-06'` in
+  `packages/core/.../assets-form.ts`.
 - backend: `AS_OF` in `src/common/utils/money-space.utils.ts`; dashboard `totalDebt` is temporarily hard-coded to `18,000,000` (known demo shortcut, not a real rollup).
 
-When real-time is wired, replace these constants — they affect interest accrual, due-date buckets, and snapshot dating.
+The mixture is the hazard: an asset valued at one date and an event dated at
+another will not reconcile once the two drift far enough apart. What is left
+affects interest accrual, due-date buckets and snapshot dating.
 
 ## Feature index
 

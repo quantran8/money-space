@@ -104,11 +104,24 @@ Recurrence is `once | weekly | monthly | quarterly | yearly`. There is no
     dropped — nothing here blocks anything, so saying so invited the doubt it
     answered.
   - **`SpendImpactBar` carries the proportion**, which words cannot: 4tr out of
-    52tr and 4tr out of 5tr read identically as text. Four slices in the order
-    money gives way — pace, set aside (alert colour), goal remainder,
-    unassigned — and `aria-hidden`, because the sentences already say every
-    figure. Coloured dots on the per-goal lines tie them to their slice, so the
-    bar needs no legend.
+    52tr and 4tr out of 5tr read identically as text.
+
+    An earlier version drew the WALLET with the spend marked off inside it, in
+    four slices (pace, set aside, goal remainder, unassigned). That answered
+    "how big is this next to the balance" — a real question, but not the one
+    this block exists for, and at small amounts it answered it as a sliver
+    nobody could read. **The bar is now the SPEND at full width, divided into
+    the two parts that pay for it**, in the order money gives way:
+
+    1. `fromPace` — this month's contribution, given up first. Accent: a month
+       of saving paused is the ordinary case, not a wound.
+    2. `fromSetAside` — money already behind a goal, and only once the pace is
+       gone. **Attention, never alert**: the goal moving backwards is worth
+       marking, but the household is scheduling a bill, not making a mistake.
+
+    Slices are labelled in place when wide enough to hold a figure, which is
+    what lets the bar replace a legend rather than need one. `aria-hidden`,
+    because the sentences beside it already state every figure.
   - **The notice must explain WHY a wallet with money in it still costs a
     goal.** It names the balance and how much of it is genuinely unassigned
     (`freeAmount` — the same subtraction the write path enforces). Without that
