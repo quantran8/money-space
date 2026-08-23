@@ -95,6 +95,26 @@ export function GoalAllocationsSection({
         }
       />
 
+      {/* Assets behind the goal, but nothing to pay into it month to month.
+          Usually because the asset that was its last wallet got deleted — the
+          goal survives that now instead of blocking the delete, so this is
+          where the household finds out. Shown above the columns because it
+          explains why the contribution column is missing entirely. */}
+      {allocations.length > 0 && contributions.length === 0 ? (
+        <div className="mt-6 rounded-sunk bg-sunk px-4 py-3 text-[13px] leading-5 text-ink2">
+          <p>{t('goals.allocations.noWalletTitle')}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-3 h-10 px-4 text-[13px]"
+            disabled={!canAdd || isBusy}
+            onClick={onAdd}
+          >
+            {t('goals.allocations.addWallet')}
+          </Button>
+        </div>
+      ) : null}
+
       {allocations.length === 0 ? (
         // A statement with no button leaves a brand-new asset-backed goal
         // reading as 0% with nothing to do about it. The invitation belongs

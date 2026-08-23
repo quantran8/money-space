@@ -21,6 +21,7 @@ import type {
   ForecastResult,
   FlexibleMoneyResult,
 } from '@/features/forecast/model/forecast.types'
+import { canProjectBalance } from '@/features/forecast/model/forecast-presentation'
 
 // --- §12.1 money composition -------------------------------------------------
 
@@ -214,6 +215,11 @@ export function buildTimelineRows(
   limit = 5,
 ): { rows: TimelineRow[]; totalCount: number } {
   let balance = forecast.startingLiquidBalance
+  // With no wallet there is no balance to run down, so the column states
+  // nothing rather than showing the outflows as a deficit — see
+  // `canProjectBalance`. Same "—" the table already renders for an occurrence
+  // the forecast does not bank.
+  const canProject = canProjectBalance(forecast.usableNowAssetCount)
 
   const rows = forecast.timeline.map((occurrence) => {
     const signedAmount =
@@ -228,7 +234,8 @@ export function buildTimelineRows(
       amount: occurrence.amount,
       signedAmount,
       unconfirmed: !occurrence.countedInBalance || isUnconfirmed(occurrence),
-      runningBalance: occurrence.countedInBalance ? balance : undefined,
+      runningBalance:
+        occurrence.countedInBalance && canProject ? balance : undefined,
     }
   })
 

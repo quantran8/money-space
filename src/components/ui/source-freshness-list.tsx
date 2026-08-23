@@ -3,6 +3,14 @@ import * as React from 'react'
 
 import { easeOut } from '@/components/ui/motion'
 import { Sunk } from '@/components/ui/panel'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { cn } from '@/shared/lib/utils'
 
 /**
@@ -118,51 +126,58 @@ export function SourceFreshnessList({
             className="overflow-hidden"
           >
             <div className="px-4 pb-4">
-              <table className="w-full text-[13px]">
-                <thead>
-                  <tr className="label">
-                    <th scope="col" className="pb-2.5 text-left font-normal">
+              <Table className="text-[13px]">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead scope="col" className="label-vi h-auto px-0 pb-2.5 font-normal">
                       {labels.source}
-                    </th>
-                    <th scope="col" className="pb-2.5 text-left font-normal">
+                    </TableHead>
+                    <TableHead scope="col" className="label-vi h-auto px-0 pb-2.5 font-normal">
                       {labels.updated}
-                    </th>
+                    </TableHead>
                     {formatValue ? (
-                      <th scope="col" className="pb-2.5 text-right font-normal">
+                      <TableHead scope="col" className="label-vi h-auto px-0 pb-2.5 text-right font-normal">
                         {labels.amount}
-                      </th>
+                      </TableHead>
                     ) : null}
-                  </tr>
-                </thead>
+                  </TableRow>
+                </TableHeader>
 
-                <tbody>
+                <TableBody>
                   {rows.map((row) => (
-                    <tr key={row.id} className="hover:bg-panel">
+                    // This table sits INSIDE a sunk block, so its hover band goes
+                    // lighter (`--panel`) rather than the darker `--sunk` a table
+                    // on a panel uses — same band, one surface up.
+                    <TableRow key={row.id} className="hover:bg-panel">
+                      {/* A row header, not a column header: `TableHead` carries
+                          `.label`, whose mono face must never touch the accented
+                          Vietnamese of a source name (§10.1). The primitive has
+                          no row-header cell, so this stays a plain `th`. */}
                       <th
                         scope="row"
-                        className="rounded-l-[8px] py-2.5 pr-4 text-left font-medium"
+                        className="rounded-l-[8px] py-2.5 pr-4 text-left align-middle font-medium"
                       >
                         {row.name}
                       </th>
-                      <td
+                      <TableCell
                         className={cn(
-                          'py-2.5 pr-4 font-mono text-[11px]',
+                          'px-0 py-2.5 pr-4 font-mono text-[11px]',
                           row.isStale ? 'font-medium text-attention' : 'text-ink2',
                           // Only the last cell of a row carries the right radius.
                           !formatValue && 'rounded-r-[8px] text-right',
                         )}
                       >
                         {formatAge(row.days)}
-                      </td>
+                      </TableCell>
                       {formatValue ? (
-                        <td className="num rounded-r-[8px] py-2.5 text-right text-ink2">
+                        <TableCell className="num rounded-r-[8px] px-0 py-2.5 text-right text-ink2">
                           {row.value !== undefined ? formatValue(row.value) : null}
-                        </td>
+                        </TableCell>
                       ) : null}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
 
               {footnote ? (
                 <p className="mt-3.5 text-[12px] leading-5 text-ink3">{footnote}</p>

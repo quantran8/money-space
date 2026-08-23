@@ -189,9 +189,15 @@ export function useAssetsPage() {
     }
   }
 
-  async function handleDeleteAsset(assetId: string) {
+  /**
+   * `cascade` carries the household's confirmation through to the server, which
+   * refuses the delete without it while the asset still backs a goal, an event
+   * or a debt. The dialog asks for it only after `useAssetDeleteImpact` has
+   * said what those are.
+   */
+  async function handleDeleteAsset(assetId: string, cascade = false) {
     try {
-      await deleteAsset.mutateAsync(assetId)
+      await deleteAsset.mutateAsync({ assetId, cascade })
       toast.success('Da xoa tai san.')
       setDeleteId(null)
       if (editingId === assetId) handleFormOpenChange(false)

@@ -64,6 +64,22 @@ export function GoalAllocationsField({
   const { t } = useTranslation()
   const taken = new Set(value.map((row) => row.assetId))
   const available = assetOptions.filter((option) => !taken.has(option.value))
+  /**
+   * The goal has assets behind it, but none of them is a wallet.
+   *
+   * A NOTICE, not an error — this used to block the form, and the server used to
+   * refuse the submit. Both stopped, because deleting an asset can leave a goal
+   * in this state anyway, and a rule that only guards the create path just moves
+   * the household to the route with no guard. So the goal is allowed, and the
+   * consequence is stated plainly: gold and stocks reprice on their own, but
+   * nothing is ever paid INTO them on a schedule, so the pace panel stays empty
+   * until a cash or bank account joins them.
+   */
+  const missingWallet =
+    value.length > 0 &&
+    !value.some((row) =>
+      isWalletAssetType(assetOptions.find((option) => option.value === row.assetId)?.type),
+    )
 
   function update(index: number, patch: Partial<GoalAllocationDraft>) {
     onChange(value.map((row, rowIndex) => (rowIndex === index ? { ...row, ...patch } : row)))
@@ -77,6 +93,11 @@ export function GoalAllocationsField({
           className="mb-4 rounded-[12px] bg-[var(--alert-soft,#fff3ef)] px-4 py-3 text-[12px] leading-5 text-alert"
         >
           {error}
+        </div>
+      ) : null}
+      {missingWallet ? (
+        <div className="mb-4 rounded-[12px] bg-panel px-4 py-3 text-[12px] leading-5 text-ink2">
+          {t('goals.form.walletMissingNotice')}
         </div>
       ) : null}
       <div className="space-y-4">

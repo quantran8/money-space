@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Card } from '@/components/ui/card'
 import type { FlexibleMoneyResult } from '@/features/forecast/model/forecast.types'
+import { canProjectBalance } from '@/features/forecast/model/forecast-presentation'
 import { formatVndShort } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
@@ -31,7 +32,10 @@ export function FlexibleMoneySection({
   }
 
   const amount = flexibleMoney.lowestProjectedBalance
-  const isNegative = amount < 0
+  // No wallet, no balance to project from — see `canProjectBalance`. Without
+  // this the outflows alone read as money the household is short.
+  const canProject = canProjectBalance(flexibleMoney.usableNowAssetCount)
+  const isNegative = canProject && amount < 0
 
   return (
     <Card>
@@ -44,14 +48,16 @@ export function FlexibleMoneySection({
           isNegative && 'text-alert',
         )}
       >
-        {formatVndShort(amount)}
+        {canProject ? formatVndShort(amount) : '—'}
       </p>
       <p className="mt-3 text-sm leading-6 text-ink2">
-        {isNegative
-          ? t('home.flexible.negativeNote')
-          : t('home.flexible.note', {
-              horizon: flexibleMoney.horizonDays,
-            })}
+        {!canProject
+          ? t('home.picture.noSource')
+          : isNegative
+            ? t('home.flexible.negativeNote')
+            : t('home.flexible.note', {
+                horizon: flexibleMoney.horizonDays,
+              })}
       </p>
     </Card>
   )

@@ -23,6 +23,7 @@ import {
   isEditableEventType,
   isQuickActualAction,
   parseAmountInput,
+  summarizeRecords,
   toMoneyEventSeed,
   type ActualRecordForm,
   type FinancialRecordItem,
@@ -37,6 +38,12 @@ import { currentMemberId } from '@/features/members/model/members.types'
 import { getErrorMessage } from '@/shared/lib/get-error-message'
 import { useAuthStore } from '@/shared/stores/auth-store'
 
+/** `YYYY-MM` for the month the user is in now — the timeline's starting view. */
+function currentMonthKey() {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
 export function useEventsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -45,12 +52,6 @@ export function useEventsPage() {
   const { members } = useMembers()
   const userId = useAuthStore((state) => state.user?.id)
   const creatorMemberId = currentMemberId(members, userId)
-  // Thu/chi/net for the current month are the BACKEND's source of truth — read
-  // them from the summary endpoint, never re-derive from the event list.
-  const { data: eventsSummary, isLoading: isSummaryLoading } = useEventsSummary()
-  // Show the timeline skeleton while EITHER the events list or the backend
-  // thu/chi/net summary is still loading — both feed the page's main content.
-  const isLoading = isEventsLoading || isSummaryLoading
   const { categories } = useEventCategories()
   // Reused for editing an existing asset_sale event through its dedicated dialog
   // (the generic form can't express quantity / fee / receiving wallet).
@@ -61,6 +62,18 @@ export function useEventsPage() {
   const [events, setEvents] = useState<LocalMoneyEvent[]>(sourceEvents)
   const [tab, setTab] = useState<RecordTab>('all')
   const [query, setQuery] = useState('')
+  // Month + person live here, not in the timeline card: the summary strip above
+  // the list has to describe exactly the rows the list is showing, and it
+  // cannot do that while the filters are private to the card.
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthKey)
+  const [selectedMember, setSelectedMember] = useState('all')
+  // Thu/chi/net for the BROWSED month are the backend's source of truth — read
+  // them from the summary endpoint, never re-derive from the event list. The
+  // one case it cannot answer is a person filter, handled at `periodSummary`.
+  const { data: eventsSummary, isLoading: isSummaryLoading } = useEventsSummary(selectedMonth)
+  // Show the timeline skeleton while EITHER the events list or the backend
+  // thu/chi/net summary is still loading — both feed the page's main content.
+  const isLoading = isEventsLoading || isSummaryLoading
   const [formOpen, setFormOpen] = useState(false)
   const [quickAction, setQuickAction] = useState<QuickAction | null>(null)
   const [showMoreDetails, setShowMoreDetails] = useState(false)
@@ -186,6 +199,8 @@ export function useEventsPage() {
   const filteredRecords = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return timelineRecords.filter((record) => {
+      if (record.date.slice(0, 7) !== selectedMonth) return false
+      if (selectedMember !== 'all' && record.ownerMemberId !== selectedMember) return false
       const isDebt = Boolean(record.debtId) || record.eventType === 'debt_update'
       const isSource = !isDebt && Boolean(record.fromAssetId || record.toAssetId)
       if (tab === 'source' && !isSource) return false
@@ -199,7 +214,7 @@ export function useEventsPage() {
         record.toAssetName?.toLowerCase().includes(needle)
       )
     })
-  }, [query, tab, timelineRecords])
+  }, [query, selectedMember, selectedMonth, tab, timelineRecords])
 
   const groupedRecords = useMemo(() => {
     const groups = new Map<TimelineGroupKey, FinancialRecordItem[]>()
@@ -226,6 +241,29 @@ export function useEventsPage() {
     }),
     [timelineRecords],
   )
+
+  /**
+   * The strip above the timeline: thu / chi / ròng plus how many records
+   * actually happened, for the month and person currently on screen.
+   *
+   * The backend endpoint owns these figures for a whole month, so a plain month
+   * view reads them straight through. It has no person parameter, though, and a
+   * headline that reported the whole household while the list below showed one
+   * member would be describing a different set of rows than the one on screen —
+   * so a narrowed view derives the same four figures from those very rows.
+   */
+  const periodSummary = useMemo(() => {
+    const isWholeMonth = selectedMember === 'all' && tab === 'all' && !query.trim()
+    if (isWholeMonth && eventsSummary) {
+      return {
+        totalIncome: eventsSummary.totalIncome,
+        totalOutcome: eventsSummary.totalOutcome,
+        netChange: eventsSummary.netChange,
+        recordedCount: eventsSummary.recordedCount,
+      }
+    }
+    return summarizeRecords(filteredRecords)
+  }, [eventsSummary, filteredRecords, query, selectedMember, tab])
 
   const summary = useMemo(() => {
     const attentionCount = timelineRecords.filter(isAttentionRecord).length
@@ -566,11 +604,16 @@ export function useEventsPage() {
     groupedRecords,
     recordCounts,
     isLoading,
+    periodSummary,
     // toolbar state
     tab,
     setTab,
     query,
     setQuery,
+    selectedMonth,
+    setSelectedMonth,
+    selectedMember,
+    setSelectedMember,
     // dialog state
     formOpen,
     quickAction,

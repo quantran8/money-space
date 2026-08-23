@@ -67,18 +67,19 @@ export function canSettleCashflow(asset: {
   )
 }
 
-export const assetTypeOrder: AssetType[] = [
-  'cash',
-  'bank_account',
-  'gold',
-  'crypto',
-  'stock',
-  'real_estate',
-  'loan_receivable',
-  'saving_deposit',
-  'other',
-  'foreign_currency',
+/**
+ * The form's type picker groups the choices by how the value is arrived at:
+ * a balance you hold, a price the market sets, everything else. Keeps the
+ * flat list of ten from reading as one undifferentiated wall.
+ */
+export const assetTypeGroups: { id: 'wallet' | 'market' | 'other'; types: AssetType[] }[] = [
+  { id: 'wallet', types: ['cash', 'bank_account'] },
+  { id: 'market', types: ['gold', 'stock', 'crypto', 'foreign_currency'] },
+  { id: 'other', types: ['real_estate', 'saving_deposit', 'loan_receivable', 'other'] },
 ]
+
+/** Derived from the groups so the form schema can never offer a type the picker hides. */
+export const assetTypeOrder: AssetType[] = assetTypeGroups.flatMap((group) => group.types)
 
 /**
  * Old records keep their original type in storage and history. When one is
@@ -186,6 +187,36 @@ export function liquidityForAsset(
 
 export function assetClassForType(type: AssetType): AssetClass | undefined {
   return assetClassByType[type]
+}
+
+/**
+ * Classes the symbol picker has a real instrument list for.
+ *
+ * `fund` is a market-priced class but has no listing behind it — the providers
+ * quote funds as equities without a distinct catalogue — so a fund's symbol
+ * stays free text rather than opening a combobox that can only ever say "not
+ * found".
+ */
+const searchableClasses: AssetClass[] = [
+  'stock',
+  'crypto',
+  'gold',
+  'foreign_currency',
+]
+
+export type SearchableAssetClass = Extract<
+  AssetClass,
+  'stock' | 'crypto' | 'gold' | 'foreign_currency'
+>
+
+/** The picker's class for a type, or undefined when it has no instrument list. */
+export function searchableAssetClassForType(
+  type: AssetType,
+): SearchableAssetClass | undefined {
+  const assetClass = assetClassByType[type]
+  return assetClass && searchableClasses.includes(assetClass)
+    ? (assetClass as SearchableAssetClass)
+    : undefined
 }
 
 export function calculationTypeForType(type: AssetType): CalculationType | undefined {

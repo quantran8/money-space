@@ -414,6 +414,11 @@ export const resources = {
           namePlaceholder: 'Ví dụ: Sổ tiết kiệm ACB',
           type: 'Loại tài sản',
           typePlaceholder: 'Chọn loại tài sản',
+          typeGroup: {
+            wallet: 'Tiền mặt & tài khoản',
+            market: 'Tài sản theo giá thị trường',
+            other: 'Khác',
+          },
           value: 'Giá trị ước tính',
           // Tiền mặt / tài khoản ngân hàng là con số đã biết chắc, không phải ước tính.
           balance: 'Số dư',
@@ -437,9 +442,14 @@ export const resources = {
           purchasePrice: 'Giá mua mỗi đơn vị',
           purchasePricePlaceholder: 'Ví dụ: 1.500.000.000',
           market: {
+            quoteLabel: 'Giá thị trường',
+            quoteLoading: 'Đang lấy giá thị trường...',
+            quoteUnavailable: 'Chưa có giá thị trường cho mã này',
+            quoteUse: 'Dùng làm giá mua',
+            quoteSource: 'Theo dữ liệu từ {{source}}',
             gold: {
-              symbol: 'Loại vàng',
-              symbolPlaceholder: 'Ví dụ: SJC, vàng 9999',
+              symbol: 'Loại vàng / bạc',
+              symbolPlaceholder: 'Chọn loại vàng, bạc',
               quantity: 'Số lượng vàng',
               unit: 'Đơn vị vàng',
               unitPlaceholder: 'Ví dụ: lượng, chỉ, gram',
@@ -448,13 +458,13 @@ export const resources = {
             },
             crypto: {
               symbol: 'Mã crypto',
-              symbolPlaceholder: 'Ví dụ: BTC, ETH',
+              symbolPlaceholder: 'Chọn mã crypto',
               quantity: 'Số lượng coin',
               purchasePrice: 'Giá mua mỗi coin',
             },
             stock: {
               symbol: 'Mã chứng khoán',
-              symbolPlaceholder: 'Ví dụ: FPT, VNM',
+              symbolPlaceholder: 'Chọn mã chứng khoán',
               quantity: 'Số cổ',
               quantitySuffix: 'cổ',
               quantityInteger: 'Số cổ phải là số nguyên',
@@ -462,7 +472,7 @@ export const resources = {
             },
             foreign_currency: {
               symbol: 'Mã ngoại tệ',
-              symbolPlaceholder: 'Ví dụ: USD, EUR',
+              symbolPlaceholder: 'Chọn ngoại tệ',
               quantity: 'Số tiền ngoại tệ',
               purchasePrice: 'Tỷ giá mua',
             },
@@ -516,6 +526,10 @@ export const resources = {
           // §22.11 — the right verb, and the consequence stated in money.
           removeTitle: 'Gỡ nguồn tiền này?',
           removeBody: '{{amount}} sẽ không còn được tính vào bức tranh tài chính của gia đình.',
+          removeAlsoDetaches:
+            'Tài sản này đang gắn với {{goalCount}} mục tiêu ({{goals}}), {{eventCount}} khoản thu chi và {{debtCount}} khoản nợ. Xoá sẽ gỡ các liên kết đó — mục tiêu, khoản thu chi và khoản nợ vẫn còn, nhưng không còn trỏ tới tài sản này nữa.',
+          removeLeavesGoalsWithoutWallet:
+            'Sau khi xoá, {{goals}} sẽ không còn ví nào để góp tiền mỗi tháng. Mục tiêu vẫn còn nhưng phần theo dõi tiến độ hằng tháng sẽ trống cho tới khi bạn thêm ví khác.',
           removeConfirm: 'Gỡ nguồn tiền',
           removing: 'Đang gỡ...',
           incomplete: 'Còn thiếu thông tin để lưu khoản này.',
@@ -1053,6 +1067,8 @@ export const resources = {
             'Chưa có ví nào để trừ. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng ở mục Tài sản trước.',
           walletNoneIn:
             'Chưa có ví nào để nhận. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng ở mục Tài sản trước.',
+          walletDeleted:
+            'Ví gắn với khoản này đã bị xoá. Chọn ví khác trước khi lưu.',
           moreDetails: 'Thêm chi tiết',
           recurrence: 'Lặp lại',
           recurrenceOption: {
@@ -1090,6 +1106,8 @@ export const resources = {
           outgoingNote: 'Trong đó {{required}} là khoản cố định',
           lowest: 'Thấp nhất dự kiến',
           lowestNote: 'Dự kiến vào {{date}}',
+          lowestNoSource:
+            'Chưa có ví nào để tính số dư. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng ở mục Tài sản.',
           today: 'Có thể dùng hôm nay',
           todayNote: '{{count}} nguồn tiền dùng được ngay',
         },
@@ -1241,6 +1259,8 @@ export const resources = {
           // Không gọi là "tiền mặt": gia đình tự chọn khoản nào được tính, nên
           // ở đây có thể có cả vàng hay sổ tiết kiệm đã đánh dấu dùng được.
           totals: 'trên tổng {{cash}} có thể dùng ngay',
+          noSource:
+            'Chưa có ví nào để tính. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng ở mục Tài sản.',
           totalsWithNetWorth: 'trên tổng {{cash}} có thể dùng ngay · giá trị ròng {{netWorth}}',
           simulate: 'Thử một khoản chi',
           composition: {
@@ -1280,6 +1300,12 @@ export const resources = {
         // Tên của cả khối: gồm phần quá hạn và phần 30 ngày tới.
         cashflow: {
           title: 'Dòng tiền',
+          // Nửa "đã xảy ra" của §12.2 — ngữ cảnh cho phần dự kiến bên dưới,
+          // nên viết nhỏ và không có số "ròng" (vào trừ ra là cách nói thứ ba).
+          recordedEyebrow: 'Tháng này · đã xảy ra',
+          recordedNote: 'Dòng tiền đã ghi nhận đến {{date}}',
+          in: 'Vào',
+          out: 'Ra',
         },
         upcoming: {
           title: '30 ngày tới',
@@ -1300,6 +1326,13 @@ export const resources = {
           // The figure itself is set apart, so the sentence stops before it.
           lowestNoteDipBefore: 'Vào {{date}}, thấp hơn hôm nay',
           lowestNoteNoDip: 'Vào {{date}}, không thấp hơn hôm nay.',
+          // Không có ví thì không có gì để nói, và "—" đọc ra là số 0 chứ không
+          // phải "chưa tính được" (§23). Câu ngắn nói thiếu gì, nút nói làm gì.
+          lowestUnavailable: 'Chưa tính được',
+          lowestNoSourceShort: 'Chưa có số dư đầu kỳ.',
+          lowestNoSourceHint: 'Thêm nguồn tiền để tính số dư sau từng khoản.',
+          addSource: 'Thêm nguồn tiền',
+          remainingUnavailable: '"Còn lại" sẽ có sau khi thêm nguồn tiền.',
           chartLabel: 'Thay đổi so với hôm nay · tr',
           chartAria:
             'Tiền linh hoạt xuống thấp nhất {{lowest}} ngày {{date}} rồi lên {{ending}} cuối kỳ',
@@ -1692,6 +1725,9 @@ export const resources = {
           title: 'Nguồn tạo tiến độ',
           add: 'Thêm tài sản',
           addSource: 'Thêm nguồn',
+          noWalletTitle:
+            'Mục tiêu này chưa có ví tiền mặt hay tài khoản ngân hàng nào, nên chưa có chỗ để góp tiền mỗi tháng. Phần theo dõi tiến độ hằng tháng sẽ trống cho tới khi bạn thêm một ví.',
+          addWallet: 'Thêm ví',
           holdingsLabel: 'Tài sản đã dành',
           recurringLabel: 'Đóng góp định kỳ',
           sourceCount: '{{count}} nguồn',
@@ -1860,8 +1896,8 @@ export const resources = {
           allocations: 'Tài sản góp vào mục tiêu',
           allocationsRequired:
             'Chọn ít nhất một tài sản. Mục tiêu được tính từ chính số tiền gia đình đang có.',
-          walletRequired:
-            'Chọn thêm ít nhất một ví tiền mặt hoặc tài khoản ngân hàng — tiền góp mỗi tháng đi ra từ đó.',
+          walletMissingNotice:
+            'Mục tiêu này chưa có ví tiền mặt hay tài khoản ngân hàng nào. Vẫn lưu được, nhưng chưa có chỗ để góp tiền mỗi tháng nên phần theo dõi tiến độ hằng tháng sẽ trống.',
           allocationInvalid: 'Nhập phần góp vào lớn hơn 0.',
           consequenceRemaining: 'Còn thiếu',
           consequenceMonths: 'Theo mức góp này, khoảng {{count}} tháng nữa.',
@@ -1994,11 +2030,12 @@ export const resources = {
           empty: 'Không có sự kiện nào phù hợp.',
         },
         summary: {
-          eyebrow: 'Tóm tắt tháng này',
-          title: 'Snapshot thay đổi chủ yếu do đâu',
-          inflow: 'Tiền vào',
-          outflow: 'Tiền ra',
-          net: 'Tác động ròng',
+          received: 'Đã nhận',
+          spent: 'Đã chi',
+          net: 'Dòng tiền ròng',
+          // "đã xảy ra": chỉ đếm khoản đã ghi nhận / đã trả — khoản chưa xử lý
+          // hay đã dời lại là tiền chưa chạy, không tính vào tháng này.
+          recordedCount: '{{count}} sự kiện đã xảy ra',
         },
         review: {
           eyebrow: 'Cần xem lại',
@@ -2993,6 +3030,11 @@ export const resources = {
           namePlaceholder: 'Example: ACB savings book',
           type: 'Asset type',
           typePlaceholder: 'Choose an asset type',
+          typeGroup: {
+            wallet: 'Cash & bank accounts',
+            market: 'Market assets',
+            other: 'Other',
+          },
           value: 'Estimated value',
           balance: 'Balance',
           countsAsFlexible: 'Counts towards flexible money',
@@ -3014,9 +3056,14 @@ export const resources = {
           purchasePrice: 'Purchase price per unit',
           purchasePricePlaceholder: 'Example: 1.500.000.000',
           market: {
+            quoteLabel: 'Market price',
+            quoteLoading: 'Fetching the market price...',
+            quoteUnavailable: 'No market price for this symbol yet',
+            quoteUse: 'Use as purchase price',
+            quoteSource: 'Based on data from {{source}}',
             gold: {
-              symbol: 'Gold kind',
-              symbolPlaceholder: 'Example: SJC, 9999 gold',
+              symbol: 'Gold / silver kind',
+              symbolPlaceholder: 'Choose a gold or silver product',
               quantity: 'Gold quantity',
               unit: 'Gold unit',
               unitPlaceholder: 'Example: tael, chi, gram',
@@ -3025,13 +3072,13 @@ export const resources = {
             },
             crypto: {
               symbol: 'Crypto symbol',
-              symbolPlaceholder: 'Example: BTC, ETH',
+              symbolPlaceholder: 'Choose a crypto symbol',
               quantity: 'Coin quantity',
               purchasePrice: 'Purchase price per coin',
             },
             stock: {
               symbol: 'Stock ticker',
-              symbolPlaceholder: 'Example: FPT, VNM',
+              symbolPlaceholder: 'Choose a stock ticker',
               quantity: 'Number of shares',
               quantitySuffix: 'shares',
               quantityInteger: 'The number of shares must be a whole number',
@@ -3039,7 +3086,7 @@ export const resources = {
             },
             foreign_currency: {
               symbol: 'Currency code',
-              symbolPlaceholder: 'Example: USD, EUR',
+              symbolPlaceholder: 'Choose a currency',
               quantity: 'Foreign-currency amount',
               purchasePrice: 'Purchase exchange rate',
             },
@@ -3090,6 +3137,10 @@ export const resources = {
           changeFlexibleOff: 'This one will no longer count towards flexible money.',
           removeTitle: 'Remove this money source?',
           removeBody: "{{amount}} will no longer count towards your household's picture.",
+          removeAlsoDetaches:
+            'This asset backs {{goalCount}} goal(s) ({{goals}}), {{eventCount}} event(s) and {{debtCount}} debt(s). Deleting it detaches those links — the goals, events and debts stay, but they will no longer point at this asset.',
+          removeLeavesGoalsWithoutWallet:
+            'After this, {{goals}} will have no wallet left to be saved into each month. The goal stays, but its monthly pace panel will be empty until you add another wallet.',
           removeConfirm: 'Remove',
           removing: 'Removing...',
           incomplete: 'Some details are still missing.',
@@ -3606,6 +3657,8 @@ export const resources = {
             'No wallet to take this from yet. Add cash or a bank account under Assets first.',
           walletNoneIn:
             'No wallet to receive this yet. Add cash or a bank account under Assets first.',
+          walletDeleted:
+            'The wallet this was tied to has been deleted. Choose another one before saving.',
           moreDetails: 'Add details',
           recurrence: 'Repeats',
           recurrenceOption: {
@@ -3643,6 +3696,8 @@ export const resources = {
           outgoingNote: '{{required}} of it is fixed',
           lowest: 'Projected low',
           lowestNote: 'Expected on {{date}}',
+          lowestNoSource:
+            'No wallet to run a balance against. Add cash or a bank account under Assets.',
           today: 'Usable today',
           todayNote: '{{count}} sources usable right now',
         },
@@ -3789,6 +3844,8 @@ export const resources = {
           flexibleLabel: 'After what is already spoken for',
           flexibleUnit: 'million flexible',
           totals: 'of {{cash}} usable now',
+          noSource:
+            'No wallet to count yet. Add cash or a bank account under Assets.',
           totalsWithNetWorth: 'of {{cash}} usable now · net worth {{netWorth}}',
           simulate: 'Try a purchase',
           composition: {
@@ -3823,6 +3880,10 @@ export const resources = {
         },
         cashflow: {
           title: 'Cash flow',
+          recordedEyebrow: 'This month · happened',
+          recordedNote: 'Recorded through {{date}}',
+          in: 'In',
+          out: 'Out',
         },
         upcoming: {
           title: 'Next 30 days',
@@ -3840,6 +3901,11 @@ export const resources = {
           lowestLabel: 'Lowest projected',
           lowestNoteDipBefore: 'On {{date}}, lower than today by',
           lowestNoteNoDip: 'On {{date}}, no lower than today.',
+          lowestUnavailable: 'Not yet computable',
+          lowestNoSourceShort: 'No opening balance yet.',
+          lowestNoSourceHint: 'Add a money source to run a balance after each item.',
+          addSource: 'Add money source',
+          remainingUnavailable: '"Remaining" appears once a money source is added.',
           chartLabel: 'Change since today · M',
           chartAria:
             'Flexible money dips to {{lowest}} on {{date}}, then rises to {{ending}} by the end',
@@ -4223,6 +4289,9 @@ export const resources = {
           title: 'What drives progress',
           add: 'Add asset',
           addSource: 'Add a source',
+          noWalletTitle:
+            'This goal has no cash or bank account behind it, so there is nowhere to put money in each month. The monthly pace panel stays empty until you add one.',
+          addWallet: 'Add a wallet',
           holdingsLabel: 'SET ASIDE',
           recurringLabel: 'MONTHLY CONTRIBUTION',
           sourceCount: '{{count}} SOURCES',
@@ -4389,8 +4458,8 @@ export const resources = {
           allocations: 'Assets behind this goal',
           allocationsRequired:
             'Choose at least one asset. A goal is counted from money the household already holds.',
-          walletRequired:
-            'Add at least one cash or bank account — that is where the money you put in each month comes from.',
+          walletMissingNotice:
+            'This goal has no cash or bank account behind it. You can still save it, but there is nowhere to put money in each month, so the monthly pace panel stays empty.',
           allocationInvalid: 'Enter a share greater than 0.',
           consequenceRemaining: 'Still short',
           consequenceMonths: 'At this pace, about {{count}} months away.',
@@ -4523,11 +4592,10 @@ export const resources = {
           empty: 'No matching events.',
         },
         summary: {
-          eyebrow: 'This month at a glance',
-          title: 'What moved the snapshot most',
-          inflow: 'Money in',
-          outflow: 'Money out',
-          net: 'Net impact',
+          received: 'Received',
+          spent: 'Spent',
+          net: 'Net cash flow',
+          recordedCount: '{{count}} events happened',
         },
         review: {
           eyebrow: 'Worth a second look',

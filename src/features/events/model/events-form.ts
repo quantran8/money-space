@@ -210,6 +210,58 @@ export function isSameMonthAsToday(isoDate: string) {
   return isoDate.slice(0, 7) === TODAY.slice(0, 7)
 }
 
+/**
+ * Statuses that mean the money actually moved. Everything else — unpaid,
+ * overdue, waiting on a confirmation, postponed — is still only expected, and
+ * counting it as thu/chi would report a month that has not happened yet.
+ */
+const SETTLED_STATUSES: RecordStatus[] = ['recorded', 'paid']
+
+export function hasHappened(record: FinancialRecordItem) {
+  return SETTLED_STATUSES.includes(record.status)
+}
+
+export type PeriodSummary = {
+  totalIncome: number
+  totalOutcome: number
+  netChange: number
+  recordedCount: number
+}
+
+/**
+ * Thu / chi / ròng for a set of records the user is looking at.
+ *
+ * The backend `/money-events/summary` endpoint stays the source of truth for a
+ * whole month and is used whenever the view is a plain month. This exists for
+ * the case that endpoint cannot answer — a person filter narrows the list to
+ * one member — where the headline must agree with the rows on screen rather
+ * than report a different population.
+ *
+ * `amount` is signed, so a transfer between two of the household's own assets
+ * nets to zero and belongs in neither thu nor chi; `direction` decides the
+ * bucket, not the sign.
+ */
+export function summarizeRecords(records: FinancialRecordItem[]): PeriodSummary {
+  let totalIncome = 0
+  let totalOutcome = 0
+  let recordedCount = 0
+
+  for (const record of records) {
+    if (!hasHappened(record)) continue
+    recordedCount += 1
+    const value = Math.abs(record.amount)
+    if (record.direction === 'inflow') totalIncome += value
+    else if (record.direction === 'outflow') totalOutcome += value
+  }
+
+  return {
+    totalIncome,
+    totalOutcome,
+    netChange: totalIncome - totalOutcome,
+    recordedCount,
+  }
+}
+
 export function isAttentionRecord(record: FinancialRecordItem) {
   return (
     record.isAttentionNeeded ||

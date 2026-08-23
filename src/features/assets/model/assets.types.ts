@@ -47,6 +47,13 @@ export type CalculationType =
 export type MarketPosition = {
   assetClass: AssetClass
   symbol: string
+  /**
+   * Venue the instrument trades on (`HOSE`, `HNX`, `NASDAQ`) or, for gold and
+   * silver, the dealer brand. Set from the symbol picker's reference data — the
+   * backend routes pricing on it, since a Vietnamese and a foreign listing are
+   * both `assetClass: 'stock'`.
+   */
+  market?: string
   quantity: number
   unit: string
   quoteCurrency: string
@@ -137,4 +144,40 @@ export type AssetSnapshotPoint = {
   usable_now: number
   not_immediately_usable: number
   long_term: number
+}
+
+/**
+ * What an asset delete would take with it.
+ *
+ * Assets are soft-deleted, so nothing cascades: goal claims, scheduled events
+ * and debts pointing at the asset would simply outlive it. The server refuses
+ * the delete while any of these exist, and hands this back so the household can
+ * be told what confirming would cost.
+ */
+export type AssetDeleteImpact = {
+  householdId: string
+  assetId: string
+  assetName: string
+  goals: Array<{
+    id: string
+    name: string
+    priority: string
+    allocationCount: number
+    /**
+     * This asset is the goal's last contribution wallet. The goal survives the
+     * delete — that is allowed now — but has nowhere left to be saved into, so
+     * it is called out separately from the rest.
+     */
+    losesLastWallet: boolean
+  }>
+  goalsLosingLastWallet: Array<{ id: string; name: string }>
+  cashflowEvents: Array<{
+    id: string
+    name: string
+    expectedDate: string
+    status: string
+  }>
+  debts: Array<{ id: string; name: string; status: string }>
+  /** Nothing points at the asset; the delete needs no confirmation. */
+  isClear: boolean
 }

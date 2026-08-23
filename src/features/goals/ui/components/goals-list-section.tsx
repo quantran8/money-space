@@ -12,6 +12,14 @@ import {
 import { Panel } from '@/components/ui/panel'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { hasProjectedDate } from '@/features/goals/model/goal-projection.types'
 import type { GoalItem } from '@/features/goals/model/goals'
 import { formatAmount, goalAmount, priorityRank } from '@/features/goals/model/goals-form'
@@ -102,37 +110,40 @@ export function GoalsListSection({
         {!isLoading && goalViews.length > 0 ? (
           <>
             <div className="hidden lg:block">
-              <table className="w-full table-fixed text-left text-[14px]" aria-label={t('goals.table.ariaLabel')}>
-                <thead>
-                  <tr className="label-vi">
-                    <th className="w-[23%] pb-3 pl-3 font-normal">{t('goals.table.goal')}</th>
-                    <th className="w-[30%] pb-3 font-normal">{t('goals.table.progress')}</th>
-                    <th className="w-[28%] pb-3 font-normal">{t('goals.table.plan')}</th>
-                    <th className="w-[19%] pb-3 pr-2"><span className="sr-only">{t('common.actions')}</span></th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table className="table-fixed text-left text-[14px]" aria-label={t('goals.table.ariaLabel')}>
+                <TableHeader>
+                  {/* `.label-vi`: accented headings, which mono renders poorly (§10.1). */}
+                  <TableRow className="label-vi hover:bg-transparent">
+                    <TableHead className="label-vi h-auto w-[23%] px-0 pb-3 pl-3 font-normal">{t('goals.table.goal')}</TableHead>
+                    <TableHead className="label-vi h-auto w-[30%] px-0 pb-3 font-normal">{t('goals.table.progress')}</TableHead>
+                    <TableHead className="label-vi h-auto w-[28%] px-0 pb-3 font-normal">{t('goals.table.plan')}</TableHead>
+                    <TableHead className="h-auto w-[19%] px-0 pb-3 pr-2"><span className="sr-only">{t('common.actions')}</span></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {goalViews.map(({ goal, current, target, desiredDate, projectedDate, monthly, paceGapMonths }) => (
-                    <tr key={goal.id} className="group cursor-pointer" onClick={() => onOpen(goal.id)}>
-                      <td className="rounded-l-control py-4 pl-3 pr-5 align-top transition-colors group-hover:bg-sunk">
+                    // Cells carry the hover band rather than the row, so the
+                    // rounded ends land on the first and last cell (§11.3).
+                    <TableRow key={goal.id} className="group cursor-pointer hover:bg-transparent" onClick={() => onOpen(goal.id)}>
+                      <TableCell className="rounded-l-control px-0 py-4 pl-3 pr-5 align-top transition-colors group-hover:bg-sunk">
                         <GoalName goal={goal} isPrimary={goal.id === primaryGoalId} onOpen={onOpen} />
-                      </td>
-                      <td className="py-4 pr-8 align-top transition-colors group-hover:bg-sunk">
+                      </TableCell>
+                      <TableCell className="px-0 py-4 pr-8 align-top transition-colors group-hover:bg-sunk">
                         <GoalProgress goal={goal} current={current} target={target} />
-                      </td>
-                      <td className="py-4 pr-7 align-top transition-colors group-hover:bg-sunk">
+                      </TableCell>
+                      <TableCell className="px-0 py-4 pr-7 align-top transition-colors group-hover:bg-sunk">
                         <GoalPlan desiredDate={desiredDate} projectedDate={projectedDate} monthly={monthly} paceGapMonths={paceGapMonths} />
-                      </td>
-                      <td
-                        className="rounded-r-control py-3 pr-2 text-right align-top transition-colors group-hover:bg-sunk"
+                      </TableCell>
+                      <TableCell
+                        className="rounded-r-control px-0 py-3 pr-2 text-right align-top transition-colors group-hover:bg-sunk"
                         onClick={(event) => event.stopPropagation()}
                       >
                         <GoalActions goal={goal} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             <ul className="space-y-2 lg:hidden" aria-label={t('goals.table.ariaLabel')}>

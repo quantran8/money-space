@@ -1,9 +1,24 @@
-import { useState } from 'react'
-import { Controller, useWatch, type UseFormReturn, type UseFormSetValue } from 'react-hook-form'
+import { Fragment, useEffect, useRef, useState } from 'react'
+import {
+  Controller,
+  useWatch,
+  type UseFormReturn,
+  type UseFormSetValue,
+} from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { ChevronDownIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   DecimalField,
   Disclosure,
@@ -26,12 +41,16 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import {
-  assetTypeOrder,
+  searchableAssetClassForType,
+  assetTypeGroups,
   flexibleByDefaultForAssetType,
   type Asset,
   type AssetType,
   type ValuationMode,
 } from '@/features/assets/model/assets'
+import { SymbolCombobox } from '@/features/assets/ui/components/symbol-combobox'
+import { useMarketQuote } from '@/features/assets/hooks/use-market-quote'
+import type { MarketQuote } from '@/features/assets/api/symbols.repository'
 import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
 import {
   canBePurchased,
@@ -43,7 +62,7 @@ import {
   type AssetForm,
 } from '@/features/assets/model/assets-form'
 import { useFlexibleMoney } from '@/features/forecast/hooks/use-forecast'
-import { formatMoney } from '@/shared/lib/format-money'
+import { formatMoney, type DisplayCurrency } from '@/shared/lib/format-money'
 import { cn } from '@/shared/lib/utils'
 
 type WalletOption = { value: string; label: string; balance?: number }
@@ -81,7 +100,6 @@ export function AssetFormDialog({
   const [showMore, setShowMore] = useState(false)
   const {
     control,
-    getValues,
     register,
     formState: { errors },
   } = form
@@ -109,9 +127,17 @@ export function AssetFormDialog({
     setValue('countsAsFlexible', flexibleByDefaultForAssetType(next), {
       shouldDirty: true,
     })
+    // An instrument belongs to exactly one class, so nothing picked for the old
+    // type survives the switch: "VÀNG MIẾNG SJC" is not a crypto symbol, and
+    // its venue, unit and per-unit price are meaningless against the new class.
+    // Leaving them would submit a position whose symbol nothing can price.
+    setValue('symbol', '', { shouldDirty: true })
+    setValue('market', '', { shouldDirty: true })
+    setValue('unit', '', { shouldDirty: true })
+    setValue('purchasePrice', '', { shouldDirty: true })
     // The gold unit is a fixed choice, so it starts on the most common one
     // rather than rendering a segmented control with nothing selected.
-    if (next === 'gold' && !getValues('unit')) {
+    if (next === 'gold') {
       setValue('unit', goldUnits[0], { shouldDirty: true })
     }
   }
@@ -137,18 +163,44 @@ export function AssetFormDialog({
           <div className="space-y-4">
             <Field label={t('assets.form.type')} error={errors.type?.message}>
               <div className={fieldShell}>
-                <Select value={selectedType} onValueChange={(next) => handleTypeChange(next as AssetType)}>
-                  <SelectTrigger className={fieldControlReset}>
-                    <SelectValue placeholder={t('assets.form.typePlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {assetTypeOrder.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {t(`options.assetType.${type}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    className={cn(
+                      fieldControlReset,
+                      'flex items-center justify-between gap-2 text-left outline-none',
+                    )}
+                  >
+                    <span className={cn('truncate', !selectedType && 'text-ink3')}>
+                      {selectedType
+                        ? t(`options.assetType.${selectedType}`)
+                        : t('assets.form.typePlaceholder')}
+                    </span>
+                    <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="max-h-[320px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto"
+                  >
+                    <DropdownMenuRadioGroup
+                      value={selectedType}
+                      onValueChange={(next) => handleTypeChange(next as AssetType)}
+                    >
+                      {assetTypeGroups.map((group, index) => (
+                        <Fragment key={group.id}>
+                          {index > 0 ? <DropdownMenuSeparator /> : null}
+                          <DropdownMenuLabel>
+                            {t(`assets.form.typeGroup.${group.id}`)}
+                          </DropdownMenuLabel>
+                          {group.types.map((type) => (
+                            <DropdownMenuRadioItem key={type} value={type}>
+                              {t(`options.assetType.${type}`)}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </Fragment>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </Field>
 
@@ -171,9 +223,9 @@ export function AssetFormDialog({
             {mode === 'market_priced' ? (
               <MarketFields
                 control={control}
-                register={register}
                 errors={errors}
                 type={selectedType}
+                setValue={setValue}
                 t={t}
               />
             ) : null}
@@ -557,44 +609,137 @@ function ManualFields({
 }
 
 /**
- * Symbol is a free-text input for EVERY market-priced type — stock, crypto,
- * fund, gold, foreign currency alike.
+ * Symbol is chosen from the backend's instrument list for every market-priced
+ * type — stock, crypto, gold/silver and foreign currency alike.
  *
- * There was a searchable picker for stock/crypto backed by
- * `/api/market-data/symbols`, but that reference data does not exist yet. A
- * combobox with nothing behind it is worse than a text field: it implies a
- * canonical list, then shows "không tìm thấy" for a symbol the user holds. Let
- * them type the code until the instrument DB is real.
+ * This was a free-text field while there was no reference data behind it. There
+ * is now: VN + foreign equities, crypto, the dealer's precious-metal products
+ * and the supported currencies all come from `/api/market-data/symbols`, and
+ * every listed instrument is one the price feed can actually quote. Picking
+ * from the list is what makes the holding priceable — a typed symbol the
+ * providers do not recognise would value at nothing.
  */
 function MarketFields({
   control,
-  register,
   errors,
   type,
+  setValue,
   t,
 }: {
   control: Control
-  register: UseFormReturn<AssetForm>['register']
   errors: Errors
   type: AssetType
+  setValue: UseFormSetValue<AssetForm>
   t: Translate
 }) {
   const fieldPrefix = `assets.form.market.${type}`
+  const assetClass = searchableAssetClassForType(type)
+  const symbol = useWatch({ control, name: 'symbol' })
+  const market = useWatch({ control, name: 'market' })
+  // Ask crypto for its quote in đồng. Every money field here is VND, but crypto
+  // defaults to USD upstream, so the quote came back unprefillable (see
+  // `canPrefill`). CoinMarketCap converts server-side in the same call — the only
+  // place a real FX rate exists, since the client's `fxToVnd` is a stub.
+  //
+  // Deliberately crypto ONLY. Foreign equities are just as USD-bound, but they
+  // route to Twelve Data, which fetches a USD price and then labels it with
+  // whatever currency was ASKED for — requesting VND there would return a USD
+  // figure tagged `VND`, slipping past `canPrefill` and understating the cost
+  // basis ~26,000x. That is the exact bug the guard exists to prevent.
+  const quoteCurrency = assetClass === 'crypto' ? 'VND' : undefined
+  const { quote, isLoading, isUnavailable } = useMarketQuote(
+    assetClass,
+    symbol,
+    market,
+    quoteCurrency,
+  )
+
+  const prefillPurchasePrice = (price: number) => {
+    setValue('purchasePrice', String(Math.round(price)), {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }
+
+  // Prefill the purchase price from the live quote.
+  //
+  // The quote arrives asynchronously, so this cannot happen at click time — it
+  // fires when the price for the picked symbol lands. Keyed by symbol and run
+  // once per symbol: picking a different instrument re-prefills with that
+  // instrument's price, while a figure the user edits afterwards survives,
+  // because a stale refetch of the same symbol does not fire again.
+  // `purchasePrice` is a VND field (the form stores money in đồng), so a quote
+  // in another currency must NOT be written into it: BTC at 78,188 USD would
+  // land as 78,188đ and understate the cost basis ~26,000x. The request above
+  // asks for VND, so this normally holds; it stays a guard because a provider
+  // may answer in its own currency regardless of what was asked.
+  const canPrefill = quote?.quoteCurrency === 'VND'
+
+  const prefilledFor = useRef<string | null>(null)
+  useEffect(() => {
+    if (!quote || !canPrefill) return
+    const key = `${quote.assetClass}:${quote.symbol}`
+    if (prefilledFor.current === key) return
+    prefilledFor.current = key
+    prefillPurchasePrice(quote.price)
+    // `prefillPurchasePrice` is a stable form helper.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quote, canPrefill])
 
   return (
     <>
-      <Field label={t(`${fieldPrefix}.symbol`)} error={errors.symbol?.message}>
-        <div className={cn(fieldShell, errors.symbol && 'border-alert')}>
-          <input
-            className="h-full w-full min-w-0 bg-transparent text-[16px] uppercase leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
-            placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
-            autoCapitalize="characters"
-            autoCorrect="off"
-            spellCheck={false}
-            {...register('symbol')}
-          />
-        </div>
-      </Field>
+      <Controller
+        control={control}
+        name="symbol"
+        render={({ field }) => (
+          <Field label={t(`${fieldPrefix}.symbol`)} error={errors.symbol?.message}>
+            <div className={cn(fieldShell, errors.symbol && 'border-alert')}>
+              {assetClass ? (
+                <SymbolCombobox
+                  assetClass={assetClass}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onSelectSymbol={(reference) => {
+                    // The venue/brand rides along so the backend can route
+                    // pricing, and the unit comes from reference data rather
+                    // than being guessed from the symbol.
+                    setValue('market', reference.exchange ?? '', {
+                      shouldDirty: true,
+                    })
+                    if (reference.unit) {
+                      setValue('unit', reference.unit, { shouldDirty: true })
+                    }
+                  }}
+                  placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
+                />
+              ) : (
+                // A class with no instrument list behind it (funds) keeps a
+                // text field — a combobox that can only answer "not found"
+                // would be worse than letting the user type the code.
+                <input
+                  className="h-full w-full min-w-0 bg-transparent text-[16px] uppercase leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
+                  placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                />
+              )}
+            </div>
+          </Field>
+        )}
+      />
+
+      <MarketQuoteHint
+        symbol={symbol}
+        quote={quote}
+        isLoading={isLoading}
+        isUnavailable={isUnavailable}
+        onUsePrice={canPrefill ? prefillPurchasePrice : undefined}
+        t={t}
+      />
 
       <Controller
         control={control}
@@ -637,6 +782,81 @@ function MarketFields({
         )}
       />
     </>
+  )
+}
+
+/**
+ * The live market price for the chosen symbol.
+ *
+ * The price seeds `purchasePrice` when that field is still empty (see the
+ * prefill effect in `MarketFields`), which covers the common case of recording
+ * something just bought. It stays visible afterwards because the two are not
+ * the same number: this is what the instrument is worth *now*, while
+ * `purchasePrice` is the cost basis — what the household actually paid, which
+ * may be years old. So an already-filled field is never overwritten, and the
+ * "use this price" action lets the user opt back into today's figure.
+ *
+ * Renders nothing until a symbol is chosen, and says so plainly when the
+ * instrument cannot be priced — the form still submits, valued from whatever
+ * the user types.
+ */
+function MarketQuoteHint({
+  symbol,
+  quote,
+  isLoading,
+  isUnavailable,
+  onUsePrice,
+  t,
+}: {
+  symbol: string
+  quote: MarketQuote | null
+  isLoading: boolean
+  isUnavailable: boolean
+  /** Absent when the quote's currency differs from the form's (VND). */
+  onUsePrice?: (price: number) => void
+  t: Translate
+}) {
+  if (!symbol.trim()) return null
+
+  if (isLoading) {
+    return (
+      <p className="text-[13px] text-ink3" aria-live="polite">
+        {t('assets.form.market.quoteLoading')}
+      </p>
+    )
+  }
+
+  if (isUnavailable || !quote) {
+    return (
+      <p className="text-[13px] text-ink3" aria-live="polite">
+        {t('assets.form.market.quoteUnavailable')}
+      </p>
+    )
+  }
+
+  return (
+    <div
+      className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]"
+      aria-live="polite"
+    >
+      <span className="text-ink3">{t('assets.form.market.quoteLabel')}</span>
+      <span className="font-semibold text-ink">
+        {formatMoney(quote.price, quote.quoteCurrency as DisplayCurrency)} /{' '}
+        {quote.unit}
+      </span>
+      {onUsePrice ? (
+        <button
+          type="button"
+          onClick={() => onUsePrice(quote.price)}
+          className="text-[hsl(var(--primary))] underline underline-offset-2"
+        >
+          {t('assets.form.market.quoteUse')}
+        </button>
+      ) : null}
+      <span className="basis-full text-ink3">
+        {t('assets.form.market.quoteSource', { source: quote.source })}
+      </span>
+    </div>
   )
 }
 

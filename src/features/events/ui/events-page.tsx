@@ -8,6 +8,7 @@ import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dial
 import { useAssets } from '@/features/assets/hooks/use-assets'
 import { useEventsPage } from '@/features/events/hooks/use-events-page'
 import { EventFormDialog } from '@/features/events/ui/components/event-form-dialog'
+import { EventsSummaryStrip } from '@/features/events/ui/components/events-summary-strip'
 import { EventsTimelineCard } from '@/features/events/ui/components/events-timeline-card'
 import type { QuickAction } from '@/features/events/model/events-form'
 
@@ -17,9 +18,14 @@ export function EventsPage() {
   const {
     sale,
     groupedRecords,
+    periodSummary,
     isLoading,
     tab,
     setTab,
+    selectedMonth,
+    setSelectedMonth,
+    selectedMember,
+    setSelectedMember,
     formOpen,
     quickAction,
     setQuickAction,
@@ -68,11 +74,17 @@ export function EventsPage() {
         }
       />
 
+      <EventsSummaryStrip summary={periodSummary} month={selectedMonth} />
+
       <EventsTimelineCard
         tab={tab}
         onTabChange={setTab}
         groupedRecords={groupedRecords}
         memberOptions={memberOptions}
+        selectedMonth={selectedMonth}
+        onMonthChange={setSelectedMonth}
+        selectedMember={selectedMember}
+        onMemberChange={setSelectedMember}
         isLoading={isLoading}
         onEditEvent={openEditEvent}
         onDuplicateEvent={duplicateEvent}

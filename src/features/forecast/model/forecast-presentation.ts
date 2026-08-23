@@ -31,6 +31,25 @@ export const BALANCE_TONE_CLASS: Record<BalanceTone, string> = {
   normal: 'text-ink2',
 }
 
+/**
+ * Can a projected balance be stated at all?
+ *
+ * **Zero wallets is not a wallet holding 0đ.** Both sum to a
+ * `startingLiquidBalance` of 0, but only the second is a balance the household
+ * has. With no `usable_now` asset, every figure projected from that sum is
+ * arithmetic on money nobody holds: a 1tr bill renders as "−1,0 triệu", which
+ * reads as an overdraft that does not exist and paints the screen red over it.
+ *
+ * Callers show "—" instead. A genuine shortfall — an outflow larger than a real
+ * wallet — still shows its negative figure: that is what the projection is for.
+ *
+ * `undefined` means the server did not say (an older build). Treated as "there
+ * is a source", so a missing field can never blank the column silently.
+ */
+export function canProjectBalance(usableNowAssetCount?: number): boolean {
+  return usableNowAssetCount === undefined || usableNowAssetCount > 0
+}
+
 /** Only days that actually have occurrences belong on the timeline. */
 export function daysWithActivity(forecast?: ForecastResult): ForecastDay[] {
   if (!forecast) return []

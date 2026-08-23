@@ -3,6 +3,7 @@ import {
   buildGoalTracks,
   buildMoneyLocationMap,
 } from '@/features/dashboard/model/home-derivations'
+import { useEventsSummary } from '@/features/events/hooks/use-events-summary'
 import { useFlexibleMoney, useForecast } from '@/features/forecast/hooks/use-forecast'
 import { useFreshness } from '@/features/freshness/hooks/use-freshness'
 import { useMembers } from '@/features/members/hooks/use-members'
@@ -30,9 +31,17 @@ export function useDashboardPage() {
   const { flexibleMoney, isLoading: flexibleLoading } = useFlexibleMoney()
   const { freshness, isLoading: freshnessLoading, confirmUnchanged } = useFreshness()
   const { members, isLoading: membersLoading } = useMembers()
+  // What has ALREADY moved this month — the "đã xảy ra" half of §12.2. Backend
+  // aggregate, never re-derived here; no month argument means the current one.
+  const { data: eventsSummary, isLoading: eventsSummaryLoading } = useEventsSummary()
 
   const isLoading =
-    overviewLoading || forecastLoading || flexibleLoading || freshnessLoading || membersLoading
+    overviewLoading ||
+    forecastLoading ||
+    flexibleLoading ||
+    freshnessLoading ||
+    membersLoading ||
+    eventsSummaryLoading
 
   if (isLoading || !snapshot || !flexibleMoney) {
     return { isReady: false as const }
@@ -53,6 +62,8 @@ export function useDashboardPage() {
     forecast,
     flexibleMoney,
     freshness,
+    /** Thu/chi/ròng already recorded this month. Undefined if the call failed. */
+    eventsSummary,
     /** Needed to pick the wallet a confirmed cashflow event moves through. */
     assets,
     moneyLocation: buildMoneyLocationMap(assets, holderNameById),

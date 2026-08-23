@@ -33,6 +33,11 @@ export type AssetForm = {
   areaSqm: string
   // market-priced
   symbol: string
+  /**
+   * Venue / dealer brand for the chosen symbol, carried from the picker so the
+   * backend can route pricing (a VN and a foreign listing are both `stock`).
+   */
+  market: string
   quantity: string
   unit: string
   purchasePrice: string
@@ -83,6 +88,7 @@ export const defaultAssetFormValues: AssetForm = {
   value: '',
   areaSqm: '',
   symbol: '',
+  market: '',
   quantity: '',
   unit: '',
   purchasePrice: '',
@@ -167,8 +173,22 @@ export function isWholeQuantityType(type: AssetType): boolean {
  * always derive it from the symbol/kind entered by the user.
  */
 export function resolveAssetName(values: AssetForm): string {
-  if (valuationModeForType(values.type) === 'market_priced') return values.symbol.trim().toUpperCase()
+  if (valuationModeForType(values.type) === 'market_priced') return resolveMarketSymbol(values)
   return values.name.trim()
+}
+
+/**
+ * The symbol as the backend expects it.
+ *
+ * Tickers are upper-cased (`fpt` → `FPT`), but a gold/silver symbol is the
+ * dealer's **product name** ("Vàng miếng SJC") and is the key the price feed
+ * matches on — upper-casing it would still match (the lookup is
+ * case-insensitive) but would be shown back to the user shouting, so it is kept
+ * exactly as the picker supplied it.
+ */
+function resolveMarketSymbol(values: AssetForm): string {
+  const symbol = values.symbol.trim()
+  return values.type === 'gold' ? symbol : symbol.toUpperCase()
 }
 
 function resolveMarketUnit(values: AssetForm): string {
@@ -216,7 +236,8 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
       valuationMode: 'market_priced',
       marketPosition: {
         assetClass,
-        symbol: values.symbol.trim().toUpperCase(),
+        symbol: resolveMarketSymbol(values),
+        market: values.market.trim() || undefined,
         quantity,
         unit: resolveMarketUnit(values),
         quoteCurrency: 'VND',
@@ -282,6 +303,7 @@ export function fromAsset(asset: Asset): AssetForm {
     value: moneyToRaw(asset.manualValue),
     areaSqm: decimalToRaw(asset.areaSqm),
     symbol: asset.marketPosition?.symbol ?? '',
+    market: asset.marketPosition?.market ?? '',
     quantity: decimalToRaw(asset.marketPosition?.quantity),
     unit: asset.marketPosition?.unit ?? '',
     purchasePrice: moneyToRaw(asset.marketPosition?.purchasePrice),
@@ -330,6 +352,7 @@ export function buildAssetSchema(
       value: z.string().trim(),
       areaSqm: z.string().trim(),
       symbol: z.string().trim(),
+      market: z.string().trim(),
       quantity: z.string().trim(),
       unit: z.string().trim(),
       purchasePrice: z.string().trim(),
