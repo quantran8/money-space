@@ -2,3 +2,16 @@ packages:
   - 'packages/*'
   - 'web'
   - 'mobile'
+
+# One React for the whole workspace.
+#
+# Expo SDK 57 pins an exact React, while web's `^19.2.7` floats to whatever is
+# newest. Two copies in one workspace means two copies of react-hook-form too
+# (pnpm keys peer-dependent packages by their peer), and a `Control<LoginForm>`
+# built against one is not assignable to the other — core's hooks stop
+# typechecking inside the mobile app for no reason a reader could guess.
+#
+# Pinning to Expo's version satisfies web's range as well.
+overrides:
+  react: 19.2.3
+  react-dom: 19.2.3

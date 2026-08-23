@@ -36,3 +36,5 @@ android/
 package-lock.json
 yarn.lock
 bun.lockb
+expo-env.d.ts
+mobile/.expo/
