@@ -974,6 +974,8 @@ export const resources = {
           plannedDate: 'Dự kiến chi ngày',
           label: 'Ghi chú',
           labelPlaceholder: 'Ví dụ: đổi laptop',
+          // Nút chính không bao giờ bị khoá (§22.10) — bấm thì nói thiếu gì.
+          amountRequired: 'Nhập số tiền lớn hơn 0.',
           // Không bắt buộc: what-if là câu hỏi thử, ép chọn ví thì lần thử nào
           // cũng thành phiền. Chọn ví thì đổi lại câu trả lời chi tiết hơn hẳn.
         },
@@ -3663,6 +3665,7 @@ export const resources = {
           plannedDate: 'Planned for',
           label: 'Note',
           labelPlaceholder: 'e.g. new laptop',
+          amountRequired: 'Enter an amount greater than 0.',
         },
         blocks: {
           upcomingSafety: 'Cashflow ahead',

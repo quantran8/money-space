@@ -6,6 +6,7 @@ import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-ho
 
 import { RequireAuth } from '@/features/auth/require-auth'
 import { RequireHousehold } from '@/features/onboarding/require-household'
+import { WhatIfSheet } from '@/features/whatif'
 import { colors } from '@/theme/tokens'
 
 /**
@@ -39,58 +40,66 @@ function TabBar() {
   useActiveHousehold()
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.ink,
-        tabBarInactiveTintColor: colors.ink2,
-        tabBarStyle: {
-          backgroundColor: colors.panel,
-          // The bottom bar is one of the two places v4.2 still allows a
-          // divider: it floats over scrolling content and needs an edge.
-          borderTopColor: colors.hair,
-          borderTopWidth: 1,
-        },
-        tabBarLabelStyle: { fontSize: 11 },
-        // §9 accessibility: 44pt minimum touch target.
-        tabBarItemStyle: { minHeight: 44, paddingVertical: 4 },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: t('nav.dashboard'),
-          tabBarIcon: ({ color }) => <LayoutGrid size={20} color={color} strokeWidth={1.75} />,
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.ink,
+          tabBarInactiveTintColor: colors.ink2,
+          tabBarStyle: {
+            backgroundColor: colors.panel,
+            // The bottom bar is one of the two places v4.2 still allows a
+            // divider: it floats over scrolling content and needs an edge.
+            borderTopColor: colors.hair,
+            borderTopWidth: 1,
+          },
+          tabBarLabelStyle: { fontSize: 11 },
+          // §9 accessibility: 44pt minimum touch target.
+          tabBarItemStyle: { minHeight: 44, paddingVertical: 4 },
         }}
-      />
-      <Tabs.Screen
-        name="upcoming"
-        options={{
-          title: t('nav.upcoming'),
-          tabBarIcon: ({ color }) => <CalendarDays size={20} color={color} strokeWidth={1.75} />,
-        }}
-      />
-      <Tabs.Screen
-        name="goals"
-        options={{
-          title: t('nav.goals'),
-          tabBarIcon: ({ color }) => <Target size={20} color={color} strokeWidth={1.75} />,
-        }}
-      />
-      <Tabs.Screen
-        name="networth"
-        options={{
-          title: t('nav.assetsDebts'),
-          tabBarIcon: ({ color }) => <Wallet size={20} color={color} strokeWidth={1.75} />,
-        }}
-      />
-      <Tabs.Screen
-        name="household"
-        options={{
-          title: t('nav.household'),
-          tabBarIcon: ({ color }) => <Users size={20} color={color} strokeWidth={1.75} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: t('nav.dashboard'),
+            tabBarIcon: ({ color }) => <LayoutGrid size={20} color={color} strokeWidth={1.75} />,
+          }}
+        />
+        <Tabs.Screen
+          name="upcoming"
+          options={{
+            title: t('nav.upcoming'),
+            tabBarIcon: ({ color }) => <CalendarDays size={20} color={color} strokeWidth={1.75} />,
+          }}
+        />
+        <Tabs.Screen
+          name="goals"
+          options={{
+            title: t('nav.goals'),
+            tabBarIcon: ({ color }) => <Target size={20} color={color} strokeWidth={1.75} />,
+          }}
+        />
+        <Tabs.Screen
+          name="networth"
+          options={{
+            title: t('nav.assetsDebts'),
+            tabBarIcon: ({ color }) => <Wallet size={20} color={color} strokeWidth={1.75} />,
+          }}
+        />
+        <Tabs.Screen
+          name="household"
+          options={{
+            title: t('nav.household'),
+            tabBarIcon: ({ color }) => <Users size={20} color={color} strokeWidth={1.75} />,
+          }}
+        />
+      </Tabs>
+
+      {/* What-if, mounted ONCE — the mobile equivalent of the web's AppShell
+          mount. It is a contextual action with no route of its own (a sixth
+          tab is not available either, §8), so it sits here and is opened from
+          anywhere through core's `whatif-store`. */}
+      <WhatIfSheet />
+    </>
   )
 }

@@ -8,9 +8,13 @@ import { useDashboardPage } from '@money-space/core/features/dashboard/hooks/use
 import { buildCoverage } from '@money-space/core/features/dashboard/model/home-derivations'
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { useNavigate } from '@money-space/core/shared/navigation'
+import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
+import { notify } from '@money-space/core/shared/notify'
 import { queryKeys } from '@money-space/core/shared/api/query-keys'
+import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
 
 import { Screen, Sections } from '@/components/ui'
+import { CompleteCashflowSheet } from '@/features/cashflow'
 import { DashboardSkeleton } from '@/features/dashboard/ui/dashboard-skeleton'
 import { FinancialPictureSection } from '@/features/dashboard/ui/financial-picture-section'
 import { GoalsSection } from '@/features/dashboard/ui/goals-section'
@@ -48,11 +52,38 @@ export default function DashboardScreen() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { activeHouseholdId } = useActiveHousehold()
+  // The sheet is mounted once in `(tabs)/_layout`; Home only opens it.
+  const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
 
   const state = useDashboardPage()
   // Before the early return — hooks cannot be called conditionally.
-  const { cashflowEvents } = useCashflowEvents()
+  const { cashflowEvents, completeCashflowEvent } = useCashflowEvents()
   const [refreshing, setRefreshing] = useState(false)
+  /** The overdue occurrence being confirmed, if any. */
+  const [completing, setCompleting] = useState<{
+    sourceEventId: string
+    occurrenceDate: string
+  } | null>(null)
+
+  const completingEvent = completing
+    ? cashflowEvents.find((event) => event.id === completing.sourceEventId)
+    : undefined
+
+  async function handleComplete(assetId: string) {
+    if (!completing) return
+    try {
+      await completeCashflowEvent.mutateAsync({
+        eventId: completing.sourceEventId,
+        // `occurrenceDate` is the idempotency key — without it a double-tap
+        // advances a recurring series twice and drops a month from the
+        // forecast.
+        payload: { occurrenceDate: completing.occurrenceDate, assetId },
+      })
+      setCompleting(null)
+    } catch (caught) {
+      notify.error(getErrorMessage(caught, t('upcoming.complete.failed')))
+    }
+  }
 
   /**
    * Pull-to-refresh. The backend has no push channel, so a deliberate pull is
@@ -122,10 +153,10 @@ export default function DashboardScreen() {
           freshness={freshness}
           onQuickUpdate={handleQuickUpdate}
           isConfirming={confirmUnchanged.isPending}
-          // SEAM — what-if. The sheet belongs to the what-if feature and
-          // another agent owns it. Pass `onSimulate` here once it exports one;
-          // until then the entry is not offered rather than opening a stub, so
-          // nothing promises a consequence the app cannot yet show (§2.9).
+          // What-if is an ACTION inside this section, never a sixth one: a
+          // consequence must not render before the household asks for it
+          // (§2.9). No capability check — running one is a READ.
+          onSimulate={() => openWhatIf({ source: 'home' })}
         />
 
         {forecast ? (
@@ -135,14 +166,13 @@ export default function DashboardScreen() {
             cashflowEvents={cashflowEvents}
             onViewTimeline={() => navigate('/upcoming')}
             onAddSource={() => navigate('/networth')}
-            // SEAM — completing an overdue occurrence. Confirming MOVES MONEY,
-            // so it cannot fire from the row: without a wallet the API has
-            // nothing to debit or credit (§18). The web opens
-            // `CompleteCashflowDialog` to pick one, and the mobile equivalent
-            // is a cashflow sheet the forecast+cashflow agent owns. Until it
-            // exports one, the overdue block states what is waiting and links
-            // to Sắp tới, where the action lives — `onCompleteOverdue` is left
-            // unpassed so no button appears that cannot finish the job.
+            // Confirming MOVES MONEY, so the row cannot fire it directly:
+            // without a wallet the API has nothing to debit or credit. The tap
+            // opens the wallet picker, and only that sheet completes.
+            onCompleteOverdue={(sourceEventId, occurrenceDate) =>
+              setCompleting({ sourceEventId, occurrenceDate })
+            }
+            completingEventId={completeCashflowEvent.isPending ? completing?.sourceEventId : null}
           />
         ) : null}
 
@@ -158,6 +188,24 @@ export default function DashboardScreen() {
 
         <MoneySourcesSection map={moneyLocation} onViewAll={() => navigate('/networth')} />
       </Sections>
+
+      {/* Keyed on the occurrence so a new one is a NEW mount: the wallet
+          selection is seeded once from the event and must not carry over from
+          whichever row was confirmed last. */}
+      {completing ? (
+        <CompleteCashflowSheet
+          key={`${completing.sourceEventId}:${completing.occurrenceDate}`}
+          open
+          onOpenChange={(open) => !open && setCompleting(null)}
+          eventName={completingEvent?.name ?? ''}
+          amount={completingEvent?.amount ?? 0}
+          direction={completingEvent?.direction ?? 'outgoing'}
+          occurrenceDate={completing.occurrenceDate}
+          defaultAssetId={completingEvent?.settlementAssetId}
+          isSubmitting={completeCashflowEvent.isPending}
+          onConfirm={(assetId) => void handleComplete(assetId)}
+        />
+      ) : null}
     </Screen>
   )
 }
