@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { MoneyEventItem } from '#/features/events/model/events'
+import { createId } from '#/shared/lib/create-id'
 import { parseRawMoney } from '#/shared/lib/number-format'
 
 export type AttentionLevel = 'normal' | 'important' | 'urgent'
@@ -156,9 +157,11 @@ export const actualDefaults: ActualRecordForm = {
 
 const shortMonthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-export function createId() {
-  return crypto.randomUUID()
-}
+/**
+ * Re-exported so existing callers keep working. The implementation is shared:
+ * `crypto.randomUUID()` throws on Hermes, and this used to call it directly.
+ */
+export { createId }
 
 /** Parse a raw (separator-free) money string like "8000000" into VND. */
 export function parseAmountInput(raw: string): number {

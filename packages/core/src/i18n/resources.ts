@@ -368,6 +368,9 @@ export const resources = {
           searchPlaceholder: 'Tìm theo tên hoặc ghi chú...',
           all: 'Tất cả',
           empty: 'Không có tài sản phù hợp.',
+          // Chưa ghi nhận gì — khác hẳn "lọc không ra". Không được hiển thị 0đ
+          // cho trạng thái này.
+          noneYet: 'Gia đình chưa ghi nhận nguồn tiền nào.',
         },
         list: {
           eyebrow: 'Danh sách tài sản',
@@ -3025,6 +3028,7 @@ export const resources = {
           searchPlaceholder: 'Search by name or note...',
           all: 'All',
           empty: 'No matching assets.',
+          noneYet: 'No money sources recorded yet.',
         },
         list: {
           eyebrow: 'Asset list',
