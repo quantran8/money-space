@@ -22,11 +22,11 @@ export type CreateInvitePayload = {
 // --- the inviter's side, scoped to the household ----------------------------
 
 export function listInvites(householdId: string) {
-  return apiRequest<InviteListResponse>(`/api/households/${householdId}/invites`)
+  return apiRequest<InviteListResponse>(`/households/${householdId}/invites`)
 }
 
 export function createInvite(householdId: string, payload: CreateInvitePayload = {}) {
-  return apiRequest<HouseholdInvite>(`/api/households/${householdId}/invites`, {
+  return apiRequest<HouseholdInvite>(`/households/${householdId}/invites`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -34,7 +34,7 @@ export function createInvite(householdId: string, payload: CreateInvitePayload =
 
 export function revokeInvite(householdId: string, inviteId: string) {
   return apiRequest<{ revoked: boolean; inviteId: string }>(
-    `/api/households/${householdId}/invites/${inviteId}`,
+    `/households/${householdId}/invites/${inviteId}`,
     { method: 'DELETE' },
   )
 }
@@ -47,11 +47,11 @@ export function revokeInvite(householdId: string, inviteId: string) {
 // the household prefix.
 
 export function previewInvite(token: string) {
-  return apiRequest<InvitePreview>(`/api/invites/${token}`)
+  return apiRequest<InvitePreview>(`/invites/${token}`)
 }
 
 export function acceptInvite(token: string) {
-  return apiRequest<AcceptInviteResult>(`/api/invites/${token}/accept`, {
+  return apiRequest<AcceptInviteResult>(`/invites/${token}/accept`, {
     method: 'POST',
   })
 }

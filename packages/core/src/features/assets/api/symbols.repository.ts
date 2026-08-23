@@ -51,7 +51,7 @@ export async function searchSymbols(
   query: string,
 ): Promise<SymbolReference[]> {
   const response = await apiRequest<SearchSymbolsResponse>(
-    '/api/market-data/symbols',
+    '/market-data/symbols',
     undefined,
     { assetClass, q: query || undefined },
   )
@@ -73,7 +73,7 @@ export async function fetchQuote(
   quoteCurrency?: string,
 ): Promise<MarketQuote | null> {
   const response = await apiRequest<QuoteResponse>(
-    '/api/market-data/quote',
+    '/market-data/quote',
     undefined,
     {
       assetClass,

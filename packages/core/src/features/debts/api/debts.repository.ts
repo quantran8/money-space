@@ -107,7 +107,7 @@ function toDebtItem(record: DebtListResponse['items'][number]): DebtItem {
 }
 
 export async function listDebts(householdId: string) {
-  const response = await apiRequest<DebtListResponse>(`/api/households/${householdId}/debts`)
+  const response = await apiRequest<DebtListResponse>(`/households/${householdId}/debts`)
   return {
     ...response,
     items: response.items.map(toDebtItem),
@@ -115,14 +115,14 @@ export async function listDebts(householdId: string) {
 }
 
 export function createDebt(householdId: string, payload: DebtPayload) {
-  return apiRequest(`/api/households/${householdId}/debts`, {
+  return apiRequest(`/households/${householdId}/debts`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
 }
 
 export function updateDebt(householdId: string, debtId: string, payload: Partial<DebtPayload>) {
-  return apiRequest(`/api/households/${householdId}/debts/${debtId}`, {
+  return apiRequest(`/households/${householdId}/debts/${debtId}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
@@ -130,7 +130,7 @@ export function updateDebt(householdId: string, debtId: string, payload: Partial
 
 export function deleteDebt(householdId: string, debtId: string) {
   return apiRequest<{ deleted: boolean; debtId: string }>(
-    `/api/households/${householdId}/debts/${debtId}`,
+    `/households/${householdId}/debts/${debtId}`,
     {
       method: 'DELETE',
     },

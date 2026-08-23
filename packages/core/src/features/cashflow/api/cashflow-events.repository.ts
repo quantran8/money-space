@@ -58,16 +58,16 @@ function toQueryString(filters?: CashflowEventFilters): string {
 
 export function listCashflowEvents(householdId: string, filters?: CashflowEventFilters) {
   return apiRequest<CashflowEventListResponse>(
-    `/api/households/${householdId}/cashflow-events${toQueryString(filters)}`,
+    `/households/${householdId}/cashflow-events${toQueryString(filters)}`,
   )
 }
 
 export function getCashflowEvent(householdId: string, eventId: string) {
-  return apiRequest<CashflowEvent>(`/api/households/${householdId}/cashflow-events/${eventId}`)
+  return apiRequest<CashflowEvent>(`/households/${householdId}/cashflow-events/${eventId}`)
 }
 
 export function createCashflowEvent(householdId: string, payload: CashflowEventPayload) {
-  return apiRequest<CashflowEvent>(`/api/households/${householdId}/cashflow-events`, {
+  return apiRequest<CashflowEvent>(`/households/${householdId}/cashflow-events`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -79,14 +79,14 @@ export function updateCashflowEvent(
   payload: Partial<CashflowEventPayload>,
 ) {
   return apiRequest<CashflowEvent>(
-    `/api/households/${householdId}/cashflow-events/${eventId}`,
+    `/households/${householdId}/cashflow-events/${eventId}`,
     { method: 'PATCH', body: JSON.stringify(payload) },
   )
 }
 
 export function deleteCashflowEvent(householdId: string, eventId: string) {
   return apiRequest<{ deleted: boolean; eventId: string }>(
-    `/api/households/${householdId}/cashflow-events/${eventId}`,
+    `/households/${householdId}/cashflow-events/${eventId}`,
     { method: 'DELETE' },
   )
 }
@@ -112,7 +112,7 @@ export function completeCashflowEvent(
   payload: CompleteCashflowEventPayload = {},
 ) {
   return apiRequest<CashflowEvent>(
-    `/api/households/${householdId}/cashflow-events/${eventId}/complete`,
+    `/households/${householdId}/cashflow-events/${eventId}/complete`,
     { method: 'POST', body: JSON.stringify(payload) },
   )
 }
@@ -123,7 +123,7 @@ export function postponeCashflowEvent(
   payload: { newExpectedDate: string; note?: string },
 ) {
   return apiRequest<CashflowEvent>(
-    `/api/households/${householdId}/cashflow-events/${eventId}/postpone`,
+    `/households/${householdId}/cashflow-events/${eventId}/postpone`,
     { method: 'POST', body: JSON.stringify(payload) },
   )
 }
@@ -134,7 +134,7 @@ export function cancelCashflowEvent(
   payload: { note?: string } = {},
 ) {
   return apiRequest<CashflowEvent>(
-    `/api/households/${householdId}/cashflow-events/${eventId}/cancel`,
+    `/households/${householdId}/cashflow-events/${eventId}/cancel`,
     { method: 'POST', body: JSON.stringify(payload) },
   )
 }

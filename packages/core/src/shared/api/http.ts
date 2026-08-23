@@ -48,8 +48,15 @@ export function configureAuthBridge(bridge: AuthBridge) {
   authBridge = bridge
 }
 
+/**
+ * The versioned API root. Repositories pass version-free paths
+ * (`/households/:id/debts`) and the prefix is applied here, so moving to a
+ * future v2 is one edit rather than one per call site.
+ */
+const API_PREFIX = '/api/v1'
+
 function buildUrl(path: string, query?: Record<string, string | number | undefined | null>) {
-  const url = new URL(path, env.apiBaseUrl)
+  const url = new URL(`${API_PREFIX}${path}`, env.apiBaseUrl)
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null || value === '') continue

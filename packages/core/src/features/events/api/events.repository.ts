@@ -43,7 +43,7 @@ export type EventsSummaryResponse = {
 
 export function listEvents(householdId: string, month?: string) {
   return apiRequest<EventListResponse>(
-    `/api/households/${householdId}/money-events`,
+    `/households/${householdId}/money-events`,
     undefined,
     month ? { month } : undefined,
   )
@@ -51,21 +51,21 @@ export function listEvents(householdId: string, month?: string) {
 
 export function getEventsSummary(householdId: string, month?: string) {
   return apiRequest<EventsSummaryResponse>(
-    `/api/households/${householdId}/money-events/summary`,
+    `/households/${householdId}/money-events/summary`,
     undefined,
     month ? { month } : undefined,
   )
 }
 
 export function createEvent(householdId: string, payload: EventPayload) {
-  return apiRequest(`/api/households/${householdId}/money-events`, {
+  return apiRequest(`/households/${householdId}/money-events`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
 }
 
 export function updateEvent(householdId: string, eventId: string, payload: Partial<EventPayload>) {
-  return apiRequest(`/api/households/${householdId}/money-events/${eventId}`, {
+  return apiRequest(`/households/${householdId}/money-events/${eventId}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
@@ -73,7 +73,7 @@ export function updateEvent(householdId: string, eventId: string, payload: Parti
 
 export function deleteEvent(householdId: string, eventId: string) {
   return apiRequest<{ deleted: boolean; eventId: string }>(
-    `/api/households/${householdId}/money-events/${eventId}`,
+    `/households/${householdId}/money-events/${eventId}`,
     {
       method: 'DELETE',
     },

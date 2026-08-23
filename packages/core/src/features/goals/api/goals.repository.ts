@@ -154,25 +154,25 @@ export type GoalAllocationPayload = {
  */
 export function listGoals(householdId: string) {
   return apiRequest<GoalListResponse>(
-    `/api/households/${householdId}/financial-goals?include=projection,walletUsage`,
+    `/households/${householdId}/financial-goals?include=projection,walletUsage`,
   )
 }
 
 export function getGoalProjection(householdId: string, goalId: string) {
   return apiRequest<GoalProjection>(
-    `/api/households/${householdId}/financial-goals/${goalId}/projection`,
+    `/households/${householdId}/financial-goals/${goalId}/projection`,
   )
 }
 
 export function createGoal(householdId: string, payload: CreateGoalPayload) {
-  return apiRequest<GoalRecord>(`/api/households/${householdId}/financial-goals`, {
+  return apiRequest<GoalRecord>(`/households/${householdId}/financial-goals`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
 }
 
 export function updateGoal(householdId: string, goalId: string, payload: Partial<GoalPayload>) {
-  return apiRequest<GoalRecord>(`/api/households/${householdId}/financial-goals/${goalId}`, {
+  return apiRequest<GoalRecord>(`/households/${householdId}/financial-goals/${goalId}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
@@ -180,7 +180,7 @@ export function updateGoal(householdId: string, goalId: string, payload: Partial
 
 export function deleteGoal(householdId: string, goalId: string) {
   return apiRequest<{ deleted: boolean; goalId: string }>(
-    `/api/households/${householdId}/financial-goals/${goalId}`,
+    `/households/${householdId}/financial-goals/${goalId}`,
     {
       method: 'DELETE',
     },
@@ -190,13 +190,13 @@ export function deleteGoal(householdId: string, goalId: string) {
 /** One goal with its projection and, for `asset_backed`, its allocations. */
 export function getGoal(householdId: string, goalId: string) {
   return apiRequest<GoalRecord>(
-    `/api/households/${householdId}/financial-goals/${goalId}`,
+    `/households/${householdId}/financial-goals/${goalId}`,
   )
 }
 
 export function listGoalAllocations(householdId: string, goalId: string) {
   return apiRequest<{ items: GoalAllocationRecord[]; total: number }>(
-    `/api/households/${householdId}/financial-goals/${goalId}/allocations`,
+    `/households/${householdId}/financial-goals/${goalId}/allocations`,
   )
 }
 
@@ -206,7 +206,7 @@ export function createGoalAllocation(
   payload: GoalAllocationPayload,
 ) {
   return apiRequest<GoalAllocationRecord>(
-    `/api/households/${householdId}/financial-goals/${goalId}/allocations`,
+    `/households/${householdId}/financial-goals/${goalId}/allocations`,
     { method: 'POST', body: JSON.stringify(payload) },
   )
 }
@@ -218,7 +218,7 @@ export function updateGoalAllocation(
   payload: Partial<Omit<GoalAllocationPayload, 'assetId'>>,
 ) {
   return apiRequest<GoalAllocationRecord>(
-    `/api/households/${householdId}/financial-goals/${goalId}/allocations/${allocationId}`,
+    `/households/${householdId}/financial-goals/${goalId}/allocations/${allocationId}`,
     { method: 'PATCH', body: JSON.stringify(payload) },
   )
 }
@@ -229,7 +229,7 @@ export function deleteGoalAllocation(
   allocationId: string,
 ) {
   return apiRequest<{ deleted: boolean; allocationId: string }>(
-    `/api/households/${householdId}/financial-goals/${goalId}/allocations/${allocationId}`,
+    `/households/${householdId}/financial-goals/${goalId}/allocations/${allocationId}`,
     { method: 'DELETE' },
   )
 }
@@ -331,7 +331,7 @@ export type AssetGoalUsage = {
  */
 export function getAssetGoalUsage(householdId: string, assetId: string) {
   return apiRequest<AssetGoalUsage>(
-    `/api/households/${householdId}/assets/${assetId}/goal-usage`,
+    `/households/${householdId}/assets/${assetId}/goal-usage`,
   )
 }
 
@@ -383,7 +383,7 @@ export function getSpendImpact(
   amount: number,
 ) {
   return apiRequest<SpendImpact>(
-    `/api/households/${householdId}/assets/${assetId}/spend-impact?amount=${encodeURIComponent(amount)}`,
+    `/households/${householdId}/assets/${assetId}/spend-impact?amount=${encodeURIComponent(amount)}`,
   )
 }
 
@@ -418,7 +418,7 @@ export type ScheduledOutflowImpact = {
 
 export function getScheduledOutflowImpact(householdId: string, goalId: string) {
   return apiRequest<ScheduledOutflowImpact | null>(
-    `/api/households/${householdId}/financial-goals/${goalId}/scheduled-outflow-impact`,
+    `/households/${householdId}/financial-goals/${goalId}/scheduled-outflow-impact`,
   )
 }
 
@@ -434,7 +434,7 @@ export function getGoalMonthlyProgress(householdId: string, goalId: string) {
      */
     needsShareDecision?: boolean
   }>(
-    `/api/households/${householdId}/financial-goals/${goalId}/monthly-progress`,
+    `/households/${householdId}/financial-goals/${goalId}/monthly-progress`,
   )
 }
 
@@ -462,5 +462,5 @@ export function getGoalProgressChange(householdId: string, goalId: string) {
     goalId: string
     /** Null when nothing moved, or the goal has no earlier point to compare to. */
     change: GoalProgressChange | null
-  }>(`/api/households/${householdId}/financial-goals/${goalId}/progress-change`)
+  }>(`/households/${householdId}/financial-goals/${goalId}/progress-change`)
 }

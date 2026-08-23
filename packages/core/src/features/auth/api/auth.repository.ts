@@ -13,7 +13,7 @@ export type SignupPayload = {
 }
 
 export function login(payload: LoginPayload) {
-  return apiRequest<AuthResult>('/api/auth/login', {
+  return apiRequest<AuthResult>('/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
     skipAuth: true,
@@ -21,7 +21,7 @@ export function login(payload: LoginPayload) {
 }
 
 export function signup(payload: SignupPayload) {
-  return apiRequest<AuthResult>('/api/auth/signup', {
+  return apiRequest<AuthResult>('/auth/signup', {
     method: 'POST',
     body: JSON.stringify(payload),
     skipAuth: true,
@@ -31,7 +31,7 @@ export function signup(payload: SignupPayload) {
 /** Returns the Google authorization URL to redirect the browser to. */
 export function getGoogleAuthUrl(redirectTo: string) {
   return apiRequest<{ url: string }>(
-    '/api/auth/google',
+    '/auth/google',
     { method: 'GET', skipAuth: true },
     { redirectTo },
   )
@@ -42,7 +42,7 @@ export function getGoogleAuthUrl(redirectTo: string) {
  * lets the backend find the PKCE verifier it minted when the URL was built.
  */
 export function googleCallback(code: string, state: string) {
-  return apiRequest<AuthResult>('/api/auth/google/callback', {
+  return apiRequest<AuthResult>('/auth/google/callback', {
     method: 'POST',
     body: JSON.stringify({ code, state }),
     skipAuth: true,
@@ -50,7 +50,7 @@ export function googleCallback(code: string, state: string) {
 }
 
 export function refresh(refreshToken: string) {
-  return apiRequest<AuthResult>('/api/auth/refresh', {
+  return apiRequest<AuthResult>('/auth/refresh', {
     method: 'POST',
     body: JSON.stringify({ refreshToken }),
     skipAuth: true,
@@ -59,9 +59,9 @@ export function refresh(refreshToken: string) {
 }
 
 export function logout() {
-  return apiRequest<{ success: true }>('/api/auth/logout', { method: 'POST' })
+  return apiRequest<{ success: true }>('/auth/logout', { method: 'POST' })
 }
 
 export function getCurrentUser() {
-  return apiRequest<AuthUser>('/api/auth/me', { method: 'GET' })
+  return apiRequest<AuthUser>('/auth/me', { method: 'GET' })
 }

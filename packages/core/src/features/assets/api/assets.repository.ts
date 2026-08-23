@@ -77,16 +77,16 @@ export type AssetPayload = Omit<Asset, 'id' | 'liquidity'> & {
 }
 
 export function listAssets(householdId: string) {
-  return apiRequest<AssetListResponse>(`/api/households/${householdId}/assets`)
+  return apiRequest<AssetListResponse>(`/households/${householdId}/assets`)
 }
 
 export function getAssetSummary(householdId: string) {
-  return apiRequest<AssetSummaryResponse>(`/api/households/${householdId}/assets/summary`)
+  return apiRequest<AssetSummaryResponse>(`/households/${householdId}/assets/summary`)
 }
 
 export async function getAssetSnapshots(householdId: string) {
   const response = await apiRequest<AssetSnapshotsResponse>(
-    `/api/households/${householdId}/assets/snapshots`,
+    `/households/${householdId}/assets/snapshots`,
   )
   return {
     ...response,
@@ -103,7 +103,7 @@ export async function getAssetSnapshots(householdId: string) {
 
 export async function getAssetValueHistory(householdId: string, assetId: string) {
   const response = await apiRequest<AssetValueHistoryResponse>(
-    `/api/households/${householdId}/assets/${assetId}/value-history`,
+    `/households/${householdId}/assets/${assetId}/value-history`,
   )
   return {
     currentValue: response.currentValue,
@@ -114,7 +114,7 @@ export async function getAssetValueHistory(householdId: string, assetId: string)
 }
 
 export function createAsset(householdId: string, payload: AssetPayload) {
-  return apiRequest(`/api/households/${householdId}/assets`, {
+  return apiRequest(`/households/${householdId}/assets`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -125,7 +125,7 @@ export function updateAsset(
   assetId: string,
   payload: Partial<AssetPayload>,
 ) {
-  return apiRequest(`/api/households/${householdId}/assets/${assetId}`, {
+  return apiRequest(`/households/${householdId}/assets/${assetId}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
@@ -141,13 +141,13 @@ export function updateAsset(
  */
 export function assetDeleteImpact(householdId: string, assetId: string) {
   return apiRequest<AssetDeleteImpact>(
-    `/api/households/${householdId}/assets/${assetId}/delete-impact`,
+    `/households/${householdId}/assets/${assetId}/delete-impact`,
   )
 }
 
 export function deleteAsset(householdId: string, assetId: string, cascade = false) {
   return apiRequest<{ deleted: boolean; assetId: string }>(
-    `/api/households/${householdId}/assets/${assetId}${cascade ? '?cascade=true' : ''}`,
+    `/households/${householdId}/assets/${assetId}${cascade ? '?cascade=true' : ''}`,
     {
       method: 'DELETE',
     },

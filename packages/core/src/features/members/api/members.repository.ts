@@ -19,11 +19,11 @@ export type MemberPayload = {
 }
 
 export function listMembers(householdId: string) {
-  return apiRequest<MemberListResponse>(`/api/households/${householdId}/members`)
+  return apiRequest<MemberListResponse>(`/households/${householdId}/members`)
 }
 
 export function createMember(householdId: string, payload: MemberPayload) {
-  return apiRequest<MemberItem>(`/api/households/${householdId}/members`, {
+  return apiRequest<MemberItem>(`/households/${householdId}/members`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -34,7 +34,7 @@ export function updateMember(
   memberId: string,
   payload: Partial<MemberPayload>,
 ) {
-  return apiRequest<MemberItem>(`/api/households/${householdId}/members/${memberId}`, {
+  return apiRequest<MemberItem>(`/households/${householdId}/members/${memberId}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
@@ -42,7 +42,7 @@ export function updateMember(
 
 export function deleteMember(householdId: string, memberId: string) {
   return apiRequest<{ deleted: boolean; memberId: string }>(
-    `/api/households/${householdId}/members/${memberId}`,
+    `/households/${householdId}/members/${memberId}`,
     {
       method: 'DELETE',
     },

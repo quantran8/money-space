@@ -614,7 +614,7 @@ function ManualFields({
  *
  * This was a free-text field while there was no reference data behind it. There
  * is now: VN + foreign equities, crypto, the dealer's precious-metal products
- * and the supported currencies all come from `/api/market-data/symbols`, and
+ * and the supported currencies all come from `/api/v1/market-data/symbols`, and
  * every listed instrument is one the price feed can actually quote. Picking
  * from the list is what makes the holding priceable — a typed symbol the
  * providers do not recognise would value at nothing.

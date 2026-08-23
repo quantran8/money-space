@@ -8,19 +8,19 @@ import type {
 
 export function getForecast(householdId: string, horizonDays: HorizonDays) {
   return apiRequest<ForecastResult>(
-    `/api/households/${householdId}/forecast?horizon_days=${horizonDays}`,
+    `/households/${householdId}/forecast?horizon_days=${horizonDays}`,
   )
 }
 
 export function getFlexibleMoney(householdId: string, horizonDays: HorizonDays) {
   return apiRequest<FlexibleMoneyResult>(
-    `/api/households/${householdId}/flexible-money?horizon_days=${horizonDays}`,
+    `/households/${householdId}/flexible-money?horizon_days=${horizonDays}`,
   )
 }
 
 export function getFinancialState(householdId: string, horizonDays: HorizonDays) {
   return apiRequest<FinancialStateResult>(
-    `/api/households/${householdId}/financial-state?horizon_days=${horizonDays}`,
+    `/households/${householdId}/financial-state?horizon_days=${horizonDays}`,
   )
 }
 
@@ -40,6 +40,6 @@ export type ForecastBundle = {
  */
 export function getForecastBundle(householdId: string, horizonDays: HorizonDays) {
   return apiRequest<ForecastBundle>(
-    `/api/households/${householdId}/forecast-bundle?horizon_days=${horizonDays}`,
+    `/households/${householdId}/forecast-bundle?horizon_days=${horizonDays}`,
   )
 }

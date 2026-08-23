@@ -6,7 +6,7 @@ export function listActivity(
   params: { limit?: number; before?: string } = {},
 ) {
   return apiRequest<ActivityPage>(
-    `/api/households/${householdId}/activity`,
+    `/households/${householdId}/activity`,
     undefined,
     { limit: params.limit, before: params.before },
   )

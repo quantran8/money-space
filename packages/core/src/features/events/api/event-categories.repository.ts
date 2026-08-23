@@ -30,13 +30,13 @@ export type EventCategoryPayload = {
 
 export function listEventCategories(householdId: string) {
   return apiRequest<EventCategoryListResponse>(
-    `/api/households/${householdId}/money-event-categories`,
+    `/households/${householdId}/money-event-categories`,
   )
 }
 
 export function createEventCategory(householdId: string, payload: EventCategoryPayload) {
   return apiRequest<EventCategoryItem>(
-    `/api/households/${householdId}/money-event-categories`,
+    `/households/${householdId}/money-event-categories`,
     {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -50,7 +50,7 @@ export function updateEventCategory(
   payload: Partial<Omit<EventCategoryPayload, 'code'>>,
 ) {
   return apiRequest<EventCategoryItem>(
-    `/api/households/${householdId}/money-event-categories/${categoryId}`,
+    `/households/${householdId}/money-event-categories/${categoryId}`,
     {
       method: 'PATCH',
       body: JSON.stringify(payload),
@@ -60,7 +60,7 @@ export function updateEventCategory(
 
 export function deleteEventCategory(householdId: string, categoryId: string) {
   return apiRequest<{ deleted: boolean; categoryId: string }>(
-    `/api/households/${householdId}/money-event-categories/${categoryId}`,
+    `/households/${householdId}/money-event-categories/${categoryId}`,
     {
       method: 'DELETE',
     },
@@ -71,7 +71,7 @@ export function deleteEventCategory(householdId: string, categoryId: string) {
  *  Works for system and custom categories; returns the updated category list. */
 export function setDefaultEventCategory(householdId: string, code: string | null) {
   return apiRequest<EventCategoryListResponse>(
-    `/api/households/${householdId}/money-event-categories/default`,
+    `/households/${householdId}/money-event-categories/default`,
     {
       method: 'PUT',
       body: JSON.stringify({ code }),

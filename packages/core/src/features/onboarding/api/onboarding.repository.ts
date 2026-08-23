@@ -9,7 +9,7 @@ export type CreateHouseholdPayload = {
 }
 
 export function createHousehold(payload: CreateHouseholdPayload) {
-  return apiRequest<HouseholdSummary>('/api/households', {
+  return apiRequest<HouseholdSummary>('/households', {
     method: 'POST',
     body: JSON.stringify(payload),
   })

@@ -32,7 +32,7 @@ export function useActiveHousehold() {
 
   const householdsQuery = useQuery({
     queryKey: queryKeys.households,
-    queryFn: () => apiRequest<HouseholdListResponse>('/api/households'),
+    queryFn: () => apiRequest<HouseholdListResponse>('/households'),
   })
 
   useEffect(() => {

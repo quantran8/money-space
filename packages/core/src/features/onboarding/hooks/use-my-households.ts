@@ -13,6 +13,6 @@ type HouseholdListResponse = {
 export function useMyHouseholds() {
   return useQuery({
     queryKey: queryKeys.households,
-    queryFn: () => apiRequest<HouseholdListResponse>('/api/households'),
+    queryFn: () => apiRequest<HouseholdListResponse>('/households'),
   })
 }

@@ -53,7 +53,7 @@ export type AttentionItem = {
 
 export async function getDashboard(householdId: string): Promise<DashboardOverview> {
   const response = await apiRequest<DashboardResponse>(
-    `/api/households/${householdId}/dashboard`,
+    `/households/${householdId}/dashboard`,
   )
   // Merge onto defaults so a partial/empty snapshot never yields undefined fields.
   return { ...EMPTY_OVERVIEW, ...(response.snapshot ?? {}) }
@@ -61,6 +61,6 @@ export async function getDashboard(householdId: string): Promise<DashboardOvervi
 
 export function listAttentionItems(householdId: string) {
   return apiRequest<{ householdId: string; items: AttentionItem[]; total: number }>(
-    `/api/households/${householdId}/attention-items`,
+    `/households/${householdId}/attention-items`,
   )
 }

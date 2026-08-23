@@ -3,7 +3,7 @@ import type { DataFreshnessResult } from '#/features/freshness/model/freshness.t
 
 export function getDataFreshness(householdId: string) {
   return apiRequest<DataFreshnessResult>(
-    `/api/households/${householdId}/assets/data-freshness`,
+    `/households/${householdId}/assets/data-freshness`,
   )
 }
 
@@ -15,7 +15,7 @@ export function getDataFreshness(householdId: string) {
  */
 export function confirmAssetsUnchanged(householdId: string, assetIds?: string[]) {
   return apiRequest<{ confirmed: number; assetIds: string[] }>(
-    `/api/households/${householdId}/assets/confirm-unchanged`,
+    `/households/${householdId}/assets/confirm-unchanged`,
     { method: 'POST', body: JSON.stringify({ assetIds }) },
   )
 }

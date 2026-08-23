@@ -6,7 +6,7 @@ import type { WhatIfRequest, WhatIfResult } from '#/features/whatif/model/whatif
  * a request body. Never gate it behind an `edit` capability.
  */
 export function runWhatIf(householdId: string, payload: WhatIfRequest) {
-  return apiRequest<WhatIfResult>(`/api/households/${householdId}/what-if`, {
+  return apiRequest<WhatIfResult>(`/households/${householdId}/what-if`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
