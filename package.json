@@ -8,6 +8,9 @@
     "dev": "pnpm --filter family-finance-app dev",
     "build": "pnpm --filter family-finance-app build",
     "lint": "pnpm --filter family-finance-app lint",
-    "mobile": "pnpm --filter money-space-mobile start"
+    "mobile": "pnpm --filter money-space-mobile start",
+    "mobile:typecheck": "pnpm --filter money-space-mobile typecheck",
+    "mobile:lint": "pnpm --filter money-space-mobile lint",
+    "verify": "pnpm build && pnpm lint && pnpm mobile:typecheck && pnpm mobile:lint"
   }
 }

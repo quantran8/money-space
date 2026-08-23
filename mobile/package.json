@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "node ../web/scripts/check-copy.mjs && expo lint",
+    "bundle": "expo export --platform ios --output-dir /tmp/money-space-bundle"
   },
   "dependencies": {
     "@money-space/core": "workspace:*",
