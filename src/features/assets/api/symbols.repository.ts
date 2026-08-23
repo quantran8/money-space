@@ -70,11 +70,17 @@ export async function fetchQuote(
   assetClass: SymbolAssetClass,
   symbol: string,
   market?: string,
+  quoteCurrency?: string,
 ): Promise<MarketQuote | null> {
   const response = await apiRequest<QuoteResponse>(
     '/api/market-data/quote',
     undefined,
-    { assetClass, symbol, market: market || undefined },
+    {
+      assetClass,
+      symbol,
+      market: market || undefined,
+      quoteCurrency: quoteCurrency || undefined,
+    },
   )
   return response.quote
 }

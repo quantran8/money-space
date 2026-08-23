@@ -636,10 +636,22 @@ function MarketFields({
   const assetClass = searchableAssetClassForType(type)
   const symbol = useWatch({ control, name: 'symbol' })
   const market = useWatch({ control, name: 'market' })
+  // Ask crypto for its quote in đồng. Every money field here is VND, but crypto
+  // defaults to USD upstream, so the quote came back unprefillable (see
+  // `canPrefill`). CoinMarketCap converts server-side in the same call — the only
+  // place a real FX rate exists, since the client's `fxToVnd` is a stub.
+  //
+  // Deliberately crypto ONLY. Foreign equities are just as USD-bound, but they
+  // route to Twelve Data, which fetches a USD price and then labels it with
+  // whatever currency was ASKED for — requesting VND there would return a USD
+  // figure tagged `VND`, slipping past `canPrefill` and understating the cost
+  // basis ~26,000x. That is the exact bug the guard exists to prevent.
+  const quoteCurrency = assetClass === 'crypto' ? 'VND' : undefined
   const { quote, isLoading, isUnavailable } = useMarketQuote(
     assetClass,
     symbol,
     market,
+    quoteCurrency,
   )
 
   const prefillPurchasePrice = (price: number) => {
@@ -658,9 +670,9 @@ function MarketFields({
   // because a stale refetch of the same symbol does not fire again.
   // `purchasePrice` is a VND field (the form stores money in đồng), so a quote
   // in another currency must NOT be written into it: BTC at 78,188 USD would
-  // land as 78,188đ and understate the cost basis ~26,000x. Those quotes are
-  // still shown — labelled in their own currency — the user just types the đồng
-  // figure themselves until FX conversion exists.
+  // land as 78,188đ and understate the cost basis ~26,000x. The request above
+  // asks for VND, so this normally holds; it stays a guard because a provider
+  // may answer in its own currency regardless of what was asked.
   const canPrefill = quote?.quoteCurrency === 'VND'
 
   const prefilledFor = useRef<string | null>(null)

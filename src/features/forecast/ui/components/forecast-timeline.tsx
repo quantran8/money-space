@@ -11,6 +11,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type {
   ForecastDay,
   ForecastOccurrence,
@@ -155,46 +163,57 @@ export function ForecastTimeline({
           scrolling sideways — `Còn lại` is the column this screen exists for,
           and a horizontal scroll is exactly what hides it on a phone. */}
       <div className="mt-7">
-        <table className="w-full lg:table-fixed">
-          <thead className="hidden lg:table-header-group">
-            <tr className="label-vi">
-              <th scope="col" className="w-[84px] pb-3 text-left font-normal">
+        <Table className="lg:table-fixed">
+          <TableHeader className="hidden lg:table-header-group">
+            {/* `.label-vi`: the headings are accented Vietnamese, which mono
+                renders poorly (§10.1) — so they keep the size and tracking but
+                fall back through the font stack. */}
+            <TableRow className="label-vi hover:bg-transparent">
+              <TableHead scope="col" className="label-vi h-auto w-[84px] px-0 pb-3 font-normal">
                 {t('upcoming.timeline.columns.date')}
-              </th>
-              <th scope="col" className="pb-3 pr-8 text-left font-normal">
+              </TableHead>
+              <TableHead scope="col" className="label-vi h-auto px-0 pb-3 pr-8 font-normal">
                 {t('upcoming.timeline.columns.item')}
-              </th>
-              <th scope="col" className="w-[116px] pb-3 pr-8 text-left font-normal">
+              </TableHead>
+              <TableHead scope="col" className="label-vi h-auto w-[116px] px-0 pb-3 pr-8 font-normal">
                 {t('upcoming.timeline.columns.owner')}
-              </th>
-              <th scope="col" className="w-[128px] pb-3 pr-8 text-right font-normal">
+              </TableHead>
+              <TableHead
+                scope="col"
+                className="label-vi h-auto w-[128px] px-0 pb-3 pr-8 text-right font-normal"
+              >
                 {t('upcoming.timeline.columns.amount')}
-              </th>
-              <th scope="col" className="w-[128px] pb-3 pr-5 text-right font-normal">
+              </TableHead>
+              <TableHead
+                scope="col"
+                className="label-vi h-auto w-[128px] px-0 pb-3 pr-5 text-right font-normal"
+              >
                 {t('upcoming.timeline.columns.remaining')}
-              </th>
-              <th scope="col" className="w-[32px] pb-3">
+              </TableHead>
+              <TableHead scope="col" className="h-auto w-[32px] px-0 pb-3">
                 <span className="sr-only">{t('upcoming.rowActions.label')}</span>
-              </th>
-            </tr>
-          </thead>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
 
+          {/* One `<tbody>` per month so the group heading is a real
+              `scope="colgroup"` header rather than a styled row (§24). */}
           {groups.map((group) => {
             const [year, month] = group.key.split('-')
             return (
-              <tbody key={group.key} className="block lg:table-row-group">
-                <tr className="block lg:table-row">
-                  <th
+              <TableBody key={group.key} className="block lg:table-row-group">
+                <TableRow className="block hover:bg-transparent lg:table-row">
+                  <TableHead
                     scope="colgroup"
                     colSpan={6}
-                    className="label block px-3 pb-2 pt-5 text-left font-normal lg:table-cell"
+                    className="label block h-auto px-3 pb-2 pt-5 font-normal lg:table-cell"
                   >
                     {t('upcoming.timeline.monthGroup', {
                       month: Number(month),
                       year,
                     })}
-                  </th>
-                </tr>
+                  </TableHead>
+                </TableRow>
                 {group.rows.map(({ occurrence, runningBalance }) => (
                   <OccurrenceRow
                     key={occurrence.occurrenceKey}
@@ -206,10 +225,10 @@ export function ForecastTimeline({
                     onDelete={onDelete}
                   />
                 ))}
-              </tbody>
+              </TableBody>
             )
           })}
-        </table>
+        </Table>
       </div>
 
       {rows.length > PAGE_SIZE ? (
@@ -293,17 +312,19 @@ function OccurrenceRow({
   )
 
   return (
-    <tr className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 transition-colors hover:bg-sunk lg:table-row lg:px-0 lg:py-0">
-      <td className="col-start-1 row-start-1 font-mono text-[12px] text-ink3 lg:rounded-l-[8px] lg:py-3 lg:pl-3 lg:align-middle">
+    // Each cell owns its own padding — the row is a grid below `lg` and a real
+    // table row above it, so `TableCell`'s uniform `px-4 py-3` is overridden.
+    <TableRow className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 lg:table-row lg:px-0 lg:py-0">
+      <TableCell className="col-start-1 row-start-1 px-0 py-0 font-mono text-[12px] text-ink3 lg:rounded-l-[8px] lg:py-3 lg:pl-3">
         {/* An overdue occurrence is pulled onto today so it still weighs on
             today's cash, but the date column states when the event happens —
             so it shows the real one. The clamp stays in `occurrence.date`,
             which is what the running balance and day grouping use, and the
             `overdue` marker is what tells the user it is being counted now. */}
         {formatDayMonth(occurrence.originalDate ?? occurrence.date)}
-      </td>
+      </TableCell>
 
-      <td className="col-start-1 row-start-2 mt-1 min-w-0 lg:mt-0 lg:py-3 lg:pr-8 lg:align-middle">
+      <TableCell className="col-start-1 row-start-2 mt-1 min-w-0 px-0 py-0 lg:mt-0 lg:py-3 lg:pr-8">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <span className="truncate text-[13px] font-medium lg:text-[14px]">
             {occurrence.name}
@@ -320,31 +341,31 @@ function OccurrenceRow({
             </span>
           ))}
         </div>
-      </td>
+      </TableCell>
 
-      <td className="col-start-1 row-start-3 mt-2 text-[12px] text-ink2 lg:mt-0 lg:py-3 lg:pr-8 lg:align-middle lg:text-[13px]">
+      <TableCell className="col-start-1 row-start-3 mt-2 px-0 py-0 text-[12px] text-ink2 lg:mt-0 lg:py-3 lg:pr-8 lg:text-[13px]">
         {ownerName ?? t('upcoming.timeline.householdOwner')}
-      </td>
+      </TableCell>
 
-      <td
+      <TableCell
         className={cn(
-          'num col-start-2 row-start-2 mt-1 text-right text-[14px] font-medium lg:mt-0 lg:py-3 lg:pr-8 lg:align-middle',
+          'num col-start-2 row-start-2 mt-1 px-0 py-0 text-right text-[14px] font-medium lg:mt-0 lg:py-3 lg:pr-8',
           isIncoming && 'text-accent',
         )}
       >
         {formatVndCellSigned(isIncoming ? occurrence.amount : -occurrence.amount)}
-      </td>
+      </TableCell>
 
-      <td
+      <TableCell
         className={cn(
-          'num col-start-2 row-start-3 mt-2 text-right text-[12px] text-ink2 lg:mt-0 lg:py-3 lg:pr-5 lg:align-middle lg:text-[14px]',
+          'num col-start-2 row-start-3 mt-2 px-0 py-0 text-right text-[12px] text-ink2 lg:mt-0 lg:py-3 lg:pr-5 lg:text-[14px]',
           runningBalance !== undefined && BALANCE_TONE_CLASS[tone],
         )}
       >
         {runningBalance === undefined ? '—' : formatVndCell(runningBalance)}
-      </td>
+      </TableCell>
 
-      <td className="col-start-2 row-start-1 justify-self-end lg:rounded-r-[8px] lg:py-3 lg:pr-3 lg:text-right lg:align-middle">
+      <TableCell className="col-start-2 row-start-1 justify-self-end px-0 py-0 lg:rounded-r-[8px] lg:py-3 lg:pr-3 lg:text-right">
         {onComplete || onEdit || onDelete ? (
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -380,8 +401,8 @@ function OccurrenceRow({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 

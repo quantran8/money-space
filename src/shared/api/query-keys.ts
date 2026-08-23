@@ -10,8 +10,13 @@ export const queryKeys = {
   symbolSearch: (assetClass: string, query: string) =>
     ['market-data', 'symbols', assetClass, query] as const,
   /** Live quote for one instrument, for the asset-create form. */
-  marketQuote: (assetClass: string, symbol: string, market: string) =>
-    ['market-data', 'quote', assetClass, symbol, market] as const,
+  marketQuote: (
+    assetClass: string,
+    symbol: string,
+    market: string,
+    quoteCurrency = '',
+  ) =>
+    ['market-data', 'quote', assetClass, symbol, market, quoteCurrency] as const,
   debts: (householdId: string) => ['households', householdId, 'debts'] as const,
   goals: (householdId: string) => ['households', householdId, 'goals'] as const,
   /**
