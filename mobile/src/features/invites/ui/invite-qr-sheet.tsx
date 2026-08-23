@@ -72,7 +72,7 @@ export function InviteQrSheet({
         ) : null}
       </View>
 
-      <Text className="mt-5 text-[13px] text-ink2">{t('invites.qr.linkLabel')}</Text>
+      <Text className="mt-5 text-[14px] text-ink2">{t('invites.qr.linkLabel')}</Text>
 
       <View className="mt-2 rounded-sunk bg-sunk px-3.5 py-3">
         {joinUrl ? (

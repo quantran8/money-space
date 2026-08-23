@@ -97,7 +97,7 @@ export function UpcomingSection({
             style={{ minHeight: TOUCH_TARGET }}
             className="justify-center active:opacity-70"
           >
-            <Text className="text-[13px] font-medium text-interactive">
+            <Text className="text-[14px] font-medium text-interactive">
               {t('home.upcoming.viewTimeline')}
             </Text>
           </Pressable>
@@ -145,7 +145,7 @@ export function UpcomingSection({
             </Text>
           )}
 
-          <Text className="mt-2 text-[13px] leading-5 text-ink2">
+          <Text className="mt-2 text-[14px] leading-5 text-ink2">
             {!canProject
               ? t('home.upcoming.lowestNoSourceShort')
               : dip > 0
@@ -161,7 +161,7 @@ export function UpcomingSection({
               rather than as an instruction buried in a sentence (§2.10). */}
           {!canProject ? (
             <Sunk className="mt-4">
-              <Text className="text-[13px] leading-5 text-ink2">
+              <Text className="text-[14px] leading-5 text-ink2">
                 {t('home.upcoming.lowestNoSourceHint')}
               </Text>
               <Button className="mt-3 self-start px-5" variant="secondary" onPress={onAddSource}>
@@ -186,7 +186,7 @@ export function UpcomingSection({
 
         <View className="mt-5">
           {rows.length === 0 ? (
-            <Text className="py-2 text-[13px] text-ink2">{t('home.upcoming.empty')}</Text>
+            <Text className="py-2 text-[14px] text-ink2">{t('home.upcoming.empty')}</Text>
           ) : (
             <View className="gap-0.5">
               {rows.map((row) => (
@@ -212,7 +212,7 @@ export function UpcomingSection({
               style={{ minHeight: TOUCH_TARGET }}
               className="justify-center active:opacity-70"
             >
-              <Text className="text-[13px] font-medium text-interactive">
+              <Text className="text-[14px] font-medium text-interactive">
                 {t('home.upcoming.more', { count: totalCount - rows.length })}
               </Text>
             </Pressable>
@@ -300,7 +300,7 @@ function RecordedThisMonth({
   return (
     <Sunk className="mt-6">
       <Label>{t('home.cashflow.recordedEyebrow')}</Label>
-      <Text className="mt-1.5 text-[13px] text-ink2">
+      <Text className="mt-1.5 text-[14px] text-ink2">
         {t('home.cashflow.recordedNote', { date: formatDayMonth(asOfDate) })}
       </Text>
 
@@ -369,7 +369,7 @@ function OverdueBlock({
   return (
     <View className="mt-6 rounded-sunk bg-attention-soft p-4">
       <View className="flex-row items-baseline justify-between gap-3">
-        <Text className="text-[13px] font-medium text-attention">
+        <Text className="text-[14px] font-medium text-attention">
           {t('home.upcoming.overdue.title')}
         </Text>
         <Pressable
@@ -378,13 +378,13 @@ function OverdueBlock({
           style={{ minHeight: TOUCH_TARGET }}
           className="justify-center active:opacity-70"
         >
-          <Text className="text-[13px] font-medium text-attention">
+          <Text className="text-[14px] font-medium text-attention">
             {t('home.upcoming.overdue.viewAll')}
           </Text>
         </Pressable>
       </View>
 
-      <Text className="text-[13px] font-medium text-attention">
+      <Text className="text-[14px] font-medium text-attention">
         {overdue.oldestDays === undefined
           ? t('home.upcoming.overdue.count', { count: overdue.totalCount })
           : t('home.upcoming.overdue.summary', {
@@ -402,7 +402,7 @@ function OverdueBlock({
           <View key={row.key}>
             <View className="flex-row items-center gap-3">
               <View className="flex-1">
-                <Text className="text-[13px] font-medium text-ink" numberOfLines={2}>
+                <Text className="text-[14px] font-medium text-ink" numberOfLines={2}>
                   {row.name}
                 </Text>
                 {/* When it FELL DUE, not the day it is listed under. Absent
@@ -416,7 +416,7 @@ function OverdueBlock({
               </View>
 
               <Text
-                className="text-[13px] font-medium text-ink"
+                className="text-[14px] font-medium text-ink"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 {formatVndCellSigned(row.signedAmount)} {t('units.million')}
@@ -437,7 +437,7 @@ function OverdueBlock({
                 style={{ minHeight: TOUCH_TARGET }}
                 className="mt-1 justify-center self-start active:opacity-70"
               >
-                <Text className="text-[13px] font-medium text-attention">
+                <Text className="text-[14px] font-medium text-attention">
                   {pendingId === row.sourceEventId
                     ? t('home.upcoming.overdue.marking')
                     : t('home.upcoming.overdue.markDone')}

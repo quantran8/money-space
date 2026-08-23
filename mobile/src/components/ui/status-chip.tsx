@@ -46,7 +46,7 @@ export function StatusChip({
         className="h-1.5 w-1.5 rounded-full"
         style={{ backgroundColor: dot[tone] }}
       />
-      <Text className={cn('text-[13px]', text[tone])}>{label}</Text>
+      <Text className={cn('text-[14px]', text[tone])}>{label}</Text>
     </View>
   )
 }

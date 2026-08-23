@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { AS_OF } from '@money-space/core/features/assets/model/assets-form'
 import type { CashflowDirection } from '@money-space/core/features/cashflow/model/cashflow.types'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { BottomSheet, Button, CaveatNote, Select } from '@/components/ui'
 import { settlementWalletOptions } from '@/features/cashflow/lib/wallet-options'
@@ -102,7 +102,7 @@ export function CompleteCashflowSheet({
           <Text className="text-[14px] leading-5 text-ink">
             {t('upcoming.complete.description', {
               name: eventName,
-              amount: formatMoney(amount),
+              amount: formatVndShort(amount),
             })}
           </Text>
           {/* Which occurrence. A recurring event has many, and completing the

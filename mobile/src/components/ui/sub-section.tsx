@@ -25,7 +25,7 @@ export function SubSection({
   return (
     <View className={cn('rounded-sunk bg-sunk p-4', className)}>
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-[13px] font-medium text-ink2">{label}</Text>
+        <Text className="text-[14px] font-medium text-ink2">{label}</Text>
         {right}
       </View>
       <View className="mt-3">{children}</View>

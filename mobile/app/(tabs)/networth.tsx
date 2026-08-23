@@ -8,7 +8,7 @@ import { AS_OF } from '@money-space/core/features/assets/model/assets-form'
 import { computeCurrentValue } from '@money-space/core/features/assets/model/assets'
 import { useDebts } from '@money-space/core/features/debts/hooks/use-debts'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { Button, ConfirmDialog, Screen, Sections, Segmented } from '@/components/ui'
 import { AssetFormSheet } from '@/features/assets/components/asset-form-sheet'
@@ -176,7 +176,7 @@ export default function NetWorthScreen() {
         title={t('assets.form.removeTitle')}
         consequence={[
           t('assets.form.removeBody', {
-            amount: formatMoney(
+            amount: formatVndShort(
               deletingAsset ? (computeCurrentValue(deletingAsset, asOf || AS_OF) ?? 0) : 0,
             ),
           }),

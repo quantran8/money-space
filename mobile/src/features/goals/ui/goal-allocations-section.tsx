@@ -84,7 +84,7 @@ export function GoalAllocationsSection({
           why the contribution group is missing entirely. */}
       {allocations.length > 0 && contributions.length === 0 ? (
         <Sunk className="mt-5">
-          <Text className="text-[13px] leading-5 text-ink2">
+          <Text className="text-[14px] leading-5 text-ink2">
             {t('goals.allocations.noWalletTitle')}
           </Text>
           <Button

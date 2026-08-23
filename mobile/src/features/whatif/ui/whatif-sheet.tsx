@@ -121,7 +121,7 @@ function WhatIfSheetForm({
     <View>
       {/* Load-bearing, not filler: this is the line that says nothing is saved
           and that no answer here is advice about whether to buy. */}
-      <Text className="text-[13px] leading-5 text-ink2">{t('whatif.description')}</Text>
+      <Text className="text-[14px] leading-5 text-ink2">{t('whatif.description')}</Text>
 
       <View className="mt-5 gap-4">
         {/* The note leads: naming the purchase first is what turns an abstract

@@ -38,7 +38,7 @@ export function Switch({
       className={cn('flex-row items-center gap-3', className)}
     >
       <View className="flex-1">
-        <Text className="text-[13px] font-medium text-ink">{label}</Text>
+        <Text className="text-[14px] font-medium text-ink">{label}</Text>
         {hint ? <Text className="mt-0.5 text-[12px] leading-4 text-ink3">{hint}</Text> : null}
       </View>
 

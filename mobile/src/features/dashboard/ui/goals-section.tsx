@@ -55,7 +55,7 @@ export function GoalsSection({
             style={{ minHeight: TOUCH_TARGET }}
             className="justify-center active:opacity-70"
           >
-            <Text className="text-[13px] font-medium text-interactive">
+            <Text className="text-[14px] font-medium text-interactive">
               {goalCount > tracks.length
                 ? t('home.goals.viewAll', { count: goalCount })
                 : t('home.goals.details')}

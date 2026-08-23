@@ -34,7 +34,7 @@ export function MetricCell({
 
   return (
     <View className={cn('rounded-sunk bg-sunk p-4', className)}>
-      <Text className="text-[13px] text-ink2">{label}</Text>
+      <Text className="text-[14px] text-ink2">{label}</Text>
       <Text
         className={cn('mt-1 text-[22px] font-medium', valueTone)}
         style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.66 }}

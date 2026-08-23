@@ -42,7 +42,7 @@ export function Checkbox({
         >
           {checked ? <Check size={14} color="#FFFFFF" strokeWidth={2.5} /> : null}
         </View>
-        <Text className="flex-1 text-[13px] leading-5 text-ink2">{label}</Text>
+        <Text className="flex-1 text-[14px] leading-5 text-ink2">{label}</Text>
       </Pressable>
 
       {error ? <Text className="mt-1 text-[12px] text-alert">{error}</Text> : null}

@@ -91,7 +91,7 @@ export function MembersSection({
 
       {isSolo && members.length > 0 ? (
         <View className="mt-4 rounded-sunk bg-sunk p-4">
-          <Text className="text-[13px] leading-5 text-ink2">{t('members.list.soloPrompt')}</Text>
+          <Text className="text-[14px] leading-5 text-ink2">{t('members.list.soloPrompt')}</Text>
           <Button className="mt-3" onPress={onInvite}>
             {t('members.invite.action')}
           </Button>

@@ -20,7 +20,7 @@ import {
   isFixedScheduleLender,
   type LenderType,
 } from '@money-space/core/features/debts/model/debts.types'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { sanitizeIntegerInput } from '@money-space/core/shared/lib/number-format'
 import { cn } from '@money-space/core/shared/lib/utils'
 
@@ -568,13 +568,13 @@ export function DebtFormSheet({
               here (annuity vs reducing-balance lives in core). */}
           {repaymentEstimate ? (
             <ConsequenceNote>
-              <Text className="text-[13px] leading-5 text-ink">
+              <Text className="text-[14px] leading-5 text-ink">
                 {t(
                   termMonths
                     ? 'debts.form.schedule.suggestionWithTerm'
                     : 'debts.form.schedule.suggestion',
                   {
-                    amount: formatMoney(repaymentEstimate.perPayment),
+                    amount: formatVndShort(repaymentEstimate.perPayment),
                     installments: repaymentEstimate.installments,
                     months: termMonths,
                   },
@@ -591,14 +591,14 @@ export function DebtFormSheet({
                 style={{ minHeight: TOUCH_TARGET }}
                 className="justify-center"
               >
-                <Text className="text-[13px] font-medium text-interactive">
+                <Text className="text-[14px] font-medium text-interactive">
                   {t('debts.form.schedule.use')}
                 </Text>
               </Pressable>
             </ConsequenceNote>
           ) : (
             <Sunk>
-              <Text className="text-[13px] leading-5 text-ink2">
+              <Text className="text-[14px] leading-5 text-ink2">
                 {t('debts.form.schedule.empty')}
               </Text>
             </Sunk>
@@ -631,7 +631,7 @@ export function DebtFormSheet({
               <View className="mt-4 gap-4">
                 <View>
                   <View className="flex-row items-center justify-between gap-3">
-                    <Text className="text-[13px] text-ink2">
+                    <Text className="text-[14px] text-ink2">
                       {t('debts.form.fields.interestPeriods')}
                     </Text>
                     <Pressable
@@ -642,7 +642,7 @@ export function DebtFormSheet({
                       className="flex-row items-center gap-1"
                     >
                       <Plus size={15} color={colors.interactive} strokeWidth={2} />
-                      <Text className="text-[13px] font-medium text-interactive">
+                      <Text className="text-[14px] font-medium text-interactive">
                         {t('debts.form.interestPeriods.add')}
                       </Text>
                     </Pressable>
@@ -674,7 +674,7 @@ export function DebtFormSheet({
                                 term, so it is shown computed, never typed. */}
                             {isLast ? (
                               <View className="flex-1">
-                                <Text className="mb-1.5 text-[13px] text-ink2">
+                                <Text className="mb-1.5 text-[14px] text-ink2">
                                   {t('debts.form.fields.duration')}
                                 </Text>
                                 <View className="h-[46px] justify-center rounded-sunk bg-sunk px-3.5">
@@ -856,7 +856,7 @@ export function DebtFormSheet({
 function reviewMoney(raw: string) {
   const amount = Number(sanitizeIntegerInput(raw ?? ''))
   if (!amount || !Number.isFinite(amount)) return '—'
-  return formatMoney(amount)
+  return formatVndShort(amount)
 }
 
 /** ISO → `dd/mm/yyyy`. ASCII, so the mono face is safe on it. */
@@ -878,9 +878,9 @@ function ReviewRow({
 }) {
   return (
     <View className="flex-row items-start justify-between gap-4">
-      <Text className="flex-shrink text-[13px] text-ink2">{label}</Text>
+      <Text className="flex-shrink text-[14px] text-ink2">{label}</Text>
       <Text
-        className={cn('flex-1 text-right text-[13px] font-medium text-ink', mono && 'font-mono')}
+        className={cn('flex-1 text-right text-[14px] font-medium text-ink', mono && 'font-mono')}
         // Money never truncates, so it wraps rather than ellipsing.
         style={numeric ? { fontVariant: ['tabular-nums'] } : undefined}
       >

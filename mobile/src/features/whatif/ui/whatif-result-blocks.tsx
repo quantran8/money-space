@@ -10,7 +10,7 @@ import type {
   WhatIfResult,
   WhatIfResultType,
 } from '@money-space/core/features/whatif/model/whatif.types'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { SubSection } from '@/components/ui'
 import { SpendImpactBar } from '@/features/cashflow/ui/spend-impact-bar'
@@ -42,8 +42,8 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         {/* Negative is never hidden and never clamped — it is the answer. */}
         <ChangeRow
           label={t('whatif.lowestBalance')}
-          before={formatMoney(before.lowestProjectedBalance)}
-          after={formatMoney(after.lowestProjectedBalance)}
+          before={formatVndShort(before.lowestProjectedBalance)}
+          after={formatVndShort(after.lowestProjectedBalance)}
           afterColor={RESULT_TYPE_COLOR[result.resultType]}
         />
 
@@ -54,7 +54,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         </Text>
         <Text className="mt-1 text-[12px] leading-5 text-ink2">
           {t('whatif.flexibleDelta', {
-            amount: formatMoney(Math.abs(delta.lowestProjectedBalance)),
+            amount: formatVndShort(Math.abs(delta.lowestProjectedBalance)),
           })}
         </Text>
 
@@ -66,7 +66,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
             this purchase's doing. */}
         {result.newlyAtRisk.length > 0 ? (
           <View className="mt-3">
-            <Text className="text-[13px] font-medium text-attention">
+            <Text className="text-[14px] font-medium text-attention">
               {t('whatif.blocks.atRisk')}
             </Text>
             <View className="mt-1.5 gap-1">
@@ -75,7 +75,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
                   {t('whatif.blocks.atRiskRow', {
                     date: formatFullDate(item.date),
                     name: item.name,
-                    amount: formatMoney(item.shortfall),
+                    amount: formatVndShort(item.shortfall),
                   })}
                 </Text>
               ))}
@@ -84,7 +84,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         ) : !after.obligationsCovered ? (
           // Something is short, but this spend did not cause it — say so
           // without attaching a list that would misattribute the blame.
-          <Text className="mt-3 text-[13px] leading-5 text-attention">
+          <Text className="mt-3 text-[14px] leading-5 text-attention">
             {t('whatif.obligations.notCovered')}
           </Text>
         ) : null}
@@ -100,9 +100,9 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
               giving way, so it gets its own line rather than being folded into
               the per-goal list. */}
           {result.goalImpact.uncovered > 0 ? (
-            <Text className="mb-2.5 text-[13px] leading-5 text-alert">
+            <Text className="mb-2.5 text-[14px] leading-5 text-alert">
               {t('whatif.blocks.uncovered', {
-                amount: formatMoney(result.goalImpact.uncovered),
+                amount: formatVndShort(result.goalImpact.uncovered),
               })}
             </Text>
           ) : null}
@@ -115,7 +115,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           <SpendImpactBar
             fromPace={result.goalImpact.totalPaceReduction}
             fromSetAside={result.goalImpact.totalSetAsideReduction}
-            formatAmount={formatMoney}
+            formatAmount={formatVndShort}
           />
 
           {/* A legend only when there are two slices to tell apart. */}
@@ -136,10 +136,10 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           <View className="mt-3 gap-2">
             {result.goalImpact.goals.map((goal) => (
               <View key={goal.goalId}>
-                <Text className="text-[13px] leading-5 text-ink">
+                <Text className="text-[14px] leading-5 text-ink">
                   {t('whatif.blocks.goalCostRow', {
                     name: goal.goalName ?? '—',
-                    amount: formatMoney(goal.reduction),
+                    amount: formatVndShort(goal.reduction),
                   })}
                 </Text>
                 {/* The time cost is the half that decides anything: "giảm 3tr"
@@ -171,7 +171,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           settling wallet backs. */}
       {after.goal ? (
         <SubSection label={t('whatif.blocks.goal')}>
-          <Text className="text-[13px] leading-5 text-ink">
+          <Text className="text-[14px] leading-5 text-ink">
             {delta.goalDelayMonths !== null && delta.goalDelayMonths !== 0
               ? t('whatif.goal.delay', { count: Math.abs(delta.goalDelayMonths) })
               : t('whatif.goal.noChange')}

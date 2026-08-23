@@ -56,7 +56,7 @@ function JoinContent() {
                   ? t('invites.join.autoJoiningNamed', { name: preview.householdName })
                   : t('invites.join.autoJoining')}
               </Text>
-              <Text className="mt-1 text-[13px] text-ink2">
+              <Text className="mt-1 text-[14px] text-ink2">
                 {t('invites.join.autoJoiningHint')}
               </Text>
             </View>
@@ -73,12 +73,12 @@ function JoinContent() {
               <Text className="text-[19px] font-medium leading-6 text-ink">
                 {t('invites.join.title', { name: preview?.householdName ?? '' })}
               </Text>
-              <Text className="mt-2 text-[13px] leading-5 text-ink2">
+              <Text className="mt-2 text-[14px] leading-5 text-ink2">
                 {preview?.invitedByName
                   ? t('invites.join.invitedBy', { name: preview.invitedByName })
                   : t('invites.join.invitedByUnknown')}
               </Text>
-              <Text className="mt-3 text-[13px] leading-5 text-ink2">
+              <Text className="mt-3 text-[14px] leading-5 text-ink2">
                 {t('invites.join.equalMembers')}
               </Text>
 

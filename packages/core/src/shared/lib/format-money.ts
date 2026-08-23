@@ -71,9 +71,20 @@ export function formatMoney(value: number, currency: DisplayCurrency = displayCu
   }).format(amount)
 }
 
-/** Compatibility name used throughout the app; now follows the selected currency. */
+/**
+ * The app-wide money format. **One convention, everywhere.**
+ *
+ * This used to delegate to `formatMoney`, which spells the unit out in full
+ * ("30,0 triệu") while `formatVndScale` uses the short form the spec asks for
+ * ("59,5 tr"). Both were in use at roughly the same rate, so a single screen
+ * could show "59,5 tr" beside "30,0 triệu" and the reader had to re-parse the
+ * scale on every figure. §6 settles it: `tr` / `tỷ`.
+ *
+ * `formatMoney` stays for the rare caller that genuinely wants the long unit;
+ * it is no longer the default anything reaches for.
+ */
 export function formatVndShort(value: number): string {
-  return formatMoney(value)
+  return formatVndScale(value)
 }
 
 /**

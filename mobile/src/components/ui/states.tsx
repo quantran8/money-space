@@ -58,7 +58,7 @@ export function EmptyState({
 }) {
   return (
     <View className={cn('rounded-sunk bg-sunk p-4', className)}>
-      <Text className="text-[13px] leading-5 text-ink2">{message}</Text>
+      <Text className="text-[14px] leading-5 text-ink2">{message}</Text>
       {action && onAction ? (
         <Button className="mt-3 self-start" variant="ghost" onPress={onAction}>
           {action}
@@ -82,7 +82,7 @@ export function ErrorState({
 }) {
   return (
     <View className={cn('rounded-sunk bg-sunk p-4', className)}>
-      <Text className="text-[13px] leading-5 text-alert">{message}</Text>
+      <Text className="text-[14px] leading-5 text-alert">{message}</Text>
       {retryLabel && onRetry ? (
         <Button className="mt-3 self-start" variant="ghost" onPress={onRetry}>
           {retryLabel}
@@ -122,7 +122,7 @@ export function ConsequenceNote({
 }) {
   return (
     <View className={cn('rounded-sunk bg-interactive-soft p-3.5', className)}>
-      <Text className="text-[13px] leading-5 text-ink">{children}</Text>
+      <Text className="text-[14px] leading-5 text-ink">{children}</Text>
     </View>
   )
 }

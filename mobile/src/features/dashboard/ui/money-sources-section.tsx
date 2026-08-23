@@ -69,7 +69,7 @@ export function MoneySourcesSection({
               style={{ minHeight: TOUCH_TARGET }}
               className="justify-center active:opacity-70"
             >
-              <Text className="text-[13px] font-medium text-interactive">
+              <Text className="text-[14px] font-medium text-interactive">
                 {t('home.location.viewAll', { count: map.totalCount })}
               </Text>
             </Pressable>
@@ -140,7 +140,7 @@ function SourceBar({
     >
       <View className="flex-row items-baseline gap-3">
         <View className="flex-1">
-          <Text className="text-[13px] text-ink" numberOfLines={1}>
+          <Text className="text-[14px] text-ink" numberOfLines={1}>
             {bar.name}
           </Text>
           {bar.holder ? (
@@ -151,7 +151,7 @@ function SourceBar({
         </View>
 
         <Text
-          className="text-[13px] font-medium text-ink"
+          className="text-[14px] font-medium text-ink"
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {formatVndScale(bar.value)}

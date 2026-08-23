@@ -236,7 +236,7 @@ export function GoalAllocationsField({
             the household is choosing from a short list, and a card layout on a
             375pt screen buys nothing a row does not. */}
         <View>
-          <Text className="text-[13px] font-medium text-ink">{t('goals.builder.addSource')}</Text>
+          <Text className="text-[14px] font-medium text-ink">{t('goals.builder.addSource')}</Text>
           <Text className="mt-0.5 text-[11px] text-ink3">
             {available.length > 0
               ? t('goals.builder.availableSources', { count: available.length })
@@ -257,7 +257,7 @@ export function GoalAllocationsField({
                   className="flex-row items-center gap-3 rounded-sunk bg-sunk px-3.5 active:opacity-80"
                 >
                   <View className="flex-1">
-                    <Text className="text-[13px] font-medium text-ink" numberOfLines={1}>
+                    <Text className="text-[14px] font-medium text-ink" numberOfLines={1}>
                       {option.name}
                     </Text>
                     <Text

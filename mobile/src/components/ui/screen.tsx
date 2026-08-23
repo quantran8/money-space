@@ -16,13 +16,26 @@ import type { ReactNode } from 'react'
  *
  * The tab bar floats over the content, so the bottom padding clears it. Money
  * values must never be hidden behind it.
+ *
+ * That clearance is `TAB_BAR + inset`, counted ONCE. The bar's own height
+ * already includes the home indicator, and adding the inset a second time left
+ * a band of dead space under every screen — visible as a gap below the last
+ * card on some tabs while others looked cramped, because how much content each
+ * had decided whether the gap showed.
  */
+
+/** The bar's own height, above the home indicator. */
+const TAB_BAR = 49
+/** Breathing room between the last card and the bar. */
+const TAB_BAR_CLEARANCE = 16
+
 export function Screen({
   title,
   right,
   children,
   onRefresh,
   refreshing = false,
+  withoutTabBar = false,
   className,
 }: {
   title?: string
@@ -31,6 +44,11 @@ export function Screen({
   children: ReactNode
   onRefresh?: () => void
   refreshing?: boolean
+  /**
+   * Set on screens pushed OVER the tabs (a detail route, the journal) — they
+   * have no bar to clear, and padding for one leaves them ending short.
+   */
+  withoutTabBar?: boolean
   className?: string
 }) {
   const insets = useSafeAreaInsets()
@@ -39,9 +57,9 @@ export function Screen({
     <ScrollView
       className={cn('flex-1 bg-app', className)}
       contentContainerStyle={{
-        paddingTop: insets.top + 12,
-        // Clear the floating tab bar plus a little breathing room.
-        paddingBottom: insets.bottom + 72,
+        paddingTop: insets.top + spacing.tight + 4,
+        paddingBottom:
+          insets.bottom + (withoutTabBar ? spacing.section : TAB_BAR + TAB_BAR_CLEARANCE),
       }}
       refreshControl={
         onRefresh ? (

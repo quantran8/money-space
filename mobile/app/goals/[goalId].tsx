@@ -103,7 +103,7 @@ export default function GoalDetailScreen() {
 
   if (isLoading && !goal) {
     return (
-      <Screen>
+      <Screen withoutTabBar>
         <Sections>
           <Skeleton height={36} className="w-40" />
           <Skeleton height={200} className="rounded-panel" />
@@ -114,13 +114,13 @@ export default function GoalDetailScreen() {
 
   if (!goal) {
     return (
-      <Screen>
+      <Screen withoutTabBar>
         <BackLink label={t('goals.detail.back')} onPress={() => navigate('/goals')} />
         <Panel className="mt-3">
           <Text className="text-[16px] font-medium text-ink">
             {t('goals.detail.notFound.title')}
           </Text>
-          <Text className="mt-1 text-[13px] leading-5 text-ink2">
+          <Text className="mt-1 text-[14px] leading-5 text-ink2">
             {t('goals.detail.notFound.description')}
           </Text>
         </Panel>
@@ -194,13 +194,13 @@ export default function GoalDetailScreen() {
           {/* Percentage and shortfall read as one line above the bar: the bar
               shows the shape, these two say what it amounts to. */}
           <View className="mt-5 flex-row flex-wrap items-center justify-between gap-x-4 gap-y-1">
-            <Text className="text-[13px] text-ink2">
+            <Text className="text-[14px] text-ink2">
               {t('goals.detail.picture.achieved', { percent: percentLabel }).replace(
                 /<\/?0>/g,
                 '',
               )}
             </Text>
-            <Text className="text-[13px] text-ink2">
+            <Text className="text-[14px] text-ink2">
               {t('goals.detail.picture.remaining', {
                 amount: formatVndScale(remaining),
               }).replace(/<\/?1>/g, '')}

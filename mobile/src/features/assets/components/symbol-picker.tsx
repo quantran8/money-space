@@ -59,7 +59,7 @@ export function SymbolPicker({
 
   return (
     <View className={className}>
-      <Text className="mb-1.5 text-[13px] text-ink2">{label}</Text>
+      <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text>
 
       <Pressable
         onPress={() => {
@@ -100,7 +100,7 @@ export function SymbolPicker({
               ))}
             </View>
           ) : symbols.length === 0 ? (
-            <Text className="px-1 py-6 text-center text-[13px] text-ink2">
+            <Text className="px-1 py-6 text-center text-[14px] text-ink2">
               {t('assets.form.symbolNoResults')}
             </Text>
           ) : (

@@ -1,5 +1,5 @@
 import { formatIntegerDisplay, sanitizeIntegerInput } from '@money-space/core/shared/lib/number-format'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { Field } from '@/components/ui/field'
 
@@ -44,7 +44,7 @@ export function MoneyInput({
       error={error}
       keyboardType="number-pad"
       // Reads back what was actually typed, in words the household uses.
-      hint={amount !== null && amount > 0 ? formatMoney(amount) : undefined}
+      hint={amount !== null && amount > 0 ? formatVndShort(amount) : undefined}
     />
   )
 }

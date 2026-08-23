@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react-native'
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useAssetGoalUsage } from '@money-space/core/features/goals/hooks/use-asset-goal-usage'
 import { computeSpendImpact } from '@money-space/core/features/goals/model/spend-impact'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { Sunk } from '@/components/ui'
 import { SpendImpactBar } from '@/features/cashflow/ui/spend-impact-bar'
@@ -65,7 +65,7 @@ export function GoalImpactNotice({
   if (impact.totalReduction <= 0) {
     return (
       <Sunk className={className}>
-        <Text className="text-[13px] leading-5 text-ink2">
+        <Text className="text-[14px] leading-5 text-ink2">
           {t('upcoming.complete.goalImpact.pending')}
         </Text>
       </Sunk>
@@ -90,7 +90,7 @@ export function GoalImpactNotice({
             className="mt-1 text-[22px] font-medium text-ink"
             style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.66 }}
           >
-            {formatMoney(impact.totalReduction)}
+            {formatVndShort(impact.totalReduction)}
           </Text>
         </View>
         <View className="items-end">
@@ -98,7 +98,7 @@ export function GoalImpactNotice({
             {t('upcoming.complete.goalImpact.takenFrom')}
           </Text>
           <Text
-            className={`mt-1 text-[13px] font-medium ${
+            className={`mt-1 text-[14px] font-medium ${
               reachesSetAside ? 'text-attention' : 'text-interactive'
             }`}
           >
@@ -114,7 +114,7 @@ export function GoalImpactNotice({
         className="mt-4"
         fromPace={impact.totalPaceReduction}
         fromSetAside={impact.totalSetAsideReduction}
-        formatAmount={formatMoney}
+        formatAmount={formatVndShort}
       />
 
       {/* A legend only when there are two slices to tell apart. */}
@@ -137,17 +137,17 @@ export function GoalImpactNotice({
       <View className="mt-4 gap-3">
         <ChangeRow
           label={t('upcoming.complete.goalImpact.paceRemainingLabel')}
-          before={formatMoney(impact.totalPaceBefore)}
-          after={formatMoney(Math.max(0, impact.totalPaceBefore - impact.totalPaceReduction))}
+          before={formatVndShort(impact.totalPaceBefore)}
+          after={formatVndShort(Math.max(0, impact.totalPaceBefore - impact.totalPaceReduction))}
         />
         {reachesSetAside ? (
           <ChangeRow
             label={t('upcoming.complete.goalImpact.goalTotalLabel')}
-            before={formatMoney(impact.totalSetAsideBefore)}
-            after={formatMoney(
+            before={formatVndShort(impact.totalSetAsideBefore)}
+            after={formatVndShort(
               Math.max(0, impact.totalSetAsideBefore - impact.totalSetAsideReduction),
             )}
-            delta={`−${formatMoney(impact.totalSetAsideReduction)}`}
+            delta={`−${formatVndShort(impact.totalSetAsideReduction)}`}
           />
         ) : null}
       </View>
@@ -169,14 +169,14 @@ export function GoalImpactNotice({
               >
                 {goal.setAsideReduction > 0 && goal.paceReduction > 0
                   ? t('upcoming.complete.goalImpact.goalBoth', {
-                      pace: formatMoney(goal.paceReduction),
-                      setAside: formatMoney(goal.setAsideReduction),
+                      pace: formatVndShort(goal.paceReduction),
+                      setAside: formatVndShort(goal.setAsideReduction),
                     })
                   : t(
                       goal.setAsideReduction > 0
                         ? 'upcoming.complete.goalImpact.goalSetAsideShort'
                         : 'upcoming.complete.goalImpact.goalPaceShort',
-                      { amount: formatMoney(goal.reduction) },
+                      { amount: formatVndShort(goal.reduction) },
                     )}
               </Text>
             </View>
@@ -188,8 +188,8 @@ export function GoalImpactNotice({
       <Text className="mt-3 text-[12px] leading-5 text-ink2">
         {reachesSetAside
           ? t('upcoming.complete.goalImpact.explainSetAside', {
-              pace: formatMoney(impact.totalPaceReduction),
-              setAside: formatMoney(impact.totalSetAsideReduction),
+              pace: formatVndShort(impact.totalPaceReduction),
+              setAside: formatVndShort(impact.totalSetAsideReduction),
             })
           : t('upcoming.complete.goalImpact.explainPace')}
       </Text>
@@ -205,8 +205,8 @@ export function GoalImpactNotice({
             : 'upcoming.complete.goalImpact.subtitle',
           {
             wallet: walletName,
-            value: formatMoney(assetValue),
-            free: formatMoney(unassignedAmount),
+            value: formatVndShort(assetValue),
+            free: formatVndShort(unassignedAmount),
           },
         )}
       </Text>
@@ -216,7 +216,7 @@ export function GoalImpactNotice({
       {impact.exceedsWallet ? (
         <Text className="mt-2 text-[12px] leading-5 text-alert">
           {t('upcoming.complete.goalImpact.exceedsWallet', {
-            value: formatMoney(impact.assetValue),
+            value: formatVndShort(impact.assetValue),
           })}
         </Text>
       ) : null}
@@ -251,7 +251,7 @@ function ChangeRow({
       </View>
       {/* Money never truncates, so the pair wraps rather than ellipsing. */}
       <View className="mt-1 flex-row flex-wrap items-center gap-2">
-        <Text className="text-[13px] text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
+        <Text className="text-[14px] text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
           {before}
         </Text>
         <ArrowRight size={14} color={colors.ink3} strokeWidth={1.5} />

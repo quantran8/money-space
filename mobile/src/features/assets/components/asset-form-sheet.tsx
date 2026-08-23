@@ -24,7 +24,7 @@ import {
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import { currentMemberId } from '@money-space/core/features/members/model/members.types'
-import { formatMoney, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
+import { formatMoney, formatVndShort, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
 import { useAuthStore } from '@money-space/core/shared/stores/auth-store'
 
 import {
@@ -320,8 +320,8 @@ function AssetEffect({
     if (hasAmount && Math.round(amount) !== Math.round(storedValue)) {
       changes.push(
         t('assets.form.changeValue', {
-          from: formatMoney(storedValue),
-          to: formatMoney(amount),
+          from: formatVndShort(storedValue),
+          to: formatVndShort(amount),
         }),
       )
     }
@@ -357,7 +357,7 @@ function AssetEffect({
   if (!countsAsFlexible || !flexibleMoney) {
     return (
       <ConsequenceNote>
-        {t('assets.form.effectOther', { amount: formatMoney(amount) })}
+        {t('assets.form.effectOther', { amount: formatVndShort(amount) })}
       </ConsequenceNote>
     )
   }
@@ -365,11 +365,11 @@ function AssetEffect({
   return (
     <ConsequenceNote>
       {t('assets.form.effectUsable', {
-        amount: formatMoney(amount),
+        amount: formatVndShort(amount),
         // Projected client-side (current + this asset) rather than re-fetched
         // per keystroke: it is an estimate of what saving will produce, which is
         // exactly what a "what happens if I do this" line is for.
-        flexible: formatMoney(flexibleMoney.lowestProjectedBalance + amount),
+        flexible: formatVndShort(flexibleMoney.lowestProjectedBalance + amount),
       })}
     </ConsequenceNote>
   )
@@ -433,7 +433,7 @@ function AcquisitionFields({
                 label:
                   option.balance === undefined
                     ? option.label
-                    : `${option.label} · ${formatMoney(option.balance)}`,
+                    : `${option.label} · ${formatVndShort(option.balance)}`,
               }))}
             />
           )}
@@ -670,19 +670,22 @@ function MarketQuoteHint({
   if (!symbol.trim()) return null
 
   if (isLoading) {
-    return <Text className="text-[13px] text-ink3">{t('assets.form.market.quoteLoading')}</Text>
+    return <Text className="text-[14px] text-ink3">{t('assets.form.market.quoteLoading')}</Text>
   }
 
   if (isUnavailable || !quote) {
     // The form still submits, valued from whatever the user types.
-    return <Text className="text-[13px] text-ink3">{t('assets.form.market.quoteUnavailable')}</Text>
+    return <Text className="text-[14px] text-ink3">{t('assets.form.market.quoteUnavailable')}</Text>
   }
 
   return (
     <View>
-      <Text className="text-[13px] text-ink2">
+      <Text className="text-[14px] text-ink2">
         {t('assets.form.market.quoteLabel')}{' '}
         <Text className="font-medium text-ink" style={{ fontVariant: ['tabular-nums'] }}>
+          {/* `formatMoney`, not the app-wide `formatVndShort`: a quote is
+              priced in the EXCHANGE's currency, which is not the household's,
+              and only this formatter takes one. */}
           {formatMoney(quote.price, quote.quoteCurrency as DisplayCurrency)} / {quote.unit}
         </Text>
       </Text>

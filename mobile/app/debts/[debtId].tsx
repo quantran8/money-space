@@ -173,7 +173,7 @@ function DebtDetailScreen() {
 
   if (isLoading && !debt) {
     return (
-      <Screen>
+      <Screen withoutTabBar>
         <Sections>
           <Skeleton height={140} />
           <Skeleton height={200} />
@@ -184,13 +184,13 @@ function DebtDetailScreen() {
 
   if (!debt) {
     return (
-      <Screen>
+      <Screen withoutTabBar>
         <BackLink label={t('debts.detail.back')} onPress={goBack} />
         <Panel className="mt-3">
           <Text className="text-[16px] font-medium text-ink">
             {t('debts.detail.notFoundTitle')}
           </Text>
-          <Text className="mt-1.5 text-[13px] leading-5 text-ink2">
+          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
             {t('debts.detail.notFoundBody')}
           </Text>
         </Panel>
@@ -310,7 +310,7 @@ function DebtDetailScreen() {
                 {t('debts.detail.overview.progress')}
               </Text>
               <Text
-                className="text-[13px] font-medium text-ink"
+                className="text-[14px] font-medium text-ink"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 {Math.round(progress)}%
@@ -414,7 +414,7 @@ function DebtDetailScreen() {
             </View>
 
             {debt.note ? (
-              <Text className="mt-4 text-[13px] leading-5 text-ink2">{debt.note}</Text>
+              <Text className="mt-4 text-[14px] leading-5 text-ink2">{debt.note}</Text>
             ) : null}
           </Sunk>
         </Panel>
@@ -505,9 +505,9 @@ function LoanFact({
 }) {
   return (
     <View className="flex-row items-start justify-between gap-4">
-      <Text className="flex-shrink text-[13px] text-ink2">{label}</Text>
+      <Text className="flex-shrink text-[14px] text-ink2">{label}</Text>
       <Text
-        className={mono ? 'flex-1 text-right font-mono text-[13px] text-ink' : 'flex-1 text-right text-[13px] font-medium text-ink'}
+        className={mono ? 'flex-1 text-right font-mono text-[14px] text-ink' : 'flex-1 text-right text-[14px] font-medium text-ink'}
         style={numeric ? { fontVariant: ['tabular-nums'] } : undefined}
       >
         {value}

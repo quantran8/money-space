@@ -74,7 +74,7 @@ export function Select<T extends string>({
 
   return (
     <View className={className}>
-      {label ? <Text className="mb-1.5 text-[13px] text-ink2">{label}</Text> : null}
+      {label ? <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text> : null}
 
       <Pressable
         onPress={() => {
@@ -87,7 +87,7 @@ export function Select<T extends string>({
         style={{ minHeight: TOUCH_TARGET }}
         className={cn(
           'flex-row items-center justify-between gap-2 rounded-sunk border px-3.5',
-          error ? 'border-alert bg-panel' : 'border-transparent bg-sunk',
+          error ? 'border-alert bg-panel' : 'border-hair bg-sunk',
         )}
       >
         <Text

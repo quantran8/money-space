@@ -48,12 +48,18 @@ export function Collapsible({
         className="flex-row items-start justify-between gap-3"
       >
         <View className="flex-1">{summary}</View>
-        <View className="flex-row items-center gap-1.5 pt-1">
-          <Text className="text-[12px] text-ink3">{open ? hideLabel : showLabel}</Text>
+        {/* The toggle is an ACTION, so it takes the interactive tone. It used
+            to be 12px `--ink3` — the metadata weight, which §5 says is never a
+            value and here was not even a label: it read as a caption that
+            happened to be tappable. */}
+        <View className="flex-row items-center gap-1.5 pt-0.5">
+          <Text className="text-[14px] font-medium text-interactive">
+            {open ? hideLabel : showLabel}
+          </Text>
           <ChevronDown
             size={16}
-            color={colors.ink3}
-            strokeWidth={1.75}
+            color={colors.interactive}
+            strokeWidth={2}
             style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }}
           />
         </View>

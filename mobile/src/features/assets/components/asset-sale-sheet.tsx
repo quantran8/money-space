@@ -176,7 +176,7 @@ export function AssetSaleSheet({
             calculated, so there it is typed. */}
         {isMarketAsset ? (
           <Sunk className="flex-row items-center justify-between gap-3">
-            <Text className="flex-1 text-[13px] text-ink2">{t('assets.sale.proceeds')}</Text>
+            <Text className="flex-1 text-[14px] text-ink2">{t('assets.sale.proceeds')}</Text>
             <Money size={18}>{formatVndShort(parseRawMoney(proceeds) || 0)}</Money>
           </Sunk>
         ) : (

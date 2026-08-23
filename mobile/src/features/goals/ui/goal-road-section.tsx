@@ -111,7 +111,7 @@ export function GoalRoadSection({
             </Text>
           </View>
         ) : (
-          <Text className="mt-4 text-[13px] leading-6 text-ink2">
+          <Text className="mt-4 text-[14px] leading-6 text-ink2">
             {pace != null && projectedLabel
               ? `${t('goals.detail.road.perMonth', { amount: formatVndScale(pace) })} → ${projectedLabel}.`
               : t('goals.detail.road.noPaceConclusion')}
@@ -142,7 +142,7 @@ export function GoalRoadSection({
             is working, not answer — but always one tap from the figure. */}
         <Collapsible
           className="mt-6"
-          summary={<Text className="text-[13px] text-interactive">{t('goals.detail.road.explain')}</Text>}
+          summary={<Text className="text-[14px] text-interactive">{t('goals.detail.road.explain')}</Text>}
           showLabel={t('goals.detail.road.explain')}
           hideLabel={t('goals.detail.road.hide')}
         >

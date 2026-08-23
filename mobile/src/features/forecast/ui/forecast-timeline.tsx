@@ -12,7 +12,7 @@ import type {
   ForecastDay,
   ForecastOccurrence,
 } from '@money-space/core/features/forecast/model/forecast.types'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 import {
@@ -338,7 +338,7 @@ function OccurrenceRow({
           )}
           style={{ fontVariant: ['tabular-nums'] }}
         >
-          {`${isIncoming ? '+' : '−'}${formatMoney(occurrence.amount)}`}
+          {`${isIncoming ? '+' : '−'}${formatVndShort(occurrence.amount)}`}
         </Text>
         {/* "—" and never a fabricated 0. Red only for an actual shortfall —
             `balanceTone` is binary and owns that rule. */}
@@ -353,7 +353,7 @@ function OccurrenceRow({
         >
           {runningBalance === undefined
             ? '—'
-            : t('home.upcoming.remainingShort', { value: formatMoney(runningBalance) })}
+            : t('home.upcoming.remainingShort', { value: formatVndShort(runningBalance) })}
         </Text>
       </View>
 

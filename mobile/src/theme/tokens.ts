@@ -39,18 +39,60 @@ export const radius = {
 } as const
 
 /**
- * v4.2 §7. A range, not fixed geometry: low data density means a tighter
- * composition, never the same items stretched further apart.
+ * The spacing scale, v4.2 §7.
+ *
+ * Named by JOB, not by size. Six screens each picking their own `mt-3` /
+ * `mt-4` / `mt-5` is how the app ended up with thirteen different gaps and a
+ * rhythm that changed from tab to tab — a number says nothing about whether
+ * two things belong together.
+ *
+ * §7 calls these a default range rather than fixed geometry: low data density
+ * means a TIGHTER composition, never the same items stretched further apart.
  */
 export const spacing = {
-  /** Section → section. */
+  /** Between sections of a screen. */
   section: 16,
-  /** Panel padding on a phone (<640). Desktop's 32 never applies here. */
+  /** Panel padding on a phone. Desktop's 32 never applies here. */
   panel: 20,
-  /** Header → body inside a section. */
+  /** A section header and the body under it. */
   header: 24,
+  /** Between blocks inside one panel. */
+  block: 16,
+  /** Between a label and the control it names, or two lines of one thought. */
+  tight: 8,
   /** A dense row's vertical padding. */
   row: 10,
+  /** A list or table and the summary that closes it. */
+  summary: 16,
+} as const
+
+/**
+ * The type scale, v4.2 §5.
+ *
+ * `secondary` is 14, not 13. The whole supporting layer — a wallet's holder, a
+ * relative date, the caveat under a figure — had drifted down to 13 and 12,
+ * where `--ink3` on `--sunk` is legible in a screenshot and hard work on a
+ * phone held at arm's length. Metadata may be quiet; it may not be unreadable.
+ */
+export const type = {
+  /** The one figure a screen exists to answer. */
+  hero: 56,
+  /** A second-rank metric. */
+  metric: 30,
+  /** A metric inside a cell or row. */
+  metricSmall: 22,
+  /** Screen title. */
+  pageTitle: 19,
+  /** Section title. */
+  sectionTitle: 16,
+  /** Body copy. */
+  body: 14,
+  /** Supporting copy: holders, dates, captions, caveats. */
+  secondary: 14,
+  /** The smallest text that may carry meaning. Never a money value. */
+  caption: 12,
+  /** Uppercase semantic label. */
+  label: 11,
 } as const
 
 /** The minimum touch target, v4.2 §9. Nav, CTA and action links all clear it. */

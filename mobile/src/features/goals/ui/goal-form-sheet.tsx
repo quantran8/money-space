@@ -202,7 +202,7 @@ export function GoalFormSheet({
           </Sunk>
         ) : (
           <View>
-            <Text className="mb-1.5 text-[13px] text-ink2">{t('goals.form.allocations')}</Text>
+            <Text className="mb-1.5 text-[14px] text-ink2">{t('goals.form.allocations')}</Text>
             <Text className="mb-3 text-[11px] leading-4 text-ink3">
               {t('goals.builder.sourceDescription')}
             </Text>

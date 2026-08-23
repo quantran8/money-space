@@ -102,7 +102,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
         </View>
       ) : rows.length === 0 ? (
         <Sunk className="mt-5">
-          <Text className="text-[13px] leading-5 text-ink2">{t('goals.monthly.empty')}</Text>
+          <Text className="text-[14px] leading-5 text-ink2">{t('goals.monthly.empty')}</Text>
         </Sunk>
       ) : (
         <>
@@ -117,7 +117,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
             // A heading over an empty body would promise a record that does not
             // exist yet.
             <Sunk className="mt-3">
-              <Text className="text-[13px] text-ink2">{t('goals.monthly.historyEmpty')}</Text>
+              <Text className="text-[14px] text-ink2">{t('goals.monthly.historyEmpty')}</Text>
             </Sunk>
           ) : (
             <View className="mt-2">

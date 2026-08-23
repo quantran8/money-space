@@ -54,7 +54,7 @@ export function SavingWithdrawalPanel({ term }: { term: CalculationTerm }) {
 
       {hasEarly ? (
         <Sunk className="mt-5 flex-row items-center justify-between">
-          <Text className="flex-1 text-[13px] text-ink2">
+          <Text className="flex-1 text-[14px] text-ink2">
             {t('assets.detail.withdrawal.withdrawMonth', {
               month: clampedMonth,
               total: termMonths,

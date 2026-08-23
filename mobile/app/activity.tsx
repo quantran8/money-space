@@ -24,6 +24,7 @@ export default function ActivityScreen() {
 
   return (
     <Screen
+      withoutTabBar
       title={t('activity.header.title')}
       onRefresh={() => void refetch()}
       refreshing={isRefetching}

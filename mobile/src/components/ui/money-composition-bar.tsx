@@ -68,10 +68,10 @@ export function MoneyCompositionBar({
               className="h-2 w-2 rounded-full"
               style={{ backgroundColor: fill[segment.tone] }}
             />
-            <Text className="flex-1 text-[13px] text-ink2">{segment.label}</Text>
+            <Text className="flex-1 text-[14px] text-ink2">{segment.label}</Text>
             <Text
               className={cn(
-                'text-[13px]',
+                'text-[14px]',
                 segment.tone === 'flexible' ? 'font-medium text-ink' : 'text-ink2',
               )}
               style={{ fontVariant: ['tabular-nums'] }}

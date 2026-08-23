@@ -36,7 +36,7 @@ export function Field({
 
   return (
     <View className={className}>
-      {label ? <Text className="mb-1.5 text-[13px] text-ink2">{label}</Text> : null}
+      {label ? <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text> : null}
 
       <TextInput
         {...props}
@@ -56,7 +56,12 @@ export function Field({
             ? 'border-alert bg-panel'
             : focused
               ? 'border-interactive bg-panel'
-              : 'border-transparent bg-sunk',
+              : // A hairline at rest, not a transparent edge. The sunk fill
+                // alone is the same tone as the informational blocks around it,
+                // so a field read as another panel rather than as something you
+                // can type into. §2 allows the stroke here for exactly this:
+                // the relation stopped being readable from surface alone.
+                'border-hair bg-sunk',
         )}
       />
 

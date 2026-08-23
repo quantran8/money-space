@@ -139,7 +139,7 @@ export default function AssetDetailScreen() {
 
   if (isLoading && !asset) {
     return (
-      <Screen>
+      <Screen withoutTabBar>
         <BackLink label={t('assets.detail.back')} onPress={() => router.back()} />
         <View className="mt-4 gap-3">
           <Skeleton height={28} />
@@ -151,13 +151,13 @@ export default function AssetDetailScreen() {
 
   if (!asset) {
     return (
-      <Screen>
+      <Screen withoutTabBar>
         <BackLink label={t('assets.detail.back')} onPress={() => router.back()} />
         <Panel className="mt-4">
           <Text className="text-[16px] font-medium text-ink">
             {t('assets.detail.notFound.title')}
           </Text>
-          <Text className="mt-1.5 text-[13px] leading-5 text-ink2">
+          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
             {t('assets.detail.notFound.description')}
           </Text>
         </Panel>
@@ -437,7 +437,7 @@ export default function AssetDetailScreen() {
           {asset.note ? (
             <View className="mt-4">
               <Label>{t('assets.detail.notes.eyebrow')}</Label>
-              <Text className="mt-1.5 text-[13px] leading-5 text-ink2">{asset.note}</Text>
+              <Text className="mt-1.5 text-[14px] leading-5 text-ink2">{asset.note}</Text>
             </View>
           ) : null}
         </Panel>

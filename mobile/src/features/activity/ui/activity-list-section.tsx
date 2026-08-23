@@ -96,7 +96,7 @@ function ActivityRow({ entry }: { entry: ActivityEntry }) {
 
       {entry.amount === null ? null : (
         <Text
-          className="pt-0.5 text-[13px] text-ink2"
+          className="pt-0.5 text-[14px] text-ink2"
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {formatVndScale(entry.amount)}

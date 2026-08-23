@@ -109,6 +109,7 @@ export default function EventsScreen() {
 
   return (
     <Screen
+      withoutTabBar
       title={t('events.history.title')}
       onRefresh={() => void handleRefresh()}
       refreshing={refreshing}

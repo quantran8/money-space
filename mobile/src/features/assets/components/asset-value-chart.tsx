@@ -99,7 +99,7 @@ export function AssetValueChart({
   if (points.length < 2) {
     return (
       <View className="items-center justify-center rounded-sunk bg-sunk px-4 py-10">
-        <Text className="text-center text-[13px] text-ink2">
+        <Text className="text-center text-[14px] text-ink2">
           {t('assets.detail.chart.empty')}
         </Text>
       </View>

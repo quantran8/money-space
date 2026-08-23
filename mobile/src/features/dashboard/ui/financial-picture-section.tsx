@@ -112,7 +112,7 @@ export function FinancialPictureSection({
           ) : null}
         </View>
 
-        <Text className="mt-2.5 text-[13px] leading-5 text-ink2">
+        <Text className="mt-2.5 text-[14px] leading-5 text-ink2">
           {canProject
             ? t('home.picture.totals', { cash: formatVndScale(composition.totalLiquid) })
             : t('home.picture.noSource')}
@@ -146,7 +146,7 @@ export function FinancialPictureSection({
           style={{ minHeight: TOUCH_TARGET }}
           className="mt-2 justify-center active:opacity-70"
         >
-          <Text className="text-[13px] font-medium text-interactive">
+          <Text className="text-[14px] font-medium text-interactive">
             {t('home.picture.simulate')}
           </Text>
         </Pressable>

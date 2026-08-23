@@ -29,7 +29,7 @@ export default function SignupScreen() {
       >
         <View className="px-5">
           <Text className="text-[19px] font-medium text-ink">{t('auth.signup.title')}</Text>
-          <Text className="mt-1.5 text-[13px] leading-5 text-ink2">
+          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
             {t('auth.signup.description')}
           </Text>
 
@@ -132,8 +132,8 @@ export default function SignupScreen() {
           </View>
 
           <View className="mt-4 flex-row items-center justify-center gap-1">
-            <Text className="text-[13px] text-ink2">{t('auth.signup.haveAccount')}</Text>
-            <Link href="/auth" className="text-[13px] font-medium text-interactive">
+            <Text className="text-[14px] text-ink2">{t('auth.signup.haveAccount')}</Text>
+            <Link href="/auth" className="text-[14px] font-medium text-interactive">
               {t('auth.tabs.login')}
             </Link>
           </View>

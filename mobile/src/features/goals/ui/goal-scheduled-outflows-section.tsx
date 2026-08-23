@@ -79,17 +79,17 @@ export function GoalScheduledOutflowsSection({
               <Text className="font-mono text-[11px] text-ink3">
                 {formatDayMonth(lead.expectedDate)}
               </Text>
-              <Text className="text-[13px] font-medium text-ink" numberOfLines={1}>
+              <Text className="text-[14px] font-medium text-ink" numberOfLines={1}>
                 {lead.assetName}
               </Text>
               <Text
-                className="text-[13px] font-medium text-alert"
+                className="text-[14px] font-medium text-alert"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 −{formatAmount(impact.outflowAmount)}
               </Text>
             </View>
-            <Text className="mt-0.5 text-[13px] text-ink2">
+            <Text className="mt-0.5 text-[14px] text-ink2">
               {t('goals.scheduledOutflows.after')}{' '}
               <Text className="font-medium text-ink" style={{ fontVariant: ['tabular-nums'] }}>
                 {formatAmount(impact.projectedAmount)}
@@ -99,7 +99,7 @@ export function GoalScheduledOutflowsSection({
           </View>
         }
       >
-        <Text className="text-[13px] leading-5 text-ink2">
+        <Text className="text-[14px] leading-5 text-ink2">
           {t('goals.scheduledOutflows.description')}
         </Text>
 
@@ -204,9 +204,9 @@ function ImpactFigures({
 function Figure({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-baseline justify-between gap-3">
-      <Text className="flex-1 text-[13px] text-ink2">{label}</Text>
+      <Text className="flex-1 text-[14px] text-ink2">{label}</Text>
       <Text
-        className="text-[13px] font-medium text-ink"
+        className="text-[14px] font-medium text-ink"
         style={{ fontVariant: ['tabular-nums'] }}
       >
         {value}

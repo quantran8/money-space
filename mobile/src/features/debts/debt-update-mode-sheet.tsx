@@ -139,14 +139,14 @@ export function DebtUpdateModeSheet({
       title={t('debts.updateMode.title')}
       footer={footer}
     >
-      <Text className="text-[13px] leading-5 text-ink2">
+      <Text className="text-[14px] leading-5 text-ink2">
         {t('debts.updateMode.description')}
       </Text>
 
       <View className="mt-5 gap-2">
         {originalAmountChanged ? (
           <>
-            <Text className="text-[13px] font-medium text-ink2">
+            <Text className="text-[14px] font-medium text-ink2">
               {t('debts.updateMode.amountQuestion')}
             </Text>
             <ModeOption
@@ -200,7 +200,7 @@ export function DebtUpdateModeSheet({
 
       {before && after ? (
         <Sunk className="mt-4">
-          <Text className="text-[13px] font-medium text-ink">
+          <Text className="text-[14px] font-medium text-ink">
             {t('debts.updateMode.preview.title')}
           </Text>
 
@@ -316,17 +316,17 @@ function PreviewRow({
 
   return (
     <View className="flex-row items-baseline justify-between gap-3 py-1.5">
-      <Text className="flex-shrink text-[13px] text-ink2">{label}</Text>
+      <Text className="flex-shrink text-[14px] text-ink2">{label}</Text>
       <View className="flex-1 flex-row items-baseline justify-end gap-1.5">
         <Text
-          className="text-[13px] text-ink3"
+          className="text-[14px] text-ink3"
           style={{ textDecorationLine: 'line-through', fontVariant: ['tabular-nums'] }}
         >
           {before}
         </Text>
-        <Text className="text-[13px] text-ink3">→</Text>
+        <Text className="text-[14px] text-ink3">→</Text>
         <Text
-          className={cn('text-[13px] font-medium', emphasize ? 'text-interactive' : 'text-ink')}
+          className={cn('text-[14px] font-medium', emphasize ? 'text-interactive' : 'text-ink')}
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {after}

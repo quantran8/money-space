@@ -31,7 +31,7 @@ export function BackLink({
       className={cn('-ml-2 flex-row items-center gap-1 self-start rounded-control px-2', className)}
     >
       <ChevronLeft size={18} color={colors.interactive} strokeWidth={1.75} />
-      <Text className="text-[13px] font-medium text-interactive">{label}</Text>
+      <Text className="text-[14px] font-medium text-interactive">{label}</Text>
     </Pressable>
   )
 }

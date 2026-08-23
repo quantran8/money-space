@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { canProjectBalance } from '@money-space/core/features/forecast/model/forecast-presentation'
 import type { ForecastResult } from '@money-space/core/features/forecast/model/forecast.types'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 import { Button, Money, Panel, PanelHeader, SummaryStrip } from '@/components/ui'
@@ -56,7 +56,7 @@ export function ForecastSummary({
       />
 
       <View className="mt-5">
-        <Text className="text-[13px] text-ink2">{t('upcoming.summary.lowest')}</Text>
+        <Text className="text-[14px] text-ink2">{t('upcoming.summary.lowest')}</Text>
 
         {hasLiquidSource ? (
           <>
@@ -64,7 +64,7 @@ export function ForecastSummary({
                 the point of the screen, and `--alert` is reserved for exactly
                 this — an actual projected shortfall, nothing else. */}
             <Money className={cn('mt-1', isShortfall && 'text-alert')} size={30}>
-              {formatMoney(forecast.lowestProjectedBalance)}
+              {formatVndShort(forecast.lowestProjectedBalance)}
             </Money>
             <Text className="mt-1 text-[12px] leading-5 text-ink2">
               {t('upcoming.summary.lowestNote', {
@@ -97,12 +97,12 @@ export function ForecastSummary({
           {
             key: 'incoming',
             label: t('upcoming.summary.incoming'),
-            value: formatMoney(forecast.totals.upcomingIncomeAmount),
+            value: formatVndShort(forecast.totals.upcomingIncomeAmount),
           },
           {
             key: 'outgoing',
             label: t('upcoming.summary.outgoing'),
-            value: formatMoney(forecast.totals.upcomingOutgoingAmount),
+            value: formatVndShort(forecast.totals.upcomingOutgoingAmount),
           },
         ]}
       />
@@ -115,7 +115,7 @@ export function ForecastSummary({
         </Text>
         <Text className="text-[11px] leading-4 text-ink3">
           {t('upcoming.summary.outgoingNote', {
-            required: formatMoney(forecast.totals.requiredOutgoingAmount),
+            required: formatVndShort(forecast.totals.requiredOutgoingAmount),
           })}
         </Text>
       </View>

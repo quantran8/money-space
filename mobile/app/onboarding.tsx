@@ -62,7 +62,7 @@ function ChooseStep({ onCreate }: { onCreate: () => void }) {
           <Text className="text-[16px] font-medium text-ink">
             {t('onboarding.choose.join.title')}
           </Text>
-          <Text className="mt-1.5 text-[13px] leading-5 text-ink2">
+          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
             {t('invites.joinByCode.scanHint')}
           </Text>
         </View>
@@ -96,7 +96,7 @@ function CreateStep({ onBack }: { onBack: () => void }) {
             style={{ minHeight: TOUCH_TARGET }}
             className="justify-center"
           >
-            <Text className="text-[13px] font-medium text-interactive">
+            <Text className="text-[14px] font-medium text-interactive">
               {t('onboarding.choose.back')}
             </Text>
           </Pressable>

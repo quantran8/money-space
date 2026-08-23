@@ -52,13 +52,13 @@ export function CoverageBlock({
           // Built from parts rather than one interpolated string: the count and
           // the age are two separate facts, and each is weighted on its own.
           <View className="flex-row flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <Text className="text-[13px] font-medium text-ink">
+            <Text className="text-[14px] font-medium text-ink">
               {t('home.coverage.sourceCount', { count: coverage.total })}
             </Text>
             {coverage.oldestDays !== null ? (
               <>
-                <Text className="text-[13px] text-ink3">·</Text>
-                <Text className="text-[13px] text-ink2">{t('home.coverage.oldest')}</Text>
+                <Text className="text-[14px] text-ink3">·</Text>
+                <Text className="text-[14px] text-ink2">{t('home.coverage.oldest')}</Text>
                 {/* Amber only once the oldest source is past the household's
                     OWN threshold — never a fixed number of days (§5.2). */}
                 <Age days={coverage.oldestDays} tone={coverage.hasStale ? 'attention' : 'ink'} />
@@ -71,7 +71,7 @@ export function CoverageBlock({
           {coverage.rows.map((row) => (
             <View key={row.id} className="flex-row items-center gap-3 py-1.5">
               <View className="flex-1">
-                <Text className="text-[13px] text-ink" numberOfLines={1}>
+                <Text className="text-[14px] text-ink" numberOfLines={1}>
                   {row.name}
                 </Text>
                 <View className="mt-0.5 flex-row">
@@ -83,7 +83,7 @@ export function CoverageBlock({
                   the name is what clips if either has to (§6). */}
               {row.value === undefined ? null : (
                 <Text
-                  className="text-[13px] text-ink2"
+                  className="text-[14px] text-ink2"
                   style={{ fontVariant: ['tabular-nums'] }}
                 >
                   {formatVndScale(row.value)}
@@ -109,7 +109,7 @@ export function CoverageBlock({
           style={{ minHeight: TOUCH_TARGET }}
           className="justify-center active:opacity-70"
         >
-          <Text className="text-[13px] font-medium text-interactive">
+          <Text className="text-[14px] font-medium text-interactive">
             {isUpdating ? t('home.upcoming.overdue.marking') : t('home.coverage.action')}
           </Text>
         </Pressable>
@@ -153,6 +153,6 @@ function Age({
       <Text className={`${color} ${weight}`}>{label}</Text>
     </RowMeta>
   ) : (
-    <Text className={`text-[13px] ${color} ${weight}`}>{label}</Text>
+    <Text className={`text-[14px] ${color} ${weight}`}>{label}</Text>
   )
 }
