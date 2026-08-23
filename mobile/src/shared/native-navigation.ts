@@ -30,7 +30,17 @@ function withState(to: string, state: unknown): string {
 
 function useNativeNavigate(): Navigate {
   return useCallback((to, options) => {
-    const href = withState(to, options?.state)
+    /**
+     * `typedRoutes` narrows `router.push` to the routes it found on disk, but
+     * core hands us a plain string — it describes destinations as paths so the
+     * same call works against react-router on the web, and it cannot import a
+     * type generated from this app's file tree.
+     *
+     * The cast is confined to this one line, which is the whole point of the
+     * adapter: a wrong path fails here, at the single crossing between the two
+     * routers, rather than anywhere a feature calls `navigate`.
+     */
+    const href = withState(to, options?.state) as Parameters<typeof router.push>[0]
     if (options?.replace) {
       router.replace(href)
     } else {

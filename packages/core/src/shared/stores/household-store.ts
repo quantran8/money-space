@@ -1,5 +1,7 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
+
+import { storage } from '#/shared/storage'
 
 type AppState = {
   activeHouseholdId: string | null
@@ -25,6 +27,17 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'money-space-household',
+      /**
+       * Route persistence through core's injected adapter rather than
+       * zustand's default.
+       *
+       * The default is `localStorage`, which does not exist in React Native —
+       * it resolved to `undefined` and the first write threw
+       * `Cannot read property 'setItem' of undefined` before any screen could
+       * render. The adapter is already async, which is what `createJSONStorage`
+       * expects.
+       */
+      storage: createJSONStorage(() => storage),
       // Only what must survive a reload. Everything else is derived.
       partialize: (state) => ({ activeHouseholdId: state.activeHouseholdId }),
       /**
