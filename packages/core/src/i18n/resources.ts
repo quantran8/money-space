@@ -1026,7 +1026,38 @@ export const resources = {
           label: 'Tuỳ chọn',
           complete: 'Đã xong',
           edit: 'Sửa',
+          // Dời ngày và huỷ khác nhau: dời thì tiền vẫn còn nợ, huỷ là đóng
+          // khoản đó lại mà vẫn giữ lịch sử. Xoá mới là bỏ hẳn khỏi dữ liệu.
+          postpone: 'Dời ngày',
+          cancelEvent: 'Huỷ khoản này',
           delete: 'Xoá',
+        },
+        loadFailed: 'Chưa tải được dự báo dòng tiền.',
+        // Dời ngày: tiền vẫn còn nợ, chỉ là ngày không còn đáng tin nữa — nên
+        // khoản đó vẫn hiện trên dòng thời gian mà không tính vào số dư.
+        postpone: {
+          title: 'Dời ngày',
+          description: 'Chọn ngày mới cho “{{name}}”.',
+          newDate: 'Ngày mới',
+          presets: {
+            oneWeek: '1 tuần',
+            twoWeeks: '2 tuần',
+            oneMonth: '1 tháng',
+          },
+          note: 'Ghi chú',
+          notePlaceholder: 'Ví dụ: hẹn lại tới khi có lương',
+          dateMustBeLater: 'Chọn một ngày sau ngày dự kiến hiện tại.',
+          consequence:
+            'Khoản này vẫn nằm trên dòng thời gian nhưng thôi được tính vào số dư dự kiến, vì ngày của nó không còn chắc.',
+          submit: 'Dời ngày',
+          failed: 'Chưa dời được ngày của khoản này.',
+        },
+        cancel: {
+          title: 'Huỷ khoản sắp tới',
+          consequence:
+            '“{{name}}” sẽ không còn được tính vào dự báo. Khoản này vẫn nằm trong lịch sử, không bị xoá.',
+          confirm: 'Huỷ khoản này',
+          failed: 'Chưa huỷ được khoản này.',
         },
         // Xác nhận là lúc tiền thật sự chuyển, nên phải biết chuyển qua ví nào
         // — thiếu ví thì số dư không đổi chỗ nào cả.
@@ -1084,6 +1115,7 @@ export const resources = {
             'Chưa có ví nào được tính vào tiền linh hoạt. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng trước đã.',
           submit: 'Xác nhận',
           submitting: 'Đang lưu…',
+          failed: 'Chưa xác nhận được khoản này.',
         },
         form: {
           eyebrow: 'Khoản sắp tới',
@@ -2344,6 +2376,10 @@ export const resources = {
           exportAction: 'Xuất dữ liệu',
           delete: 'Xóa không gian gia đình',
           deleteDescription: 'Xóa toàn bộ dữ liệu và quyền truy cập của các thành viên.',
+          // §22.11: hậu quả nói bằng số thật, một dòng — không phải "bạn có
+          // chắc không". Đây là câu duy nhất người đọc có thể cân nhắc được.
+          deleteConsequence:
+            'Việc này xóa hẳn không gian chung: {{members}} thành viên và {{sources}} nguồn tiền. Không khôi phục lại được.',
           deleteAction: 'Xóa không gian',
         },
         categories: {
@@ -3674,7 +3710,34 @@ export const resources = {
           label: 'Options',
           complete: 'Mark as done',
           edit: 'Edit',
+          postpone: 'Move the date',
+          cancelEvent: 'Cancel this item',
           delete: 'Remove',
+        },
+        loadFailed: "The cashflow forecast couldn't be loaded.",
+        postpone: {
+          title: 'Move the date',
+          description: 'Pick a new date for “{{name}}”.',
+          newDate: 'New date',
+          presets: {
+            oneWeek: '1 week',
+            twoWeeks: '2 weeks',
+            oneMonth: '1 month',
+          },
+          note: 'Note',
+          notePlaceholder: 'e.g. put off until payday',
+          dateMustBeLater: 'Pick a date after the current expected one.',
+          consequence:
+            'This item stays on the timeline but stops counting towards the projected balance, because its date is no longer certain.',
+          submit: 'Move the date',
+          failed: "This item's date couldn't be moved.",
+        },
+        cancel: {
+          title: 'Cancel upcoming item',
+          consequence:
+            '“{{name}}” will stop counting towards the forecast. It stays in your history rather than being removed.',
+          confirm: 'Cancel this item',
+          failed: "This item couldn't be cancelled.",
         },
         complete: {
           title: 'Confirm as done',
@@ -3714,6 +3777,7 @@ export const resources = {
             'No wallet counts as flexible money yet. Add a cash or bank account first.',
           submit: 'Confirm',
           submitting: 'Saving…',
+          failed: "This item couldn't be confirmed.",
         },
         form: {
           eyebrow: 'Upcoming item',
@@ -4942,6 +5006,8 @@ export const resources = {
           exportAction: 'Export data',
           delete: 'Delete household space',
           deleteDescription: 'Delete all data and remove member access.',
+          deleteConsequence:
+            'This permanently deletes the shared space: {{members}} members and {{sources}} money sources. It cannot be undone.',
           deleteAction: 'Delete space',
         },
         categories: {

@@ -14,6 +14,7 @@ import {
   type HouseholdInvite,
 } from '#/features/invites/model/invites.types'
 import { queryKeys } from '#/shared/api/query-keys'
+import { clipboard } from '#/shared/clipboard'
 import { useActiveHousehold } from '#/shared/hooks/use-active-household'
 import { getErrorMessage } from '#/shared/lib/get-error-message'
 
@@ -126,7 +127,7 @@ export function useHouseholdInvite() {
   async function copyLink() {
     if (!joinUrl) return
     try {
-      await navigator.clipboard.writeText(joinUrl)
+      await clipboard.writeText(joinUrl)
       notify.success(t('invites.qr.copied'))
     } catch {
       notify.error(t('invites.qr.copyFailed'))

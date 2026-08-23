@@ -1,9 +1,11 @@
+import * as Clipboard from 'expo-clipboard'
 import { getLocales } from 'expo-localization'
 
 import { installAuthBridge } from '@money-space/core/features/auth/api/auth-bridge'
 import { configureJoinUrlBase } from '@money-space/core/features/invites/model/invites.types'
 import { initI18n, restoreLanguage } from '@money-space/core/i18n/config'
 import { configureEnv } from '@money-space/core/shared/api/env'
+import { configureClipboard } from '@money-space/core/shared/clipboard'
 import { configureNavigation } from '@money-space/core/shared/navigation'
 import { hydrateAuth } from '@money-space/core/shared/stores/auth-store'
 import { configureStorage } from '@money-space/core/shared/storage'
@@ -38,6 +40,13 @@ export function bootstrap(): Promise<void> {
   configureEnv({ apiBaseUrl })
   configureStorage(nativeStorage)
   configureNavigation(nativeNavigation)
+  // Core's default reaches for `navigator.clipboard`, which does not exist
+  // here — without this the invite dialog's copy would report a failure it
+  // never actually attempted.
+  configureClipboard({
+    writeText: (text) => Clipboard.setStringAsync(text).then(() => undefined),
+    readText: () => Clipboard.getStringAsync(),
+  })
   // A native app has no origin to build a link from, so an invite it shares is
   // a deep link into this app. `app.json` registers the scheme.
   configureJoinUrlBase('moneyspace://')

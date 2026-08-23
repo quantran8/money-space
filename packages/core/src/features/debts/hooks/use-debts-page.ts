@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { clipboard } from '#/shared/clipboard'
 import { useLocation, useNavigate } from '#/shared/navigation'
 import { notify } from '#/shared/notify'
 
@@ -462,7 +463,7 @@ export function useDebtsPage() {
 
   async function pasteAmountFromClipboard() {
     try {
-      const text = await navigator.clipboard.readText()
+      const text = await clipboard.readText()
       const normalized = text.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
       if (!normalized) return
       setValue('originalAmount', normalized, {
