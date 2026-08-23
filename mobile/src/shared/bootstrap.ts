@@ -1,6 +1,7 @@
 import { getLocales } from 'expo-localization'
 
 import { installAuthBridge } from '@money-space/core/features/auth/api/auth-bridge'
+import { configureJoinUrlBase } from '@money-space/core/features/invites/model/invites.types'
 import { initI18n, restoreLanguage } from '@money-space/core/i18n/config'
 import { configureEnv } from '@money-space/core/shared/api/env'
 import { configureNavigation } from '@money-space/core/shared/navigation'
@@ -37,6 +38,9 @@ export function bootstrap(): Promise<void> {
   configureEnv({ apiBaseUrl })
   configureStorage(nativeStorage)
   configureNavigation(nativeNavigation)
+  // A native app has no origin to build a link from, so an invite it shares is
+  // a deep link into this app. `app.json` registers the scheme.
+  configureJoinUrlBase('moneyspace://')
 
   // Wire the HTTP client to the auth store before any request can run.
   installAuthBridge()

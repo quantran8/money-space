@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from '#/shared/navigation'
@@ -190,16 +190,30 @@ export function useDebtsPage() {
     }
   }, [debts])
 
+  /**
+   * Arriving with `state.openCreate` opens the create form once.
+   *
+   * A ref, not a history rewrite: clearing the entry was how the web stopped
+   * the form reopening on every back-navigation, but `history` does not exist
+   * on native. Remembering that this instance already handled the flag does the
+   * same job on both platforms, and does not touch the navigation stack.
+   */
+  const handledOpenCreate = useRef(false)
   useEffect(() => {
-    if (location.state && typeof location.state === 'object' && 'openCreate' in location.state) {
-      const timer = window.setTimeout(() => {
-        setEditingId(null)
-        setShowMoreDetails(false)
-        setDialogOpen(true)
-      }, 0)
-      window.history.replaceState({}, document.title)
-      return () => window.clearTimeout(timer)
-    }
+    const state = location.state
+    const wantsCreate =
+      !!state && typeof state === 'object' && 'openCreate' in state && !handledOpenCreate.current
+
+    if (!wantsCreate) return
+    handledOpenCreate.current = true
+
+    // Deferred a tick so the screen has mounted before the sheet animates in.
+    const timer = setTimeout(() => {
+      setEditingId(null)
+      setShowMoreDetails(false)
+      setDialogOpen(true)
+    }, 0)
+    return () => clearTimeout(timer)
   }, [location.state])
 
   useEffect(() => {

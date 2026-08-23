@@ -68,14 +68,24 @@ export const JOIN_PARAM_TOKEN = 'token'
  *   household id is not a secret (it appears in every request path a member
  *   makes) and anything scannable by an id alone would be an open door.
  *
- * Built from `window.location.origin` rather than a configured base: the person
- * scanning is on a phone next to the person sharing, so the origin that works
- * for the inviter is the one that works for them. On localhost that means the
- * QR only scans from the same machine — expected in dev, and the copyable link
- * covers it.
+ * The base is injected by the host, because what makes a scannable link differs
+ * per platform: the web uses its own origin (the person scanning is on a phone
+ * next to the person sharing, so the origin that works for the inviter works
+ * for them), while the mobile app has no origin and shares a `moneyspace://`
+ * deep link instead.
+ *
+ * On localhost the web's QR only scans from the same machine — expected in dev,
+ * and the copyable link covers it.
  */
+let joinUrlBase = 'http://localhost:5173'
+
+/** Set once at startup: `window.location.origin` on web, the scheme on native. */
+export function configureJoinUrlBase(base: string) {
+  if (base.trim()) joinUrlBase = base
+}
+
 export function buildJoinUrl(householdId: string, token: string) {
-  const url = new URL(JOIN_ROUTE, window.location.origin)
+  const url = new URL(JOIN_ROUTE, joinUrlBase)
   url.searchParams.set(JOIN_PARAM_HOUSEHOLD, householdId)
   url.searchParams.set(JOIN_PARAM_TOKEN, token)
   return url.toString()

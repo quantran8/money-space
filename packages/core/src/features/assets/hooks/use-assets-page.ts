@@ -16,6 +16,7 @@ import {
   type AssetTotals,
 } from '#/features/assets/model/assets-form'
 import { valuationModeForType, type AssetLiquidity } from '#/features/assets/model/assets'
+import { createId } from '#/shared/lib/create-id'
 import { getErrorMessage } from '#/shared/lib/get-error-message'
 
 const EMPTY_TOTALS: AssetTotals = {
@@ -139,7 +140,9 @@ export function useAssetsPage() {
 
   async function onSubmit(values: AssetForm) {
     try {
-      const nextAsset = toAsset(editingId ?? crypto.randomUUID(), values)
+      // `createId`, not `crypto.randomUUID`: React Native has no global
+      // `crypto`, and the id is local anyway — the payload below never sends it.
+      const nextAsset = toAsset(editingId ?? createId(), values)
       // `toAsset` returns null on incomplete market/formula input. The schema
       // should have caught that first, but with the submit button always
       // enabled (§22.10) this path is reachable — so it must say something
