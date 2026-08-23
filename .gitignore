@@ -26,7 +26,18 @@ dist-ssr
 #env files
 .env
 
-# lockfiles from other package managers (this project uses npm)
-pnpm-lock.yaml
+# Expo (mobile)
+.expo
+*.hbc
+ios/
+android/
+
+# lockfiles from other package managers (this workspace uses pnpm)
+package-lock.json
 yarn.lock
 bun.lockb
+expo-env.d.ts
+mobile/.expo/
+
+# Vercel
+.vercel
