@@ -17,18 +17,15 @@ flexible-money segment. v5 splits interaction from data semantics:
 Green now means a good consequence, never “this is clickable”. A static metric
 never wears the action colour.
 
-## 2. Page ground replaces the hero card
+## 2. Hero là card, không phải nền trang
 
-v4.2 và bản v5 đầu tiên coi hero là một card bo góc 28px nằm trên canvas xám.
-Bản hiện tại theo đúng visual grammar của reference: **màu xanh là nền trang**,
-full-bleed, không radius; nav và page identity nằm trực tiếp trên nó; rồi một
-**canvas sheet** bo hai góc trên nâng lên từ đáy để chứa card grid.
+`--canvas` là nền của mọi thứ: shell, sidebar, header, content. `--hero` chỉ
+dùng cho **một** surface — hero card, radius 28px, đứng trực tiếp trên canvas
+như mọi card khác.
 
-Điều này ghi đè hai rule cũ:
-
-- §2.2 từng cấm `page → white sheet → card grid`. Sheet giờ **là** cấu trúc —
-  nhưng vẫn chỉ một tầng: bên trong sheet, card là direct child.
-- §3 từng định nghĩa hero là surface radius 28px có card overlap.
+Đã thử biến màu xanh thành page background full-bleed với một canvas sheet bọc
+card grid. Bỏ, vì nó vi phạm chính §2.2: sheet là một tầng surface thừa giữa
+page và card, đúng thứ mà v5 loại đi.
 
 ## 3. Card không còn shadow
 
@@ -44,11 +41,11 @@ không có gì khác vẽ ranh giới.
 
 | Token | v4.2 | v5 | Vì sao |
 |---|---|---|---|
-| canvas | `#EEF1F3` | `#EDF3F8` | cool cast, hợp với page ground xanh |
+| canvas | `#EEF1F3` | `#EDF3F8` | cool cast, hợp với hero card xanh |
 | card | `#FFFFFF` | `#FFFFFF` | — |
 | wash | `#F5F7F8` | `#E3ECF2` | phải tách khỏi card 1.20 khi canvas sáng lên |
 | divider | `#E5E9EC` | `#EEF1F2` | — |
-| hero | — | `#B5CDE8` | page ground |
+| hero | — | `#B5CDE8` | hero card |
 
 `--page` bị bỏ: sau khi sheet trở thành cấu trúc, canvas và page là cùng một
 surface.
@@ -69,10 +66,10 @@ alert      #A8341F    6.6
 
 Sắc nhạt gốc (`#E1BE68`, `#E8A39A`) chỉ dùng làm fill, không làm text.
 
-## 6. Chữ trắng trên page ground: không
+## 6. Chữ trắng trong hero card: không
 
 Trên `#B5CDE8`, chữ trắng đạt **1.63:1** — trượt cả ngưỡng large text (3.0).
-Text trên page ground dùng `--ink` (11.7:1). Muốn chữ trắng thì nền phải xuống
+Text trong hero card dùng `--ink` (11.7:1). Muốn chữ trắng thì nền phải xuống
 khoảng `#4576AC`, đậm hơn hẳn register hiện tại.
 
 ## 7. Typography

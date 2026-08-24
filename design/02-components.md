@@ -1,207 +1,440 @@
 # 02 — UI Components
 
-## 1. Panel
+> v5.0 — component system theo flat card language: top-level surface trực tiếp trên canvas, ít elevation, không nested card.
 
-Panel là top-level grouping surface.
+## 1. Hero surface
+
+Hero là atmospheric page surface.
+
+Hero là một card trên canvas — surface duy nhất được dùng `--hero`:
 
 ```html
-<section class="rounded-[14px] bg-[var(--panel)] p-5 sm:p-8">
-  ...
+<section class="hero-surface rounded-[28px] p-8">
+  <p class="subheading">Tài chính gia đình</p>
+  <h1 class="display">Bức tranh hôm nay</h1>
+  <p class="secondary">Tính từ 5 nguồn · tất cả đều mới</p>
 </section>
 ```
 
-### Default
-
-Header:
+### Có thể chứa
 
 ```txt
-Title trái + một secondary item phải
+page identity
+household context
+coverage/freshness metadata
+1–2 compact source chips nếu thật sự giúp đọc context
 ```
 
-Secondary item thường là metadata **hoặc** action.
-
-### Exception
-
-Detail page có thể có cả metadata + action khi cả hai cần thiết và không lặp nghĩa. Home preview vẫn ưu tiên một item.
-
-Không thêm subtitle nếu title + content đã đủ context.
-
-## 2. Sunk block
-
-`--sunk` là surface primitive, không phải một component duy nhất.
-
-Variants:
+### Không chứa
 
 ```txt
-summary       tổng / derived output
-field         input area
-notice        dependency / scope caveat
-visualization chart / composition
+4–6 KPI card con
+duplicate money values
+full chart
+management table
 ```
 
-Các variant cùng nền nhưng khác padding, alignment và affordance.
+Cards có thể overlap hero card 12–16px để tạo continuity, nhưng cards vẫn là
+direct children của page composition, không nằm trong một group surface.
 
-### Field variant
+---
 
-Input không cần border ở rest state nhưng phải có affordance:
+## 2. Top-level card
 
-```txt
-background --sunk
-focus ring --interactive
-placeholder đủ contrast
-cursor + label rõ
+Card là grouping surface chính.
+
+```html
+<article class="rounded-[22px] bg-white p-5">
+  ...
+</article>
 ```
 
-Không dùng sunk block như “card con” cho mọi item.
+Default:
 
-## 3. Semantic labels
+- Background white.
+- Không border.
+- **Shadow `none`.**
+- Radius 22px.
+- Padding 20–24px desktop.
+- Direct child của page/card grid.
 
-Không còn class `.label` khóa IBM Plex Mono.
+### Card header
+
+Default:
 
 ```txt
-ui-label     Be Vietnam Pro; có thể chứa tiếng Việt
-meta-mono    IBM Plex Mono; ASCII only
+title trái
++
+metadata HOẶC action phải
+```
+
+Không thêm subtitle filler.
+
+### Hard rule — no nested card
+
+Không dùng:
+
+```txt
+card
+→ rounded summary box
+→ rounded metric box
+→ rounded notice box
+```
+
+Bên trong card ưu tiên:
+
+```txt
+text
+metric
+divider
+row
+chart
+inline status
+control
+```
+
+---
+
+## 3. KPI / answer card
+
+Dùng khi một metric thật sự trả lời một câu hỏi cấp section.
+
+Structure:
+
+```txt
+title
+scope / metadata
+large number
+optional status line
+optional visualization
+```
+
+Ví dụ:
+
+```txt
+Sau các khoản đã có nhiệm vụ
+48,2 tr
+Tính từ 5 nguồn · tất cả đều mới
+[composition bar]
+```
+
+Rules:
+
+- Number 36–44px Light.
+- Không tạo một card riêng cho mỗi số chỉ để lấp grid.
+- Không lặp number ở card khác.
+- Static metric không dùng action color.
+
+---
+
+## 4. Inline summary
+
+Thay cho “summary card con”.
+
+Structure:
+
+```txt
+label ........ value
+label ........ value
+```
+
+hoặc:
+
+```txt
+label
+large value
+divider
+supporting rows
+```
+
+Không cần background, border hoặc radius nếu relation đã rõ.
+
+---
+
+## 5. Divider
+
+Divider là internal relation primitive.
+
+```css
+.divider {
+  height: 1px;
+  background: #EEF1F2;
+}
+```
+
+Dùng khi spacing không đủ để cho thấy grouping.
+
+Không dùng divider sau mọi row theo thói quen.
+
+---
+
+## 6. Wash / field surface
+
+`--wash` chủ yếu dành cho controls.
+
+### Field
+
+```txt
+background --wash
+no border at rest
+radius 12–14px
+focus ring --action
+label rõ
 ```
 
 Ví dụ:
 
 ```html
-<p class="ui-label">Thấp nhất dự kiến</p>
-<p class="meta-mono">22/08 — 21/09 · 4</p>
+<label>Số tiền</label>
+<div class="field">
+  <input />
+</div>
 ```
 
-## 4. Button
+Field được phép là rounded surface vì nó là control, không phải content card.
+
+---
+
+## 7. Button
 
 ### Primary
 
-- Background `--interactive`.
-- Radius 8–10px.
-- Không shadow.
-- Nhãn ≤ 4 từ khi có thể.
+```txt
+background  --action
+text        --action-inverse
+radius      full hoặc 12–14px
+shadow      none
+weight      Medium
+```
 
-### Secondary/link
+Nhãn ≤4 từ khi có thể.
 
-Accent text chỉ dùng khi có action thật.
+Ví dụ:
 
-Không tô accent cho static metric để tránh lẫn với interaction.
+```txt
+Thêm khoản
+Tạo mục tiêu
+Xem ảnh hưởng
+Lưu thay đổi
+```
 
-## 5. Status indicator
+### Secondary
 
-Normal status không cần colored pill.
+Ưu tiên:
 
-Default:
+```txt
+text action
+icon + text
+subtle wash control
+```
+
+Không tự thêm border button nếu text action đã đủ affordance.
+
+---
+
+## 8. Navigation
+
+### Desktop rail
+
+Compact rail được phép:
+
+```txt
+width 68–76px
+active item = dark filled circle
+inactive = line icon
+tooltip + aria-label bắt buộc
+```
+
+Nếu một product area không đọc được bằng icon, dùng labeled sidebar thay vì ép icon-only.
+
+### Top context switcher
+
+Có thể dùng pill group cho 3–5 view cùng cấp:
+
+```txt
+Tổng quan
+Sắp tới
+Mục tiêu
+...
+```
+
+Active dùng `--action`.
+
+Không dùng pill nav cho item phụ/management chỉ vì “trông giống reference”.
+
+### Mobile
+
+Bottom nav giữ label rõ; không icon-only cho core navigation.
+
+---
+
+## 9. Status indicator
+
+Normal state:
 
 ```txt
 ● + text
 ```
 
-Color chỉ khi status cần attention/action. State luôn có text.
+hoặc text thuần.
 
-## 6. Data row primitives
-
-### Grouped row
-
-Dùng cho 1–6 item nhỏ, đặc biệt time sequence.
+Colored pill chỉ khi state thật sự cần chú ý/hành động.
 
 ```txt
-primary info
-secondary metadata
-amount / consequence aligned right
+positive   → green
+attention  → yellow
+alert      → coral
 ```
 
-Không border mặc định. Hover/focus bằng `--sunk` khi row interactive.
+Không dùng green pill cho “normal / synced / active” mặc định.
 
-### Dense table
+---
+
+## 10. Data row
+
+Dùng cho 1–6 item hoặc compact preview.
+
+Structure:
+
+```txt
+primary
+secondary metadata
+amount / consequence right aligned
+```
+
+Default:
+
+- Không card per row.
+- Không border per row.
+- Optional divider giữa groups.
+- Interactive row hover bằng `--wash`.
+- Amount tabular.
+
+---
+
+## 11. Dense table
 
 Dùng khi:
 
 ```txt
-≥3 rows trên desktop Home
-hoặc management/detail view
-hoặc khi cross-row comparison là nhiệm vụ chính
+≥3 rows trên desktop và cần cross-row comparison
+management/detail view
 ```
-
-Không dùng table chỉ vì dữ liệu “có cột”. 1–2 rows thường nên là grouped rows.
 
 Rules:
 
-- Header có label rõ, không quá nhạt.
-- Số căn phải, tabular.
-- Row không divider mặc định.
-- Summary là sunk block riêng.
-- Table >10 rows có thể dùng zebra cực nhạt.
+- Header rõ.
+- Số căn phải.
+- Row không border mặc định.
+- Không bọc table trong một card con nếu parent card đã là surface.
+- Summary đặt dưới table bằng inline summary hoặc wash strip khi cần.
 
-## 7. Timeline / sequence
+Table >10 rows có thể zebra cực nhạt.
 
-Time-based data ưu tiên timeline/list primitive.
+---
+
+## 12. Timeline / sequence
+
+Time-based data ưu tiên ordered rows.
 
 Mỗi event có thể gồm:
 
 ```txt
-Date
-Name
-Actor nếu meaningful
-Amount
-Running balance nếu derive được
-Confidence/unconfirmed nếu có
+Ngày
+Khoản
+Ai — nếu meaningful
+Số tiền
+Còn lại — nếu derive được
+Status — khi cần xác nhận/stale
 ```
 
-Cột/field không có data thì **collapse**, không để một cột rỗng làm layout kéo giãn.
+Không có data thì collapse field/cột.
 
-## 8. Running balance
+Không tạo một rounded box cho mỗi event.
 
-Running balance là derived field, không phải required UI decoration.
+---
+
+## 13. Running balance
 
 States:
 
 ```txt
 available           hiện số
-stale input          hiện số tốt nhất + scope caveat
-missing dependency   hiện “—” ở row + notice ở scope gần nhất
-error                 giữ số cũ nếu có + local error
+stale input         hiện số tốt nhất + scope caveat
+missing dependency  hiện “—” ở row + notice gần primary metric
+error               giữ số cũ nếu có + local error
 ```
 
-Không lặp cùng một ending balance ở summary nếu nó đã là row cuối.
+Không lặp ending balance ở summary nếu row cuối đã nói.
 
-## 9. Chart
+---
 
-Chart chỉ render khi answer tốt hơn list.
+## 14. Chart
 
-### Render khi
+Chart chỉ render khi trả lời tốt hơn list.
 
-- Có ít nhất 2 meaningful points.
-- Có running balance/low point thật để user đọc.
-- Visual giúp thấy consequence nhanh hơn row list.
+Render khi:
 
-### Không render khi
+- Có ≥2 meaningful points.
+- Có running balance/low point thật.
+- Visual giúp thấy consequence nhanh.
+
+Không render khi:
 
 - Missing starting balance.
-- Chỉ có một event mà list đã nói đủ.
-- Chart chỉ để section “trông financial”.
+- 1 event và list đã đủ.
+- Chỉ để card “trông financial”.
 
-Low point marker dùng attention khi cần, không tự suy ra “gần nguy hiểm” nếu user chưa đặt threshold.
+### Visual treatment
 
-## 10. Composition bar
+Chart nằm trực tiếp trong card.
 
-Money composition là 2 phần:
-
-```txt
-Đã có nhiệm vụ    --committed
-Linh hoạt          --interactive (do đây là primary concept của product)
-```
-
-Bar là visualization exception cho rule “một dữ kiện, một chỗ”: legend có thể lặp giá trị để hình đọc được.
-
-## 11. Source coverage strip
-
-Một segment = một source. Strip là context của derived number, không phải warning card.
-
-Có stale source:
+Không cần:
 
 ```txt
-Tính từ 5 nguồn · 2 cần cập nhật
-Chưa gồm VCB và tiền mặt.
+chart card
+chart border
+chart rounded container
 ```
+
+Có thể dùng một baseline/divider hoặc very subtle wash khi chart cần contrast.
+
+### Tick-bar treatment
+
+Chart mặc định là một dãy tick mảnh, không phải bar đặc:
+
+```txt
+tick width 2px · gap 2px
+màu --data-primary
+low point / điểm cần chú ý dùng --attention
+label hai đầu trục (ngày đầu · ngày cuối)
+```
+
+Tick mảnh khiến chart đọc như texture, không như một khối nặng — đó là lý do
+nó nằm được trực tiếp trong card mà không cần container.
+
+---
+
+## 15. Composition bar
+
+Money composition:
+
+```txt
+Đã có nhiệm vụ  → --committed
+Linh hoạt        → --data-primary
+```
+
+Không dùng action color cho data composition.
+
+Bar nằm trực tiếp dưới metric/legend.
+
+Legend có thể lặp value vì nó phục vụ visualization.
+
+---
+
+## 16. Source coverage
+
+Coverage là context của derived number.
 
 Tất cả mới:
 
@@ -209,30 +442,134 @@ Tất cả mới:
 Tính từ 5 nguồn · tất cả đều mới
 ```
 
-Không dùng confidence %.
+Có stale:
 
-## 12. Simulation surface
+```txt
+Tính từ 5 nguồn · 2 cần cập nhật
+Chưa gồm VCB và tiền mặt.
+```
 
-Simulation là vùng duy nhất có thể dùng treatment khác rõ ràng vì nó biểu thị “chưa phải số thật”.
+Treatment:
 
-- Background `--interactive-soft`.
-- Có đúng một textual marker: `Nếu thực hiện`.
-- Có thể dùng dashed border nếu cần để phân biệt modeled vs actual.
-- Consequence chỉ xuất hiện sau user action.
+- text line;
+- optional thin segmented strip;
+- không warning card;
+- không confidence %.
 
-## 13. Forms
+---
 
-### Default structure
+## 17. Empty state
 
-- 3–4 fields visible mặc định.
+Empty state **không phải card con**.
+
+Trong top-level card:
+
+```txt
+title
+divider hoặc spacing
+empty state content trực tiếp
+action
+```
+
+Ví dụ:
+
+```txt
+30 ngày tới
+
+Chưa có khoản nào
+[Thêm khoản]
+```
+
+Icon optional, chỉ một icon anchor nếu giúp scan.
+
+---
+
+## 18. Dependency notice
+
+Dependency notice nói một missing input cụ thể.
+
+Ví dụ:
+
+```txt
+Chưa có số dư đầu kỳ.
+[Thêm nguồn tiền]
+```
+
+Default treatment:
+
+```txt
+plain text + action
+```
+
+Chỉ dùng `--wash` nếu notice cần tách khỏi một dense list.
+
+Không biến notice thành alert card nếu đây không phải lỗi.
+
+---
+
+## 19. Simulation surface
+
+Simulation được phép khác actual state vì đây là modeled data.
+
+Treatment:
+
+```txt
+background --model hoặc tonal blue
+marker: Nếu thực hiện
+optional dashed divider/border
+```
+
+Consequence chỉ xuất hiện sau user action.
+
+Bên trong simulation surface ưu tiên:
+
+```txt
+columns
+dividers
+rows
+```
+
+Không tạo 3–5 rounded metric cards con.
+
+---
+
+## 20. Modal / side sheet
+
+Overlay là nơi elevation rõ được phép.
+
+Desktop:
+
+```txt
+dialog hoặc side sheet
+radius 22–28px
+shadow overlay
+```
+
+Mobile:
+
+```txt
+bottom sheet hoặc route riêng
+```
+
+What-if, create/edit flow có thể dùng modal/sheet.
+
+---
+
+## 21. Forms
+
+Default:
+
+- 3–4 fields visible.
 - Không hỏi thứ app đã biết.
-- Field label dùng sans, không dùng mono uppercase.
+- Label sans Regular/Medium.
 - Helper chỉ khi nói scope/constraint/consequence.
-- Money input dùng normal control size, không hero size.
+- Money input normal control size.
+- Không hero-size input.
 
-### Validation
+Validation:
 
 - Lỗi tại field.
-- Giữ input user đã nhập.
+- Giữ input.
 - Không đóng modal khi save lỗi.
-- Destructive action đặt cuối flow; không cần “danger card” có border.
+- Destructive action cuối flow.
+- Không cần danger card có border.

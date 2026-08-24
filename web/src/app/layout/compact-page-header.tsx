@@ -9,11 +9,14 @@ type CompactPageHeaderProps = {
  * Page heading for every screen: one title line naming what the page is for,
  * plus its primary actions. No eyebrow, no description — the page itself
  * explains what it holds.
+ *
+ * Sits on `--canvas` like everything else. Only Home uses a `HeroCard`, because
+ * only Home has page identity worth a surface of its own (v5 §3).
  */
 export function CompactPageHeader({ title, actions }: CompactPageHeaderProps) {
   return (
-    <header className="flex flex-col gap-5 pb-1 sm:flex-row sm:items-center sm:justify-between">
-      <h1 className="page-title text-[30px] leading-[1.15] sm:text-[34px]">{title}</h1>
+    <header className="flex flex-col gap-4 pb-1 sm:flex-row sm:items-end sm:justify-between">
+      <h1 className="page-title text-[32px] leading-[1.08] lg:text-[40px]">{title}</h1>
       {actions ? <div className="flex items-center gap-2.5">{actions}</div> : null}
     </header>
   )

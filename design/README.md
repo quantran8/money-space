@@ -1,70 +1,36 @@
-# Money Space Design System v4.2
+# Money Space Design System v5.0
 
-> Tách **visual system**, **UI components**, **composition/state patterns** và **product recipes** thành bốn lớp độc lập. v4.2 giữ hướng thị giác của v4.1 nhưng sửa kiến trúc spec để UI thích nghi tốt hơn với dữ liệu thật.
+Airy, cool, flat financial workspace. Lấy visual grammar từ Clerio nhưng giữ
+information architecture và product semantics riêng của Money Space.
 
-## Vì sao v4.2
+## Files
 
-v4.1 đã chốt được visual language: panel trắng trên nền có sắc, ít màu, không shadow, mật độ dữ liệu thật, forecast-first. Vấn đề còn lại là spec trộn quá nhiều tầng quyết định và dùng nhiều luật tuyệt đối, khiến implementation có thể “đúng spec” nhưng không hợp data state.
+| File | Nội dung |
+|---|---|
+| [01-foundations.md](01-foundations.md) | Surface, colour, typography, money format, spacing, radius, accessibility |
+| [02-components.md](02-components.md) | 21 component: hero card, card, KPI, button, field, row, table, chart, coverage, empty state, modal |
+| [03-patterns-and-states.md](03-patterns-and-states.md) | Composition, state matrix, density, responsive |
+| [04-product-recipes.md](04-product-recipes.md) | Recipe riêng của Money Space — Home IA, forecast, goal, privacy, app shell |
+| [05-changes-from-v4.md](05-changes-from-v4.md) | Những gì đổi so với v4.2 và vì sao |
 
-v4.2 sửa 6 điểm:
+## Ba điều quyết định nhất
 
-1. Tách **Foundation / Component / Pattern / Product recipe**.
-2. Phân biệt **Hard constraint / Default / Recipe** thay vì mọi rule đều là “bắt buộc”.
-3. Thêm **adaptive composition** theo data density và availability của primary metric.
-4. Thêm state **dependency missing**: có domain data nhưng thiếu input để derive một số.
-5. Sửa contradiction typography: mono chỉ dùng ASCII; `.label` không còn đồng nghĩa với IBM Plex Mono.
-6. Tách **interaction color** khỏi **data semantics**; money direction mặc định neutral.
+**Interaction là ink, không phải green.** `--action` `#0F1011` mang CTA;
+`--data-primary` mang chart và composition; green chỉ còn nghĩa là một
+consequence thật sự tốt.
 
-## Cấu trúc
+**Hero là card, không phải nền trang.** `--canvas` là nền của mọi thứ; `--hero`
+`#B5CDE8` chỉ dùng cho một surface duy nhất — hero card, radius 28px, đứng trực
+tiếp trên canvas.
 
-- `01-foundations.md` — màu, surface, typography, spacing, responsive primitives, accessibility.
-- `02-components.md` — panel, labels, button, field, sunk block, table/list, chart, status, simulation.
-- `03-patterns-and-states.md` — adaptive composition, data density, state matrix, copy budget, responsive behavior.
-- `04-product-recipes.md` — Money Space specific: Home, 30 ngày tới, Goals, Assets, Debt, Household, What-if, Nhật ký.
-- `05-migration-v4.1-to-v4.2.md` — thay đổi cần làm ở code/design hiện tại.
+**Card không có shadow, không có border.** Lightness step giữa `--card` và
+`--canvas` (1.12) là thứ duy nhất vẽ ranh giới — nên giá trị canvas được tinh
+chỉnh có chủ đích, không chọn tuỳ tiện.
 
-## Rule levels
+## Trạng thái
 
-### Hard constraint
+Spec này khớp với code đang chạy ở `web/src/index.css` — 22 token, kiểm tra
+từng giá trị. Styleguide canvas ở `design-v5-styleguide/`.
 
-Chỉ dùng cho trust, accessibility, privacy và data integrity.
-
-Ví dụ:
-
-```txt
-Không hiển thị độ chính xác giả.
-Không dùng màu làm tín hiệu trạng thái duy nhất.
-Không ghi giao dịch cá nhân vào Nhật ký.
-Một dữ kiện không lặp lại chỉ để làm UI đầy hơn.
-```
-
-### Default
-
-Là lựa chọn mặc định, được phép phá khi có lý do thông tin rõ ràng.
-
-```txt
-Panel mặc định không border/shadow.
-Table row mặc định không divider.
-Section header mặc định có title + một metadata hoặc action.
-Desktop section mặc định 2 cột khi cả hai cột đều có đủ nội dung.
-```
-
-### Recipe
-
-Là cách ráp component cho một use case Money Space cụ thể. Recipe không được nâng thành rule toàn hệ thống.
-
-## Decision order
-
-Khi một màn hình khó xử lý, quyết định theo thứ tự:
-
-```txt
-1. Data integrity / trust
-2. User question cần trả lời
-3. State của dữ liệu
-4. Density của dữ liệu
-5. Composition
-6. Component
-7. Styling
-```
-
-Không đi ngược từ “component nào có sẵn” để ép data vào UI.
+Hệ v4.2 cũ nằm trong git history (commit `580da95`), không còn trong cây làm
+việc.

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { CompactPageHeader } from '@/app/layout/compact-page-header'
+import { HeroCard } from '@/app/layout/hero-card'
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
 import { useDashboardPage } from '@money-space/core/features/dashboard/hooks/use-dashboard-page'
@@ -13,13 +13,17 @@ import { MoneySourcesSection } from '@/features/dashboard/ui/components/money-so
 import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-section'
 
 /**
- * Home (design.md §9.1, §12, §13).
+ * Home (v5 04-recipes §2–§4).
  *
- * A single vertical column of full-width sections — NOT a two-column page grid
- * and not a card wall. Each section has a different internal shape (a huge
- * number, a chart plus a table, a list of tracks, an area map), and that
- * difference is itself the scanning cue that lets the household read the page
- * in 3–5 seconds (§7.2).
+ * Page identity sits on the page ground; the canvas sheet below holds the
+ * cards. Flexible Money is the dominant card — the canonical financial answer —
+ * and the 30-day low point and main goal sit beside it only because each
+ * answers a DIFFERENT question (03-patterns §5). Money location follows at full
+ * width because it is a table, not an answer.
+ *
+ * Card inventory is deliberately short (04-recipes §16): no Total, no Committed,
+ * no source count, no freshness card. Those are metadata of the answers above,
+ * and splitting them out would repeat facts to manufacture hierarchy (§9).
  *
  * The order is fixed by priority (§1.1, §9.1):
  *   1. Bức tranh hôm nay — flexible money, where it came from, how it splits
@@ -79,14 +83,25 @@ export function DashboardPage() {
     if (staleIds.length > 0) confirmUnchanged.mutate(staleIds)
   }
 
+  const coverage = freshness ? buildCoverage(freshness) : undefined
+
   return (
-    <div className="space-y-4">
-      <CompactPageHeader
-        title={t('nav.dashboard')}
-        actions={
-          <p className="font-mono text-[11px] text-ink3">{formatToday(forecast?.asOfDate)}</p>
+    <div className="space-y-3">
+      <HeroCard
+        eyebrow={t('home.eyebrow')}
+        title={t('home.title')}
+        context={
+          coverage
+            ? coverage.hasStale
+              ? t('home.coverage.lineSomeStale', {
+                  count: coverage.total,
+                  stale: coverage.staleCount,
+                })
+              : t('home.coverage.lineAllFresh', { count: coverage.total })
+            : formatToday(forecast?.asOfDate)
         }
       />
+
 
       <FinancialPictureSection
         flexibleMoney={flexibleMoney}
@@ -156,7 +171,7 @@ export function DashboardPage() {
   )
 }
 
-/** "13/08/2026" — ASCII only, so it is safe in the mono face (§10.1). */
+/** "13/08/2026" — a plain date; mono is no longer a default motif (v5 §5.1). */
 function formatToday(isoDate?: string): string {
   const source = isoDate ?? new Date().toISOString()
   const match = source.match(/^(\d{4})-(\d{2})-(\d{2})/)

@@ -121,10 +121,9 @@ function SimulateButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex h-11 w-full items-center justify-center gap-2 rounded-lg text-[14px] font-medium text-white"
-      style={{ background: 'var(--accent)' }}
+      className="flex h-11 w-full items-center justify-center gap-2 rounded-pill bg-action text-[14px] font-medium text-action-inverse"
     >
-      <Calculator className="size-4" strokeWidth={1.75} />
+      <Calculator className="size-4" strokeWidth={1.5} />
       {t('home.picture.simulate')}
     </button>
   )
@@ -204,10 +203,19 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 /**
- * App shell (§8, §13).
+ * App shell (v5 01-foundations §2.2, §3; 04-recipes §15).
  *
- * The sidebar sits DIRECTLY on `--app` with no surface and no right border —
- * the page background is what separates it from the content (§2.1, §7.4).
+ * Canvas is the ground for the whole app — sidebar, header and content all sit
+ * on it. Cards sit DIRECTLY on canvas: there is no sheet and no wrapper panel
+ * between them (§2.2).
+ *
+ * The blue (`--hero`) is not a page background. It belongs to the hero CARD
+ * only — one surface, inside the page, carrying page identity and context (§3).
+ *
+ * v5 §15 permits a labelled sidebar over an icon rail when navigation cannot be
+ * read by icon alone — "không hy sinh discoverability chỉ để giống visual
+ * reference". Six destinations across three groups is exactly that case, so the
+ * labels stay; only the surfaces change.
  */
 export function AppShell() {
   const { t } = useTranslation()
@@ -228,16 +236,13 @@ export function AppShell() {
     // `h-dvh` + `overflow-hidden`: the shell owns the viewport and the sidebar
     // never scrolls with the page. `dvh` rather than `vh` so the mobile address
     // bar can't push the bottom nav out of reach.
-    <div className="flex h-dvh overflow-hidden">
+    <div className="flex h-dvh overflow-hidden bg-canvas">
       <aside className="hidden w-[240px] shrink-0 flex-col px-4 py-5 lg:flex">
         <div className="flex items-center gap-2.5 px-3 pb-5">
-          <span
-            className="flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-medium text-white"
-            style={{ background: 'var(--accent)' }}
-          >
+          <span className="flex size-7 items-center justify-center rounded-pill bg-action text-[12px] font-medium text-action-inverse">
             M
           </span>
-          <span className="text-[15px] font-medium tracking-[.01em]">Money Space</span>
+          <span className="text-[16px] font-medium">Money Space</span>
         </div>
 
         <SimulateButton onClick={() => openWhatIf({ source: 'other' })} />
@@ -251,13 +256,10 @@ export function AppShell() {
         <SidebarFooter />
       </aside>
 
-      <main ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto">
+      <main ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto lg:pt-2">
         <Dialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <header className="sticky top-0 z-30 flex items-center gap-3 bg-canvas/90 px-5 py-3 backdrop-blur-xl lg:hidden">
-            <span
-              className="flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-medium text-white"
-              style={{ background: 'var(--accent)' }}
-            >
+          <header className="flex items-center gap-3 px-5 py-3 lg:hidden">
+            <span className="flex size-7 items-center justify-center rounded-pill bg-action text-[12px] font-medium text-action-inverse">
               M
             </span>
             <p className="text-[15px] font-medium">Money Space</p>
@@ -319,9 +321,15 @@ export function AppShell() {
           animate="animate"
           variants={pageVariants}
           transition={pageTransition}
-          className="mx-auto w-full max-w-[1220px] px-5 py-5 pb-24 lg:px-7 lg:pb-6"
+          className="flex min-h-full flex-col"
         >
-          <Outlet />
+          {/* Canvas is the ground for everything. Cards sit directly on it —
+              no sheet, no wrapper panel (01-foundations §2.2). */}
+          <div className="flex-1 px-4 py-5 pb-24 lg:px-6 lg:pb-6">
+            <div className="mx-auto w-full max-w-[1280px]">
+              <Outlet />
+            </div>
+          </div>
         </motion.div>
       </main>
 

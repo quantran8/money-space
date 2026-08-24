@@ -241,8 +241,12 @@
     border-radius: var(--radius-control);
   }
 
+  /**
+   * The hero card — the only surface that may use `--hero` (§3). A tonal
+   * blue-on-blue gradient is allowed for depth; a multicolour one is not.
+   */
   .hero-surface {
-    background: var(--hero);
+    background: linear-gradient(#c2d7ee 0%, var(--hero) 45%, var(--hero-deep) 100%);
     border-radius: var(--radius-hero);
   }
 
@@ -330,6 +334,36 @@
     font-weight: 300;
   }
 
+  /* --- v5 app shell (01-foundations §2.2, §3; 04-recipes §15) ---------- */
+
+  /**
+   * A nav pill on the page ground. Active is a filled white circle; inactive is
+   * a hairline outline. Icon-only, so every item carries an aria-label and a
+   * title (§11, 02-components §8).
+   */
+  .nav-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    color: var(--ink);
+    border: 1px solid rgba(15, 16, 17, 0.14);
+    transition:
+      background 0.14s ease,
+      border-color 0.14s ease;
+  }
+
+  .nav-pill:hover {
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  .nav-pill[aria-current] {
+    background: var(--card);
+    border-color: transparent;
+  }
+
   .page-title {
     letter-spacing: -0.035em;
     font-weight: 300;
@@ -362,7 +396,7 @@
   }
 
   .nav-item[aria-current] {
-    background: var(--panel);
+    background: var(--card);
     color: var(--ink);
     font-weight: 500;
   }
