@@ -6,11 +6,21 @@
 
 Hero là atmospheric page surface.
 
+Hero không phải một element có radius — nó là page ground. Page identity nằm
+trực tiếp trên nền, rồi canvas sheet nâng lên chứa card grid:
+
 ```html
-<section class="hero rounded-[28px] p-7">
-  <p class="subheading">Tài chính gia đình</p>
-  <h1 class="display">Bức tranh hôm nay</h1>
-</section>
+<div class="page-ground">
+  <nav>…</nav>
+  <header>
+    <p class="subheading">Tài chính gia đình</p>
+    <h1 class="display">Bức tranh hôm nay</h1>
+  </header>
+
+  <div class="canvas-sheet">
+    <!-- card grid -->
+  </div>
+</div>
 ```
 
 ### Có thể chứa
@@ -31,7 +41,8 @@ full chart
 management table
 ```
 
-Cards có thể overlap hero 12–16px để tạo continuity, nhưng cards vẫn là direct children của page composition, không nằm trong một group surface.
+Canvas sheet là surface duy nhất gom card. Bên trong sheet, card là direct
+child — không có group panel nào khác.
 
 ---
 
@@ -49,8 +60,8 @@ Default:
 
 - Background white.
 - Không border.
-- Shadow `none` hoặc cực nhẹ.
-- Radius 20–24px.
+- **Shadow `none`.**
+- Radius 22px.
 - Padding 20–24px desktop.
 - Direct child của page/card grid.
 
@@ -394,6 +405,20 @@ chart rounded container
 ```
 
 Có thể dùng một baseline/divider hoặc very subtle wash khi chart cần contrast.
+
+### Tick-bar treatment
+
+Chart mặc định là một dãy tick mảnh, không phải bar đặc:
+
+```txt
+tick width 2px · gap 2px
+màu --data-primary
+low point / điểm cần chú ý dùng --attention
+label hai đầu trục (ngày đầu · ngày cuối)
+```
+
+Tick mảnh khiến chart đọc như texture, không như một khối nặng — đó là lý do
+nó nằm được trực tiếp trong card mà không cần container.
 
 ---
 

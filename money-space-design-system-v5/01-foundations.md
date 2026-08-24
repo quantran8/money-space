@@ -44,19 +44,18 @@ nhiều màu theo category
 ```css
 :root {
   /* environment */
-  --canvas: #E2E7EA;
-  --page: #F4F6F7;
+  --canvas: #EDF3F8;
   --card: #FFFFFF;
-  --wash: #F6F8F9;
+  --wash: #E3ECF2;
 
-  /* atmospheric surface */
-  --hero: #B7D8F3;
-  --hero-deep: #73A4D7;
+  /* page ground — full-bleed atmospheric surface */
+  --hero: #B5CDE8;
+  --hero-deep: #ACC6E3;
 
   /* text */
   --ink: #0F1011;
   --ink2: #596268;
-  --ink3: #879398;
+  --ink3: #6B767C;
 
   /* action */
   --action: #0F1011;
@@ -65,12 +64,15 @@ nhiều màu theo category
   /* data / state */
   --data-primary: #73A4D7;
   --positive: #8FCDA4;
-  --attention: #E1BE68;
-  --alert: #E8A39A;
+  --attention: #8A6410;
+  --alert: #A8341F;
 
   --committed: #D8E0E4;
   --protect: #AFC0C7;
   --model: #EEF6F1;
+
+  /* relation */
+  --divider: #EEF1F2;
 
   /* geometry */
   --radius-hero: 28px;
@@ -78,8 +80,7 @@ nhiều màu theo category
   --radius-control: 14px;
   --radius-pill: 999px;
 
-  /* elevation */
-  --shadow-card: 0 1px 5px rgba(39, 62, 78, 0.018);
+  /* elevation — overlay only */
   --shadow-overlay: 0 18px 50px rgba(20, 34, 43, 0.16);
 }
 ```
@@ -89,18 +90,24 @@ nhiều màu theo category
 Default hierarchy:
 
 ```txt
-canvas
-→ page
-→ optional hero surface
+page ground (--hero, full-bleed)
+→ canvas sheet
 → top-level cards
 → content
 ```
 
-**Hard constraint:** top-level card phải là direct surface của composition. Không tạo:
+Page ground là màu, không phải component: nó phủ hết viewport, không radius,
+không margin. Nav và page identity nằm trực tiếp trên nó.
+
+Canvas sheet nâng lên từ đáy với radius trên 32px (mobile 28px) và chứa card
+grid. Sheet là **surface duy nhất** được phép gom card — không tạo thêm một
+panel nào khác bên trong nó.
+
+**Hard constraint:** trong sheet, card phải là direct child. Không tạo:
 
 ```txt
-page
-→ white sheet/group panel
+canvas sheet
+→ group panel / white sheet con
   → card
     → rounded card con
 ```
@@ -111,15 +118,17 @@ Card không cần một `panel` khác để “gom nhóm”.
 
 - Background `--card`.
 - Không border mặc định.
-- Shadow bằng `--shadow-card` hoặc `none`.
-- Radius 20–24px.
-- Card đứng trực tiếp trên `--page`/`--canvas`.
+- **Shadow `none`.** Card tách khỏi canvas bằng lightness step (1.12), không
+  bằng elevation.
+- Radius 22px.
+- Card đứng trực tiếp trên `--canvas`.
 - Nếu relation đọc được bằng spacing/alignment thì không thêm divider.
 - Nếu cần divider, dùng 1px low-contrast ở đúng relation cần tách.
 
 ### 2.4 `--wash`
 
-`--wash` không phải một card level.
+`--wash` `#E3ECF2` không phải một card level. Nó tách khỏi `--card` 1.20 — đủ
+để đọc là một control nằm trong card, không đủ để đọc là một card khác.
 
 Chỉ dùng cho:
 
@@ -144,7 +153,7 @@ toàn bộ section bên trong card
 
 ## 3. Hero surface
 
-Hero là atmospheric surface, không phải một dashboard card khổng lồ.
+Hero là **page ground** — màu nền của cả trang, không phải một card.
 
 Dùng cho:
 
@@ -157,9 +166,11 @@ coverage/freshness context
 
 Default:
 
-- Màu xanh nhạt `--hero`.
-- Radius 28px.
+- Màu xanh nhạt `--hero` `#B5CDE8`.
+- **Full-bleed: không radius, không margin.** Phủ hết viewport.
 - Có thể dùng blue-on-blue tonal gradient rất nhẹ nếu cần depth.
+- Text trên page ground dùng `--ink` (11.7:1). **Không dùng chữ trắng** —
+  trên `#B5CDE8` chữ trắng chỉ đạt 1.63:1, trượt cả ngưỡng large text.
 - Không dùng multicolor gradient.
 - Không đặt quá nhiều KPI trong hero.
 - Không dùng hero để lặp lại số đã có canonical card bên dưới.
@@ -334,6 +345,14 @@ Rules:
 
 ## 7. Spacing
 
+### Scale
+
+```txt
+4 · 8 · 12 · 16 · 20 · 24 · 32 · 48
+```
+
+### Applied
+
 ```txt
 Page edge desktop          28–32px
 Page edge mobile           16–20px
@@ -345,6 +364,8 @@ Section → section          16–20px
 Header → body              20–24px
 Large internal column gap  36–48px
 Dense row                  10–12px vertical
+Sheet radius desktop       32px (top corners only)
+Sheet radius mobile        28px (top corners only)
 ```
 
 Clerio-like density đến từ **card gap nhỏ + surface phẳng**, không phải bằng nested container.
@@ -368,9 +389,11 @@ Modal/sheet     22–28px
 Trong page:
 
 ```txt
-default card shadow = none
-hoặc 0 1px 5px rgba(..., .018)
+card shadow = none
 ```
+
+Shadow không còn là một tier của card. Lightness step giữa `--card` và
+`--canvas` là thứ duy nhất vẽ ranh giới.
 
 Overlay thật sự nổi:
 
@@ -437,6 +460,10 @@ Theo thứ tự đó.
 ### Contrast
 
 - `--ink`, `--ink2`, `--ink3`, `--action` phải đạt AA ở kích thước dùng thật.
+  Trên `--card`: ink 19.1, ink2 6.2, ink3 4.7 — đều pass. `--ink3` được nâng
+  từ `#879398` (3.15, fail) lên `#6B767C` vì nó mang metadata 12px.
+- `--attention` `#8A6410` và `--alert` `#A8341F` là bản đã tối đi để đạt AA
+  khi dùng làm text; sắc nhạt gốc chỉ dùng làm fill.
 - Money value không dùng low contrast.
 - Hero text phải đạt contrast trên toàn vùng background.
 

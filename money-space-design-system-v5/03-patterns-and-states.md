@@ -23,16 +23,17 @@ Không chọn layout vì “template dashboard đẹp”.
 ### 2.1 Default page stack
 
 ```txt
-page canvas
-→ optional hero
-→ top-level cards trực tiếp
+page ground (--hero, full-bleed)
+→ nav + page identity, trực tiếp trên nền
+→ canvas sheet (radius trên 32px)
+  → top-level cards trực tiếp
 ```
 
-Không dùng:
+Canvas sheet là surface được phép gom card grid. Không thêm một tầng nữa:
 
 ```txt
-page
-→ group panel / white sheet
+canvas sheet
+→ group panel / white sheet con
   → card grid
 ```
 
@@ -56,11 +57,11 @@ card
   → rounded box
 ```
 
-### 2.3 Overlap
+### 2.3 Sheet edge
 
-Cards có thể overlap hero 12–16px để tạo continuity.
-
-Overlap không tạo một wrapper mới.
+Canvas sheet nâng lên từ đáy viewport, bo hai góc trên. Đó là chỗ chuyển giữa
+page ground và vùng nội dung — không cần overlap thủ công, và không tạo wrapper
+mới bên trong.
 
 ---
 
@@ -171,7 +172,7 @@ color
 Không ưu tiên:
 
 ```txt
-shadow
+shadow          — card không còn shadow
 border
 nested container
 colored icon box

@@ -73,11 +73,13 @@ Financial event log không là transaction feed.
 Desktop recommended:
 
 ```txt
-[blue atmospheric hero]
+[page ground — blue, full-bleed]
+nav pills
+Tài chính gia đình
 Bức tranh hôm nay
 coverage / household context
 
-[direct card grid on page]
+[canvas sheet, radius trên 32px]
 Flexible Money — dominant
 30-day low point
 Main goal — nếu có đủ data
@@ -91,9 +93,8 @@ Cần cập nhật — chỉ khi có item
 
 Rules:
 
-- Không có white sheet/group panel bọc card grid.
-- Card trực tiếp trên page.
-- Card có thể overlap hero 12–16px.
+- Canvas sheet là surface duy nhất gom card grid — không thêm panel bên trong.
+- Card là direct child của sheet.
 - Không nested card.
 - What-if CTA nằm cạnh Flexible Money hoặc mở side sheet/dialog.
 - Không tạo card `Total / Committed / Flexible` nếu Flexible Money đã là primary answer.
@@ -104,17 +105,18 @@ Rules:
 
 Primary anchor = **Flexible Money**.
 
-### Hero surface
+### Page ground
 
-Hero chỉ chứa:
+Vùng nền chỉ chứa:
 
 ```txt
+nav
 Tài chính gia đình
 Bức tranh hôm nay
 coverage/freshness context
 ```
 
-Hero không phải nơi chứa toàn bộ breakdown.
+Đây không phải nơi chứa breakdown. Text dùng `--ink`, không dùng chữ trắng.
 
 ### Flexible Money card
 
@@ -560,7 +562,7 @@ nếu chúng chỉ là metadata/breakdown của các answer ở trên.
 2. Hero có đang tạo context thay vì chứa KPI dump không?
 3. Có Total/Net worth nào lặp dưới Flexible Money không?
 4. Card có đứng trực tiếp trên page không?
-5. Có group panel / white sheet bọc card grid không?
+5. Có panel nào khác ngoài canvas sheet đang bọc card grid không?
 6. Có card con / rounded summary box không cần thiết không?
 7. Empty state có nằm trực tiếp trong card không?
 8. Chart có data thật để tồn tại không?
@@ -568,6 +570,6 @@ nếu chúng chỉ là metadata/breakdown của các answer ở trên.
 10. Action có dùng ink/black thay vì data color không?
 11. Typography có đúng Urbanist 300/400/500 không?
 12. Heading/subheading/body có giữ hierarchy 72/20/16 tương ứng không?
-13. Shadow có gần như vô hình không?
+13. Card có đang không dùng shadow không?
 14. Mobile có giữ answer trước detail không?
 ```
