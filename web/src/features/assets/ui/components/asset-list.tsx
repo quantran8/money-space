@@ -92,7 +92,7 @@ export function AssetList({
                     event.stopPropagation()
                     onOpen?.(asset.id)
                   }}
-                  className="min-w-0 max-w-full rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="min-w-0 max-w-full rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-action"
                 >
                   <span className="block truncate text-[13px] font-medium">{asset.name}</span>
                   <span className="mt-1 block truncate text-[11px] text-ink3">

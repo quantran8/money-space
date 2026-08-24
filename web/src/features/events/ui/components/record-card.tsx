@@ -42,11 +42,11 @@ export function RecordCard({
   const meta = relatedName ? `${typeLabel} · ${relatedName}` : typeLabel
 
   return (
-    <article className="grid grid-cols-[36px_minmax(0,1fr)_auto_32px] items-start gap-x-3 rounded-control px-3 py-3 transition-colors hover:bg-sunk">
+    <article className="grid grid-cols-[36px_minmax(0,1fr)_auto_32px] items-start gap-x-3 rounded-control px-3 py-3 transition-colors hover:bg-wash">
       {/* The actor lives in the avatar alone — repeating it in the title line
           just pushed the thing that actually happened off to the right. */}
       <div
-        className="grid size-8 place-items-center rounded-full bg-sunk text-[11px] font-medium text-ink2"
+        className="grid size-8 place-items-center rounded-full bg-wash text-[11px] font-medium text-ink2"
         title={actor}
       >
         {initial}
@@ -64,12 +64,12 @@ export function RecordCard({
           {meta}
         </p>
       </div>
-      <p className={cn('num whitespace-nowrap pl-3 text-right text-[14px] font-medium', isInflow && 'text-accent')}>
+      <p className={cn('num whitespace-nowrap pl-3 text-right text-[14px] font-medium', isInflow && 'text-action')}>
         {amount}
       </p>
       <DropdownMenu>
         <DropdownMenuTrigger
-          className="grid size-8 place-items-center rounded-control text-ink3 transition hover:bg-panel hover:text-ink"
+          className="grid size-8 place-items-center rounded-control text-ink3 transition hover:bg-card hover:text-ink"
           aria-label={t('events.redesign.timeline.actions')}
         >
           <MoreVertical className="size-4" />

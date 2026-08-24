@@ -36,7 +36,7 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
       <PanelHeader
         title={t('home.debts.title')}
         action={
-          <Link to="/networth" className="text-[13px] text-accent">
+          <Link to="/networth" className="text-[13px] text-action">
             {t('home.debts.viewAll')}
           </Link>
         }
@@ -99,7 +99,7 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
                 </span>
               </div>
               {/* Neutral ink, not accent: repayment progress is a fact, not a win. */}
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-hair">
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-divider">
                 <div
                   className="h-full rounded-full bg-ink3"
                   style={{ width: `${largest.repaidPercent}%` }}

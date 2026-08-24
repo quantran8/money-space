@@ -120,7 +120,7 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{payment.name}</p>
-                <p className={cn('mt-1 text-xs', readiness(payment) === 'ready' ? 'text-accent' : 'text-muted-foreground')}>
+                <p className={cn('mt-1 text-xs', readiness(payment) === 'ready' ? 'text-action' : 'text-muted-foreground')}>
                   {readiness(payment) === 'ready'
                     ? 'Đã chuẩn bị nguồn'
                     : readiness(payment) === 'priority'
@@ -159,7 +159,7 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
             <p className="text-xs text-muted-foreground">Hiện tại</p>
             <p className="money-number mt-1 text-2xl font-semibold">{formatVndShort(current)}</p>
           </div>
-          <p className={cn('text-sm font-medium', change <= 0 ? 'text-accent' : 'text-alert')}>
+          <p className={cn('text-sm font-medium', change <= 0 ? 'text-action' : 'text-alert')}>
             {change > 0 ? '+' : change < 0 ? '−' : ''}{formatVndShort(Math.abs(change))}
           </p>
         </div>

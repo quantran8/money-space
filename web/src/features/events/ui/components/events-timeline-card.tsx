@@ -116,7 +116,7 @@ export function EventsTimelineCard({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            className="grid size-9 place-items-center rounded-control text-ink2 hover:bg-sunk"
+            className="grid size-9 place-items-center rounded-control text-ink2 hover:bg-wash"
             aria-label={t('events.history.previousMonth')}
             onClick={() => changeMonth(-1)}
           >
@@ -132,7 +132,7 @@ export function EventsTimelineCard({
           </div>
           <button
             type="button"
-            className="grid size-9 place-items-center rounded-control text-ink2 hover:bg-sunk"
+            className="grid size-9 place-items-center rounded-control text-ink2 hover:bg-wash"
             aria-label={t('events.history.nextMonth')}
             onClick={() => changeMonth(1)}
           >
@@ -206,7 +206,7 @@ export function EventsTimelineCard({
               <button
                 type="button"
                 disabled={safePage === 1}
-                className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] text-ink3 hover:bg-panel disabled:opacity-40"
+                className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] text-ink3 hover:bg-card disabled:opacity-40"
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
                 <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -225,8 +225,8 @@ export function EventsTimelineCard({
                       className={cn(
                         'grid size-9 place-items-center rounded-control text-[12px]',
                         safePage === pageNumber
-                          ? 'bg-panel font-medium text-ink'
-                          : 'text-ink2 hover:bg-panel',
+                          ? 'bg-card font-medium text-ink'
+                          : 'text-ink2 hover:bg-card',
                       )}
                       onClick={() => setPage(pageNumber)}
                     >
@@ -238,7 +238,7 @@ export function EventsTimelineCard({
               <button
                 type="button"
                 disabled={safePage === totalPages}
-                className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] font-medium text-accent hover:bg-panel disabled:opacity-40"
+                className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] font-medium text-action hover:bg-card disabled:opacity-40"
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
                 {t('events.history.next')}

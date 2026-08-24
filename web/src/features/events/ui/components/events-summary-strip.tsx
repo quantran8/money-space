@@ -40,20 +40,20 @@ export function EventsSummaryStrip({ summary, month }: EventsSummaryStripProps) 
           label={t('events.summary.received')}
           value={`+${formatVndScale(summary.totalIncome)}`}
           className="sm:pr-7"
-          valueClassName="text-accent"
+          valueClassName="text-action"
         />
         <Metric
           label={t('events.summary.spent')}
           value={`−${formatVndScale(summary.totalOutcome)}`}
-          className="sm:border-l sm:border-hair sm:px-7"
+          className="sm:border-l sm:border-divider sm:px-7"
         />
         {/* The one figure that answers "did this month add up or not", so it
             carries the sign and takes its colour from the answer. */}
         <Metric
           label={t('events.summary.net')}
           value={`${summary.netChange < 0 ? '−' : '+'}${formatVndScale(Math.abs(summary.netChange))}`}
-          className="sm:border-l sm:border-hair sm:pl-7"
-          valueClassName={summary.netChange < 0 ? 'text-alert' : 'text-accent'}
+          className="sm:border-l sm:border-divider sm:pl-7"
+          valueClassName={summary.netChange < 0 ? 'text-alert' : 'text-action'}
         />
       </div>
     </Panel>

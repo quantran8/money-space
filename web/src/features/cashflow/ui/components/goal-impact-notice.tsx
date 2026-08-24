@@ -75,7 +75,7 @@ export function GoalImpactNotice({
 
   if (!hasFigures) {
     return (
-      <div className="rounded-sunk bg-sunk px-4 py-3">
+      <div className="rounded-control bg-wash px-4 py-3">
         <p className="text-[13px] leading-5 text-ink2">
           {t('upcoming.complete.goalImpact.pending')}
         </p>
@@ -98,7 +98,7 @@ export function GoalImpactNotice({
   const showPerGoal = impact.goals.length > 1
 
   return (
-    <section className="rounded-sunk bg-sunk p-4 sm:p-5">
+    <section className="rounded-control bg-wash p-4 sm:p-5">
       {/* The spend, and the one-phrase answer to where it comes from. */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -111,7 +111,7 @@ export function GoalImpactNotice({
           <p className="text-[11px] text-ink3">{t('upcoming.complete.goalImpact.takenFrom')}</p>
           <p
             className={`mt-1 text-[13px] font-medium ${
-              reachesSetAside ? 'text-attention' : 'text-accent'
+              reachesSetAside ? 'text-attention' : 'text-action'
             }`}
           >
             {reachesSetAside
@@ -169,7 +169,7 @@ export function GoalImpactNotice({
 
       {/* Which goal pays what, when the wallet feeds more than one. */}
       {showPerGoal ? (
-        <ul className="mt-5 space-y-1 border-t border-hair pt-4">
+        <ul className="mt-5 space-y-1 border-t border-divider pt-4">
           {impact.goals.map((goal) => (
             <li
               key={goal.goalId}

@@ -47,10 +47,10 @@ export function MemberRow({
   const exit = isOwner ? 'none' : isSelf ? 'leave' : canRemoveOthers ? 'remove' : 'none'
 
   return (
-    <article className="rounded-sunk px-3 py-3 transition-colors hover:bg-sunk sm:px-4">
+    <article className="rounded-control px-3 py-3 transition-colors hover:bg-wash sm:px-4">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="grid size-10 shrink-0 place-items-center rounded-full bg-sunk text-[12px] font-medium">
+          <div className="grid size-10 shrink-0 place-items-center rounded-full bg-wash text-[12px] font-medium">
             {member.initials}
           </div>
           <div className="min-w-0">

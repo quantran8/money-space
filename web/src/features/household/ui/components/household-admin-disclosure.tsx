@@ -92,7 +92,7 @@ export function HouseholdAdminDisclosure({
                 variant="ghost"
                 size="sm"
                 disabled={!selectedMemberId}
-                className="bg-panel text-alert hover:bg-alert-tint hover:text-alert"
+                className="bg-card text-alert hover:bg-alert-tint hover:text-alert"
                 onClick={() => selectedMemberId && onRemoveMember(selectedMemberId)}
               >
                 {t('common.remove')}
@@ -111,7 +111,7 @@ export function HouseholdAdminDisclosure({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="shrink-0 bg-panel text-alert hover:bg-alert-tint hover:text-alert"
+                  className="shrink-0 bg-card text-alert hover:bg-alert-tint hover:text-alert"
                   onClick={onDeleteHousehold}
                 >
                   {t('settings.data.deleteAction')}

@@ -63,7 +63,7 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
         <p
           className={
             growth >= 0
-              ? 'text-sm font-medium text-accent'
+              ? 'text-sm font-medium text-action'
               : 'text-sm font-medium text-alert'
           }
         >

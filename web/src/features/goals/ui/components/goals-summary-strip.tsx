@@ -39,13 +39,13 @@ export function GoalsSummaryStrip({ count, stats, goals }: GoalsSummaryStripProp
               ? t('goals.demo.monthlyPlanNote')
               : t('goals.demo.noMonthlyPlan')
           }
-          className="sm:border-l sm:border-hair sm:px-7"
+          className="sm:border-l sm:border-divider sm:px-7"
         />
         <Metric
           label={t('goals.demo.requiredMonthly')}
           value={formatAmount(requiredMonthly)}
           note={t('goals.demo.requiredMonthlyNote')}
-          className="sm:border-l sm:border-hair sm:pl-7"
+          className="sm:border-l sm:border-divider sm:pl-7"
         />
       </div>
     </Panel>

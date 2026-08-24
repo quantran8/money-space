@@ -45,7 +45,7 @@ export function UpcomingPage() {
       />
 
       <div
-        className="flex items-center gap-1 rounded-sunk bg-sunk p-1 sm:w-fit"
+        className="flex items-center gap-1 rounded-control bg-wash p-1 sm:w-fit"
         role="tablist"
         aria-label={t('upcoming.horizon.label')}
       >
@@ -58,7 +58,7 @@ export function UpcomingPage() {
             onClick={() => setHorizonDays(horizon as HorizonDays)}
             className={cn(
               'h-9 flex-1 rounded-control px-4 text-[13px] font-medium transition-colors sm:flex-none',
-              horizon === horizonDays ? 'bg-panel text-ink' : 'text-ink2 hover:text-ink',
+              horizon === horizonDays ? 'bg-card text-ink' : 'text-ink2 hover:text-ink',
             )}
           >
             {t('upcoming.horizon.days', { count: horizon })}

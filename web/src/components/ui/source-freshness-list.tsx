@@ -90,7 +90,7 @@ export function SourceFreshnessList({
             type="button"
             onClick={() => setIsOpen((open) => !open)}
             aria-expanded={isOpen}
-            className="text-[13px] font-medium text-accent"
+            className="text-[13px] font-medium text-action"
           >
             {isOpen ? labels.hide : labels.show}
           </button>
@@ -141,7 +141,7 @@ export function SourceFreshnessList({
                     // This table sits INSIDE a sunk block, so its hover band goes
                     // lighter (`--panel`) rather than the darker `--sunk` a table
                     // on a panel uses — same band, one surface up.
-                    <TableRow key={row.id} className="hover:bg-panel">
+                    <TableRow key={row.id} className="hover:bg-card">
                       {/* A row header, not a column header: `TableHead` carries
                           `.label`, whose mono face must never touch the accented
                           Vietnamese of a source name (§10.1). The primitive has

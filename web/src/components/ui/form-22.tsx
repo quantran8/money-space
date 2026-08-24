@@ -37,11 +37,11 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * turns accent on focus so the box never reflows.
  */
 export const fieldShell =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
 
 /** Secondary/optional fields sit at 40px (§22.3). */
 export const fieldShellSm =
-  'flex h-10 w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
+  'flex h-10 w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
 
 /**
  * 16px is not a style choice — anything smaller makes iOS Safari zoom the
@@ -117,7 +117,7 @@ export function TextareaField({
         id={id}
         rows={rows}
         className={cn(
-          'w-full resize-y rounded-[10px] border border-transparent bg-sunk px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-accent focus:bg-panel',
+          'w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card',
           error && 'border-alert',
         )}
         {...props}
@@ -239,7 +239,7 @@ export function Segmented<T extends string>({
   return (
     <div
       role="radiogroup"
-      className={cn('flex gap-1 rounded-[10px] bg-sunk p-1', className)}
+      className={cn('flex gap-1 rounded-[10px] bg-wash p-1', className)}
     >
       {options.map((option) => {
         const active = option.value === value
@@ -252,7 +252,7 @@ export function Segmented<T extends string>({
             onClick={() => onChange(option.value)}
             className={cn(
               'flex-1 rounded-[7px] px-3 py-2 text-[13px] transition-colors',
-              active ? 'bg-panel font-medium text-ink shadow-sm' : 'text-ink2 hover:text-ink',
+              active ? 'bg-card font-medium text-ink shadow-sm' : 'text-ink2 hover:text-ink',
             )}
           >
             {option.label}
@@ -321,7 +321,7 @@ export function Disclosure({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="text-[13px] text-accent transition-opacity hover:opacity-70"
+        className="text-[13px] text-action transition-opacity hover:opacity-70"
       >
         {label}
       </button>

@@ -57,7 +57,7 @@ export function DebtsSummaryStrip({ summary, debts, payments }: DebtsSummaryStri
               : t('debts.demo.noConfirmedPayment')
           }
           noteClassName={upcoming.length === 0 ? 'text-attention' : undefined}
-          className="sm:border-l sm:border-hair sm:px-7"
+          className="sm:border-l sm:border-divider sm:px-7"
         />
         <Metric
           label={t('debts.demo.farthestPayoff')}
@@ -68,7 +68,7 @@ export function DebtsSummaryStrip({ summary, debts, payments }: DebtsSummaryStri
               : t('debts.demo.missingSchedule')
           }
           compact={!farthestDate}
-          className="sm:border-l sm:border-hair sm:pl-7"
+          className="sm:border-l sm:border-divider sm:pl-7"
         />
       </div>
     </Panel>

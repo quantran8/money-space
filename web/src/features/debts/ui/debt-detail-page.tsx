@@ -150,7 +150,7 @@ export function DebtDetailPage() {
   } = useDebtsPage()
 
   if (isLoading && !debt) {
-    return <div className="h-[520px] animate-pulse rounded-panel bg-panel" />
+    return <div className="h-[520px] animate-pulse rounded-card bg-card" />
   }
 
   if (!debt) {
@@ -198,7 +198,7 @@ export function DebtDetailPage() {
       <header className="px-0.5 pb-1">
         <button
           type="button"
-          className="-ml-2 inline-flex min-h-10 items-center gap-1.5 rounded-control px-2 text-[13px] text-accent hover:bg-accent-soft"
+          className="-ml-2 inline-flex min-h-10 items-center gap-1.5 rounded-control px-2 text-[13px] text-action hover:bg-accent-soft"
           onClick={() => navigate('/networth')}
         >
           <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -208,7 +208,7 @@ export function DebtDetailPage() {
         <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-[13px] text-ink2">
-              <span className="rounded-full bg-panel px-2.5 py-1 text-[11px] text-ink2">
+              <span className="rounded-full bg-card px-2.5 py-1 text-[11px] text-ink2">
                 {t(`options.debtStatus.${debt.status}`)}
               </span>
             </div>
@@ -249,7 +249,7 @@ export function DebtDetailPage() {
               <p className="money-number text-[17px]">{progressLabel}%</p>
             </div>
             <div
-              className="mt-4 h-2 overflow-hidden rounded-full bg-sunk"
+              className="mt-4 h-2 overflow-hidden rounded-full bg-wash"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={100}
@@ -257,7 +257,7 @@ export function DebtDetailPage() {
               aria-label={t('debts.detail.overview.progressAria', { percent: progressLabel })}
             >
               <div
-                className="h-full rounded-full bg-accent"
+                className="h-full rounded-full bg-action"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -281,7 +281,7 @@ export function DebtDetailPage() {
             <p className="mt-2 text-[12px] text-ink2">{t('debts.detail.loan.payoffNote')}</p>
           </div>
 
-          <div className="px-0 sm:border-l sm:border-hair sm:px-7">
+          <div className="px-0 sm:border-l sm:border-divider sm:px-7">
             <p className="label">{t('debts.detail.loan.paid')}</p>
             <p className="money-number mt-3 text-[24px]">
               {t('debts.detail.loan.installments', { count: repayments.length })}
@@ -295,7 +295,7 @@ export function DebtDetailPage() {
             </p>
           </div>
 
-          <div className="px-0 sm:border-l sm:border-hair sm:px-7">
+          <div className="px-0 sm:border-l sm:border-divider sm:px-7">
             <p className="label">{t('debts.detail.loan.remaining')}</p>
             <p className="money-number mt-3 text-[24px]">
               {t('debts.detail.loan.installments', { count: upcomingPayments.length })}
@@ -360,7 +360,7 @@ export function DebtDetailPage() {
           <h2 className="section-title text-[16px]">{t('debts.detail.schedule.title')}</h2>
           <button
             type="button"
-            className="min-h-10 text-[13px] text-accent hover:underline"
+            className="min-h-10 text-[13px] text-action hover:underline"
             onClick={() => navigate('/events')}
           >
             {t('debts.detail.schedule.viewJournal')}
@@ -377,8 +377,8 @@ export function DebtDetailPage() {
                     key={item.id}
                     className={
                       item.paid
-                        ? 'relative min-h-[96px] rounded-[9px] bg-accent p-3.5 text-white'
-                        : 'relative min-h-[96px] rounded-[9px] bg-panel p-3.5'
+                        ? 'relative min-h-[96px] rounded-[9px] bg-action p-3.5 text-white'
+                        : 'relative min-h-[96px] rounded-[9px] bg-card p-3.5'
                     }
                   >
                     {item.paid ? (

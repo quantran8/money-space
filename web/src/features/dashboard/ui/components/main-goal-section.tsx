@@ -36,7 +36,7 @@ export function MainGoalSection({
       <PanelHeader
         title={t('home.mainGoal.title')}
         action={
-          <Link to="/goals" className="text-[13px] text-accent">
+          <Link to="/goals" className="text-[13px] text-action">
             {t('home.mainGoal.viewAll', { count: goalCount })}
           </Link>
         }

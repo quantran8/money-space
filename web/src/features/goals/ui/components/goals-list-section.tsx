@@ -104,7 +104,7 @@ export function GoalsListSection({
           </div>
         ) : null}
         {!isLoading && goals.length > 0 && visibleGoals.length === 0 ? (
-          <p className="rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">{t('goals.list.emptySearch')}</p>
+          <p className="rounded-control bg-wash px-4 py-10 text-center text-[13px] text-ink2">{t('goals.list.emptySearch')}</p>
         ) : null}
 
         {!isLoading && goalViews.length > 0 ? (
@@ -125,17 +125,17 @@ export function GoalsListSection({
                     // Cells carry the hover band rather than the row, so the
                     // rounded ends land on the first and last cell (§11.3).
                     <TableRow key={goal.id} className="group cursor-pointer hover:bg-transparent" onClick={() => onOpen(goal.id)}>
-                      <TableCell className="rounded-l-control px-0 py-4 pl-3 pr-5 align-top transition-colors group-hover:bg-sunk">
+                      <TableCell className="rounded-l-control px-0 py-4 pl-3 pr-5 align-top transition-colors group-hover:bg-wash">
                         <GoalName goal={goal} isPrimary={goal.id === primaryGoalId} onOpen={onOpen} />
                       </TableCell>
-                      <TableCell className="px-0 py-4 pr-8 align-top transition-colors group-hover:bg-sunk">
+                      <TableCell className="px-0 py-4 pr-8 align-top transition-colors group-hover:bg-wash">
                         <GoalProgress goal={goal} current={current} target={target} />
                       </TableCell>
-                      <TableCell className="px-0 py-4 pr-7 align-top transition-colors group-hover:bg-sunk">
+                      <TableCell className="px-0 py-4 pr-7 align-top transition-colors group-hover:bg-wash">
                         <GoalPlan desiredDate={desiredDate} projectedDate={projectedDate} monthly={monthly} paceGapMonths={paceGapMonths} />
                       </TableCell>
                       <TableCell
-                        className="rounded-r-control px-0 py-3 pr-2 text-right align-top transition-colors group-hover:bg-sunk"
+                        className="rounded-r-control px-0 py-3 pr-2 text-right align-top transition-colors group-hover:bg-wash"
                         onClick={(event) => event.stopPropagation()}
                       >
                         <GoalActions goal={goal} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
@@ -150,7 +150,7 @@ export function GoalsListSection({
               {goalViews.map(({ goal, current, target, desiredDate, projectedDate, monthly, paceGapMonths }) => (
                 <li
                   key={goal.id}
-                  className="cursor-pointer rounded-sunk px-3 py-4 transition-colors hover:bg-sunk"
+                  className="cursor-pointer rounded-control px-3 py-4 transition-colors hover:bg-wash"
                   onClick={() => onOpen(goal.id)}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -195,11 +195,11 @@ function GoalName({ goal, isPrimary, onOpen }: { goal: GoalItem; isPrimary: bool
           event.stopPropagation()
           onOpen(goal.id)
         }}
-        className="truncate text-left text-[14px] font-medium hover:text-accent"
+        className="truncate text-left text-[14px] font-medium hover:text-action"
       >
         {goal.name}
       </button>
-      {isPrimary ? <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-accent">{t('home.mainGoal.badge')}</span> : null}
+      {isPrimary ? <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-action">{t('home.mainGoal.badge')}</span> : null}
     </div>
   )
 }
@@ -292,5 +292,5 @@ function GoalMenu({
 }
 
 function GoalRowSkeleton() {
-  return <Skeleton className="h-[92px] w-full rounded-sunk" />
+  return <Skeleton className="h-[92px] w-full rounded-control" />
 }

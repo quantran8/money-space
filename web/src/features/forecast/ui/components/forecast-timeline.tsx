@@ -244,7 +244,7 @@ export function ForecastTimeline({
             <button
               type="button"
               disabled={safePage === 1}
-              className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] text-ink3 hover:bg-panel disabled:opacity-40"
+              className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] text-ink3 hover:bg-card disabled:opacity-40"
               onClick={() => setPage((value) => Math.max(1, value - 1))}
             >
               <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -263,8 +263,8 @@ export function ForecastTimeline({
                     className={cn(
                       'grid size-9 place-items-center rounded-control text-[12px]',
                       safePage === pageNumber
-                        ? 'bg-panel font-medium text-ink'
-                        : 'text-ink2 hover:bg-panel',
+                        ? 'bg-card font-medium text-ink'
+                        : 'text-ink2 hover:bg-card',
                     )}
                     onClick={() => setPage(pageNumber)}
                   >
@@ -276,7 +276,7 @@ export function ForecastTimeline({
             <button
               type="button"
               disabled={safePage === totalPages}
-              className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] font-medium text-accent hover:bg-panel disabled:opacity-40"
+              className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] font-medium text-action hover:bg-card disabled:opacity-40"
               onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
             >
               {t('upcoming.timeline.next')}
@@ -350,7 +350,7 @@ function OccurrenceRow({
       <TableCell
         className={cn(
           'num col-start-2 row-start-2 mt-1 px-0 py-0 text-right text-[14px] font-medium lg:mt-0 lg:py-3 lg:pr-8',
-          isIncoming && 'text-accent',
+          isIncoming && 'text-action',
         )}
       >
         {formatVndCellSigned(isIncoming ? occurrence.amount : -occurrence.amount)}
@@ -370,7 +370,7 @@ function OccurrenceRow({
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label={t('upcoming.rowActions.label')}
-              className="flex size-8 items-center justify-center rounded-full text-ink3 outline-none transition hover:bg-panel hover:text-ink lg:ml-auto"
+              className="flex size-8 items-center justify-center rounded-full text-ink3 outline-none transition hover:bg-card hover:text-ink lg:ml-auto"
             >
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>

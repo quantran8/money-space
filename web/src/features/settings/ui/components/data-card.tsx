@@ -23,7 +23,7 @@ export function DataCard({ onDelete }: DataCardProps) {
               {t('settings.data.exportDescription')}
             </p>
           </div>
-          <button type="button" className="mt-4 flex w-fit items-center gap-2 text-[12px] font-medium text-accent">
+          <button type="button" className="mt-4 flex w-fit items-center gap-2 text-[12px] font-medium text-action">
             <Download className="size-4" />
             {t('settings.data.exportAction')}
           </button>
@@ -40,7 +40,7 @@ export function DataCard({ onDelete }: DataCardProps) {
             type="button"
             variant="ghost"
             size="sm"
-            className="mt-4 w-fit bg-panel text-alert hover:bg-alert-tint hover:text-alert"
+            className="mt-4 w-fit bg-card text-alert hover:bg-alert-tint hover:text-alert"
             onClick={onDelete}
           >
             <Trash2 className="size-4" />

@@ -40,13 +40,13 @@ export function AssetsSummaryStrip({
           label={t('assets.demo.debt')}
           value={formatVndScale(totalDebt)}
           note={t('assets.demo.debtCount', { count: debtCount })}
-          className="sm:border-l sm:border-hair sm:px-7"
+          className="sm:border-l sm:border-divider sm:px-7"
         />
         <Metric
           label={t('assets.demo.netWorth')}
           value={formatVndScale(total - totalDebt)}
           note={t('assets.demo.netWorthNote')}
-          className="sm:border-l sm:border-hair sm:pl-7"
+          className="sm:border-l sm:border-divider sm:pl-7"
         />
       </div>
     </Panel>

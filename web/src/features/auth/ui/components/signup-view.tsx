@@ -32,7 +32,7 @@ export function SignupView({ form, onSubmit, onGoogle, googlePending }: SignupVi
   return (
     <div>
       <div>
-        <p className="text-[13px] font-medium text-accent">{t('auth.signup.eyebrow')}</p>
+        <p className="text-[13px] font-medium text-action">{t('auth.signup.eyebrow')}</p>
         <h2 className="mt-2 text-[34px] font-medium leading-tight tracking-[-0.035em]">
           {t('auth.signup.title')}
         </h2>
@@ -93,8 +93,8 @@ export function SignupView({ form, onSubmit, onGoogle, googlePending }: SignupVi
               <Trans
                 i18nKey="auth.signup.agree"
                 components={{
-                  terms: <a href="#" className="font-medium text-accent hover:underline" />,
-                  privacy: <a href="#" className="font-medium text-accent hover:underline" />,
+                  terms: <a href="#" className="font-medium text-action hover:underline" />,
+                  privacy: <a href="#" className="font-medium text-action hover:underline" />,
                 }}
               />
             </span>
@@ -113,7 +113,7 @@ export function SignupView({ form, onSubmit, onGoogle, googlePending }: SignupVi
 
       <p className="mt-7 text-center text-[13px] text-ink2">
         {t('auth.signup.haveAccount')}{' '}
-        <Link to={loginPath} className="font-medium text-accent hover:underline">
+        <Link to={loginPath} className="font-medium text-action hover:underline">
           {t('auth.tabs.login')}
         </Link>
       </p>

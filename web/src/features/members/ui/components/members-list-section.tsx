@@ -96,7 +96,7 @@ export function MembersListSection({
 
 function MemberRowSkeleton() {
   return (
-    <div className="grid gap-4 rounded-sunk px-4 py-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+    <div className="grid gap-4 rounded-control px-4 py-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
       <div className="flex items-center gap-3">
         <Skeleton className="size-10 rounded-full" />
         <div className="space-y-2">

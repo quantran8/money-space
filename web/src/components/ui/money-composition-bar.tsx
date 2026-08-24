@@ -3,11 +3,14 @@ import { cn } from '@money-space/core/shared/lib/utils'
 import type { CompositionSegment } from '@money-space/core/shared/presentation.types'
 
 /**
- * Money composition bar + legend (§11.4).
+ * Money composition bar + legend (v5 02-components §15).
  *
- * The parts are distinguished by WEIGHT, not by hue (§5.4): committed is the
- * palest, and flexible carries the accent because it is the part the household
- * reads first. Amber stays reserved entirely for `attention`.
+ * Committed is the neutral grey; flexible carries `--data-primary`, NOT the
+ * action colour — composition is data, and v5 §4 keeps the action colour out of
+ * data state entirely. Amber stays reserved for `attention`.
+ *
+ * The legend may repeat the values because it serves the visualisation — that
+ * is the one exception to "một dữ kiện, một chỗ" (03-patterns §9).
  *
  * Not a pie chart — the same data as a pie loses the ordering that makes
  * "committed → flexible" legible as a sequence.
@@ -16,7 +19,7 @@ export type { CompositionSegment } from '@money-space/core/shared/presentation.t
 
 const FILL: Record<CompositionSegment['tone'], string> = {
   committed: 'var(--committed)',
-  flexible: 'var(--accent)',
+  flexible: 'var(--data-primary)',
 }
 
 export function MoneyCompositionBar({
@@ -79,13 +82,13 @@ export function MoneyCompositionBar({
               />
               {segment.label}
             </dt>
-            <span className="num font-mono text-[11px] text-ink3">
+            <span className="num text-[12px] text-ink3">
               {segment.percentLabel ?? `${segment.percent}%`}
             </span>
             <dd
               className={cn(
                 'num min-w-[76px] text-right',
-                segment.tone === 'flexible' && 'font-medium text-accent',
+                segment.tone === 'flexible' && 'font-medium text-ink',
               )}
             >
               {formatAmount(segment.amount)}

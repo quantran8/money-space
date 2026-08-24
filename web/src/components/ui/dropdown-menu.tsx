@@ -52,7 +52,7 @@ function DropdownMenuSubTrigger({
     <DropdownMenuPrimitive.SubTrigger
       data-slot="dropdown-menu-sub-trigger"
       className={cn(
-        'focus:bg-sunk focus:text-ink data-[state=open]:bg-sunk data-[state=open]:text-ink flex cursor-default items-center rounded-control px-3 py-2 text-sm outline-none select-none',
+        'focus:bg-wash focus:text-ink data-[state=open]:bg-wash data-[state=open]:text-ink flex cursor-default items-center rounded-control px-3 py-2 text-sm outline-none select-none',
         inset && 'pl-8',
         className,
       )}
@@ -72,7 +72,7 @@ function DropdownMenuSubContent({
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
       className={cn(
-        'bg-panel text-ink data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin] z-50 min-w-[12rem] overflow-hidden rounded-panel p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.14)]',
+        'bg-card text-ink data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin] z-50 min-w-[12rem] overflow-hidden rounded-card p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.14)]',
         className,
       )}
       {...props}
@@ -96,7 +96,7 @@ function DropdownMenuContent({
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
-          'bg-panel text-ink data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin] z-50 min-w-[12rem] overflow-hidden rounded-panel p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.14)]',
+          'bg-card text-ink data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin] z-50 min-w-[12rem] overflow-hidden rounded-card p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.14)]',
           className,
         )}
         {...props}
@@ -116,7 +116,7 @@ function DropdownMenuItem({
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
       className={cn(
-        'focus:bg-sunk focus:text-ink relative flex cursor-default items-center gap-2 rounded-control px-3 py-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+        'focus:bg-wash focus:text-ink relative flex cursor-default items-center gap-2 rounded-control px-3 py-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
         inset && 'pl-8',
         className,
       )}
@@ -135,7 +135,7 @@ function DropdownMenuCheckboxItem({
     <DropdownMenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
       className={cn(
-        'focus:bg-sunk focus:text-ink relative flex cursor-default items-center rounded-control py-2 pr-3 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'focus:bg-wash focus:text-ink relative flex cursor-default items-center rounded-control py-2 pr-3 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className,
       )}
       checked={checked}
@@ -160,7 +160,7 @@ function DropdownMenuRadioItem({
     <DropdownMenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       className={cn(
-        'focus:bg-sunk focus:text-ink relative flex cursor-default items-center rounded-control py-2 pr-3 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'focus:bg-wash focus:text-ink relative flex cursor-default items-center rounded-control py-2 pr-3 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className,
       )}
       {...props}
@@ -198,7 +198,7 @@ function DropdownMenuSeparator({
   return (
     <DropdownMenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      className={cn('-mx-1 my-1 h-px bg-hair', className)}
+      className={cn('-mx-1 my-1 h-px bg-divider', className)}
       {...props}
     />
   )

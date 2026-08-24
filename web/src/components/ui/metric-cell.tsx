@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-import { cn } from '@money-space/core/shared/lib/utils'
 
 type MetricCellProps = {
   /** Short metric label, e.g. "Dùng ngay". */
@@ -13,22 +12,23 @@ type MetricCellProps = {
 }
 
 /**
- * A single metric inside a SubSection (design.md §9.9).
+ * A single metric inside a card (v5 02-components §3, §4).
  *
  * Holds only label + value + optional tiny hint. Metric cells at the same
  * level must share this treatment — never highlight one metric on its own.
  *
- * Sits on `--sunk`, not on panel white: it is nested inside a panel, and the
- * lightness step is the only thing separating the two now that borders and
- * shadows are gone (§2.1–2.2). The value gets negative tracking via
- * `.money-number`, which is safe because it only ever holds a number (§10.3).
+ * v5 removed the sunk box this used to sit in: a rounded box inside a card is
+ * the nested-surface pattern §2.2 forbids outright. The metric now sits
+ * directly on the card, and callers separate several of them with spacing or a
+ * `divider` — if the relation reads without a background, that background
+ * should not exist (03-patterns §6).
  */
 export function MetricCell({ label, value, hint, className }: MetricCellProps) {
   return (
-    <div className={cn('rounded-sunk bg-sunk p-4', className)}>
-      <p className="text-[13px] text-ink2">{label}</p>
-      <p className="money-number mt-2 text-[22px]">{value}</p>
-      {hint ? <p className="mt-1 text-[11px] text-ink3">{hint}</p> : null}
+    <div className={className}>
+      <p className="text-[14px] text-ink2">{label}</p>
+      <p className="money-number mt-1.5 text-[28px]">{value}</p>
+      {hint ? <p className="mt-1 text-[12px] text-ink3">{hint}</p> : null}
     </div>
   )
 }

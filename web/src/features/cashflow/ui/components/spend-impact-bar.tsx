@@ -46,7 +46,7 @@ export function SpendImpactBar({
 
   return (
     <div
-      className={cn('flex h-10 overflow-hidden rounded-control bg-panel', className)}
+      className={cn('flex h-10 overflow-hidden rounded-control bg-card', className)}
       aria-hidden="true"
     >
       {parts.map((part) => {

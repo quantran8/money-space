@@ -5,7 +5,7 @@ export function AuthMobileHeader() {
   return (
     <AuthLogo
       className="mb-10 text-[17px] lg:hidden"
-      markClassName="size-10 rounded-[11px] bg-sunk"
+      markClassName="size-10 rounded-[11px] bg-wash"
     />
   )
 }

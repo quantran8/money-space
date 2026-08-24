@@ -91,14 +91,14 @@ export function MonthPicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
-        <div className="bg-panel p-3 text-ink">
+        <div className="bg-card p-3 text-ink">
           <div className="relative flex h-8 items-center justify-center">
             <Button
               type="button"
               variant="ghost"
               onClick={() => setViewYear((year) => year - 1)}
               aria-label={t('common.previousYear')}
-              className="absolute left-0 size-8 rounded-control bg-transparent p-0 text-ink3 hover:bg-sunk hover:text-ink"
+              className="absolute left-0 size-8 rounded-control bg-transparent p-0 text-ink3 hover:bg-wash hover:text-ink"
             >
               <ChevronLeftIcon className="size-4" />
             </Button>
@@ -108,7 +108,7 @@ export function MonthPicker({
               variant="ghost"
               onClick={() => setViewYear((year) => year + 1)}
               aria-label={t('common.nextYear')}
-              className="absolute right-0 size-8 rounded-control bg-transparent p-0 text-ink3 hover:bg-sunk hover:text-ink"
+              className="absolute right-0 size-8 rounded-control bg-transparent p-0 text-ink3 hover:bg-wash hover:text-ink"
             >
               <ChevronRightIcon className="size-4" />
             </Button>
@@ -132,8 +132,8 @@ export function MonthPicker({
                     setOpen(false)
                   }}
                   className={cn(
-                    'h-9 w-full rounded-control px-2 text-sm font-normal text-ink transition-colors hover:bg-sunk hover:text-ink',
-                    'data-[selected=true]:bg-accent data-[selected=true]:text-white'
+                    'h-9 w-full rounded-control px-2 text-sm font-normal text-ink transition-colors hover:bg-wash hover:text-ink',
+                    'data-[selected=true]:bg-action data-[selected=true]:text-white'
                   )}
                 >
                   {format(new Date(viewYear, month, 1), 'LLL', { locale })}

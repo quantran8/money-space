@@ -158,7 +158,7 @@ export function GoalFormDialog({
   return (
     <ResponsiveDialog open={open} onOpenChange={requestOpenChange}>
       <ResponsiveDialogContent className="flex h-dvh max-h-dvh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none p-0 pb-0 md:h-[min(900px,92dvh)] md:max-h-[92dvh] md:max-w-[1080px] md:rounded-[18px] [&>button:last-child]:left-5 [&>button:last-child]:right-auto [&>button:last-child]:top-[18px] [&>button:last-child]:grid [&>button:last-child]:size-11 [&>button:last-child]:place-items-center [&>button:last-child]:rounded-[10px] md:[&>button:last-child]:left-6 md:[&>button:last-child]:top-[18px]">
-        <header className="flex flex-none items-center gap-3 bg-panel py-4 pl-[76px] pr-6 md:py-5 md:pl-[88px] md:pr-8">
+        <header className="flex flex-none items-center gap-3 bg-card py-4 pl-[76px] pr-6 md:py-5 md:pl-[88px] md:pr-8">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] text-ink3">
               {isEditing ? t('goals.builder.editEyebrow') : t('goals.builder.createEyebrow')}
@@ -250,7 +250,7 @@ export function GoalFormDialog({
                             type="button"
                             aria-expanded={noteOpen}
                             onClick={() => setNoteOpen((value) => !value)}
-                            className="inline-flex min-h-11 items-center gap-2 rounded-[9px] px-2 text-[13px] font-medium text-accent hover:bg-panel"
+                            className="inline-flex min-h-11 items-center gap-2 rounded-[9px] px-2 text-[13px] font-medium text-action hover:bg-card"
                           >
                             <Plus
                               className={cn('size-4 transition-transform', noteOpen && 'rotate-45')}
@@ -330,7 +330,7 @@ export function GoalFormDialog({
                 </div>
               </main>
 
-              <aside className="hidden min-h-0 overflow-y-auto bg-panel p-7 md:block" aria-live="polite">
+              <aside className="hidden min-h-0 overflow-y-auto bg-card p-7 md:block" aria-live="polite">
                 <GoalSummary
                   target={target}
                   current={current}
@@ -346,7 +346,7 @@ export function GoalFormDialog({
             </div>
           </div>
 
-          <footer className="flex flex-none items-center gap-2.5 bg-panel px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 md:px-8 md:pb-5">
+          <footer className="flex flex-none items-center gap-2.5 bg-card px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 md:px-8 md:pb-5">
             {!isEditing && step > 1 ? (
               <Button
                 type="button"
@@ -414,13 +414,13 @@ function GoalStepper({ step }: { step: BuilderStep }) {
         const active = number === step
         return (
           <div key={label} className="contents">
-            {index > 0 ? <div className="h-px flex-1 bg-hair" /> : null}
+            {index > 0 ? <div className="h-px flex-1 bg-divider" /> : null}
             <div className="flex items-center gap-2">
               <span
                 className={cn(
-                  'grid size-7 place-items-center rounded-full bg-sunk font-mono text-[11px] font-medium text-ink3',
+                  'grid size-7 place-items-center rounded-full bg-wash font-mono text-[11px] font-medium text-ink3',
                   active && 'bg-ink text-panel',
-                  done && 'bg-accent-soft text-accent',
+                  done && 'bg-accent-soft text-action',
                 )}
               >
                 {done ? <Check className="size-3.5" strokeWidth={2} /> : number}
@@ -542,7 +542,7 @@ function EditPlanFields({
           {...register('note')}
         />
         <p className="text-right font-mono text-[11px] text-ink3">{note.length}/120</p>
-        <div className="rounded-[14px] bg-panel p-4">
+        <div className="rounded-[14px] bg-card p-4">
           <p className="text-[13px] font-medium">{t('goals.builder.sources')}</p>
           <p className="mt-1 text-[12px] leading-5 text-ink3">{t('goals.builder.sourcesManagedSeparately')}</p>
         </div>
@@ -588,7 +588,7 @@ function GoalSummary({
 
   if (compact) {
     return (
-      <section className="rounded-[14px] bg-panel p-4" aria-live="polite">
+      <section className="rounded-[14px] bg-card p-4" aria-live="polite">
         <div className="flex items-baseline justify-between gap-4">
           <SummaryMetric label={t('goals.builder.countingNow')} value={formatVndScale(current)} />
           <SummaryMetric
@@ -614,7 +614,7 @@ function GoalSummary({
           {target ? formatVndScale(target) : '—'}
         </p>
       </div>
-      <div className="mt-6 rounded-[14px] bg-sunk p-4">
+      <div className="mt-6 rounded-[14px] bg-wash p-4">
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-[12px] text-ink2">{t('goals.builder.countingNow')}</span>
           <span className="num text-[15px] font-medium">{formatVndScale(current)}</span>
@@ -675,8 +675,8 @@ function SummaryMetric({ label, value, right = false }: { label: string; value: 
 
 function ProgressBar({ value }: { value: number }) {
   return (
-    <div className="mt-3 h-2 overflow-hidden rounded-full bg-hair">
-      <div className="h-full rounded-full bg-accent" style={{ width: `${value}%` }} />
+    <div className="mt-3 h-2 overflow-hidden rounded-full bg-divider">
+      <div className="h-full rounded-full bg-action" style={{ width: `${value}%` }} />
     </div>
   )
 }
@@ -707,7 +707,7 @@ function GoalReview({
     <section>
       <SectionIntro title={t('goals.builder.reviewTitle')} description={t('goals.builder.reviewDescription')} />
       <div className="space-y-4">
-        <div className="rounded-[14px] bg-panel p-5">
+        <div className="rounded-[14px] bg-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[11px] text-ink3">{name}</p>
@@ -728,7 +728,7 @@ function GoalReview({
           {note ? <p className="mt-4 text-[12px] leading-5 text-ink2">{note}</p> : null}
         </div>
 
-        <div className="rounded-[14px] bg-panel p-5">
+        <div className="rounded-[14px] bg-card p-5">
           <div className="flex items-center justify-between gap-4">
             <h3 className="text-[13px] font-medium">
               {t('goals.builder.sourceCount', { count: allocations.length })}
@@ -774,7 +774,7 @@ function ReviewEditButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="min-h-10 rounded-[9px] px-3 text-[12px] font-medium text-accent hover:bg-sunk"
+      className="min-h-10 rounded-[9px] px-3 text-[12px] font-medium text-action hover:bg-wash"
     >
       {t('common.edit')}
     </button>

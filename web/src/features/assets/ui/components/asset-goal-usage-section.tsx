@@ -56,7 +56,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
     return (
       <div>
         <p className="text-[13px] font-medium">{t('assets.detail.goals.title')}</p>
-        <p className="mt-4 rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">
+        <p className="mt-4 rounded-control bg-wash px-4 py-10 text-center text-[13px] text-ink2">
           {t('assets.detail.goals.empty')}
         </p>
       </div>
@@ -149,7 +149,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
                     event.stopPropagation()
                     navigate(`/goals/${item.goalId}`)
                   }}
-                  className="rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-action"
                 >
                   <span className="block text-ink">{item.goalName}</span>
                   {/* A percent claim tracks the asset, so it is worth saying

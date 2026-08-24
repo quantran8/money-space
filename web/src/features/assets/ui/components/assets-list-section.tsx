@@ -65,7 +65,7 @@ export function AssetsListSection({
             value={liquidityFilter}
             onValueChange={(value) => onLiquidityFilterChange(value as AssetLiquidity | 'all')}
           >
-            <SelectTrigger className="h-10 w-[112px] bg-sunk px-3 text-[13px]" aria-label={t('assets.demo.filter')}>
+            <SelectTrigger className="h-10 w-[112px] bg-wash px-3 text-[13px]" aria-label={t('assets.demo.filter')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -97,7 +97,7 @@ export function AssetsListSection({
           onDelete={onDelete}
         />
       ) : (
-        <p className="mt-7 rounded-sunk bg-sunk px-4 py-8 text-center text-[13px] text-ink2">
+        <p className="mt-7 rounded-control bg-wash px-4 py-8 text-center text-[13px] text-ink2">
           {t('assets.toolbar.empty')}
         </p>
       )}

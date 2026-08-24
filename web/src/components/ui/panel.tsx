@@ -22,7 +22,7 @@ function hasDiacritics(value: string): boolean {
  * Use these instead of `Card`, whose radius/border/shadow belong to v3.x.
  */
 export function Panel({ className, ...props }: React.ComponentProps<'section'>) {
-  return <section className={cn('panel p-5 sm:p-8', className)} {...props} />
+  return <section className={cn('card-surface p-5 sm:p-6', className)} {...props} />
 }
 
 /**
@@ -53,10 +53,10 @@ export function PanelHeader({
           // (dates, counts) is unaffected — it has no diacritics to lose.
           <span
             className={cn(
-              'text-[11px] text-ink3',
-              typeof meta === 'string' && hasDiacritics(meta)
-                ? 'label-vi text-[11px] tracking-normal normal-case'
-                : 'font-mono',
+              'text-[12px] text-ink3',
+              // v5 §5.1: mono is a treatment for ASCII, not a semantic role, and
+              // must never touch accented Vietnamese. Metadata is plain sans.
+              typeof meta === 'string' && hasDiacritics(meta) ? 'label-vi' : 'num',
             )}
           >
             {meta}
@@ -84,15 +84,23 @@ export function PanelSplit({ className, ...props }: React.ComponentProps<'div'>)
 }
 
 /**
- * A sunk block. Used for totals rows, chart wells, inputs and result panes.
- * A total is a sunk block set 20px below its table (§7.1) — never a table row
- * with a rule above it (§11.2).
+ * A wash block — a CONTROL surface: fields, a small chart bed, a compact
+ * utility control (v5 01-foundations §2.4). It is NOT a card level: never use
+ * it to wrap an empty state, a summary metric, a list item or a whole section
+ * inside a card.
  */
 export function Sunk({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div className={cn('sunk', className)} {...props} />
+  return <div className={cn('wash', className)} {...props} />
 }
 
-/** The canonical "Tổng …" row: label left, value right, in a sunk block. */
+/**
+ * The canonical "Tổng …" row: label left, value right.
+ *
+ * v5 makes this an INLINE SUMMARY under the table (02-components §11) rather
+ * than a sunk block — a divider plus a weighted value carries the relation, and
+ * a wash strip is reserved for when the summary must separate from a genuinely
+ * dense list.
+ */
 export function TotalRow({
   label,
   value,
@@ -103,10 +111,13 @@ export function TotalRow({
   className?: string
 }) {
   return (
-    <Sunk className={cn('mt-5 flex items-baseline justify-between gap-4 px-4 py-3.5', className)}>
-      <span className="text-[13px] text-ink2">{label}</span>
-      <span className="num text-[17px] font-medium">{value}</span>
-    </Sunk>
+    <div className={cn('mt-4', className)}>
+      <div className="divider" />
+      <div className="mt-3 flex items-baseline justify-between gap-4">
+        <span className="text-[14px] text-ink2">{label}</span>
+        <span className="num text-[17px] font-medium">{value}</span>
+      </div>
+    </div>
   )
 }
 

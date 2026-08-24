@@ -27,15 +27,15 @@ type EventsDataTableProps = {
 }
 
 function getAmountTone(direction: MoneyEventItem['direction']) {
-  if (direction === 'inflow') return 'text-accent'
+  if (direction === 'inflow') return 'text-action'
   if (direction === 'outflow') return 'text-alert'
-  return 'text-accent'
+  return 'text-action'
 }
 
 function getDirectionMark(direction: MoneyEventItem['direction']) {
-  if (direction === 'inflow') return { glyph: '+', className: 'bg-accent-tint text-accent' }
+  if (direction === 'inflow') return { glyph: '+', className: 'bg-accent-tint text-action' }
   if (direction === 'outflow') return { glyph: '−', className: 'bg-alert-tint text-alert' }
-  return { glyph: '↗', className: 'bg-accent-tint text-accent' }
+  return { glyph: '↗', className: 'bg-accent-tint text-action' }
 }
 
 type MonthGroup = {
@@ -75,7 +75,7 @@ export function EventsDataTable({
       {groups.length ? (
         groups.map((group) => (
           <div key={group.key}>
-            <div className="border-b border-border bg-sunk/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="border-b border-border bg-wash/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {group.label}
             </div>
             {group.events.map((event) => {
@@ -107,7 +107,7 @@ export function EventsDataTable({
                           })}
                         </Badge>
                         {event.assetName && (
-                          <Badge variant="secondary" className="bg-accent-tint text-accent border-none">
+                          <Badge variant="secondary" className="bg-accent-tint text-action border-none">
                             {event.assetName}
                           </Badge>
                         )}

@@ -71,7 +71,7 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
             {t('assets.detail.withdrawal.title')}
           </h2>
         </div>
-        <Badge className="bg-accent-tint text-accent">
+        <Badge className="bg-accent-tint text-action">
           {t(`options.interestPayment.${term.interestPayment}`)}
         </Badge>
       </div>

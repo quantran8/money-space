@@ -100,7 +100,7 @@ export function GoalDetailPage() {
     return (
       <div className="space-y-4 pb-3">
         <Sunk className="h-9 w-40 animate-pulse" />
-        <Sunk className="h-52 animate-pulse rounded-panel" />
+        <Sunk className="h-52 animate-pulse rounded-card" />
       </div>
     )
   }
@@ -186,7 +186,7 @@ export function GoalDetailPage() {
                   <Trans
                     i18nKey="goals.detail.picture.achieved"
                     values={{ percent: percentLabel }}
-                    components={[<strong key="percent" className="num font-medium text-accent" />]}
+                    components={[<strong key="percent" className="num font-medium text-action" />]}
                   />
                 </span>
                 <span className="text-ink2">
@@ -210,7 +210,7 @@ export function GoalDetailPage() {
                 aria-valuenow={Math.round(progress)}
               >
                 <div
-                  className="seg h-full min-w-[3px] rounded-full bg-accent"
+                  className="seg h-full min-w-[3px] rounded-full bg-action"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -324,7 +324,7 @@ function BackLink({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <button
       type="button"
-      className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 text-[13px] font-medium text-accent hover:bg-accent-soft"
+      className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 text-[13px] font-medium text-action hover:bg-accent-soft"
       onClick={onClick}
     >
       <ChevronLeft className="size-4" strokeWidth={1.75} />

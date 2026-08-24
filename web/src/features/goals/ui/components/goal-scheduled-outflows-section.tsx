@@ -124,7 +124,7 @@ export function GoalScheduledOutflowsSection({
               strikethrough pair: the household reads two complete pictures
               rather than reconstructing one from edits to the other. */}
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-sunk bg-sunk p-4">
+            <div className="rounded-control bg-wash p-4">
               <p className="label-vi">{t('goals.scheduledOutflows.beforeLabel')}</p>
               <ImpactFigures
                 held={impact.currentAmount}
@@ -134,7 +134,7 @@ export function GoalScheduledOutflowsSection({
               />
             </div>
 
-            <div className="rounded-sunk bg-attention-soft p-4">
+            <div className="rounded-control bg-attention-soft p-4">
               <div className="flex items-baseline justify-between gap-4">
                 <p className="label-vi text-attention">{t('goals.scheduledOutflows.afterLabel')}</p>
                 <span className="num text-[11px] font-medium text-attention">
@@ -153,7 +153,7 @@ export function GoalScheduledOutflowsSection({
           {/* The bills themselves. Naming them is what makes the block explain
               rather than merely assert — the household can recognise the spend
               and go change it if the trade is not one they want. */}
-          <ul className="mt-4 space-y-2 border-t border-hair pt-4">
+          <ul className="mt-4 space-y-2 border-t border-divider pt-4">
             {impact.events.map((event) => (
               <li
                 key={event.id}

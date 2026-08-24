@@ -66,7 +66,7 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
           onClick={() => setOptionsOpen((open) => !open)}
           aria-expanded={optionsOpen}
           aria-controls="onboarding-options"
-          className="mt-4 flex min-h-11 items-center gap-2 rounded-control text-[13px] font-medium text-accent"
+          className="mt-4 flex min-h-11 items-center gap-2 rounded-control text-[13px] font-medium text-action"
         >
           {t('onboarding.form.options')}
           <ChevronDown

@@ -147,7 +147,7 @@ function HouseholdFooter() {
             <span
               key={member.id}
               className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-full bg-panel text-[10px] text-ink2',
+                'flex h-7 w-7 items-center justify-center rounded-full bg-card text-[10px] text-ink2',
                 index > 0 && '-ml-2',
               )}
             >
@@ -155,7 +155,7 @@ function HouseholdFooter() {
             </span>
           ))
         ) : (
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-panel text-[10px] text-ink2">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-card text-[10px] text-ink2">
             {activeHousehold?.name?.trim().charAt(0).toUpperCase() ?? 'M'}
           </span>
         )}
@@ -253,7 +253,7 @@ export function AppShell() {
 
       <main ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto">
         <Dialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <header className="sticky top-0 z-30 flex items-center gap-3 bg-app/90 px-5 py-3 backdrop-blur-xl lg:hidden">
+          <header className="sticky top-0 z-30 flex items-center gap-3 bg-canvas/90 px-5 py-3 backdrop-blur-xl lg:hidden">
             <span
               className="flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-medium text-white"
               style={{ background: 'var(--accent)' }}

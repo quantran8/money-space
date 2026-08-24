@@ -130,7 +130,7 @@ export function InviteQrDialog({
             </p>
           ) : null}
 
-          <ResponsiveDialogFooter className="-mx-6 mt-2 flex-row items-center justify-between border-t border-hair px-6 pt-4 sm:-mx-8 sm:px-8">
+          <ResponsiveDialogFooter className="-mx-6 mt-2 flex-row items-center justify-between border-t border-divider px-6 pt-4 sm:-mx-8 sm:px-8">
             <Button
               type="button"
               variant="ghost"

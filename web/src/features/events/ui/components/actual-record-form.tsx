@@ -208,7 +208,7 @@ export function ActualRecordForm({
           type="button"
           onClick={onToggleMoreDetails}
           aria-expanded={showMoreDetails}
-          className="text-[13px] text-accent transition-opacity hover:opacity-70"
+          className="text-[13px] text-action transition-opacity hover:opacity-70"
         >
           {showMoreDetails ? t('events.form.less') : t('events.form.more')}
         </button>
@@ -236,7 +236,7 @@ export function ActualRecordForm({
 
 
             {!isRevaluation ? (
-              <div className="flex items-center justify-between gap-4 rounded-[10px] bg-sunk px-4 py-3">
+              <div className="flex items-center justify-between gap-4 rounded-[10px] bg-wash px-4 py-3">
                 <span className="text-[13px] text-ink2">{t('events.form.attention')}</span>
                 <Controller
                   control={control}

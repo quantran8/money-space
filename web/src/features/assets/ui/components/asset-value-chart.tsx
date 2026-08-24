@@ -122,7 +122,7 @@ export function AssetValueChart({ points, liquidity, markers = [] }: AssetValueC
               const point = payload[0].payload as (typeof data)[number]
               const marker = plottedMarkers.find((item) => item.day === label)
               return (
-                <div className="rounded-panel bg-panel px-3 py-2 text-sm">
+                <div className="rounded-card bg-card px-3 py-2 text-sm">
                   <p className="mb-1.5 text-xs font-medium text-ink2">{label}</p>
                   <div className="flex items-center justify-between gap-4">
                     <span className="text-xs text-ink2">

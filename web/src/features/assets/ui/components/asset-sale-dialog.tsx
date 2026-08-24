@@ -139,7 +139,7 @@ export function AssetSaleDialog({
                   </EventField>
                 </div>
 
-                {currentQuantity > 0 ? <div className="flex items-center justify-between rounded-[18px] bg-sunk px-5 py-4">
+                {currentQuantity > 0 ? <div className="flex items-center justify-between rounded-[18px] bg-wash px-5 py-4">
                   <p className="text-[15px] font-medium text-foreground">
                     {t('assets.sale.sellAll')}
                   </p>
@@ -202,7 +202,7 @@ export function AssetSaleDialog({
               <span className="text-ink2">
                 {t('assets.sale.receivedNet')}
               </span>
-              <span className="money-number text-lg font-semibold text-accent">
+              <span className="money-number text-lg font-semibold text-action">
                 {formatVndShort(previewNet)}
               </span>
             </div>
@@ -242,7 +242,7 @@ export function AssetSaleDialog({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-foreground hover:bg-sunk"
+              className="text-foreground hover:bg-wash"
             >
               {t('common.cancel')}
             </Button>

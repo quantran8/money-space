@@ -74,7 +74,7 @@ export function MoneySourcesSection({ map }: { map: MoneyLocationMap }) {
         action={
           <Link
             to="/networth"
-            className="inline-flex min-h-11 shrink-0 items-center text-[13px] font-medium text-accent"
+            className="inline-flex min-h-11 shrink-0 items-center text-[13px] font-medium text-action"
           >
             {t('home.location.viewAll', { count: map.totalCount })}
           </Link>

@@ -66,7 +66,7 @@ export function DebtListItem({
             event.stopPropagation()
             onViewDetail(debt.id)
           }}
-          className="truncate rounded-control text-left text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="truncate rounded-control text-left text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-action"
         >
           {debt.name}
         </button>

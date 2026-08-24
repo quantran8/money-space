@@ -20,10 +20,10 @@ export function AuthBrandPanel() {
 
   return (
     <section className="hidden min-h-[720px] flex-col justify-between px-3 py-2 lg:flex">
-      <AuthLogo markClassName="size-11 rounded-[12px] bg-panel" className="text-[18px]" />
+      <AuthLogo markClassName="size-11 rounded-[12px] bg-card" className="text-[18px]" />
 
       <div className="max-w-[650px] pb-10">
-        <p className="mb-5 text-[13px] font-medium text-accent">{t('auth.brand.eyebrow')}</p>
+        <p className="mb-5 text-[13px] font-medium text-action">{t('auth.brand.eyebrow')}</p>
 
         <h1 className="max-w-[630px] text-[50px] font-medium leading-[1.08] tracking-[-0.035em] xl:text-[58px]">
           {t('auth.brand.titleLine1')}

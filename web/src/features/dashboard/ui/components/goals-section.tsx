@@ -45,7 +45,7 @@ export function GoalsSection({
         action={
           <Link
             to="/goals"
-            className="inline-flex min-h-11 items-center text-[13px] font-medium text-accent"
+            className="inline-flex min-h-11 items-center text-[13px] font-medium text-action"
           >
             {goalCount > tracks.length
               ? t('home.goals.viewAll', { count: goalCount })
@@ -94,7 +94,7 @@ function GoalTrackRow({ track }: { track: GoalTrack }) {
     track.percent === 0 && track.current > 0 ? t('home.goals.underOnePercent') : `${track.percent}%`
 
   return (
-    <div className="rounded-sunk px-3 py-4 transition-colors hover:bg-sunk">
+    <div className="rounded-control px-3 py-4 transition-colors hover:bg-wash">
       <div className="grid gap-3 sm:grid-cols-[220px_1fr_52px] sm:items-center">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -103,7 +103,7 @@ function GoalTrackRow({ track }: { track: GoalTrack }) {
               /* Same treatment as the goals list (§2.10 — one concept, one
                  look); the row sits on `--sunk` on hover, so a sunk badge
                  would disappear into it. */
-              <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-accent">
+              <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-action">
                 {t('home.goals.mainBadge')}
               </span>
             ) : null}
@@ -114,7 +114,7 @@ function GoalTrackRow({ track }: { track: GoalTrack }) {
         </div>
 
         <div
-          className="relative h-1.5 rounded-full bg-sunk"
+          className="relative h-1.5 rounded-full bg-wash"
           role="img"
           aria-label={
             track.requiredPercent === undefined
@@ -128,7 +128,7 @@ function GoalTrackRow({ track }: { track: GoalTrack }) {
           <div
             className={cn(
               'seg h-full min-w-[3px] rounded-full',
-              track.behind ? 'bg-attention' : 'bg-accent',
+              track.behind ? 'bg-attention' : 'bg-action',
             )}
             style={{ width: `${track.percent}%` }}
           />

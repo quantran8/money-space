@@ -104,7 +104,7 @@ export function EventFormDialog({
             <button
               type="button"
               onClick={onBack}
-              className="mb-2 self-start text-[13px] text-accent transition-opacity hover:opacity-70"
+              className="mb-2 self-start text-[13px] text-action transition-opacity hover:opacity-70"
             >
               ← {t('events.form.back')}
             </button>

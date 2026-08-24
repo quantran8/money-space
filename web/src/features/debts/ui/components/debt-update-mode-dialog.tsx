@@ -70,7 +70,7 @@ function PreviewRow({
         <span className="truncate text-[#8e8e93] line-through">{before}</span>
         <span className="shrink-0 text-[#8e8e93]">→</span>
         <span
-          className={`shrink-0 font-semibold ${emphasize ? 'text-accent' : 'text-[#1d1d1f]'}`}
+          className={`shrink-0 font-semibold ${emphasize ? 'text-action' : 'text-[#1d1d1f]'}`}
         >
           {after}
         </span>

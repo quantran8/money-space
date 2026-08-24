@@ -30,8 +30,8 @@ export function EventField({ label, htmlFor, error, children, className, trailin
     <div className={className}>
       <div
         className={cn(
-          'bg-sunk px-5 py-4 transition duration-200',
-          variant === 'outline' ? 'rounded-panel' : 'rounded-sunk',
+          'bg-wash px-5 py-4 transition duration-200',
+          variant === 'outline' ? 'rounded-card' : 'rounded-control',
           error && 'outline-2 outline-alert',
         )}
       >

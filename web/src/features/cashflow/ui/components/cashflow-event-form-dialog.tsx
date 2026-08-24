@@ -63,7 +63,7 @@ function CashflowField({ label, htmlFor, error, children }: CashflowFieldProps) 
 }
 
 const controlClass =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
 const inputClass =
   'h-full min-w-0 w-full bg-transparent text-[16px] leading-none text-ink outline-none placeholder:text-ink3'
 const selectClass =
@@ -206,7 +206,7 @@ export function CashflowEventFormDialog({
                 name="direction"
                 render={({ field }) => (
                   <div
-                    className="grid grid-cols-2 rounded-[10px] bg-sunk p-1"
+                    className="grid grid-cols-2 rounded-[10px] bg-wash p-1"
                     role="group"
                     aria-label={t('upcoming.form.eyebrow')}
                   >
@@ -218,7 +218,7 @@ export function CashflowEventFormDialog({
                         onClick={() => field.onChange(value)}
                         className={cn(
                           'h-[38px] rounded-control text-[13px] font-medium text-ink2 transition-colors',
-                          field.value === value && 'bg-panel text-ink',
+                          field.value === value && 'bg-card text-ink',
                         )}
                       >
                         {t(`upcoming.form.direction.${value}`)}
@@ -312,7 +312,7 @@ export function CashflowEventFormDialog({
                   aria-expanded={detailsOpen}
                   aria-controls="cashflow-event-details"
                   onClick={() => setDetailsOpen((value) => !value)}
-                  className="flex min-h-11 w-full items-center justify-between rounded-control text-left text-[13px] font-medium text-accent outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                  className="flex min-h-11 w-full items-center justify-between rounded-control text-left text-[13px] font-medium text-action outline-none focus-visible:ring-2 focus-visible:ring-action focus-visible:ring-offset-2"
                 >
                   <span>{t('upcoming.form.moreDetails')}</span>
                   <ChevronDown
@@ -412,7 +412,7 @@ export function CashflowEventFormDialog({
                         id="cashflow-note"
                         rows={3}
                         className={cn(
-                          'min-h-[88px] w-full resize-y rounded-[10px] border border-transparent bg-sunk px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-accent focus:bg-panel',
+                          'min-h-[88px] w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card',
                           errors.note && 'border-alert',
                         )}
                         placeholder={t('upcoming.form.notePlaceholder')}

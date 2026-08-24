@@ -136,7 +136,7 @@ export function CategoriesCard() {
 
       <ul className="mt-7 grid gap-x-8 gap-y-1 md:grid-cols-2">
         {categories.length === 0 ? (
-          <li className="rounded-sunk bg-sunk px-4 py-8 text-center text-[13px] text-ink2 md:col-span-2">
+          <li className="rounded-control bg-wash px-4 py-8 text-center text-[13px] text-ink2 md:col-span-2">
             {t('settings.categories.empty')}
           </li>
         ) : null}
@@ -146,7 +146,7 @@ export function CategoriesCard() {
           return (
             <li
               key={category.id}
-              className="flex min-h-12 items-center gap-2 rounded-sunk px-3 py-2 transition-colors hover:bg-sunk"
+              className="flex min-h-12 items-center gap-2 rounded-control px-3 py-2 transition-colors hover:bg-wash"
             >
               {isEditing ? (
                 <Input
@@ -192,7 +192,7 @@ export function CategoriesCard() {
                       : t('settings.categories.setDefault')
                   }
                   className={
-                    category.isDefault ? 'text-accent' : 'text-muted-foreground'
+                    category.isDefault ? 'text-action' : 'text-muted-foreground'
                   }
                 >
                   <Star className={category.isDefault ? 'size-4 fill-current' : 'size-4'} />

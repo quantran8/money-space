@@ -35,7 +35,7 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
   return (
     <div>
       <div>
-        <p className="text-[13px] font-medium text-accent">{t('auth.login.eyebrow')}</p>
+        <p className="text-[13px] font-medium text-action">{t('auth.login.eyebrow')}</p>
         <h2 className="mt-2 text-[34px] font-medium leading-tight tracking-[-0.035em]">
           {t('auth.login.title')}
         </h2>
@@ -64,7 +64,7 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <Label>{t('auth.fields.password')}</Label>
-            <button type="button" className="text-[13px] font-medium text-accent hover:underline">
+            <button type="button" className="text-[13px] font-medium text-action hover:underline">
               {t('auth.login.forgotPassword')}
             </button>
           </div>
@@ -91,7 +91,7 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
 
       <p className="mt-7 text-center text-[13px] text-ink2">
         {t('auth.login.noAccount')}{' '}
-        <Link to={signupPath} className="font-medium text-accent hover:underline">
+        <Link to={signupPath} className="font-medium text-action hover:underline">
           {t('auth.tabs.signup')}
         </Link>
       </p>

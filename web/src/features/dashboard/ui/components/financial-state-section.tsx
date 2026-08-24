@@ -15,7 +15,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * the copy stays calm: this reports a situation, it does not scold.
  */
 const STATE_TONE: Record<FinancialState, string> = {
-  on_track: 'text-accent',
+  on_track: 'text-action',
   watch: 'text-[hsl(var(--foreground))]',
   tight: 'text-attention',
   incomplete: 'text-ink2',

@@ -117,7 +117,7 @@ export function DebtsListSection({
           {!isLoading && visibleDebts.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={8}>
-                <p className="rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">
+                <p className="rounded-control bg-wash px-4 py-10 text-center text-[13px] text-ink2">
                   {debts.length === 0 ? t('debts.demo.empty') : t('debts.demo.emptySearch')}
                 </p>
               </TableCell>
@@ -147,7 +147,7 @@ export function DebtsListSection({
           <span className="text-[13px] text-ink2">
             {t('debts.demo.missingPaymentCount', { count: missingScheduleCount })}
           </span>
-          <Link to="/upcoming" className="text-[13px] font-medium text-accent">
+          <Link to="/upcoming" className="text-[13px] font-medium text-action">
             {t('debts.demo.addSchedule')}
           </Link>
         </div>

@@ -87,7 +87,7 @@ export function GoalAllocationsSection({
             type="button"
             onClick={onAdd}
             disabled={!canAdd || isBusy}
-            className="hidden min-h-11 items-center gap-1.5 text-[13px] font-medium text-accent disabled:text-ink3 sm:inline-flex"
+            className="hidden min-h-11 items-center gap-1.5 text-[13px] font-medium text-action disabled:text-ink3 sm:inline-flex"
           >
             <Plus className="size-4" strokeWidth={1.75} />
             {t('goals.allocations.addSource')}
@@ -101,7 +101,7 @@ export function GoalAllocationsSection({
           where the household finds out. Shown above the columns because it
           explains why the contribution column is missing entirely. */}
       {allocations.length > 0 && contributions.length === 0 ? (
-        <div className="mt-6 rounded-sunk bg-sunk px-4 py-3 text-[13px] leading-5 text-ink2">
+        <div className="mt-6 rounded-control bg-wash px-4 py-3 text-[13px] leading-5 text-ink2">
           <p>{t('goals.allocations.noWalletTitle')}</p>
           <Button
             type="button"
@@ -119,7 +119,7 @@ export function GoalAllocationsSection({
         // A statement with no button leaves a brand-new asset-backed goal
         // reading as 0% with nothing to do about it. The invitation belongs
         // where the household is already looking.
-        <div className="mt-6 rounded-sunk bg-sunk px-4 py-10 text-center">
+        <div className="mt-6 rounded-control bg-wash px-4 py-10 text-center">
           <p className="text-[13px] text-ink2">{t('goals.allocations.empty')}</p>
           <Button
             type="button"
@@ -219,7 +219,7 @@ export function GoalAllocationsSection({
           type="button"
           onClick={onAdd}
           disabled={!canAdd || isBusy}
-          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-control bg-sunk text-[13px] font-medium text-accent disabled:text-ink3 sm:hidden"
+          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-control bg-wash text-[13px] font-medium text-action disabled:text-ink3 sm:hidden"
         >
           <Plus className="size-4" strokeWidth={1.75} />
           {t('goals.allocations.addSource')}
@@ -280,7 +280,7 @@ function SourceRow({
   const { t } = useTranslation()
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-control px-3 py-2.5 transition-colors hover:bg-sunk">
+    <div className="flex items-center justify-between gap-4 rounded-control px-3 py-2.5 transition-colors hover:bg-wash">
       <div className="min-w-0">
         <div className="truncate text-[14px]">{name}</div>
         <div className="mt-0.5 truncate text-[11px] text-ink3">{note}</div>
@@ -303,7 +303,7 @@ function SourceRow({
             <Button
               size="icon"
               variant="ghost"
-              className="size-9 shrink-0 text-ink3 hover:bg-panel"
+              className="size-9 shrink-0 text-ink3 hover:bg-card"
               aria-label={t('goals.allocations.menuFor', { name })}
             >
               <MoreHorizontal className="size-4" />

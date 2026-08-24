@@ -14,10 +14,10 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-accent text-white',
-        secondary: 'bg-sunk text-ink2',
+        default: 'bg-action text-action-inverse',
+        secondary: 'bg-wash text-ink2',
         destructive: 'bg-alert text-white',
-        outline: 'bg-sunk text-ink',
+        outline: 'bg-wash text-ink',
       },
     },
     defaultVariants: {

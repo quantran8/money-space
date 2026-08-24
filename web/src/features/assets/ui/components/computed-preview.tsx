@@ -13,7 +13,7 @@ export function ComputedPreview({ value }: ComputedPreviewProps) {
       <span className="text-sm text-ink2">
         {t('assets.form.computedValue')}
       </span>
-      <span className="money-number text-lg font-semibold text-accent">
+      <span className="money-number text-lg font-semibold text-action">
         {value === null ? t('assets.form.computedUnavailable') : formatVndShort(value)}
       </span>
     </div>

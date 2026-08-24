@@ -33,7 +33,7 @@ export function JoinPage() {
   const problem = isMissingToken ? t('invites.join.malformed') : loadError
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-app p-4 text-ink md:p-6">
+    <main className="flex min-h-screen items-center justify-center bg-canvas p-4 text-ink md:p-6">
       <div className="panel w-full max-w-md p-6 sm:p-8">
         <p className="text-sm font-medium text-ink2">{t('invites.join.eyebrow')}</p>
 

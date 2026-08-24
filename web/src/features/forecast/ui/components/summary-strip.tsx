@@ -51,7 +51,7 @@ export function SummaryStrip({ forecast }: { forecast: ForecastResult }) {
           label={t('upcoming.summary.incoming')}
           value={formatVndShort(forecast.totals.upcomingIncomeAmount)}
           note={t('upcoming.summary.incomingNote')}
-          className="sm:border-l sm:border-hair sm:px-7"
+          className="sm:border-l sm:border-divider sm:px-7"
         />
         <Metric
           label={t('upcoming.summary.outgoing')}
@@ -59,7 +59,7 @@ export function SummaryStrip({ forecast }: { forecast: ForecastResult }) {
           note={t('upcoming.summary.outgoingNote', {
             required: formatVndShort(forecast.totals.requiredOutgoingAmount),
           })}
-          className="sm:border-l sm:border-hair sm:pl-7"
+          className="sm:border-l sm:border-divider sm:pl-7"
         />
       </div>
     </Panel>

@@ -42,7 +42,7 @@ export function MobileBottomNav() {
         'fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around',
         // Bottom nav is one of the two places §2.4 still allows a divider — the
         // bar floats over scrolling content and needs an edge to sit on.
-        'border-t border-hair bg-panel lg:hidden',
+        'border-t border-divider bg-card lg:hidden',
         // Clear the home indicator on iOS.
         'pb-[env(safe-area-inset-bottom)]',
       )}

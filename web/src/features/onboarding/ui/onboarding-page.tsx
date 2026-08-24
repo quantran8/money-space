@@ -32,7 +32,7 @@ export function OnboardingPage() {
   const { user, form, isCreating, submit } = useOnboardingPage()
 
   return (
-    <main className="min-h-screen bg-app text-ink">
+    <main className="min-h-screen bg-canvas text-ink">
       <OnboardingHeader user={user} />
 
       <div className="mx-auto w-full max-w-[960px] px-5 pb-12 pt-3 sm:px-7 sm:pb-16 sm:pt-7">
@@ -122,16 +122,16 @@ function ModeCard({
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[176px] flex-col rounded-panel bg-sunk p-6 text-left transition-[background-color,transform] duration-150 hover:-translate-y-px hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 sm:p-7"
+      className="group flex min-h-[176px] flex-col rounded-card bg-wash p-6 text-left transition-[background-color,transform] duration-150 hover:-translate-y-px hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2 sm:p-7"
     >
-      <span className="flex size-11 items-center justify-center rounded-sunk bg-accent-soft text-accent transition-colors group-hover:bg-accent group-hover:text-white">
+      <span className="flex size-11 items-center justify-center rounded-control bg-accent-soft text-action transition-colors group-hover:bg-action group-hover:text-white">
         {icon}
       </span>
 
       <span className="mt-auto flex items-center justify-between pt-8">
         <span className="text-[18px] font-medium">{title}</span>
         <ChevronRight
-          className="size-[18px] text-accent transition-transform group-hover:translate-x-[3px]"
+          className="size-[18px] text-action transition-transform group-hover:translate-x-[3px]"
           strokeWidth={1.8}
           aria-hidden
         />

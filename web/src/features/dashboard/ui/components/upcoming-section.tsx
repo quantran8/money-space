@@ -92,7 +92,7 @@ export function UpcomingSection({
         action={
           <Link
             to="/upcoming"
-            className="inline-flex min-h-11 shrink-0 items-center text-[13px] font-medium text-accent"
+            className="inline-flex min-h-11 shrink-0 items-center text-[13px] font-medium text-action"
           >
             {t('home.upcoming.viewTimeline')}
           </Link>
@@ -170,7 +170,7 @@ export function UpcomingSection({
                   </p>
                   <Link
                     to="/networth"
-                    className="mt-3 inline-flex h-9 items-center rounded-control bg-accent px-4 text-[13px] font-medium text-panel transition-opacity hover:opacity-90"
+                    className="mt-3 inline-flex h-9 items-center rounded-control bg-action px-4 text-[13px] font-medium text-panel transition-opacity hover:opacity-90"
                   >
                     {t('home.upcoming.addSource')}
                   </Link>
@@ -237,7 +237,7 @@ export function UpcomingSection({
                         <TableCell
                           className={cn(
                             'num text-right whitespace-nowrap',
-                            row.signedAmount > 0 && 'text-accent',
+                            row.signedAmount > 0 && 'text-action',
                           )}
                         >
                           {formatVndCellSigned(row.signedAmount)}
@@ -280,7 +280,7 @@ export function UpcomingSection({
             <div className="mt-4">
               <Link
                 to="/upcoming"
-                className="inline-flex min-h-11 items-center text-[13px] font-medium text-accent"
+                className="inline-flex min-h-11 items-center text-[13px] font-medium text-action"
               >
                 {t('home.upcoming.more', { count: totalCount - rows.length })}
               </Link>
@@ -339,7 +339,7 @@ function RecordedThisMonth({
           <Figure
             label={t('home.cashflow.in')}
             value={formatVndCellSigned(summary.totalIncome)}
-            valueClassName="text-accent"
+            valueClassName="text-action"
           />
           <Figure
             label={t('home.cashflow.out')}
@@ -410,7 +410,7 @@ function OverdueBlock({
   if (overdue.totalCount === 0) return null
 
   return (
-    <section className="mt-7 rounded-sunk bg-attention-soft px-4 py-4 sm:px-5">
+    <section className="mt-7 rounded-control bg-attention-soft px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <p className="label-vi text-attention">{t('home.upcoming.overdue.title')}</p>
@@ -455,7 +455,7 @@ function OverdueBlock({
             <span
               className={cn(
                 'num order-2 text-right text-[13px] font-medium sm:order-none',
-                row.signedAmount > 0 && 'text-accent',
+                row.signedAmount > 0 && 'text-action',
               )}
             >
               {formatVndCellSigned(row.signedAmount)} {t('units.million')}
@@ -511,7 +511,7 @@ function TimelineCard({ row }: { row: TimelineRow }) {
         </p>
       </div>
       <div className="shrink-0 text-right">
-        <p className={cn('num text-[13px]', row.signedAmount > 0 && 'text-accent')}>
+        <p className={cn('num text-[13px]', row.signedAmount > 0 && 'text-action')}>
           {formatVndCellSigned(row.signedAmount)} {t('units.million')}
         </p>
         {row.runningBalance === undefined ? null : (

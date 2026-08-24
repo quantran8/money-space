@@ -34,7 +34,7 @@ export function ActivityLogSection({ entries }: { entries: ActivityEntry[] }) {
       <PanelHeader
         title={t('home.activity.title')}
         action={
-          <Link to="/activity" className="text-[13px] text-accent">
+          <Link to="/activity" className="text-[13px] text-action">
             {t('home.activity.viewAll')}
           </Link>
         }

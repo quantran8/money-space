@@ -2,18 +2,36 @@
 @import "tw-animate-css";
 
 /**
- * Money Space — Web Design System v4.0 (family-finance-v3.1/design.md).
+ * Money Space — Web Design System v5.0 (money-space-design-system-v5/).
  *
- * Three surfaces separated by LIGHTNESS, not by strokes: app → panel → sunk
- * (§2.1). Because borders, dividers and shadows are gone (§2.2–2.4), that
- * lightness step is the only remaining mechanism that draws a section boundary
- * — which is why the page background is tinted and white is reserved for panels.
+ * Surfaces separate by LIGHTNESS, not by strokes: page ground → canvas → card,
+ * with `--wash` reserved for controls INSIDE a card (§2.2–2.4). Cards carry no
+ * border and no shadow, so that lightness step is the only boundary — which is
+ * why card/canvas separation is tuned deliberately (1.12) rather than left to
+ * chance.
  *
- * The `--ledger` palette is the shipped one. `--archive` exists as the approved
- * alternate (§5.1) but is NOT a user-facing theme switcher (§25).
+ * Interaction is ink, never green: `--action` is the CTA colour and
+ * `--data-primary` carries chart and composition emphasis (§4). A static metric
+ * never wears the action colour.
+ *
+ * v4 names (--app, --panel, --sunk, --accent, --hair) remain as ALIASES so the
+ * ~90 files that predate the rename keep working. New code uses the v5 names.
  */
 @theme inline {
-  /* v4.0 surfaces & ink. Raw hex — these are NOT hsl-triplet tokens. */
+  /* v5 surfaces. Raw hex — these are NOT hsl-triplet tokens. */
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-wash: var(--wash);
+  --color-hero: var(--hero);
+  --color-hero-deep: var(--hero-deep);
+  --color-action: var(--action);
+  --color-action-inverse: var(--action-inverse);
+  --color-data-primary: var(--data-primary);
+  --color-positive: var(--positive);
+  --color-divider: var(--divider);
+  --color-model: var(--model);
+
+  /* v4 aliases — kept so existing callers keep resolving. */
   --color-app: var(--app);
   --color-panel: var(--panel);
   --color-sunk: var(--sunk);
@@ -63,13 +81,15 @@
   --radius-control: var(--radius-control);
   --radius-sunk: var(--radius-sunk);
   --radius-panel: var(--radius-panel);
-  --radius-card: var(--radius-panel);
+  --radius-card: var(--radius-card);
+  --radius-hero: var(--radius-hero);
+  --radius-pill: var(--radius-pill);
   --radius-sm: var(--radius-control);
   --radius-md: var(--radius-control);
   --radius-lg: var(--radius-sunk);
   --radius-xl: var(--radius-panel);
 
-  --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
+  --font-sans: "Urbanist", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
@@ -77,28 +97,53 @@
   /* Ledger — the shipped palette (§5.1). Cool neutral, saturated banking green. */
   :root,
   .ledger {
-    --app: #eef1f3;
-    --panel: #ffffff;
-    --sunk: #f5f7f8;
-    --ink: #15181c;
-    --ink2: #525860;
-    --ink3: #868d96;
-    --hair: #e5e9ec;
-    --scrim: rgba(21, 24, 28, 0.34);
-    --accent: #0a6b47;
-    --accent-soft: #e3efea;
-    --attention: #b07a1e;
+    /* v5 surfaces (01-foundations §2.1). */
+    --canvas: #edf3f8;
+    --card: #ffffff;
+    --wash: #e3ecf2;
+    --hero: #b5cde8;
+    --hero-deep: #acc6e3;
+    --divider: #eef1f2;
+
+    /* Ink ramp. --ink3 is lifted from v4's #868d96 so 12px metadata on a
+       white card clears AA (3.15 → 4.66). */
+    --ink: #0f1011;
+    --ink2: #596268;
+    --ink3: #6b767c;
+
+    /* Interaction is ink, never green (§4). */
+    --action: #0f1011;
+    --action-inverse: #ffffff;
+    --data-primary: #73a4d7;
+    --positive: #8fcda4;
+    --model: #eef6f1;
+
+    --scrim: rgba(15, 16, 17, 0.34);
+
+    /* v4 aliases → v5 values. */
+    --app: var(--canvas);
+    --panel: var(--card);
+    --sunk: var(--wash);
+    --hair: var(--divider);
+    --accent: var(--action);
+    --accent-soft: #eef1f2;
+    --attention: #8a6410;
     /* The amber counterpart to `--accent-soft`. Opaque, unlike
        `--attention-tint`, so a block filled with it can sit on either the panel
        or the sunk surface and read the same. */
     --attention-soft: #f6eddc;
-    --alert: #b23a26;
-    --committed: #d2d6da;
-    --protect: #a9b0b8;
+    --alert: #a8341f;
+    --committed: #d8e0e4;
+    --protect: #afc0c7;
 
-    --radius-panel: 14px;
-    --radius-sunk: 10px;
-    --radius-control: 8px;
+    /* v5 geometry (§2.1, §8). */
+    --radius-hero: 28px;
+    --radius-card: 22px;
+    --radius-control: 14px;
+    --radius-pill: 999px;
+    /* v4 aliases. */
+    --radius-panel: var(--radius-card);
+    --radius-sunk: var(--radius-control);
 
     /**
      * Tinted fills for badges and soft backgrounds.
@@ -111,9 +156,9 @@
      * accent for positive/inflow, attention for "needs a look", alert for a real
      * shortfall. There is no blue and no separate green.
      */
-    --accent-tint: rgba(10, 107, 71, 0.1);
-    --attention-tint: rgba(176, 122, 30, 0.12);
-    --alert-tint: rgba(178, 58, 38, 0.1);
+    --accent-tint: rgba(15, 16, 17, 0.06);
+    --attention-tint: rgba(225, 190, 104, 0.3);
+    --alert-tint: rgba(232, 163, 154, 0.3);
   }
 
   /* Archive — approved alternate (§5.1). Warm ivory, wine red. */
@@ -150,7 +195,7 @@
     min-height: 100vh;
     background: var(--app);
     color: var(--ink);
-    font-family: "Be Vietnam Pro", system-ui, sans-serif;
+    font-family: "Urbanist", system-ui, sans-serif;
   }
 
   button,
@@ -171,7 +216,7 @@
   select:focus-visible,
   textarea:focus-visible,
   [tabindex]:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--action);
     outline-offset: 2px;
   }
 }
@@ -179,14 +224,31 @@
 @layer utilities {
   /* --- Surfaces (§2.1, §11.1–11.2) ------------------------------------- */
 
+  /* A top-level card: sits DIRECTLY on the canvas. No border, no shadow, and
+     never wrapped in a group panel or sheet (02-components §2). */
+  .card-surface,
   .panel {
-    background: var(--panel);
-    border-radius: var(--radius-panel);
+    background: var(--card);
+    border-radius: var(--radius-card);
   }
 
+  /* `--wash` is a CONTROL surface — fields, hover rows, a small chart bed.
+     It is not a card level: never use it to wrap an empty state, a summary
+     metric or a whole section inside a card (§2.4). */
+  .wash,
   .sunk {
-    background: var(--sunk);
-    border-radius: var(--radius-sunk);
+    background: var(--wash);
+    border-radius: var(--radius-control);
+  }
+
+  .hero-surface {
+    background: var(--hero);
+    border-radius: var(--radius-hero);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--divider);
   }
 
   /**
@@ -228,10 +290,10 @@
    * be applied to a sentence or to any accented text (§10.1, §10.3).
    */
   .label {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-family: "Urbanist", system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
     color: var(--ink3);
   }
 
@@ -249,11 +311,10 @@
    * more than the horizontal.
    */
   .label-vi {
-    font-family: "Be Vietnam Pro", system-ui, sans-serif;
-    font-size: 10px;
+    font-family: "Urbanist", system-ui, sans-serif;
+    font-size: 12px;
     font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
     line-height: 1.5;
     color: var(--ink3);
   }
@@ -263,15 +324,15 @@
    * crushes the diacritics (§10.3).
    */
   .money-number {
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings: "tnum" 1;
-    letter-spacing: -0.03em;
-    font-weight: 500;
+    letter-spacing: -0.035em;
+    font-weight: 300;
   }
 
   .page-title {
-    letter-spacing: -0.015em;
-    font-weight: 500;
+    letter-spacing: -0.035em;
+    font-weight: 300;
   }
 
   .section-title {

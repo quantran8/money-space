@@ -101,7 +101,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
           fallback, not a decision the household made — saying so is what lets
           them go and make it. */}
       {needsShareDecision ? (
-        <p className="mt-4 rounded-sunk bg-sunk px-4 py-3 text-[13px] text-ink2">
+        <p className="mt-4 rounded-control bg-wash px-4 py-3 text-[13px] text-ink2">
           {t('goals.monthly.shareUndecided')}
         </p>
       ) : null}
@@ -113,7 +113,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="mt-6 rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">
+        <p className="mt-6 rounded-control bg-wash px-4 py-10 text-center text-[13px] text-ink2">
           {t('goals.monthly.empty')}
         </p>
       ) : (
@@ -129,7 +129,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
               Column headings over an empty body would promise a record that
               does not exist yet. */}
           {ordered.length === 0 ? (
-            <div className="mt-3 grid place-items-center gap-3 rounded-sunk bg-sunk px-4 py-10 text-center">
+            <div className="mt-3 grid place-items-center gap-3 rounded-control bg-wash px-4 py-10 text-center">
               <CalendarClock className="size-6 text-ink3" strokeWidth={1.5} />
               <p className="text-[13px] text-ink2">{t('goals.monthly.historyEmpty')}</p>
             </div>
@@ -256,7 +256,7 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
             planned: formatAmount(planned ?? 0),
           })}
         >
-          <div className="seg h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
+          <div className="seg h-full rounded-full bg-action" style={{ width: `${percent}%` }} />
         </div>
       ) : null}
 
@@ -311,7 +311,7 @@ function RecentMonthsChart({
         {hasPace ? (
           <div className="hidden items-center gap-4 text-[10px] text-ink3 sm:flex">
             <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-[2px] bg-accent" />
+              <span className="size-2 rounded-[2px] bg-action" />
               {t('goals.monthly.legendActual')}
             </span>
             <span className="flex items-center gap-1.5">
@@ -322,7 +322,7 @@ function RecentMonthsChart({
         ) : null}
       </div>
 
-      <div className="relative mt-5 h-[168px] rounded-sunk bg-sunk px-4 pb-7 pt-6 sm:px-6">
+      <div className="relative mt-5 h-[168px] rounded-control bg-wash px-4 pb-7 pt-6 sm:px-6">
         {planShare !== null ? (
           <>
             <div
@@ -355,7 +355,7 @@ function RecentMonthsChart({
               >
                 <div
                   className={cn(
-                    'seg w-full max-w-[42px] rounded-t-[5px] bg-accent transition-opacity group-hover:opacity-80',
+                    'seg w-full max-w-[42px] rounded-t-[5px] bg-action transition-opacity group-hover:opacity-80',
                     // A month still running is partial by definition — it reads
                     // lighter so a half-height bar is not mistaken for a miss.
                     month.inProgress && 'opacity-60',
@@ -434,7 +434,7 @@ function PageButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid size-9 place-items-center rounded-control text-ink2 transition-colors hover:bg-sunk disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+      className="grid size-9 place-items-center rounded-control text-ink2 transition-colors hover:bg-wash disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
     >
       {children}
     </button>

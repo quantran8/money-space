@@ -90,7 +90,7 @@ function ActivityRow({ entry, locale }: { entry: AssetEventEntry; locale: string
         {t(`options.eventType.${entry.type}`, { defaultValue: entry.type })}
       </TableCell>
       <TableCell
-        className={cn('money-number text-right font-medium', isPositive && 'text-accent')}
+        className={cn('money-number text-right font-medium', isPositive && 'text-action')}
       >
         {isPositive ? '+' : '−'}
         {formatVndShort(Math.abs(entry.amount))}
@@ -110,7 +110,7 @@ function ActivityCard({ entry, locale }: { entry: AssetEventEntry; locale: strin
         <span className="font-mono text-[10px] text-ink3">
           {new Date(entry.isoDate).toLocaleDateString(locale)}
         </span>
-        <span className={cn('money-number text-[12px]', isPositive && 'text-accent')}>
+        <span className={cn('money-number text-[12px]', isPositive && 'text-action')}>
           {isPositive ? '+' : '−'}
           {formatVndShort(Math.abs(entry.amount))}
         </span>
@@ -224,8 +224,8 @@ export function AssetDetailPage() {
   if (isLoading && !asset) {
     return (
       <div className="space-y-4">
-        <div className="h-9 w-40 animate-pulse rounded-control bg-sunk" />
-        <div className="h-52 animate-pulse rounded-panel bg-panel" />
+        <div className="h-9 w-40 animate-pulse rounded-control bg-wash" />
+        <div className="h-52 animate-pulse rounded-card bg-card" />
       </div>
     )
   }
@@ -273,7 +273,7 @@ export function AssetDetailPage() {
       <header className="px-1 py-1 sm:px-0">
         <button
           type="button"
-          className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 text-[13px] font-medium text-accent hover:bg-accent-soft"
+          className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 text-[13px] font-medium text-action hover:bg-accent-soft"
           onClick={() => navigate('/networth')}
         >
           <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -284,11 +284,11 @@ export function AssetDetailPage() {
           <div className="min-w-0">
             <h1 className="page-title truncate text-[22px] leading-tight">{asset.name}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-sunk px-2 py-1 text-[10px] text-ink2">
+              <span className="rounded-full bg-wash px-2 py-1 text-[10px] text-ink2">
                 {t(`options.assetType.${asset.type}`)}
               </span>
               {isSold ? (
-                <span className="rounded-full bg-sunk px-2 py-1 text-[10px] font-medium text-ink2">
+                <span className="rounded-full bg-wash px-2 py-1 text-[10px] font-medium text-ink2">
                   {t('options.assetStatus.sold')}
                 </span>
               ) : null}
@@ -379,7 +379,7 @@ export function AssetDetailPage() {
               <div
                 className={cn(
                   'min-w-0',
-                  profitLoss < 0 ? 'text-alert' : profitLoss > 0 ? 'text-accent' : undefined,
+                  profitLoss < 0 ? 'text-alert' : profitLoss > 0 ? 'text-action' : undefined,
                 )}
               >
                 <p className="label-vi">
@@ -440,7 +440,7 @@ export function AssetDetailPage() {
                 aria-pressed={chartRange === range}
                 className={cn(
                   'h-7 rounded-[7px] px-3 transition-colors',
-                  chartRange === range ? 'bg-panel font-medium text-ink' : 'text-ink2',
+                  chartRange === range ? 'bg-card font-medium text-ink' : 'text-ink2',
                 )}
                 onClick={() => setChartRange(range)}
               >
@@ -465,7 +465,7 @@ export function AssetDetailPage() {
               <p
                 className={cn(
                   'money-number mt-1 text-[22px]',
-                  rangeDelta < 0 ? 'text-alert' : rangeDelta > 0 ? 'text-accent' : undefined,
+                  rangeDelta < 0 ? 'text-alert' : rangeDelta > 0 ? 'text-action' : undefined,
                 )}
               >
                 {rangeDelta > 0 ? '+' : rangeDelta < 0 ? '−' : ''}
@@ -493,13 +493,13 @@ export function AssetDetailPage() {
               </div>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-[2px] w-5 rounded-full bg-accent" />
+                  <span className="h-[2px] w-5 rounded-full bg-action" />
                   <span>{t('assets.detail.chart.legendValue')}</span>
                 </div>
                 {chartMarkers.length > 0 ? (
                   <div className="flex items-center gap-2 text-ink2">
                     <span className="flex h-4 w-5 items-center justify-center">
-                      <span className="size-2 rounded-full border-2 border-ink3 bg-panel" />
+                      <span className="size-2 rounded-full border-2 border-ink3 bg-card" />
                     </span>
                     <span>{t('assets.detail.chart.legendQuantity')}</span>
                   </div>

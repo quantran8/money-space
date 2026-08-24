@@ -84,7 +84,7 @@ export function GoalRoadSection({
         action={
           <button
             type="button"
-            className="min-h-11 text-[13px] font-medium text-accent"
+            className="min-h-11 text-[13px] font-medium text-action"
             onClick={() => setExplainOpen((open) => !open)}
             aria-expanded={explainOpen}
           >
@@ -151,10 +151,10 @@ export function GoalRoadSection({
           </div>
         </div>
 
-        <div className="min-w-0 rounded-sunk bg-sunk p-3 sm:p-5">
+        <div className="min-w-0 rounded-control bg-wash p-3 sm:p-5">
           <div className="mb-1 flex flex-wrap items-center justify-end gap-x-5 gap-y-2 px-1 text-[10px] text-ink3">
             <span className="flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-accent" />
+              <span className="size-2.5 rounded-full bg-action" />
               {t('goals.detail.road.actualLine')}
             </span>
             <span className="flex items-center gap-2">
@@ -257,7 +257,7 @@ function Badge({ tone, label }: { tone: 'accent' | 'attention' | 'muted'; label:
       className={cn(
         'inline-flex items-center gap-2 text-[12px] font-medium',
         tone === 'attention' && 'text-attention',
-        tone === 'accent' && 'text-accent',
+        tone === 'accent' && 'text-action',
         tone === 'muted' && 'text-ink2',
       )}
     >
@@ -265,7 +265,7 @@ function Badge({ tone, label }: { tone: 'accent' | 'attention' | 'muted'; label:
         className={cn(
           'size-1.5 rounded-full',
           tone === 'attention' && 'bg-attention',
-          tone === 'accent' && 'bg-accent',
+          tone === 'accent' && 'bg-action',
           tone === 'muted' && 'bg-protect',
         )}
       />

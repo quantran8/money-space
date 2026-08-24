@@ -34,7 +34,7 @@ export function HouseholdOverviewCard({ form }: HouseholdOverviewCardProps) {
             <Skeleton className="h-5 w-40" />
           ) : (
             <div className="flex items-center gap-2 text-[13px]">
-              <span className={allFresh ? 'size-1.5 rounded-full bg-accent' : 'size-1.5 rounded-full bg-attention'} />
+              <span className={allFresh ? 'size-1.5 rounded-full bg-action' : 'size-1.5 rounded-full bg-attention'} />
               {allFresh
                 ? t('freshness.upToDate.title')
                 : t('freshness.needsCheck.title')}

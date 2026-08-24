@@ -75,7 +75,7 @@ function formatVnd(value: number | string) {
 }
 
 const controlClass =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
 const inputClass =
   'h-full min-w-0 w-full bg-transparent text-[16px] leading-none text-ink outline-none placeholder:text-ink3'
 const selectClass =
@@ -342,7 +342,7 @@ export function DebtFormDialog({
                 <span
                   className={cn(
                     'size-[7px] shrink-0 rounded-full bg-[#D2D6DA]',
-                    step === item.step && 'bg-accent',
+                    step === item.step && 'bg-action',
                   )}
                 />
                 <span>{item.step}. {t(`debts.form.steps.${item.key}`)}</span>
@@ -375,7 +375,7 @@ export function DebtFormDialog({
                     label={t('debts.form.fields.originalAmount')}
                     htmlFor="debt-original"
                     error={errors.originalAmount?.message}
-                    action={<button type="button" onClick={pasteAmountFromClipboard} className="text-[12px] font-medium text-accent">{t('debts.form.pasteAmount')}</button>}
+                    action={<button type="button" onClick={pasteAmountFromClipboard} className="text-[12px] font-medium text-action">{t('debts.form.pasteAmount')}</button>}
                   >
                     <Controller control={control} name="originalAmount" render={({ field }) => (
                       <MoneyControl id="debt-original" value={field.value} error={errors.originalAmount?.message} onChange={updateOriginalAmount} onBlur={field.onBlur} />
@@ -428,7 +428,7 @@ export function DebtFormDialog({
                   </DebtField>
                 </div>
 
-                <div className="rounded-[10px] bg-sunk p-4">
+                <div className="rounded-[10px] bg-wash p-4">
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-[13px] font-medium">{t('debts.form.fields.received')}</p>
                     <Switch checked={Boolean(receivedToAssetId)} onCheckedChange={toggleReceiveEvent} />
@@ -436,7 +436,7 @@ export function DebtFormDialog({
                   {receivedToAssetId ? (
                     <div className="mt-4">
                       <DebtField label={t('debts.form.fields.receivedDestination')}>
-                        <div className={cn(controlClass, 'bg-panel')}>
+                        <div className={cn(controlClass, 'bg-card')}>
                           <Controller control={control} name="receivedToAssetId" render={({ field }) => (
                             <Select value={field.value} onValueChange={field.onChange}>
                               <SelectTrigger className={selectClass}><SelectValue placeholder={t('debts.form.fields.receivedPlaceholder')} /></SelectTrigger>
@@ -530,7 +530,7 @@ export function DebtFormDialog({
                   {DUE_DATE_PRESETS.map((preset) => {
                     const active = Boolean(dueAnchor) && expectedFinalDueDate === addMonthsIso(dueAnchor, preset.months)
                     return (
-                      <button key={preset.months} type="button" disabled={!dueAnchor} onClick={() => applyDuePreset(preset.months)} className={cn('rounded-full bg-sunk px-3 py-1.5 text-[12px] font-medium text-ink2 transition disabled:opacity-40', active && 'bg-accent text-white')}>
+                      <button key={preset.months} type="button" disabled={!dueAnchor} onClick={() => applyDuePreset(preset.months)} className={cn('rounded-full bg-wash px-3 py-1.5 text-[12px] font-medium text-ink2 transition disabled:opacity-40', active && 'bg-action text-white')}>
                         {t(`debts.form.presets.${preset.key}`)}
                       </button>
                     )
@@ -555,7 +555,7 @@ export function DebtFormDialog({
                       <button type="button" onClick={() => {
                         setValue('fixedPaymentAmount', String(repaymentEstimate.perPayment), { shouldValidate: true })
                         setValue('fixedPaymentTouched', false, { shouldDirty: true })
-                      }} className="shrink-0 text-[13px] font-medium text-accent">{t('debts.form.schedule.use')}</button>
+                      }} className="shrink-0 text-[13px] font-medium text-action">{t('debts.form.schedule.use')}</button>
                     </div>
                   ) : (
                     <p>{t('debts.form.schedule.empty')}</p>
@@ -574,7 +574,7 @@ export function DebtFormDialog({
                   </p>
                 ) : null}
 
-                <div className="rounded-[10px] bg-sunk p-4">
+                <div className="rounded-[10px] bg-wash p-4">
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-[13px] font-medium">{t('debts.form.fields.hasInterest')}</p>
                     <Controller control={control} name="hasInterest" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />
@@ -588,7 +588,7 @@ export function DebtFormDialog({
                         <Controller control={control} name="interestCalc" render={({ field }) => (
                           <div className="grid gap-2 sm:grid-cols-2">
                             {CALC_OPTIONS.map((option) => (
-                              <button key={option.value} type="button" aria-pressed={field.value === option.value} onClick={() => field.onChange(option.value)} className={cn('min-h-[58px] rounded-[10px] border border-transparent bg-panel px-3.5 py-2.5 text-left text-ink2', field.value === option.value && 'border-accent text-ink')}>
+                              <button key={option.value} type="button" aria-pressed={field.value === option.value} onClick={() => field.onChange(option.value)} className={cn('min-h-[58px] rounded-[10px] border border-transparent bg-card px-3.5 py-2.5 text-left text-ink2', field.value === option.value && 'border-action text-ink')}>
                                 <span className="block text-[13px] font-medium">{t(`debts.form.calc.${option.labelKey}`)}</span>
                                 <span className="mt-1 block text-[12px] leading-4 text-ink3">{t(`debts.form.calc.${option.hintKey}`)}</span>
                               </button>
@@ -601,7 +601,7 @@ export function DebtFormDialog({
                 </div>
 
                 <DebtField label={t('debts.form.fields.note')} htmlFor="debt-note" optional>
-                  <textarea id="debt-note" rows={3} className="min-h-[92px] w-full resize-y rounded-[10px] border border-transparent bg-sunk px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-accent focus:bg-panel" placeholder={t('debts.form.fields.notePlaceholder')} {...register('note')} />
+                  <textarea id="debt-note" rows={3} className="min-h-[92px] w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card" placeholder={t('debts.form.fields.notePlaceholder')} {...register('note')} />
                 </DebtField>
               </div>
             ) : null}
@@ -609,7 +609,7 @@ export function DebtFormDialog({
             {step === 4 ? (
               <div className="space-y-5">
                 <h2 className="text-[16px] font-medium">{t(editingId ? 'debts.form.sections.reviewEdit' : 'debts.form.sections.reviewCreate')}</h2>
-                <div className="rounded-[10px] bg-sunk p-4">
+                <div className="rounded-[10px] bg-wash p-4">
                   <dl className="space-y-3 text-[13px]">
                     <SummaryRow label={t('debts.form.fields.name')} value={name || '—'} />
                     <SummaryRow label={t('debts.form.fields.lender')} value={lenderName || '—'} />
@@ -692,13 +692,13 @@ function InterestPeriods({
     <div>
       <div className="flex items-center justify-between gap-4">
         <p className="text-[13px] text-ink2">{t('debts.form.fields.interestPeriods')}</p>
-        <button type="button" onClick={onAppend} className="inline-flex items-center gap-1 text-[13px] font-medium text-accent">
+        <button type="button" onClick={onAppend} className="inline-flex items-center gap-1 text-[13px] font-medium text-action">
           <Plus className="size-4" /> {t('debts.form.interestPeriods.add')}
         </button>
       </div>
       <div className="mt-3 space-y-3">
         {fields.map((item, index) => (
-          <div key={item.id} className="grid gap-3 rounded-[10px] bg-panel p-3 sm:grid-cols-[1fr_150px_auto]">
+          <div key={item.id} className="grid gap-3 rounded-[10px] bg-card p-3 sm:grid-cols-[1fr_150px_auto]">
             <DebtField label={t('debts.form.fields.annualRate')}>
               <div className={controlClass}>
                 <input inputMode="decimal" placeholder="8,2" className={cn(inputClass, 'num font-medium')} {...register(`interestPeriods.${index}.ratePct` as const)} />
