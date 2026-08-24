@@ -1,0 +1,289 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: Urbanist, ui-sans-serif, system-ui, sans-serif; }
+    a { color: #0F1011; } a:hover { color: #596268; }
+    .num { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1; }
+  </style>
+</helmet>
+<div style="background: #EDF3F8; padding: 56px 56px 64px; color: #0F1011;">
+
+  <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 44px;">
+    <div style="font-size: 20px; font-weight: 400; color: #596268;">Money Space Design System</div>
+    <div style="font-size: 64px; font-weight: 300; line-height: 1.02; letter-spacing: -0.035em;">Components</div>
+    <div style="font-size: 14px; font-weight: 400; color: #596268;">Flat card language — top-level surfaces directly on the page, no nested cards</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 44px;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Button</div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div style="background: #0F1011; color: #FFFFFF; border-radius: 999px; padding: 13px 22px; font-size: 14px; font-weight: 500;">Thêm khoản</div>
+        <div style="background: #596268; color: #FFFFFF; border-radius: 999px; padding: 13px 22px; font-size: 14px; font-weight: 500;">Hover</div>
+        <div style="background: #D8E0E4; color: #879398; border-radius: 999px; padding: 13px 22px; font-size: 14px; font-weight: 500;">Disabled</div>
+        <div style="color: #0F1011; border-radius: 999px; padding: 13px 16px; font-size: 14px; font-weight: 500;">Xem ảnh hưởng</div>
+        <div style="background: #E3ECF2; color: #0F1011; border-radius: 999px; padding: 13px 16px; font-size: 14px; font-weight: 500;">Secondary hover</div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">Primary fills with ink. Secondary is a text action — no border, because the text already reads as the affordance. Labels stay four words or fewer.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Field</div>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 12px; font-weight: 500; color: #596268;">Số tiền</div>
+          <div style="background: #E3ECF2; border-radius: 14px; padding: 13px 14px;"><span class="num" style="font-size: 16px; font-weight: 400; color: #879398;">2.400.000</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 12px; font-weight: 500; color: #596268;">Số tiền</div>
+          <div style="background: #E3ECF2; border-radius: 14px; padding: 11px 12px; border: 2px solid #0F1011;"><span class="num" style="font-size: 16px; font-weight: 400;">2.400.000</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 12px; font-weight: 500; color: #596268;">Số tiền</div>
+          <div style="background: #E3ECF2; border-radius: 14px; padding: 11px 12px; border: 2px solid #E8A39A;"><span class="num" style="font-size: 16px; font-weight: 400;">0</span></div>
+          <div style="font-size: 12px; font-weight: 400; color: #E8A39A;">Số tiền phải lớn hơn 0.</div>
+        </div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">A field may be a rounded surface because it is a control, not a content card. No border at rest; errors stay at the field and keep the input.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Status indicator</div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 8px; height: 8px; border-radius: 999px; background: #879398;"></div>
+          <span style="font-size: 12px; font-weight: 500; color: #596268;">đã đồng bộ</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 8px; height: 8px; border-radius: 999px; background: #8FCDA4;"></div>
+          <span style="font-size: 12px; font-weight: 500; color: #596268;">hoàn thành</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; background: rgba(225, 190, 104, 0.3); border-radius: 999px; padding: 6px 12px;">
+          <div style="width: 8px; height: 8px; border-radius: 999px; background: #E1BE68;"></div>
+          <span style="font-size: 12px; font-weight: 500;">cần xác nhận</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; background: rgba(232, 163, 154, 0.3); border-radius: 999px; padding: 6px 12px;">
+          <div style="width: 8px; height: 8px; border-radius: 999px; background: #E8A39A;"></div>
+          <span style="font-size: 12px; font-weight: 500;">quá hạn</span>
+        </div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">Normal state is a dot and text. A coloured pill is reserved for states that genuinely need attention — never a green pill for “synced” or “active”.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Composition bar</div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; gap: 3px; height: 10px;">
+          <div style="width: 27.4%; border-radius: 999px; background: #D8E0E4;"></div>
+          <div style="flex-grow: 1; border-radius: 999px; background: #73A4D7;"></div>
+        </div>
+        <div style="display: flex; gap: 20px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 999px; background: #D8E0E4;"></div>
+            <span class="num" style="font-size: 12px; font-weight: 400; color: #596268;">Đã có nhiệm vụ · 18,2 tr</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 999px; background: #73A4D7;"></div>
+            <span class="num" style="font-size: 12px; font-weight: 400; color: #596268;">Linh hoạt · 48,2 tr</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">Committed money is neutral, flexible money is data blue. The action colour never encodes data. The legend may repeat values because it serves the visualisation.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">KPI card</div>
+      <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 14px; font-weight: 400; color: #596268;">Sau các khoản đã có nhiệm vụ</div>
+        <div class="num" style="font-size: 40px; font-weight: 300; line-height: 1.1; letter-spacing: -0.035em;">48,2 tr</div>
+        <div style="font-size: 12px; font-weight: 400; color: #879398;">Tính từ 5 nguồn · tất cả đều mới</div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">One metric that answers a section-level question. Never a card per number just to fill a grid, and never a static metric in the action colour.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Data row</div>
+      <div style="background: #FFFFFF; border-radius: 22px; padding: 12px;">
+        <div style="display: flex; align-items: center; gap: 16px; padding: 12px;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <div style="font-size: 16px; font-weight: 400;">Vietcombank</div>
+            <div style="font-size: 12px; font-weight: 400; color: #879398;">Quân · cập nhật hôm nay</div>
+          </div>
+          <div class="num" style="font-size: 16px; font-weight: 400;">32,4 tr</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px; padding: 12px; background: #E3ECF2; border-radius: 14px;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <div style="font-size: 16px; font-weight: 400;">Tiền mặt</div>
+            <div style="font-size: 12px; font-weight: 400; color: #879398;">Linh · chưa xác nhận</div>
+          </div>
+          <div class="num" style="font-size: 16px; font-weight: 400;">6,8 tr</div>
+        </div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">No card per row, no border per row. Interactive rows hover with wash. Amounts sit right and use tabular numerals.</div>
+    </div>
+
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 44px; margin-top: 44px;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Dense table</div>
+      <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: baseline; gap: 12px;">
+          <div style="font-size: 16px; font-weight: 500; flex-grow: 1;">30 ngày tới</div>
+          <div style="font-size: 12px; font-weight: 400; color: #879398;">5 khoản</div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="text-align: left; font-size: 12px; font-weight: 500; color: #879398; padding-bottom: 10px;">Ngày</th>
+              <th style="text-align: left; font-size: 12px; font-weight: 500; color: #879398; padding-bottom: 10px;">Khoản</th>
+              <th style="text-align: right; font-size: 12px; font-weight: 500; color: #879398; padding-bottom: 10px;">Số tiền</th>
+              <th style="text-align: right; font-size: 12px; font-weight: 500; color: #879398; padding-bottom: 10px;">Còn lại</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num" style="font-size: 14px; font-weight: 400; color: #596268; padding: 9px 0;">28/08</td>
+              <td style="font-size: 14px; font-weight: 400; padding: 9px 0;">Lương</td>
+              <td class="num" style="font-size: 14px; font-weight: 400; text-align: right; padding: 9px 0;">+32,0</td>
+              <td class="num" style="font-size: 14px; font-weight: 400; text-align: right; padding: 9px 0;">80,2</td>
+            </tr>
+            <tr>
+              <td class="num" style="font-size: 14px; font-weight: 400; color: #596268; padding: 9px 0;">31/08</td>
+              <td style="font-size: 14px; font-weight: 400; padding: 9px 0;">Học phí</td>
+              <td class="num" style="font-size: 14px; font-weight: 400; text-align: right; padding: 9px 0;">−14,2</td>
+              <td class="num" style="font-size: 14px; font-weight: 400; text-align: right; padding: 9px 0;">66,0</td>
+            </tr>
+            <tr>
+              <td class="num" style="font-size: 14px; font-weight: 400; color: #596268; padding: 9px 0;">05/09</td>
+              <td style="font-size: 14px; font-weight: 400; padding: 9px 0;">Tiền nhà</td>
+              <td class="num" style="font-size: 14px; font-weight: 400; text-align: right; padding: 9px 0;">−18,0</td>
+              <td class="num" style="font-size: 14px; font-weight: 400; text-align: right; padding: 9px 0;">48,0</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="height: 1px; background: #EEF1F2;"></div>
+        <div style="display: flex; gap: 20px;">
+          <span class="num" style="font-size: 12px; font-weight: 400; color: #596268;">Vào 32,0</span>
+          <span class="num" style="font-size: 12px; font-weight: 400; color: #596268;">Ra −32,2</span>
+        </div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">Three or more rows that need comparing. Clear header, numbers right, no row borders — and never wrapped in a second card when the parent card is already the surface.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Empty state &amp; dependency notice</div>
+      <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-size: 16px; font-weight: 500;">30 ngày tới</div>
+        <div style="height: 1px; background: #EEF1F2;"></div>
+        <div style="display: flex; flex-direction: column; gap: 16px; padding: 8px 0 4px;">
+          <div style="font-size: 16px; font-weight: 400; color: #596268;">Chưa có khoản nào</div>
+          <div style="align-self: flex-start; color: #0F1011; font-size: 14px; font-weight: 500;">Thêm khoản</div>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 14px; font-weight: 400; color: #596268;">Thấp nhất dự kiến</div>
+        <div style="font-size: 28px; font-weight: 300; color: #596268;">Chưa tính được</div>
+        <div style="font-size: 14px; font-weight: 400; color: #596268;">Chưa có số dư đầu kỳ.</div>
+        <div style="align-self: flex-start; color: #0F1011; font-size: 14px; font-weight: 500; margin-top: 4px;">Thêm nguồn tiền</div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">An empty state is not a sub-card — it sits directly inside the top-level card. A missing dependency keeps the real data and says which input is missing; it never fakes a zero.</div>
+    </div>
+
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 44px; margin-top: 44px;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Forecast chart</div>
+      <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 14px; font-weight: 400; color: #596268;">Thấp nhất dự kiến</div>
+        <div class="num" style="font-size: 40px; font-weight: 300; line-height: 1.1; letter-spacing: -0.035em;">48,0 tr</div>
+        <div style="font-size: 12px; font-weight: 400; color: #879398;">05/09 · sau tiền nhà</div>
+        <div style="display: flex; align-items: flex-end; gap: 2px; height: 44px; margin-top: 12px;">
+          <div style="width: 2px; height: 44px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 44px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 44px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 26px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 26px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 26px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 26px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 26px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #E1BE68;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+          <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+          <span class="num" style="font-size: 12px; font-weight: 400; color: #879398;">28/08</span>
+          <span class="num" style="font-size: 12px; font-weight: 400; color: #879398;">26/09</span>
+        </div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">The chart sits directly in the card — no chart card, no border, no rounded container. It renders only when a running balance genuinely derives; the low point carries attention colour, everything else is data blue.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-size: 16px; font-weight: 500;">Source coverage</div>
+      <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="display: flex; gap: 2px;">
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #8FCDA4;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #8FCDA4;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #8FCDA4;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #8FCDA4;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #8FCDA4;"></div>
+          </div>
+          <span style="font-size: 12px; font-weight: 400; color: #879398;">Tính từ 5 nguồn · tất cả đều mới</span>
+        </div>
+        <div style="height: 1px; background: #EEF1F2;"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; gap: 2px;">
+              <div style="width: 14px; height: 4px; border-radius: 2px; background: #8FCDA4;"></div>
+              <div style="width: 14px; height: 4px; border-radius: 2px; background: #8FCDA4;"></div>
+              <div style="width: 14px; height: 4px; border-radius: 2px; background: #8FCDA4;"></div>
+              <div style="width: 14px; height: 4px; border-radius: 2px; background: #E1BE68;"></div>
+              <div style="width: 14px; height: 4px; border-radius: 2px; background: #E1BE68;"></div>
+            </div>
+            <span style="font-size: 12px; font-weight: 400; color: #879398;">Tính từ 5 nguồn · 2 cần cập nhật</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 400; color: #596268;">Chưa gồm VCB và tiền mặt.</div>
+        </div>
+      </div>
+      <div style="font-size: 14px; font-weight: 400; color: #596268;">Coverage is context for a derived number: one text line, optionally a thin segmented strip. Never a warning card, and never a confidence percentage.</div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
