@@ -1353,6 +1353,9 @@ export const resources = {
           // Tuổi dữ liệu viết theo lối nói thường ("6 ngày trước", "hôm qua"),
           // giống hệt cột trong bảng, để hai chỗ đọc lên là một.
           sourceCount: '{{count}} nguồn',
+          // v5 02-components §16 — canonical one-line coverage on the ground.
+          lineAllFresh: 'Tính từ {{count}} nguồn · tất cả đều mới',
+          lineSomeStale: 'Tính từ {{count}} nguồn · {{stale}} cần cập nhật',
           oldest: 'cũ nhất',
           show: 'Hiện chi tiết',
           hide: 'Ẩn chi tiết',
@@ -4009,6 +4012,8 @@ export const resources = {
           // i18next pluralises on `count`, so English needs both forms.
           sourceCount_one: '{{count}} source',
           sourceCount_other: '{{count}} sources',
+          lineAllFresh: 'From {{count}} sources · all up to date',
+          lineSomeStale: 'From {{count}} sources · {{stale}} need updating',
           oldest: 'oldest',
           show: 'Show details',
           hide: 'Hide details',
