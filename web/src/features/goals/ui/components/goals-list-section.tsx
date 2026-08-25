@@ -213,7 +213,7 @@ function GoalProgress({ goal, current, target }: { goal: GoalItem; current: numb
       <span className="num font-medium">{formatAmount(current)} / {formatAmount(target)}</span>
       <Progress
         value={progress}
-        className="mt-2.5 h-1"
+        className="mt-2.5 h-6"
         aria-label={goal.name}
       />
     </div>

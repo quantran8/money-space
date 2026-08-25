@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { Panel, PanelHeader, TotalRow } from '@/components/ui/panel'
+import { Progress } from '@/components/ui/progress'
 import {
   Table,
   TableBody,
@@ -99,12 +100,7 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
                 </span>
               </div>
               {/* Neutral ink, not accent: repayment progress is a fact, not a win. */}
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-divider">
-                <div
-                  className="h-full rounded-full bg-ink3"
-                  style={{ width: `${largest.repaidPercent}%` }}
-                />
-              </div>
+              <Progress value={largest.repaidPercent} className="mt-3 h-6 text-ink3" />
               {largest.expectedFinalDueDate ? (
                 <p className="mt-2.5 font-mono text-[11px] text-ink3">
                   {t('home.debts.payoffEta', {

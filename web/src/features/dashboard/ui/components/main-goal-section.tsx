@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { Panel, PanelHeader } from '@/components/ui/panel'
+import { Progress } from '@/components/ui/progress'
 import { hasProjectedDate } from '@money-space/core/features/goals/model/goal-projection.types'
 import type { GoalItem } from '@money-space/core/features/goals/model/goals.types'
 import { goalAmount } from '@money-space/core/features/goals/model/goals-form'
@@ -58,12 +59,7 @@ export function MainGoalSection({
             <span className="num font-mono text-[11px] text-ink3">{percent}%</span>
           </div>
 
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--hair)' }}>
-            <div
-              className="seg h-full rounded-full"
-              style={{ width: `${Math.min(Math.max(percent, 0), 100)}%`, background: 'var(--accent)' }}
-            />
-          </div>
+          <Progress value={percent} className="mt-3 h-6 text-action" />
         </div>
 
         <dl className="space-y-4 lg:pt-1">

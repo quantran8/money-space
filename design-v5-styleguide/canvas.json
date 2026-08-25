@@ -28,15 +28,8 @@
       "x": 0,
       "y": 3800,
       "w": 1440,
-      "h": 2320
-    },
-    {
-      "file": "AppComponents.dc.html",
-      "x": 0,
-      "y": 6280,
-      "w": 1440,
-      "h": 2760,
-      "title": "App components — v4 → v5"
+      "h": 3480,
+      "title": "Components — web/src/components/ui"
     }
   ],
   "annotations": [
@@ -57,9 +50,9 @@
     {
       "id": "note-appcomponents",
       "x": 1560,
-      "y": 6280,
+      "y": 3800,
       "w": 340,
-      "text": "Drawn from the real inventory in web/src/components/ui (40 files).\n\nThe app ships v4.0: Be Vietnam Pro, accent #0a6b47 green, panel/sunk surfaces, 14px radius.\n\nThese artboards show each component as it becomes under v5 — and name which ones actually change."
+      "text": "Every component the app ships, drawn from the real inventory in web/src/components/ui (40 files).\n\nEach block names its source file and states the rule it follows — these are the components as they are, not a migration diff."
     }
   ],
   "launch": {

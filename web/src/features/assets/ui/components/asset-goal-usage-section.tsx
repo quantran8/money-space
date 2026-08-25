@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import { MoneyCompositionBar } from '@/components/ui/money-composition-bar'
+import { MoneyCompositionRing } from '@/components/ui/money-composition-ring'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -83,7 +83,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
       <p className="text-[13px] font-medium">{t('assets.detail.goals.title')}</p>
 
       <div className="mt-4">
-        <MoneyCompositionBar
+        <MoneyCompositionRing
           /* `committedAmount` / `unassignedAmount`, NOT `claimed` / `free`.
              The labels here say "đã dành cho mục tiêu" and "chưa dành cho mục
              tiêu nào", which is the all-in question — money set aside AND what
@@ -114,6 +114,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
             claimed: formatVndShort(committedAmount),
             free: formatVndShort(unassignedAmount),
           })}
+          centerLabel={t('assets.detail.goals.ringCenter')}
           formatAmount={formatVndShort}
         />
       </div>

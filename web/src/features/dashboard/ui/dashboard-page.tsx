@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { HeroCard } from '@/app/layout/hero-card'
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
 import { useDashboardPage } from '@money-space/core/features/dashboard/hooks/use-dashboard-page'
@@ -10,6 +9,7 @@ import { DashboardSkeleton } from '@/features/dashboard/ui/components/dashboard-
 import { FinancialPictureSection } from '@/features/dashboard/ui/components/financial-picture-section'
 import { GoalsSection } from '@/features/dashboard/ui/components/goals-section'
 import { MoneySourcesSection } from '@/features/dashboard/ui/components/money-sources-section'
+import { SpendingSection } from '@/features/dashboard/ui/components/spending-section'
 import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-section'
 
 /**
@@ -43,7 +43,8 @@ import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-sec
  */
 export function DashboardPage() {
   const { t } = useTranslation()
-  const state = useDashboardPage()
+  // Copy stays here, in the UI: core groups the sources, i18n names them.
+  const state = useDashboardPage({ sharedHolderLabel: t('home.location.sharedHolder') })
   // Before the early return — hooks cannot be called conditionally.
   const { cashflowEvents, completeCashflowEvent } = useCashflowEvents()
   /**
@@ -69,6 +70,8 @@ export function DashboardPage() {
     flexibleMoney,
     freshness,
     eventsSummary,
+    recentEvents,
+    holderGroups,
     goalTracks,
     earmarkedForGoals,
     goals,
@@ -83,26 +86,13 @@ export function DashboardPage() {
     if (staleIds.length > 0) confirmUnchanged.mutate(staleIds)
   }
 
-  const coverage = freshness ? buildCoverage(freshness) : undefined
-
   return (
     <div className="space-y-3">
-      <HeroCard
-        eyebrow={t('home.eyebrow')}
-        title={t('home.title')}
-        context={
-          coverage
-            ? coverage.hasStale
-              ? t('home.coverage.lineSomeStale', {
-                  count: coverage.total,
-                  stale: coverage.staleCount,
-                })
-              : t('home.coverage.lineAllFresh', { count: coverage.total })
-            : formatToday(forecast?.asOfDate)
-        }
-      />
-
-
+      {/* No hero card. It carried the household name and "Tình hình hiện tại"
+          over a coverage line that §12.1 already states beside the figure it
+          qualifies — a full-width blue band to say what the first card says
+          better, and it pushed the one number the page exists for below the
+          fold. The page now opens on the answer. */}
       <FinancialPictureSection
         flexibleMoney={flexibleMoney}
         freshness={freshness}
@@ -112,7 +102,6 @@ export function DashboardPage() {
       {forecast ? (
         <UpcomingSection
           forecast={forecast}
-          eventsSummary={eventsSummary}
           cashflowEvents={cashflowEvents}
           completingEventId={
             completeCashflowEvent.isPending ? completing?.eventId : null
@@ -132,15 +121,29 @@ export function DashboardPage() {
         />
       ) : null}
 
-      {goalTracks.length > 0 ? (
-        <GoalsSection
-          tracks={goalTracks}
-          goalCount={goals.length}
-          earmarkedForGoals={earmarkedForGoals}
+      {/* Spending and goals share one row: the month that happened beside the
+          money already pointed somewhere. Both are narrower than a full-width
+          section needs, and neither is the page's primary answer. */}
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,.82fr)_minmax(0,1.18fr)] xl:items-stretch">
+        <SpendingSection
+          summary={eventsSummary}
+          recentEvents={recentEvents}
+          asOfDate={forecast?.asOfDate ?? ''}
         />
-      ) : null}
 
-      <MoneySourcesSection map={moneyLocation} />
+        {goalTracks.length > 0 ? (
+          <GoalsSection
+            tracks={goalTracks}
+            goalCount={goals.length}
+            earmarkedForGoals={earmarkedForGoals}
+          />
+        ) : null}
+      </div>
+
+      {/* Full width, and last: this is a table of where money sits, not an
+          answer to today's question — the ranking only reads as a comparison
+          when every bar has the same full width to run in (§12.4). */}
+      <MoneySourcesSection map={moneyLocation} holderGroups={holderGroups} />
 
       {completing ? (
         <CompleteCashflowDialog
@@ -169,11 +172,4 @@ export function DashboardPage() {
       ) : null}
     </div>
   )
-}
-
-/** "13/08/2026" — a plain date; mono is no longer a default motif (v5 §5.1). */
-function formatToday(isoDate?: string): string {
-  const source = isoDate ?? new Date().toISOString()
-  const match = source.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  return match ? `${match[3]}/${match[2]}/${match[1]}` : ''
 }

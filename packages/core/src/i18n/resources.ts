@@ -590,6 +590,8 @@ export const resources = {
             claimed: 'Đã dành cho mục tiêu',
             free: 'Chưa dành cho mục tiêu nào',
             aria: '{{claimed}} đã dành cho mục tiêu, {{free}} còn tự do',
+            // Nhãn tâm vòng tròn — ngắn hơn `free`, vốn dài quá cho lỗ vòng.
+            ringCenter: 'còn tự do',
             sharePercent: '{{percent}}% giá trị tài sản',
             columns: {
               goal: 'Mục tiêu',
@@ -1345,6 +1347,9 @@ export const resources = {
             committed: 'Đã có nhiệm vụ',
             flexible: 'Linh hoạt',
             aria: '{{committed}} đã có nhiệm vụ, {{flexible}} linh hoạt',
+            // Nhãn dưới số ở tâm vòng tròn. Phải ngắn — nó nằm trong lỗ vòng,
+            // không phải một dòng của legend.
+            ringCenter: 'linh hoạt',
           },
         },
         coverage: {
@@ -1380,7 +1385,7 @@ export const resources = {
         },
         // Tên của cả khối: gồm phần quá hạn và phần 30 ngày tới.
         cashflow: {
-          title: 'Dòng tiền',
+          title: 'Dòng tiền 30 ngày tới',
           // Nửa "đã xảy ra" của §12.2 — ngữ cảnh cho phần dự kiến bên dưới,
           // nên viết nhỏ và không có số "ròng" (vào trừ ra là cách nói thứ ba).
           recordedEyebrow: 'Tháng này · đã xảy ra',
@@ -1426,6 +1431,11 @@ export const resources = {
           more: '{{count}} khoản nữa · xem timeline',
           viewTimeline: 'Xem timeline',
           needsConfirm: 'cần xác nhận',
+          // Tiêu đề cột phải: chuỗi sự kiện tạo ra điểm thấp nhất bên trái.
+          sequenceTitle: 'Điều gì sẽ xảy ra',
+          // Số khoản đứng sau mỗi tổng vào/ra của 30 ngày tới. "Đã biết" vì
+          // chỉ đếm những khoản forecast thực sự tính vào số dư (§2.16).
+          horizonCount: '{{count}} khoản đã biết',
           empty: 'Chưa có khoản nào trong 30 ngày tới.',
           column: {
             date: 'Ngày',
@@ -1439,6 +1449,15 @@ export const resources = {
             remainingUnit: 'Còn lại, tr',
           },
         },
+        // Tháng đã xảy ra — tách khỏi §12.2 (phần sắp tới) thành thẻ riêng.
+        spending: {
+          title: 'Chi tiêu tháng này',
+          meta: 'đến {{date}}',
+          income: 'Tổng thu',
+          outcome: 'Tổng chi',
+          recent: 'Giao dịch gần đây',
+          viewAll: 'Xem tất cả giao dịch',
+        },
         // §12.3 — every goal against the pace it needs, not one goal in detail.
         goals: {
           title: 'Mục tiêu',
@@ -1447,6 +1466,11 @@ export const resources = {
           earmarked: 'Đã dành cho mục tiêu',
           unassigned: 'Chưa gán mục tiêu',
           mainBadge: 'chính',
+          count: '{{count}} mục tiêu',
+          // Nói vị trí so với mốc gia đình tự đặt, không phải lời khen chê.
+          // Mục tiêu chưa khai báo mức góp thì không có mốc, nên không có nhãn.
+          paceOnTrack: 'Đúng nhịp',
+          paceBehind: 'Chậm hơn mốc',
           underOnePercent: '<1%',
           milestoneLegend: 'Mốc cần đạt hôm nay để về đúng hạn',
           trackAria: 'Đã đạt {{percent}}%.',
@@ -1502,6 +1526,11 @@ export const resources = {
           viewAll: 'Xem {{count}} nguồn',
           totalValue: 'Tổng giá trị',
           totalCash: 'Tổng tiền mặt',
+          barsTitle: 'Phân bổ theo nguồn',
+          // "Đang nắm" = phụ trách, không phải "ai tiêu" (§0.2, §16.4).
+          holderTitle: 'Ai đang nắm tài sản',
+          // Nguồn không ghi ai phụ trách thì thuộc về cả nhà, không gán bừa.
+          sharedHolder: 'Cả nhà',
           // "Phụ trách", never "ai tiêu" — the map names who holds a source.
           group: {
             // Chia theo lựa chọn của gia đình, không theo loại tài sản — đúng
@@ -3284,6 +3313,7 @@ export const resources = {
             claimed: 'Set aside for goals',
             free: 'Not spoken for',
             aria: '{{claimed}} set aside for goals, {{free}} still free',
+            ringCenter: 'still free',
             sharePercent: '{{percent}}% of the asset',
             columns: {
               goal: 'GOAL',
@@ -4006,6 +4036,7 @@ export const resources = {
             committed: 'Already spoken for',
             flexible: 'Flexible',
             aria: '{{committed}} already spoken for, {{flexible}} flexible',
+            ringCenter: 'flexible',
           },
         },
         coverage: {
@@ -4035,7 +4066,7 @@ export const resources = {
           allFresh: 'Data is current',
         },
         cashflow: {
-          title: 'Cash flow',
+          title: 'Next 30 days',
           recordedEyebrow: 'This month · happened',
           recordedNote: 'Recorded through {{date}}',
           in: 'In',
@@ -4074,6 +4105,9 @@ export const resources = {
           more: '{{count}} more · view timeline',
           viewTimeline: 'View timeline',
           needsConfirm: 'needs confirming',
+          sequenceTitle: 'What happens next',
+          horizonCount: '{{count}} known item',
+          horizonCount_other: '{{count}} known items',
           empty: 'Nothing scheduled in the next 30 days.',
           column: {
             date: 'Date',
@@ -4086,6 +4120,14 @@ export const resources = {
             remainingUnit: 'Remaining, M',
           },
         },
+        spending: {
+          title: 'This month',
+          meta: 'to {{date}}',
+          income: 'Money in',
+          outcome: 'Money out',
+          recent: 'Recent activity',
+          viewAll: 'View all activity',
+        },
         goals: {
           title: 'Goals',
           details: 'Details',
@@ -4093,6 +4135,10 @@ export const resources = {
           earmarked: 'Set aside for goals',
           unassigned: 'Not assigned yet',
           mainBadge: 'main',
+          count_one: '{{count}} goal',
+          count_other: '{{count}} goals',
+          paceOnTrack: 'On pace',
+          paceBehind: 'Behind the mark',
           underOnePercent: '<1%',
           milestoneLegend: 'Where you need to be today to finish on time',
           trackAria: '{{percent}}% saved.',
@@ -4148,6 +4194,9 @@ export const resources = {
           viewAll: 'View {{count}} sources',
           totalValue: 'Total value',
           totalCash: 'Total cash',
+          barsTitle: 'By source',
+          holderTitle: 'Who looks after what',
+          sharedHolder: 'Shared',
           group: {
             usable_now: 'Usable now · {{count}} sources',
             held: 'Held · {{count}} sources',

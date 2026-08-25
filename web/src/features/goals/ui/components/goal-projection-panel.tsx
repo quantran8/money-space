@@ -35,7 +35,7 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
             {formatVndShort(projection.targetAmount)}
           </p>
         </div>
-        <Progress value={projection.progressPercent} className="mt-3 h-3" />
+        <Progress value={projection.progressPercent} className="mt-3 h-6" />
         <p className="mt-2 text-xs text-ink2">
           {t('goals.projection.remaining', {
             amount: formatVndShort(projection.remainingAmount),

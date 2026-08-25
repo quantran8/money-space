@@ -28,6 +28,10 @@
   --color-action-inverse: var(--action-inverse);
   --color-data-primary: var(--data-primary);
   --color-positive: var(--positive);
+  --color-positive-ink: var(--positive-ink);
+  --color-data-ink: var(--data-ink);
+  --color-alert-ink: var(--alert-ink);
+  --color-attention-ink: var(--attention-ink);
   --color-divider: var(--divider);
   --color-model: var(--model);
 
@@ -118,6 +122,24 @@
     --positive: #8fcda4;
     --model: #eef6f1;
 
+    /**
+     * Text-safe counterparts to the fill colours above.
+     *
+     * `--positive`, `--data-primary` and `--alert` are tuned as FILLS — a ring
+     * segment, a bar, a dot — and every one of them fails AA as text on white
+     * (`--positive` at #8fcda4 is 1.9:1). A money figure set in the fill colour
+     * is unreadable, so each fill gets an ink counterpart that clears 4.5:1 and
+     * is used wherever the colour has to carry a number or a glyph.
+     *
+     * This does NOT reintroduce green as an interaction colour (§4): these are
+     * DATA tones — direction of a movement, a total's provenance — and the CTA
+     * colour stays `--action`. A button never wears one of these.
+     */
+    --positive-ink: #4e855f;
+    --data-ink: #356fa8;
+    --alert-ink: #a9544d;
+    --attention-ink: #8c6817;
+
     --scrim: rgba(15, 16, 17, 0.34);
 
     /* v4 aliases → v5 values. */
@@ -182,6 +204,12 @@
     --accent-tint: rgba(140, 47, 57, 0.1);
     --attention-tint: rgba(154, 106, 22, 0.12);
     --alert-tint: rgba(168, 57, 31, 0.1);
+
+    /* Ink counterparts, warmed to sit in Archive's ivory ground. */
+    --positive-ink: #4a7554;
+    --data-ink: #3d6384;
+    --alert-ink: #a8391f;
+    --attention-ink: #8a5f14;
   }
 
   html {
@@ -209,10 +237,18 @@
     min-height: 100vh;
   }
 
-  /* Focus is the one place a stroke is always allowed (§24). */
+  /**
+   * Focus is the one place a stroke is always allowed (§24).
+   *
+   * `[data-slot='input']` opts out: the Input primitive draws its own focus as
+   * a blue border plus a soft ring, and stacking an ink outline on top of that
+   * gives a bordered field two concentric rings in two different colours. The
+   * primitive's own signal is the indicator there — it is never removed, only
+   * drawn differently.
+   */
   a:focus-visible,
   button:focus-visible,
-  input:focus-visible,
+  input:not([data-slot='input']):focus-visible,
   select:focus-visible,
   textarea:focus-visible,
   [tabindex]:focus-visible {
@@ -525,6 +561,55 @@
   .table-dense th:last-child {
     padding-right: 10px;
     border-radius: 0 7px 7px 0;
+  }
+
+  /**
+   * The goal track, drawn as TICKS rather than as a solid bar.
+   *
+   * A solid fill reads as a liquid level — how full the goal is — which is the
+   * wrong metaphor for money set aside over time. Ticks read as increments,
+   * which is how the household actually gets there: a contribution at a time.
+   * It also gives the pace marker something to sit against, so "behind" is a
+   * countable distance rather than a shade difference.
+   *
+   * `--progress` is set per row; the filled half is painted over the unfilled
+   * one and clipped to that width.
+   */
+  .goal-progress {
+    position: relative;
+    height: 24px;
+    overflow: hidden;
+  }
+
+  .goal-progress::before,
+  .goal-progress::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--committed) 0 2px,
+      transparent 2px 6px
+    );
+  }
+
+  .goal-progress::after {
+    right: auto;
+    width: var(--progress);
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--data-primary) 0 2px,
+      transparent 2px 6px
+    );
+  }
+
+  /** Behind the household's own pace: the same ticks, in amber (§5.2). */
+  .goal-progress[data-behind="true"]::after {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--attention) 0 2px,
+      transparent 2px 6px
+    );
   }
 
   /* --- Motion (§24) ------------------------------------------------------ */

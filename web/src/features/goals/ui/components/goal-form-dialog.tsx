@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { MonthPicker } from '@/components/ui/month-picker'
+import { Progress } from '@/components/ui/progress'
 import {
   Field,
   MoneyField,
@@ -674,11 +675,7 @@ function SummaryMetric({ label, value, right = false }: { label: string; value: 
 }
 
 function ProgressBar({ value }: { value: number }) {
-  return (
-    <div className="mt-3 h-2 overflow-hidden rounded-full bg-divider">
-      <div className="h-full rounded-full bg-action" style={{ width: `${value}%` }} />
-    </div>
-  )
+  return <Progress value={value} className="mt-3 h-6 text-action" />
 }
 
 function GoalReview({
