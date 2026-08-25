@@ -122,7 +122,7 @@ export function MoneySourcesSection({
       />
 
       {map.totalCount === 0 ? (
-        <p className="mt-7 py-6 text-[13px] text-ink2">{t('home.moneyLocation.empty')}</p>
+        <p className="mt-7 py-6 t-body-sm text-ink2">{t('home.moneyLocation.empty')}</p>
       ) : (
         <>
           {/* The total, led by a disc so the section opens on a figure rather
@@ -137,15 +137,15 @@ export function MoneySourcesSection({
             </span>
             <div className="min-w-0">
               <Label>{t('home.location.totalValue')}</Label>
-              <p className="num mt-1 text-[42px] leading-[1.05] font-medium tracking-[-.04em] text-data-ink sm:text-[48px]">
+              <p className="num mt-1 t-figure leading-[1.05] tracking-[-.04em] text-data-ink sm:t-hero">
                 {formatVndScale(map.total)}
               </p>
             </div>
           </div>
 
-          <div className="mt-7 grid gap-9 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,.6fr)] xl:items-start xl:gap-12">
+          <div className="mt-7 grid gap-8 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,.6fr)] xl:items-start xl:gap-12">
             <div className="min-w-0">
-              <h3 className="mb-3 flex items-center gap-2 text-[14px] font-medium">
+              <h3 className="mb-3 flex items-center gap-2 t-subtitle">
                 <ChartNoAxesColumnIncreasing
                   className="size-4 shrink-0 text-data-primary"
                   strokeWidth={1.7}
@@ -157,7 +157,7 @@ export function MoneySourcesSection({
               <MoneyLocationBars bars={map.bars} />
 
               {map.hiddenCount > 0 ? (
-                <p className="mt-3 text-[12px] leading-5 text-ink3">
+                <p className="mt-3 t-caption leading-5 text-ink3">
                   {t('home.location.hidden', { count: map.hiddenCount })}
                 </p>
               ) : null}
@@ -188,7 +188,7 @@ function HolderColumn({ groups }: { groups: HolderGroup[] }) {
 
   return (
     <div>
-      <h3 className="mb-4 flex items-center gap-2 text-[14px] font-medium">
+      <h3 className="mb-4 flex items-center gap-2 t-subtitle">
         <Users className="size-4 shrink-0 text-data-primary" strokeWidth={1.7} aria-hidden />
         {t('home.location.holderTitle')}
       </h3>
@@ -217,15 +217,15 @@ function HolderColumn({ groups }: { groups: HolderGroup[] }) {
               </span>
 
               <span className="flex min-w-0 flex-1 items-baseline gap-2">
-                <span className="truncate text-[13px] font-medium">{group.name}</span>
-                <span className="shrink-0 text-[12px] text-ink2">
+                <span className="truncate t-body-sm font-medium">{group.name}</span>
+                <span className="shrink-0 t-caption text-ink2">
                   {t('home.coverage.sourceCount', { count: group.sources.length })}
                 </span>
               </span>
 
               <span
                 className={cn(
-                  'num shrink-0 text-[20px] font-medium',
+                  'num shrink-0 t-subhead font-medium',
                   HOLDER_TONE[index % HOLDER_TONE.length].ink,
                 )}
               >
@@ -244,8 +244,8 @@ function HolderColumn({ groups }: { groups: HolderGroup[] }) {
                   key={source.id}
                   className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 py-2"
                 >
-                  <p className="truncate text-[13px]">{source.name}</p>
-                  <span className="num text-[13px] font-medium">
+                  <p className="truncate t-body-sm">{source.name}</p>
+                  <span className="num t-body-sm font-medium">
                     {formatVndScale(source.value)}
                   </span>
                 </div>
@@ -334,8 +334,8 @@ function MoneyLocationBars({ bars }: { bars: MoneyLocationBar[] }) {
               const bar = payload[0].payload as MoneyLocationBar
               return (
                 <div className="panel px-3 py-2 shadow-sm">
-                  <p className="text-[13px] font-medium">{bar.name}</p>
-                  <p className="num mt-1 text-[12px] text-ink2">
+                  <p className="t-body-sm font-medium">{bar.name}</p>
+                  <p className="num mt-1 t-caption text-ink2">
                     {bar.holder ? `${bar.holder} · ` : ''}
                     {formatVndScale(bar.value)}
                   </p>

@@ -46,16 +46,16 @@ export function RecordCard({
       {/* The actor lives in the avatar alone — repeating it in the title line
           just pushed the thing that actually happened off to the right. */}
       <div
-        className="grid size-8 place-items-center rounded-full bg-wash text-[11px] font-medium text-ink2"
+        className="grid size-8 place-items-center rounded-full bg-wash t-caption-sm font-medium text-ink2"
         title={actor}
       >
         {initial}
       </div>
       <div className="min-w-0">
-        <h4 className="text-[14px] leading-5">{record.title}</h4>
+        <h4 className="t-body-sm leading-5">{record.title}</h4>
         <p
           className={cn(
-            'mt-1 truncate text-[12px]',
+            'mt-1 truncate t-caption',
             record.isAttentionNeeded || record.status === 'overdue'
               ? 'text-attention'
               : 'text-ink3',
@@ -64,7 +64,7 @@ export function RecordCard({
           {meta}
         </p>
       </div>
-      <p className={cn('num whitespace-nowrap pl-3 text-right text-[14px] font-medium', isInflow && 'text-action')}>
+      <p className={cn('num whitespace-nowrap pl-3 text-right t-body-sm font-medium', isInflow && 'text-action')}>
         {amount}
       </p>
       <DropdownMenu>

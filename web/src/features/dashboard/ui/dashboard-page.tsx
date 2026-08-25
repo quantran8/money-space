@@ -4,11 +4,15 @@ import { useTranslation } from 'react-i18next'
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
 import { useDashboardPage } from '@money-space/core/features/dashboard/hooks/use-dashboard-page'
-import { buildCoverage } from '@money-space/core/features/dashboard/model/home-derivations'
+import {
+  buildCoverage,
+  buildOverdue,
+} from '@money-space/core/features/dashboard/model/home-derivations'
 import { DashboardSkeleton } from '@/features/dashboard/ui/components/dashboard-skeleton'
 import { FinancialPictureSection } from '@/features/dashboard/ui/components/financial-picture-section'
 import { GoalsSection } from '@/features/dashboard/ui/components/goals-section'
 import { MoneySourcesSection } from '@/features/dashboard/ui/components/money-sources-section'
+import { OverdueSection } from '@/features/dashboard/ui/components/overdue-section'
 import { SpendingSection } from '@/features/dashboard/ui/components/spending-section'
 import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-section'
 
@@ -27,6 +31,7 @@ import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-sec
  *
  * The order is fixed by priority (§1.1, §9.1):
  *   1. Bức tranh hôm nay — flexible money, where it came from, how it splits
+ *   1b. Khoản quá hạn    — only when something is waiting on the household
  *   2. Ba mươi ngày tới  — the low point and the event sequence
  *   3. Mục tiêu          — every goal against the pace it needs
  *   4. Tiền đang ở đâu   — where the money sits, and how concentrated it is
@@ -99,14 +104,15 @@ export function DashboardPage() {
         onQuickUpdate={handleQuickUpdate}
       />
 
+      {/* Second, and above the forecast that already counts these: the only
+          thing on Home waiting on a person, and every figure in §12.2 is
+          computed as if it were already settled. Renders nothing when nothing
+          is overdue, so it costs no permanent card. */}
       {forecast ? (
-        <UpcomingSection
-          forecast={forecast}
-          cashflowEvents={cashflowEvents}
-          completingEventId={
-            completeCashflowEvent.isPending ? completing?.eventId : null
-          }
-          onCompleteOverdue={(eventId, occurrenceDate) => {
+        <OverdueSection
+          overdue={buildOverdue(forecast, cashflowEvents)}
+          pendingId={completeCashflowEvent.isPending ? completing?.eventId : null}
+          onComplete={(eventId, occurrenceDate) => {
             const source = cashflowEvents.find((event) => event.id === eventId)
             if (!source) return
             setCompleting({
@@ -120,6 +126,8 @@ export function DashboardPage() {
           }}
         />
       ) : null}
+
+      {forecast ? <UpcomingSection forecast={forecast} /> : null}
 
       {/* Spending and goals share one row: the month that happened beside the
           money already pointed somewhere. Both are narrower than a full-width

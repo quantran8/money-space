@@ -74,7 +74,7 @@ function Metric({
   return (
     <div className={className}>
       <Label>{label}</Label>
-      <p className={cn('money-number mt-2 text-[30px]', valueClassName)}>{value}</p>
+      <p className={cn('money-number mt-2 t-metric', valueClassName)}>{value}</p>
     </div>
   )
 }

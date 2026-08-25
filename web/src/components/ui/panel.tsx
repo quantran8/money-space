@@ -22,7 +22,7 @@ function hasDiacritics(value: string): boolean {
  * Use these instead of `Card`, whose radius/border/shadow belong to v3.x.
  */
 export function Panel({ className, ...props }: React.ComponentProps<'section'>) {
-  return <section className={cn('card-surface p-5 sm:p-6', className)} {...props} />
+  return <section className={cn('card-surface s-card', className)} {...props} />
 }
 
 /**
@@ -45,7 +45,7 @@ export function PanelHeader({
 }) {
   return (
     <div className={cn('flex items-baseline justify-between gap-4', className)}>
-      <h2 className="section-title text-[16px]">{title}</h2>
+      <h2 className="t-title">{title}</h2>
       {action ??
         (meta ? (
           // Mono only touches ASCII (§10.1): a Vietnamese `meta` keeps its
@@ -53,7 +53,7 @@ export function PanelHeader({
           // (dates, counts) is unaffected — it has no diacritics to lose.
           <span
             className={cn(
-              'text-[12px] text-ink3',
+              't-caption text-ink3',
               // v5 §5.1: mono is a treatment for ASCII, not a semantic role, and
               // must never touch accented Vietnamese. Metadata is plain sans.
               typeof meta === 'string' && hasDiacritics(meta) ? 'label-vi' : 'num',
@@ -75,7 +75,7 @@ export function PanelSplit({ className, ...props }: React.ComponentProps<'div'>)
   return (
     <div
       className={cn(
-        'mt-7 grid gap-x-14 gap-y-9 lg:grid-cols-[minmax(0,380px)_1fr]',
+        's-head-body s-split-gap grid lg:grid-cols-[minmax(0,380px)_1fr]',
         className,
       )}
       {...props}
@@ -114,8 +114,8 @@ export function TotalRow({
     <div className={cn('mt-4', className)}>
       <div className="divider" />
       <div className="mt-3 flex items-baseline justify-between gap-4">
-        <span className="text-[14px] text-ink2">{label}</span>
-        <span className="num text-[17px] font-medium">{value}</span>
+        <span className="t-body-sm text-ink2">{label}</span>
+        <span className="num t-body font-medium">{value}</span>
       </div>
     </div>
   )

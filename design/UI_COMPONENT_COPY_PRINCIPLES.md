@@ -153,33 +153,70 @@ Canonical weights:
 500
 ```
 
-Do not introduce `600` into the core type system unless explicitly added later to the design system.
+These are the only weights **loaded** (`web/index.html`). `600` is not a
+heavier option that is merely discouraged — it does not exist in the family, so
+asking for it makes the browser synthesise a smeared approximation. Enforced by
+`npm run lint`.
 
 ---
 
 ## 5.1. Type scale
 
-Canonical reference:
+Eleven steps, and nothing between them. Size and weight are **never written at
+the call site** — a component names the role the text plays and the scale
+decides what that looks like.
 
 ```text
-Display / page hero
-64px · 300 · -0.035em
-
-Hero money
-56px · 300 · -0.04em · tabular
-
-Primary KPI
-40px · 300 · -0.035em
-
-Subheading
-20px · 400
-
-Body
-16px · 400 · line-height 1.5
-
-Caption / metadata
-12px · 400
+t-display       72px · 500 · -0.035em · lh 1.02    page hero, one per page
+t-hero          56px · 400 · -0.04em  · lh 1.05    the page's primary money figure
+t-figure        40px · 400 · -0.035em · lh 1.1     a section's primary figure
+t-metric        28px · 400 · -0.03em  · lh 1.15    a summary-strip figure
+t-title         24px · 500 · -0.02em  · lh 1.3     the <h2> at the top of a card
+t-subtitle      20px · 500 · -0.01em  · lh 1.35    an <h3> one level inside it
+t-subhead       20px · 400            · lh 1.3     a subheading in running copy
+t-body          16px · 300            · lh 1.5     body copy
+t-body-sm       14px · 300            · lh 1.5     dense rows — tables, list items
+t-caption       12px · 300            · lh 1.45    metadata
+t-caption-sm    11px · 300            · lh 1.4     axis ticks, chart labels — the floor
 ```
+
+Weight descends as size does, which is what makes the surface read airy: the
+display line is the only 500 among the figures, the money tiers are 400, and
+everything at body size and below sits at 300.
+
+### The weight in a step is a default, not a lock
+
+Emphasis **inside** a step is allowed and expected — a name in a dense row
+takes `font-medium` to separate it from the note beneath it. What the scale
+does not permit is a size that is not one of the eleven.
+
+### Headings outrank the text they introduce
+
+```text
+t-title     24 · 500   ↑ a full size above t-subhead
+t-subtitle  20 · 500   ↑ same size as t-subhead, wins on weight
+t-subhead   20 · 400
+t-body      16 · 300
+```
+
+`t-title` and `t-subtitle` are **complete steps**: each sets its own size and
+weight and must never be paired with another `t-*` class. A section heading is
+one role, so it gets one appearance — pairing it with a step is what once let
+the same heading render at three different sizes across the app.
+
+`t-page-tracking` is the single exception: a **modifier** carrying tracking
+only, meant to be paired with a step, because page titles legitimately range
+from `t-metric` on a detail page to `t-display` on the dashboard.
+
+### Never
+
+- A raw `text-[Npx]` or a Tailwind preset (`text-sm`, `text-xs`, `text-2xl`).
+- `font-semibold` and above. Urbanist loads 300/400/500 only, so 600 is
+  synthesised by the browser — a smeared approximation of a weight the family
+  does not have.
+- A `t-*` step or `font-*` beside `t-title` / `t-subtitle`.
+
+All three fail `npm run lint` via `web/scripts/check-type-scale.mjs`.
 
 ---
 
@@ -261,41 +298,42 @@ This is important: amount direction and semantic state are not the same thing.
 Canonical scale:
 
 ```text
-4
-8
-12
-16
-20
-24
-32
-48
+4 · 8 · 12 · 16 · 20 · 24 · 28 · 32 · 48
 ```
 
-Desktop:
+### Named roles
+
+The positions the design system makes a promise about are **classes, not
+numbers** — the same reason type is `.t-*` and never `text-[16px]`. These are
+the ones a reviewer cannot check by eye, and the ones that had drifted.
 
 ```text
-Page edge           28–32
-Hero padding        28–32
-Card padding        20–24
-Large column gap    36–48
+.s-card         20 → 24 @sm     a card's inner padding
+.s-page         16 → 28 @lg     the page edge
+.s-card-gap     12              card → card
+.s-section-gap  20              section → section
+.s-head-body    28              a section header to its body
+.s-split-gap    48 / 32         the two columns of a PanelSplit
+.s-row          10 vertical     one row of a dense list
+.s-tap          44 min          the tappable box
 ```
 
-Mobile:
+Everything else stays plain Tailwind, on the scale. A one-off `mt-4` between
+two paragraphs is fine — it carries no rule anyone could get wrong.
 
-```text
-Page edge           16–20
-Card padding        18–20
-Touch target        44 minimum
-```
+### Touch targets
 
-Rhythm:
+44px is a floor, not a range. A control may **look** smaller — a compact
+toolbar button often should — but the box a finger has to hit may not be.
+`.s-tap` keeps the painted size and grows the hit area around it, so a dense
+row stays dense without any of it becoming hard to tap.
 
-```text
-Card → card         8–12
-Section → section   16–20
-Header → body       20–24
-Dense row vertical  10–12
-```
+### Never
+
+- A spacing step off the scale: `gap-14` (56), `py-10` (40), `mt-9` (36).
+- An interactive control whose hit box is under 44px and has no `.s-tap`.
+
+Both fail `npm run lint` via `web/scripts/check-design-scale.mjs`.
 
 When data is sparse:
 

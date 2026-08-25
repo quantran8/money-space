@@ -111,7 +111,7 @@ const SheetTitle = React.forwardRef<
   <SheetPrimitive.Title
     ref={ref}
     data-slot="sheet-title"
-    className={cn('page-title text-[19px]', className)}
+    className={cn('t-page-tracking t-subhead', className)}
     {...props}
   />
 ))
@@ -124,7 +124,7 @@ const SheetDescription = React.forwardRef<
   <SheetPrimitive.Description
     ref={ref}
     data-slot="sheet-description"
-    className={cn('text-[13px] leading-relaxed text-ink2', className)}
+    className={cn('t-body-sm leading-relaxed text-ink2', className)}
     {...props}
   />
 ))

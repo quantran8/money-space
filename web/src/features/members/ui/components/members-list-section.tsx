@@ -46,7 +46,7 @@ export function MembersListSection({
         title={t('household.merged.membersTitle')}
         action={
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[11px] text-ink3">
+            <span className="font-mono t-caption-sm text-ink3">
               {t('members.list.count', { count: members.length })}
             </span>
             {!isLoading && !isSolo ? (
@@ -78,14 +78,14 @@ export function MembersListSection({
 
       {isSolo ? (
         <div className="sunk mt-5 flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[13px] leading-5 text-ink2">{t('members.list.soloPrompt')}</p>
-          <Button type="button" className="h-10 shrink-0 px-4 text-[13px]" onClick={onInvite}>
+          <p className="t-body-sm leading-5 text-ink2">{t('members.list.soloPrompt')}</p>
+          <Button type="button" className="shrink-0 px-4 t-body-sm" onClick={onInvite}>
             {t('members.invite.action')}
           </Button>
         </div>
       ) : invitedCount > 0 ? (
         <div className="sunk mt-5 px-4 py-3.5">
-          <p className="text-[12px] leading-5 text-ink2">
+          <p className="t-caption leading-5 text-ink2">
             {t('members.list.invitedCount', { count: invitedCount })}
           </p>
         </div>

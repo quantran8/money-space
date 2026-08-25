@@ -17,7 +17,7 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
     <div data-slot="table-container" className="relative w-full overflow-x-auto">
       <table
         data-slot="table"
-        className={cn('w-full caption-bottom text-sm', className)}
+        className={cn('w-full caption-bottom t-body-sm', className)}
         {...props}
       />
     </div>
@@ -81,7 +81,7 @@ function TableCaption({ className, ...props }: React.ComponentProps<'caption'>) 
   return (
     <caption
       data-slot="table-caption"
-      className={cn('mt-4 text-[13px] text-ink3', className)}
+      className={cn('mt-4 t-body-sm text-ink3', className)}
       {...props}
     />
   )

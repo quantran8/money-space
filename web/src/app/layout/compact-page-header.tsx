@@ -16,7 +16,7 @@ type CompactPageHeaderProps = {
 export function CompactPageHeader({ title, actions }: CompactPageHeaderProps) {
   return (
     <header className="flex flex-col gap-4 pb-1 sm:flex-row sm:items-end sm:justify-between">
-      <h1 className="page-title text-[32px] leading-[1.08] lg:text-[40px]">{title}</h1>
+      <h1 className="t-page-tracking t-metric leading-[1.08] lg:t-figure">{title}</h1>
       {actions ? <div className="flex items-center gap-2.5">{actions}</div> : null}
     </header>
   )

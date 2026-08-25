@@ -32,9 +32,9 @@ export function SummaryTile({ label, value, dotColor, inverted, className }: Sum
         {dotColor ? (
           <span className="size-2.5 rounded-full" style={{ backgroundColor: dotColor }} />
         ) : null}
-        <p className="text-[14px] text-ink2">{label}</p>
+        <p className="t-body-sm text-ink2">{label}</p>
       </div>
-      <p className={cn('money-number mt-2 text-[28px]', inverted && 'font-normal text-ink')}>{value}</p>
+      <p className={cn('money-number mt-2 t-metric', inverted && 'font-normal text-ink')}>{value}</p>
     </div>
   )
 }

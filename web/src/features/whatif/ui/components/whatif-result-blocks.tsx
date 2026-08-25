@@ -41,10 +41,10 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           // Negative is never hidden — it is the answer.
           afterClassName={RESULT_TYPE_CLASS[result.resultType]}
         />
-        <p className="mt-2 text-xs text-ink2">
+        <p className="mt-2 t-caption text-ink2">
           {t('whatif.lowestBalanceOn', { date: after.lowestProjectedBalanceDate })}
         </p>
-        <p className="mt-2 text-xs text-ink2">
+        <p className="mt-2 t-caption text-ink2">
           {t('whatif.flexibleDelta', {
             amount: formatVndShort(Math.abs(delta.lowestProjectedBalance)),
           })}
@@ -57,14 +57,14 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
             this purchase's doing. */}
         {result.newlyAtRisk.length > 0 ? (
           <div className="mt-2">
-            <p className="text-sm text-attention">
+            <p className="t-body-sm text-attention">
               {t('whatif.blocks.atRisk')}
             </p>
             <ul className="mt-1 space-y-0.5">
               {result.newlyAtRisk.map((item) => (
                 <li
                   key={item.occurrenceKey}
-                  className="text-xs leading-5 text-ink2"
+                  className="t-caption leading-5 text-ink2"
                 >
                   {t('whatif.blocks.atRiskRow', {
                     date: item.date,
@@ -78,7 +78,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         ) : !after.obligationsCovered ? (
           // Something is short, but this spend did not cause it — say so
           // without attaching a list that would misattribute the blame.
-          <p className="mt-2 text-sm text-attention">
+          <p className="mt-2 t-body-sm text-attention">
             {t('whatif.obligations.notCovered')}
           </p>
         ) : null}
@@ -94,7 +94,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
               giving way, so it gets its own line rather than being folded into
               the per-goal list. */}
           {result.goalImpact.uncovered > 0 ? (
-            <p className="mb-2 text-sm text-alert">
+            <p className="mb-2 t-body-sm text-alert">
               {t('whatif.blocks.uncovered', {
                 amount: formatVndShort(result.goalImpact.uncovered),
               })}
@@ -116,7 +116,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           <ul className="space-y-1.5">
             {result.goalImpact.goals.map((goal) => (
               <li key={goal.goalId}>
-                <p className="text-sm">
+                <p className="t-body-sm">
                   {t('whatif.blocks.goalCostRow', {
                     name: goal.goalName ?? '—',
                     amount: formatVndShort(goal.reduction),
@@ -125,7 +125,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
                 {/* The time cost is the half that decides anything: "giảm 3tr"
                     says what leaves, "chậm 2 tháng" says what it costs. */}
                 {goal.delayMonths !== null && goal.delayMonths > 0 ? (
-                  <p className="text-xs leading-5 text-ink2">
+                  <p className="t-caption leading-5 text-ink2">
                     {goal.delayMonths >= 1
                       ? t('whatif.blocks.goalDelayRow', {
                           name: goal.goalName ?? '—',
@@ -149,14 +149,14 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
       {after.goal ? (
         <SubSection title={t('whatif.blocks.goal')}>
           {delta.goalDelayMonths !== null && delta.goalDelayMonths !== 0 ? (
-            <p className="text-sm">
+            <p className="t-body-sm">
               {t('whatif.goal.delay', { count: Math.abs(delta.goalDelayMonths) })}
             </p>
           ) : (
-            <p className="text-sm">{t('whatif.goal.noChange')}</p>
+            <p className="t-body-sm">{t('whatif.goal.noChange')}</p>
           )}
           {after.goal.projectedCompletionDate ? (
-            <p className="mt-2 text-xs text-ink2">
+            <p className="mt-2 t-caption text-ink2">
               {t('whatif.goal.projectedDate', {
                 date: after.goal.projectedCompletionDate,
               })}
@@ -214,8 +214,8 @@ function Row({
   const { t } = useTranslation()
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <p className="text-sm text-ink2">{label}</p>
-      <p className="money-number text-sm font-semibold">
+      <p className="t-body-sm text-ink2">{label}</p>
+      <p className="money-number t-body-sm font-medium">
         <span className="text-ink2">{before}</span>
         <span className="mx-2 text-ink2">
           {t('whatif.arrow')}

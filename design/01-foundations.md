@@ -245,65 +245,86 @@ Toàn app dùng Urbanist để giữ một register nhẹ, liền và editorial.
 
 ### 5.2 Weight roles
 
+Weight GIẢM theo size. Đây là điểm đảo so với v4 — trước đây display là 300 và
+body là 400, tức là chữ càng to càng mảnh và chữ càng nhỏ càng dày, khiến các
+dòng caption dày đặc nặng hơn cả con số chúng chú thích.
+
 ```txt
-300 Light
-→ display heading
-→ hero money
-→ large KPI / primary metric
+500 Medium
+→ display heading (t-display)
+→ card title / subsection title (t-title, t-subtitle)
+→ nav, button, semantic label, status/action text
+→ nhấn bên trong một bậc: tên khoản trong row dày
 
 400 Regular
-→ subheading
-→ body
-→ supporting copy
-→ metadata
+→ hero money (t-hero)
+→ figure / metric (t-figure, t-metric)
+→ subheading trong văn bản (t-subhead)
 
-500 Medium
-→ nav
-→ button
-→ card title
-→ semantic label
-→ status/action text
+300 Light
+→ body (t-body, t-body-sm)
+→ metadata (t-caption, t-caption-sm)
+→ mọi supporting copy
 ```
 
-Không dùng 600/700 trong core product UI.
+600/700 KHÔNG tồn tại: Urbanist chỉ load 300/400/500 (`web/index.html`), nên
+gọi 600 là bắt browser tự bôi đậm ra một weight giả. `npm run lint` chặn.
 
 ### 5.3 Core type scale
 
-Reference scale:
+Scale này từng viết bằng KHOẢNG (`56–72px`, `36–44px`), và đó chính là thứ đã
+làm app trôi ra 35 size khác nhau trên ~800 chỗ: "hero" là 56 ở card này, 60 ở
+card kia, 72 ở card thứ ba — không ai chọn cả, nó chỉ là hệ quả của việc size
+được quyết định tại chỗ gọi.
+
+Giờ mỗi bậc là MỘT giá trị, và size/weight không bao giờ viết ở chỗ gọi nữa:
+component gọi tên vai trò, scale quyết định hình dáng.
 
 ```txt
-Heading      72px / 300
-Subheading   20px / 400
-Body         16px / 400
+t-display       72px / 500 / -0.035em / lh 1.02    page hero, mỗi trang một cái
+t-hero          56px / 400 / -0.04em  / lh 1.05    số tiền chính của trang
+t-figure        40px / 400 / -0.035em / lh 1.1     số chính của một section
+t-metric        28px / 400 / -0.03em  / lh 1.15    số trong summary strip
+t-title         24px / 500 / -0.02em  / lh 1.3     <h2> đầu card
+t-subtitle      20px / 500 / -0.01em  / lh 1.35    <h3> một cấp bên trong
+t-subhead       20px / 400            / lh 1.3     subheading trong văn bản
+t-body          16px / 300            / lh 1.5     nội dung
+t-body-sm       14px / 300            / lh 1.5     row dày đặc — bảng, list
+t-caption       12px / 300            / lh 1.45    metadata
+t-caption-sm    11px / 300            / lh 1.4     nhãn trục, nhãn biểu đồ — sàn
 ```
 
-Money Space semantic scale:
+Weight giảm theo size — đó là thứ làm bề mặt đọc ra "airy": dòng display là 500
+duy nhất trong nhóm số, hai bậc tiền là 400, và mọi thứ từ body trở xuống là 300.
 
-```txt
-Display / page hero     56–72px / 300 / line-height .98–1.04
-Hero money              56–64px / 300 / tracking -0.04em
-Primary KPI             36–44px / 300 / tracking -0.035em
-Secondary metric        28–32px / 300
-Subheading              20px / 400
-Section title           16–20px / 500
-Body                    16px / 400 / line-height ≥1.45
-Secondary               14px / 400
-Caption / metadata      12px / 400
-Control / nav           12–14px / 500
-```
+Weight trong mỗi bậc là MẶC ĐỊNH, không phải khoá: nhấn bên trong một bậc vẫn
+được (`font-medium` cho tên khoản trong row dày). Thứ không được phép là một
+size nằm ngoài mười một bậc này.
+
+`t-title` / `t-subtitle` là bậc HOÀN CHỈNH — tự set size và weight, không bao
+giờ ghép với một `t-*` khác. Heading phải lớn hơn thứ nó giới thiệu: `t-title`
+24 cao hơn hẳn `t-subhead` 20; `t-subtitle` cùng 20px nhưng thắng bằng weight.
+`t-page-tracking` là ngoại lệ duy nhất — một modifier chỉ mang tracking, cố ý
+để ghép với một bậc, vì page title trải từ `t-metric` đến `t-display`.
+
+Định nghĩa: `web/src/index.css`. Kiểm tra: `web/scripts/check-type-scale.mjs`
+(chạy trong `npm run lint`) — `text-[Npx]`, preset Tailwind, `font-semibold`,
+và việc ghép bậc vào title class đều fail build.
 
 ### 5.4 Minimum readable size
 
-Không dùng 8–10px cho product information.
+`t-caption-sm` (11px) là SÀN. Không có bậc nào nhỏ hơn, kể cả cho decorative —
+trước đây có 9px và 10px rải rác, và ở cỡ đó dấu tiếng Việt không còn phân giải
+được ở khoảng cách đọc bình thường.
 
-12px là minimum cho metadata có ý nghĩa.
-
-10px chỉ được phép cho decorative preview/artwork không cần đọc để hoàn thành task.
+12px (`t-caption`) là bậc bình thường cho metadata có ý nghĩa; 11px dành cho
+nhãn trục và nhãn biểu đồ.
 
 ### 5.5 Vietnamese
 
-- Body tiếng Việt dùng 400.
-- Heading tiếng Việt có thể dùng 300.
+- Body tiếng Việt dùng 300 (`t-body`), theo scale — không còn 400.
+- Heading tiếng Việt dùng 500 (`t-title`), không dùng 300: ở weight mảnh, dấu
+  tiếng Việt là thứ mất trước tiên.
 - Không tracking âm trên câu dài tiếng Việt.
 - Tracking âm chỉ ưu tiên money number / ASCII display.
 - Uppercase + tracking rộng chỉ dùng cho label rất ngắn; không biến toàn UI thành uppercase metadata.
@@ -347,23 +368,40 @@ Rules:
 ### Scale
 
 ```txt
-4 · 8 · 12 · 16 · 20 · 24 · 32 · 48
+4 · 8 · 12 · 16 · 20 · 24 · 28 · 32 · 48
 ```
+
+28 nằm trong scale (trước đây thiếu, dù chính bảng dưới đã dùng nó cho page
+edge và hero padding — code dùng 71 chỗ).
 
 ### Applied
 
+Mỗi vị trí là MỘT giá trị, không phải khoảng. Khoảng là thứ đã cho phép cùng
+một vị trí render ra ba số khác nhau.
+
 ```txt
-Page edge desktop          28–32px
-Page edge mobile           16–20px
-Hero padding desktop       28–32px
-Card padding desktop       20–24px
-Card padding mobile        18–20px
-Card → card gap            8–12px
-Section → section          16–20px
-Header → body              20–24px
-Large internal column gap  36–48px
-Dense row                  10–12px vertical
+Page edge desktop          28px      .s-page @lg
+Page edge mobile           16px      .s-page
+Hero padding desktop       28px
+Card padding desktop       24px      .s-card @sm
+Card padding mobile        20px      .s-card
+Card → card gap            12px      .s-card-gap
+Section → section          20px      .s-section-gap
+Header → body              28px      .s-head-body
+Large internal column gap  48px/32px .s-split-gap
+Dense row                  10px dọc  .s-row
+Touch target               44px min  .s-tap
 ```
+
+Năm vị trí trên là những chỗ design system có RÀNG BUỘC, nên chúng là class chứ
+không phải số — cùng lý do type dùng `.t-*` thay vì `text-[16px]`. Chỗ khác vẫn
+dùng Tailwind bình thường (`mt-4` giữa hai đoạn văn không mang luật gì cả),
+miễn là nằm trên scale.
+
+`.s-tap` giữ nguyên kích thước VẼ RA của control và chỉ nới vùng chạm quanh nó,
+nên một toolbar dày vẫn dày mà mọi nút vẫn chạm được.
+
+Định nghĩa: `web/src/index.css`. Kiểm tra: `web/scripts/check-design-scale.mjs`.
 
 Clerio-like density đến từ **card gap nhỏ + surface phẳng**, không phải bằng nested container.
 

@@ -56,7 +56,7 @@ export function NetWorthPage() {
   const {
     asOf,
     total,
-    assetCount,
+    totals,
     filteredAssets,
     isLoading,
     query,
@@ -114,7 +114,7 @@ export function NetWorthPage() {
         title={t('networth.header.title')}
         actions={
           <Button
-            className="h-10 px-4 text-[13px]"
+            className="s-tap h-10 px-4 t-body-sm"
             // Wrapped, not passed by reference: `openAssetCreate` takes an
             // optional acquisition and a click event would land in it.
             onClick={onAssets ? () => openAssetCreate() : debtsPage.openCreate}
@@ -131,9 +131,8 @@ export function NetWorthPage() {
           halves on one route, so it must not flicker when the tab changes. */}
       <AssetsSummaryStrip
         total={total}
-        assetCount={assetCount}
+        totals={totals}
         totalDebt={totalDebt}
-        debtCount={activeDebts.length}
         asOf={asOf || AS_OF}
       />
 
@@ -142,6 +141,7 @@ export function NetWorthPage() {
           assets={filteredAssets}
           isLoading={isLoading}
           asOf={asOf || AS_OF}
+          total={total}
           query={query}
           onQueryChange={setQuery}
           liquidityFilter={liquidityFilter}

@@ -34,7 +34,7 @@ export function StatusChip({
   className?: string
 }) {
   return (
-    <p className={cn('flex items-center gap-2 text-[14px]', TEXT[tone], className)}>
+    <p className={cn('flex items-center gap-2 t-body-sm', TEXT[tone], className)}>
       <span
         className="h-1.5 w-1.5 shrink-0 rounded-full"
         style={{ background: DOT[tone] }}

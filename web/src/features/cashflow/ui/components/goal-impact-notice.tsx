@@ -76,7 +76,7 @@ export function GoalImpactNotice({
   if (!hasFigures) {
     return (
       <div className="rounded-control bg-wash px-4 py-3">
-        <p className="text-[13px] leading-5 text-ink2">
+        <p className="t-body-sm leading-5 text-ink2">
           {t('upcoming.complete.goalImpact.pending')}
         </p>
       </div>
@@ -103,14 +103,14 @@ export function GoalImpactNotice({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="label-vi">{t('upcoming.complete.goalImpact.spendLabel')}</p>
-          <p className="money-number mt-1 text-[26px]">
+          <p className="money-number mt-1 t-metric">
             {formatVndShort(impact.totalReduction)}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] text-ink3">{t('upcoming.complete.goalImpact.takenFrom')}</p>
+          <p className="t-caption-sm text-ink3">{t('upcoming.complete.goalImpact.takenFrom')}</p>
           <p
-            className={`mt-1 text-[13px] font-medium ${
+            className={`mt-1 t-body-sm font-medium ${
               reachesSetAside ? 'text-attention' : 'text-action'
             }`}
           >
@@ -123,7 +123,7 @@ export function GoalImpactNotice({
 
       {/* The spend divided across its sources — the mechanism, drawn. */}
       <div className="mt-5">
-        <p className="text-[11px] text-ink3">
+        <p className="t-caption-sm text-ink3">
           {t('upcoming.complete.goalImpact.allocationLabel', {
             amount: formatVndShort(impact.totalReduction),
           })}
@@ -137,7 +137,7 @@ export function GoalImpactNotice({
 
         {/* A legend only when there are two slices to tell apart. */}
         {reachesSetAside && impact.totalPaceReduction > 0 ? (
-          <div className="mt-2 grid gap-2 text-[11px] sm:grid-cols-2">
+          <div className="mt-2 grid gap-2 t-caption-sm sm:grid-cols-2">
             <LegendItem fill="var(--accent)" label={t('upcoming.complete.goalImpact.legendPace')} />
             <LegendItem
               fill="var(--attention)"
@@ -173,7 +173,7 @@ export function GoalImpactNotice({
           {impact.goals.map((goal) => (
             <li
               key={goal.goalId}
-              className="flex items-baseline justify-between gap-4 text-[12px] leading-5"
+              className="flex items-baseline justify-between gap-4 t-caption leading-5"
             >
               <span className="min-w-0 truncate text-ink2">{goal.goalName}</span>
               <span className="num shrink-0 text-ink2">
@@ -195,7 +195,7 @@ export function GoalImpactNotice({
       ) : null}
 
       {/* The sentence that explains the whole thing, sized to be read. */}
-      <p className="mt-4 text-[12px] leading-5 text-ink2">
+      <p className="mt-4 t-caption leading-5 text-ink2">
         {reachesSetAside
           ? t('upcoming.complete.goalImpact.explainSetAside', {
               pace: formatVndShort(impact.totalPaceReduction),
@@ -208,7 +208,7 @@ export function GoalImpactNotice({
           not `freeAmount`: the latter only subtracts what is set aside, so it
           would claim money is free directly above a list showing that same money
           coming out of the goals. */}
-      <p className="mt-2 text-[12px] leading-5 text-ink3">
+      <p className="mt-2 t-caption leading-5 text-ink3">
         {t(
           unassignedAmount > 0
             ? 'upcoming.complete.goalImpact.subtitleSomeFree'
@@ -224,7 +224,7 @@ export function GoalImpactNotice({
       {/* A shortfall is a different fact from "your goal shrinks", so it gets
           its own line rather than being folded into anything above. */}
       {impact.exceedsWallet ? (
-        <p className="mt-2 text-[12px] leading-5 text-alert">
+        <p className="mt-2 t-caption leading-5 text-alert">
           {t('upcoming.complete.goalImpact.exceedsWallet', {
             value: formatVndShort(impact.assetValue),
           })}
@@ -249,14 +249,14 @@ function ChangeRow({
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-5 gap-y-1">
       <div className="min-w-0">
-        <p className="text-[11px] text-ink3">{label}</p>
+        <p className="t-caption-sm text-ink3">{label}</p>
         <div className="mt-1.5 flex items-center gap-3">
-          <span className="num text-[15px] text-ink3">{before}</span>
+          <span className="num t-body-sm text-ink3">{before}</span>
           <ArrowRight className="size-4 shrink-0 text-ink3" strokeWidth={1.5} aria-hidden="true" />
-          <span className="money-number text-[22px]">{after}</span>
+          <span className="money-number t-metric">{after}</span>
         </div>
       </div>
-      {delta ? <span className="num mb-1 text-[12px] font-medium text-attention">{delta}</span> : null}
+      {delta ? <span className="num mb-1 t-caption font-medium text-attention">{delta}</span> : null}
     </div>
   )
 }

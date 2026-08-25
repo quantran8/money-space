@@ -78,14 +78,14 @@ export function GoalsListSection({
   return (
     <Panel>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="section-title text-[16px]">{t('goals.demo.listTitle')}</h2>
+        <h2 className="t-title">{t('goals.demo.listTitle')}</h2>
         <label className="sunk flex h-10 items-center gap-2 px-3 sm:w-[250px]">
           <Search className="size-4 text-ink3" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t('goals.list.searchPlaceholder')}
-            className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink3"
+            className="min-w-0 flex-1 bg-transparent t-body-sm outline-none placeholder:text-ink3"
           />
         </label>
       </div>
@@ -95,8 +95,8 @@ export function GoalsListSection({
           ? <div className="space-y-2">{Array.from({ length: 3 }).map((_, index) => <GoalRowSkeleton key={index} />)}</div>
           : null}
         {!isLoading && goals.length === 0 ? (
-          <div className="py-10 text-center">
-            <p className="text-[13px] text-ink2">{t('goals.list.empty')}</p>
+          <div className="py-8 text-center">
+            <p className="t-body-sm text-ink2">{t('goals.list.empty')}</p>
             <Button size="sm" className="mt-4" onClick={onCreate}>
               <Plus className="size-4" />
               {t('goals.form.submit')}
@@ -104,13 +104,13 @@ export function GoalsListSection({
           </div>
         ) : null}
         {!isLoading && goals.length > 0 && visibleGoals.length === 0 ? (
-          <p className="rounded-control bg-wash px-4 py-10 text-center text-[13px] text-ink2">{t('goals.list.emptySearch')}</p>
+          <p className="rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">{t('goals.list.emptySearch')}</p>
         ) : null}
 
         {!isLoading && goalViews.length > 0 ? (
           <>
             <div className="hidden lg:block">
-              <Table className="table-fixed text-left text-[14px]" aria-label={t('goals.table.ariaLabel')}>
+              <Table className="table-fixed text-left t-body-sm" aria-label={t('goals.table.ariaLabel')}>
                 <TableHeader>
                   {/* `.label-vi`: accented headings, which mono renders poorly (§10.1). */}
                   <TableRow className="label-vi hover:bg-transparent">
@@ -195,11 +195,11 @@ function GoalName({ goal, isPrimary, onOpen }: { goal: GoalItem; isPrimary: bool
           event.stopPropagation()
           onOpen(goal.id)
         }}
-        className="truncate text-left text-[14px] font-medium hover:text-action"
+        className="truncate text-left t-body-sm font-medium hover:text-action"
       >
         {goal.name}
       </button>
-      {isPrimary ? <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-action">{t('home.mainGoal.badge')}</span> : null}
+      {isPrimary ? <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 t-caption-sm font-medium text-action">{t('home.mainGoal.badge')}</span> : null}
     </div>
   )
 }
@@ -228,9 +228,9 @@ function GoalPlan({ desiredDate, projectedDate, monthly, paceGapMonths }: { desi
       ? t('goals.table.lateBy', { count: paceGapMonths })
       : t('goals.table.earlyBy', { count: Math.abs(paceGapMonths) })
   return (
-    <dl className="grid grid-cols-[88px_1fr] gap-x-4 gap-y-1.5 text-[12px]">
+    <dl className="grid grid-cols-[88px_1fr] gap-x-4 gap-y-1.5 t-caption">
       <dt className="text-ink3">{t('goals.table.desired')}</dt><dd className="font-mono font-medium">{desiredDate}</dd>
-      <dt className="text-ink3">{t('goals.table.projected')}</dt><dd><span className={paceGapMonths != null && paceGapMonths > 0 ? 'font-mono font-medium text-attention' : 'font-mono font-medium'}>{projectedDate}</span>{paceLabel ? <span className={paceGapMonths != null && paceGapMonths > 0 ? 'ml-2 text-[11px] text-attention' : 'ml-2 text-[11px] text-ink3'}>{paceLabel}</span> : null}</dd>
+      <dt className="text-ink3">{t('goals.table.projected')}</dt><dd><span className={paceGapMonths != null && paceGapMonths > 0 ? 'font-mono font-medium text-attention' : 'font-mono font-medium'}>{projectedDate}</span>{paceLabel ? <span className={paceGapMonths != null && paceGapMonths > 0 ? 'ml-2 t-caption-sm text-attention' : 'ml-2 t-caption-sm text-ink3'}>{paceLabel}</span> : null}</dd>
       <dt className="text-ink3">{t('goals.table.monthly')}</dt><dd className="num font-medium">{monthly}</dd>
     </dl>
   )
@@ -241,7 +241,7 @@ function GoalActions({ goal, onOpen, onEdit, onDelete }: { goal: GoalItem; onOpe
   // A goal's one real action: choose which money counts towards it.
   return (
     <div className="inline-flex items-start gap-1">
-      <Button type="button" variant="ghost" size="sm" className="h-10 px-3" onClick={() => onOpen(goal.id)}>
+      <Button type="button" variant="ghost" size="sm" className="px-3" onClick={() => onOpen(goal.id)}>
         {t('goals.actions.manageAssets')}
       </Button>
       <GoalMenu goalId={goal.id} goalName={goal.name} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
@@ -266,7 +266,7 @@ function GoalMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-10 text-ink2" aria-label={t('goals.actions.menuFor', { name: goalName })}>
+        <Button variant="ghost" size="icon" className="s-tap size-10 text-ink2" aria-label={t('goals.actions.menuFor', { name: goalName })}>
           <MoreVertical className="size-4" />
         </Button>
       </DropdownMenuTrigger>

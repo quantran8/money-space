@@ -53,7 +53,7 @@ export function SpendingSection({
         meta={t('home.spending.meta', { date: formatDayMonth(asOfDate) })}
       />
 
-      <div className="mt-7 grid gap-7 sm:grid-cols-2 sm:gap-10">
+      <div className="mt-7 grid gap-7 sm:grid-cols-2 sm:gap-8">
         <SpendingTotal
           icon={ArrowDownLeft}
           label={t('home.spending.income')}
@@ -72,7 +72,7 @@ export function SpendingSection({
 
       {recentEvents.length > 0 ? (
         <div className="mt-8">
-          <h3 className="flex items-center gap-2 text-[14px] font-medium">
+          <h3 className="flex items-center gap-2 t-subtitle">
             <History className="size-4 shrink-0 text-ink2" strokeWidth={1.7} aria-hidden />
             {t('home.spending.recent')}
           </h3>
@@ -86,18 +86,18 @@ export function SpendingSection({
                   index > 0 && 'border-t border-divider',
                 )}
               >
-                <span className="num w-10 shrink-0 font-mono text-[11px] text-ink3">
+                <span className="num w-10 shrink-0 font-mono t-caption-sm text-ink3">
                   {formatDayMonth(event.isoDate)}
                 </span>
                 <div className="min-w-0">
                   {/* The note is what the household actually wrote; the type is
                       the fallback when they wrote nothing, so a row is never
                       blank. */}
-                  <p className="truncate text-[13px] font-medium">
+                  <p className="truncate t-body-sm font-medium">
                     {event.note || t(`options.eventType.${event.type}`)}
                   </p>
                   {event.category ? (
-                    <p className="truncate text-[12px] text-ink2">
+                    <p className="truncate t-caption text-ink2">
                       {/* Categories are enum-like, so they resolve through a
                           keyed lookup and fall back to the raw value for a
                           household's own custom category. */}
@@ -111,12 +111,12 @@ export function SpendingSection({
                     the data's, not something re-derived from `direction`. */}
                 <span
                   className={cn(
-                    'num shrink-0 text-[13px] font-medium',
+                    'num shrink-0 t-body-sm font-medium',
                     event.amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
                   )}
                 >
                   {formatVndCellSigned(event.amount)}{' '}
-                  <span className="font-mono text-[11px] font-normal text-ink3">
+                  <span className="font-mono t-caption-sm text-ink3">
                     {t('units.million')}
                   </span>
                 </span>
@@ -126,7 +126,7 @@ export function SpendingSection({
 
           <Link
             to="/events"
-            className="mt-3 inline-flex min-h-11 items-center text-[13px] font-medium text-action"
+            className="mt-3 inline-flex min-h-11 items-center t-body-sm font-medium text-action"
           >
             {t('home.spending.viewAll')}
           </Link>
@@ -165,12 +165,12 @@ function SpendingTotal({
         <Icon className={cn('size-5', tone)} strokeWidth={1.8} />
       </span>
       <div className="min-w-0">
-        <p className="text-[13px] font-medium">{label}</p>
+        <p className="t-body-sm font-medium">{label}</p>
         {/* `formatVndScale` carries its own unit ("21,6 tr"), so no unit span
             is appended here — that would print it twice (§10.4). */}
         <p
           className={cn(
-            'num mt-1 text-[36px] leading-[1.06] font-medium tracking-[-.035em] sm:text-[42px]',
+            'num mt-1 t-figure leading-[1.06]',
             tone,
           )}
         >

@@ -110,7 +110,7 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
           <EventField
             label={t('whatif.form.amount')}
             htmlFor="whatif-amount"
-            trailing={<span className="text-[13px] text-ink2">đ</span>}
+            trailing={<span className="t-body-sm text-ink2">đ</span>}
           >
             <EventMoneyInput
               id="whatif-amount"

@@ -78,7 +78,10 @@ Urbanist 300/400/500 thay Be Vietnam Pro. Mono không còn là motif mặc đị
 `.label` bỏ IBM Plex Mono, vì mono là **treatment cho ASCII**, không phải một
 semantic role — và không bao giờ chạm vào tiếng Việt có dấu.
 
-Money number dùng weight 300, không phải 500.
+Money number dùng weight 400 (`t-hero`, `t-figure`, `t-metric`) — v4 để 300,
+nhưng ở size lớn 300 quá mảnh để mang con số chính của trang. Weight giờ giảm
+theo size: 500 cho display và heading, 400 cho các bậc tiền, 300 cho body và
+metadata. Xem `01-foundations.md` §5.2–5.3.
 
 ## 8. Component structure
 

@@ -123,10 +123,10 @@ export function EventsTimelineCard({
             <ChevronLeft className="size-4" strokeWidth={1.75} />
           </button>
           <div className="min-w-[164px] text-center">
-            <h2 className="section-title text-[16px] capitalize">
+            <h2 className="t-title capitalize">
               {monthLabel(selectedMonth, locale)}
             </h2>
-            <span className="font-mono text-[11px] text-ink3">
+            <span className="font-mono t-caption-sm text-ink3">
               {t('events.history.changeCount', { count: filteredRecords.length })}
             </span>
           </div>
@@ -170,14 +170,14 @@ export function EventsTimelineCard({
       <div className="mt-8">
         {isLoading ? <TimelineSkeleton /> : null}
         {!isLoading && filteredRecords.length === 0 ? (
-          <p className="sunk px-5 py-12 text-center text-[13px] text-ink2">
+          <p className="sunk px-5 py-12 text-center t-body-sm text-ink2">
             {t('events.history.empty')}
           </p>
         ) : null}
         {!isLoading
           ? recordsByDate.map(([date, items], index) => (
               <section key={date} className={index === 0 ? '' : 'mt-7'}>
-                <h3 className="px-3 pb-2 pt-1 font-mono text-[11px] font-medium uppercase text-ink3">
+                <h3 className="px-3 pb-2 pt-1 font-mono t-caption-sm font-medium uppercase text-ink3">
                   {formatGroupDate(date, TODAY, locale, t('events.history.today'))}
                 </h3>
                 <div className="space-y-1">
@@ -195,7 +195,7 @@ export function EventsTimelineCard({
 
         {!isLoading && filteredRecords.length > 0 ? (
           <div className="sunk mt-8 flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[12px] text-ink2">
+            <p className="t-caption text-ink2">
               {t('events.history.showing', {
                 from: firstVisible,
                 to: lastVisible,
@@ -206,7 +206,7 @@ export function EventsTimelineCard({
               <button
                 type="button"
                 disabled={safePage === 1}
-                className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] text-ink3 hover:bg-card disabled:opacity-40"
+                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption text-ink3 hover:bg-card disabled:opacity-40"
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
                 <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -217,13 +217,13 @@ export function EventsTimelineCard({
                 return (
                   <span key={pageNumber} className="contents">
                     {previous && pageNumber - previous > 1 ? (
-                      <span className="grid size-9 place-items-center text-[12px] text-ink3">…</span>
+                      <span className="grid size-9 place-items-center t-caption text-ink3">…</span>
                     ) : null}
                     <button
                       type="button"
                       aria-current={safePage === pageNumber ? 'page' : undefined}
                       className={cn(
-                        'grid size-9 place-items-center rounded-control text-[12px]',
+                        'grid size-9 place-items-center rounded-control t-caption',
                         safePage === pageNumber
                           ? 'bg-card font-medium text-ink'
                           : 'text-ink2 hover:bg-card',
@@ -238,7 +238,7 @@ export function EventsTimelineCard({
               <button
                 type="button"
                 disabled={safePage === totalPages}
-                className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] font-medium text-action hover:bg-card disabled:opacity-40"
+                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption font-medium text-action hover:bg-card disabled:opacity-40"
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
                 {t('events.history.next')}
@@ -272,9 +272,9 @@ function FilterSelect({
         className,
       )}
     >
-      <span className="shrink-0 text-[12px] text-ink3">{label}</span>
+      <span className="shrink-0 t-caption text-ink3">{label}</span>
       <select
-        className="min-w-0 flex-1 appearance-none bg-transparent text-[13px] text-ink outline-none"
+        className="min-w-0 flex-1 appearance-none bg-transparent t-body-sm text-ink outline-none"
         value={value}
         onChange={(event) => onChange(event.target.value)}
       >

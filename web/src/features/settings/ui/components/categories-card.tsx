@@ -115,13 +115,13 @@ export function CategoriesCard() {
     <Panel>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="section-title text-[16px]">{t('settings.categories.title')}</h2>
-          <p className="mt-2 max-w-[680px] text-[12px] leading-5 text-ink2">
+          <h2 className="t-title">{t('settings.categories.title')}</h2>
+          <p className="mt-2 max-w-[680px] t-caption leading-5 text-ink2">
             {t('settings.categories.description')}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <span className="font-mono text-[11px] text-ink3">
+          <span className="font-mono t-caption-sm text-ink3">
             {t('household.merged.categoryCount', {
               system: categories.filter((category) => category.isSystem).length,
               custom: categories.filter((category) => !category.isSystem).length,
@@ -136,7 +136,7 @@ export function CategoriesCard() {
 
       <ul className="mt-7 grid gap-x-8 gap-y-1 md:grid-cols-2">
         {categories.length === 0 ? (
-          <li className="rounded-control bg-wash px-4 py-8 text-center text-[13px] text-ink2 md:col-span-2">
+          <li className="rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2 md:col-span-2">
             {t('settings.categories.empty')}
           </li>
         ) : null}
@@ -158,17 +158,17 @@ export function CategoriesCard() {
               ) : (
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="truncate text-[13px] font-medium text-foreground">
+                    <p className="truncate t-body-sm font-medium text-foreground">
                       {displayName(category)}
                     </p>
                     {category.isDefault ? (
-                      <Badge variant="secondary" className="shrink-0 text-[10px]">
+                      <Badge variant="secondary" className="shrink-0 t-caption-sm">
                         {t('settings.categories.default')}
                       </Badge>
                     ) : null}
                   </div>
                   {!category.isSystem ? (
-                    <p className="truncate text-[10px] text-ink3">
+                    <p className="truncate t-caption-sm text-ink3">
                       {category.code}
                     </p>
                   ) : null}
@@ -200,7 +200,7 @@ export function CategoriesCard() {
               ) : null}
 
               {category.isSystem ? (
-                <Badge variant="secondary" className="text-[10px] text-ink3">{t('settings.categories.system')}</Badge>
+                <Badge variant="secondary" className="t-caption-sm text-ink3">{t('settings.categories.system')}</Badge>
               ) : isEditing ? (
                 <div className="flex shrink-0 items-center gap-1">
                   <Button

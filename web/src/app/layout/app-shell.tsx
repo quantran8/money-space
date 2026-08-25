@@ -132,7 +132,7 @@ function SimulateButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex h-11 w-full items-center justify-center gap-2 rounded-pill bg-action text-[14px] font-medium text-action-inverse"
+      className="flex h-11 w-full items-center justify-center gap-2 rounded-pill bg-action t-body-sm font-medium text-action-inverse"
     >
       <Calculator className="size-4" strokeWidth={1.5} />
       {t('home.picture.simulate')}
@@ -157,7 +157,7 @@ function HouseholdFooter() {
             <span
               key={member.id}
               className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-full bg-card text-[10px] text-ink2',
+                'flex h-7 w-7 items-center justify-center rounded-full bg-card t-caption-sm text-ink2',
                 index > 0 && '-ml-2',
               )}
             >
@@ -165,18 +165,18 @@ function HouseholdFooter() {
             </span>
           ))
         ) : (
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-card text-[10px] text-ink2">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-card t-caption-sm text-ink2">
             {activeHousehold?.name?.trim().charAt(0).toUpperCase() ?? 'M'}
           </span>
         )}
       </div>
 
       <div className="min-w-0">
-        <p className="truncate text-[12px]">
+        <p className="truncate t-caption">
           {activeHousehold?.name ?? t('shell.householdName')}
         </p>
         {active.length > 0 ? (
-          <p className="font-mono text-[10px] text-ink3">{active.length}</p>
+          <p className="font-mono t-caption-sm text-ink3">{active.length}</p>
         ) : null}
       </div>
     </div>
@@ -287,7 +287,7 @@ export function AppShell() {
     <div className="shell-backdrop flex h-dvh overflow-hidden">
       <aside className="glass glass-edge hidden w-[72px] shrink-0 flex-col items-center py-5 lg:flex">
         <span
-          className="flex size-9 items-center justify-center rounded-pill bg-action text-[13px] font-medium text-action-inverse"
+          className="flex size-9 items-center justify-center rounded-pill bg-action t-body-sm font-medium text-action-inverse"
           aria-label="Money Space"
           title="Money Space"
         >
@@ -308,10 +308,10 @@ export function AppShell() {
       <main ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto">
         <Dialog.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
           <header className="flex items-center gap-3 px-5 py-3 lg:hidden">
-            <span className="flex size-7 items-center justify-center rounded-pill bg-action text-[12px] font-medium text-action-inverse">
+            <span className="flex size-7 items-center justify-center rounded-pill bg-action t-caption font-medium text-action-inverse">
               M
             </span>
-            <p className="text-[15px] font-medium">Money Space</p>
+            <p className="t-body-sm font-medium">Money Space</p>
 
             <Dialog.Trigger asChild>
               <button
@@ -332,12 +332,12 @@ export function AppShell() {
             <Dialog.Content className="glass fixed inset-y-0 right-0 z-50 flex w-[280px] max-w-[82vw] flex-col rounded-none px-4 py-5 outline-none data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=closed]:duration-200 data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=open]:duration-300 lg:hidden">
               <div className="flex items-center gap-2.5 px-3">
                 <span
-                  className="flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-medium text-white"
+                  className="flex h-6 w-6 items-center justify-center rounded-md t-caption-sm font-medium text-white"
                   style={{ background: 'var(--accent)' }}
                 >
                   M
                 </span>
-                <Dialog.Title className="text-[15px] font-medium">Money Space</Dialog.Title>
+                <Dialog.Title className="t-body-sm font-medium">Money Space</Dialog.Title>
                 <Dialog.Close
                   className="ml-auto flex size-9 items-center justify-center rounded-lg text-ink3"
                   aria-label={t('shell.closeMenu')}
@@ -376,7 +376,7 @@ export function AppShell() {
               no sheet, no wrapper panel (01-foundations §2.2). */}
           {/* Cards sit on `--canvas`; the tinted backdrop stays behind the
               chrome only, so no card is ever asked to read against it. */}
-          <div className="min-h-full flex-1 bg-canvas px-4 py-5 pb-24 lg:px-7 lg:py-6 lg:pb-8">
+          <div className="min-h-full flex-1 bg-canvas s-page pb-24 lg:pb-8">
             <div className="mx-auto w-full max-w-[1280px]">
               <Outlet />
             </div>

@@ -436,7 +436,7 @@ Bên trong dùng columns + dividers, không nested KPI cards.
 ### Desktop ≥1024
 
 - Compact rail hoặc labeled sidebar tùy discoverability.
-- Hero 56–72px heading.
+- Hero heading dùng `t-display` (72/500); số tiền hero dùng `t-hero` (56/400).
 - Grid chỉ khi mỗi card có answer thật.
 - 2-column theo threshold, không theo template.
 

@@ -52,7 +52,7 @@ function DropdownMenuSubTrigger({
     <DropdownMenuPrimitive.SubTrigger
       data-slot="dropdown-menu-sub-trigger"
       className={cn(
-        'focus:bg-wash focus:text-ink data-[state=open]:bg-wash data-[state=open]:text-ink flex cursor-default items-center rounded-control px-3 py-2 text-sm outline-none select-none',
+        'focus:bg-wash focus:text-ink data-[state=open]:bg-wash data-[state=open]:text-ink flex cursor-default items-center rounded-control px-3 py-2 t-body-sm outline-none select-none',
         inset && 'pl-8',
         className,
       )}
@@ -116,7 +116,7 @@ function DropdownMenuItem({
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
       className={cn(
-        'focus:bg-wash focus:text-ink relative flex cursor-default items-center gap-2 rounded-control px-3 py-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+        'focus:bg-wash focus:text-ink relative flex cursor-default items-center gap-2 rounded-control px-3 py-2 t-body-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
         inset && 'pl-8',
         className,
       )}
@@ -135,7 +135,7 @@ function DropdownMenuCheckboxItem({
     <DropdownMenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
       className={cn(
-        'focus:bg-wash focus:text-ink relative flex cursor-default items-center rounded-control py-2 pr-3 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'focus:bg-wash focus:text-ink relative flex cursor-default items-center rounded-control py-2 pr-3 pl-8 t-body-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className,
       )}
       checked={checked}
@@ -160,7 +160,7 @@ function DropdownMenuRadioItem({
     <DropdownMenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       className={cn(
-        'focus:bg-wash focus:text-ink relative flex cursor-default items-center rounded-control py-2 pr-3 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        'focus:bg-wash focus:text-ink relative flex cursor-default items-center rounded-control py-2 pr-3 pl-8 t-body-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className,
       )}
       {...props}

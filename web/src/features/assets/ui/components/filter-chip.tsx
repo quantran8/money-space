@@ -12,7 +12,7 @@ export function FilterChip({ label, active, onClick }: FilterChipProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+        'rounded-full px-4 py-2 t-body-sm font-medium transition-colors',
         active
           ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
           : 'bg-wash text-ink2 hover:text-[hsl(var(--foreground))]',

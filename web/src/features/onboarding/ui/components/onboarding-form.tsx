@@ -40,12 +40,12 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
 
   return (
     <div>
-      <h1 className="page-title text-[31px] leading-[1.2] sm:text-[38px]">
+      <h1 className="t-page-tracking t-metric leading-[1.2] sm:t-figure">
         {t('onboarding.form.title')}
       </h1>
 
       <form className="mt-8" onSubmit={onSubmit} noValidate>
-        <label htmlFor="household-name" className="mb-2 block text-[13px] text-ink2">
+        <label htmlFor="household-name" className="mb-2 block t-body-sm text-ink2">
           {t('onboarding.form.nameLabel')}
         </label>
         <Input
@@ -54,11 +54,11 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
           placeholder={t('onboarding.form.namePlaceholder')}
           autoComplete="off"
           aria-invalid={!!errors.name}
-          className="text-base"
+          className="t-body"
           {...register('name')}
         />
         {errors.name?.message ? (
-          <p className="mt-2 text-[12px] font-medium text-alert">{errors.name.message}</p>
+          <p className="mt-2 t-caption font-medium text-alert">{errors.name.message}</p>
         ) : null}
 
         <button
@@ -66,7 +66,7 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
           onClick={() => setOptionsOpen((open) => !open)}
           aria-expanded={optionsOpen}
           aria-controls="onboarding-options"
-          className="mt-4 flex min-h-11 items-center gap-2 rounded-control text-[13px] font-medium text-action"
+          className="mt-4 flex min-h-11 items-center gap-2 rounded-control t-body-sm font-medium text-action"
         >
           {t('onboarding.form.options')}
           <ChevronDown
@@ -78,7 +78,7 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
 
         {optionsOpen ? (
           <div id="onboarding-options" className="mt-2">
-            <label className="mb-2 block text-[13px] text-ink2" id="onboarding-currency-label">
+            <label className="mb-2 block t-body-sm text-ink2" id="onboarding-currency-label">
               {t('onboarding.form.currencyLabel')}
             </label>
             <Controller
@@ -105,7 +105,7 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
         {/* Stays enabled with the field empty (design.md §22.10): clicking is how
             the user finds out what is missing, and a dead button says nothing. */}
         <div className="mt-8 flex justify-end">
-          <Button type="submit" className="h-11 px-[18px] text-[14px]" disabled={isCreating}>
+          <Button type="submit" className="h-11 px-5 t-body-sm" disabled={isCreating}>
             {isCreating ? t('onboarding.form.submitting') : t('onboarding.form.submit')}
           </Button>
         </div>

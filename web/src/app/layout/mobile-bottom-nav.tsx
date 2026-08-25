@@ -55,7 +55,7 @@ export function MobileBottomNav() {
           className={({ isActive }) =>
             cn(
               // 44px minimum touch target (§24).
-              'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors',
+              'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2.5 t-caption-sm transition-colors',
               // A merged item stays lit on its sibling routes too.
               isActive ||
                 (alsoActiveOn ?? []).some(

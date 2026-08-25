@@ -74,7 +74,7 @@ export function HouseholdPage() {
           !isSettingsLoading ? (
             <Button
               type="button"
-              className="h-10 px-4 text-[13px]"
+              className="s-tap h-10 px-4 t-body-sm"
               disabled={settingsSaving}
               onClick={() => void submitSettings()}
             >

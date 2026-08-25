@@ -37,18 +37,18 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
       <PanelHeader
         title={t('home.debts.title')}
         action={
-          <Link to="/networth" className="text-[13px] text-action">
+          <Link to="/networth" className="t-body-sm text-action">
             {t('home.debts.viewAll')}
           </Link>
         }
       />
 
       {rows.length === 0 ? (
-        <p className="mt-7 py-6 text-[13px] text-ink2">{t('home.debts.empty')}</p>
+        <p className="mt-7 py-6 t-body-sm text-ink2">{t('home.debts.empty')}</p>
       ) : (
         <>
           <div className="mt-7 -mx-2.5">
-            <Table className="min-w-[360px] text-[14px]">
+            <Table className="min-w-[360px] t-body-sm">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   {/* `.label-vi`: accented Vietnamese headings (§10.1). */}
@@ -66,7 +66,7 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
                     <TableCell>
                       {row.lenderName ? `${row.name} · ${row.lenderName}` : row.name}
                     </TableCell>
-                    <TableCell className="font-mono text-[12px] text-ink3">
+                    <TableCell className="font-mono t-caption text-ink3">
                       {row.nextPayment
                         ? t('home.debts.nextDue', {
                             date: formatDayMonth(row.nextPayment.date),
@@ -84,7 +84,7 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
           </div>
 
           {totalCount > rows.length ? (
-            <p className="mt-3 font-mono text-[10px] text-ink3">
+            <p className="mt-3 font-mono t-caption-sm text-ink3">
               {t('home.debts.more', { count: totalCount - rows.length })}
             </p>
           ) : null}
@@ -92,17 +92,17 @@ export function DebtsSection({ summary }: { summary: DebtSummary }) {
           {largest ? (
             <div className="mt-7">
               <div className="flex items-baseline justify-between gap-4">
-                <p className="text-[13px] text-ink2">
+                <p className="t-body-sm text-ink2">
                   {t('home.debts.repaidOn', { name: largest.name })}
                 </p>
-                <span className="num font-mono text-[11px] text-ink3">
+                <span className="num font-mono t-caption-sm text-ink3">
                   {largest.repaidPercent}%
                 </span>
               </div>
               {/* Neutral ink, not accent: repayment progress is a fact, not a win. */}
               <Progress value={largest.repaidPercent} className="mt-3 h-6 text-ink3" />
               {largest.expectedFinalDueDate ? (
-                <p className="mt-2.5 font-mono text-[11px] text-ink3">
+                <p className="mt-2.5 font-mono t-caption-sm text-ink3">
                   {t('home.debts.payoffEta', {
                     date: formatMonthYear(largest.expectedFinalDueDate),
                   })}

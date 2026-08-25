@@ -1,12 +1,4 @@
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  CalendarClock,
-  ChevronDown,
-  ClockAlert,
-  Loader2,
-  Milestone,
-} from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, CalendarClock, Milestone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
@@ -23,10 +15,8 @@ import {
 import { Label, Panel, PanelHeader, PanelSplit, Sunk } from '@/components/ui/panel'
 import {
   buildDeltaSeries,
-  buildOverdue,
   buildTimelineRows,
   type DeltaPoint,
-  type OverdueSummary,
   type TimelineRow,
 } from '@money-space/core/features/dashboard/model/home-derivations'
 import type { ForecastResult } from '@money-space/core/features/forecast/model/forecast.types'
@@ -46,31 +36,19 @@ const MIN_EVENTS_FOR_CHART = 6
  * Home section 2 — Ba mươi ngày tới (§12.2).
  *
  * One section, not two: the summary and the events are the same function, so
- * there is deliberately no separate "Những khoản sắp tới" block (§2.7).
+ * there is deliberately no separate "Những khoản sắp tới" block (§2.7). What
+ * DID split out is the overdue list — see `OverdueSection` for why the same
+ * argument does not cover it.
  *
  * The lowest projected balance leads because it is the one number that says
  * whether the next month works. The table's `Còn lại` column carries the
  * running balance — that column is what turns a list of events into a sequence.
  */
-export function UpcomingSection({
-  forecast,
-  cashflowEvents = [],
-  onCompleteOverdue,
-  completingEventId,
-}: {
-  forecast: ForecastResult
-  /** Source events, joined for an overdue row's real due date (`expectedDate`). */
-  cashflowEvents?: { id: string; expectedDate: string }[]
-  /** Marks one overdue occurrence resolved. The ONLY way it leaves the list. */
-  onCompleteOverdue?: (sourceEventId: string, occurrenceDate: string) => void
-  /** The overdue row currently being confirmed, for its button's spinner. */
-  completingEventId?: string | null
-}) {
+export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
   const { t } = useTranslation()
 
   const { rows, totalCount } = buildTimelineRows(forecast)
   const { points, lowestIndex } = buildDeltaSeries(forecast)
-  const overdue = buildOverdue(forecast, cashflowEvents)
 
   const lowest = forecast.lowestProjectedBalance
   const dip = forecast.startingLiquidBalance - lowest
@@ -89,12 +67,12 @@ export function UpcomingSection({
           <span className="flex shrink-0 items-center gap-4">
             {/* The window every figure in this section is measured over. Mono
                 is safe here — a date range has no diacritics (§10.1). */}
-            <span className="num font-mono text-[11px] text-ink3">
+            <span className="num font-mono t-caption-sm text-ink3">
               {formatDayMonth(forecast.asOfDate)} — {formatDayMonth(forecast.horizonEndDate)}
             </span>
             <Link
               to="/upcoming"
-              className="inline-flex min-h-11 items-center text-[13px] font-medium text-action"
+              className="inline-flex min-h-11 items-center t-body-sm font-medium text-action"
             >
               {t('home.upcoming.viewTimeline')}
             </Link>
@@ -127,7 +105,7 @@ export function UpcomingSection({
                     "zero" rather than "not computable" (§23) — so it says so. */}
                 <p
                   className={cn(
-                    'mt-2 text-[46px] leading-[1.02] font-medium tracking-[-.045em] sm:text-[54px]',
+                    'mt-2 t-hero leading-[1.02] tracking-[-.045em]',
                     canProject && 'num',
                     canProject && lowest < 0 && 'text-alert',
                   )}
@@ -138,7 +116,7 @@ export function UpcomingSection({
                 {/* The date the figure above belongs to, led by a calendar
                     glyph so "when" is findable without reading the sentence.
                     Decorative: the date follows it in words (§24). */}
-                <p className="mt-3 flex items-start gap-1.5 text-[13px] leading-5 text-ink2">
+                <p className="mt-3 flex items-start gap-1.5 t-body-sm leading-5 text-ink2">
                   {canProject ? (
                     <CalendarClock
                       className="mt-[3px] size-4 shrink-0 text-ink3"
@@ -175,12 +153,12 @@ export function UpcomingSection({
                 <div className="flex items-start gap-3">
                   <span className="mt-[6px] size-1.5 shrink-0 rounded-full bg-attention" />
                   <div className="min-w-0">
-                    <p className="text-[13px] leading-5 text-ink2">
+                    <p className="t-body-sm leading-5 text-ink2">
                       {t('home.upcoming.lowestNoSourceHint')}
                     </p>
                     <Link
                       to="/networth"
-                      className="mt-3 inline-flex h-9 items-center rounded-control bg-action px-4 text-[13px] font-medium text-panel transition-opacity hover:opacity-90"
+                      className="mt-3 inline-flex h-9 items-center rounded-control bg-action px-4 t-body-sm font-medium text-panel transition-opacity hover:opacity-90"
                     >
                       {t('home.upcoming.addSource')}
                     </Link>
@@ -209,13 +187,13 @@ export function UpcomingSection({
           </div>
 
         <div>
-          <h3 className="flex items-center gap-2 text-[14px] font-medium">
+          <h3 className="flex items-center gap-2 t-subtitle">
             <Milestone className="size-4 shrink-0 text-data-primary" strokeWidth={1.7} aria-hidden />
             {t('home.upcoming.sequenceTitle')}
           </h3>
 
           {rows.length === 0 ? (
-            <p className="py-6 text-[13px] text-ink2">{t('home.upcoming.empty')}</p>
+            <p className="py-6 t-body-sm text-ink2">{t('home.upcoming.empty')}</p>
           ) : (
             /* A rail, not a table. The column this section exists for is the
                running balance, and at this width four columns squeezed it to
@@ -241,7 +219,7 @@ export function UpcomingSection({
               dashes with no explanation reads as missing data rather than as a
               thing the household can fix. */}
           {!canProject && rows.length > 0 ? (
-            <p className="mt-3 text-[12px] leading-5 text-ink3">
+            <p className="mt-3 t-caption leading-5 text-ink3">
               {t('home.upcoming.remainingUnavailable')}
             </p>
           ) : null}
@@ -253,22 +231,18 @@ export function UpcomingSection({
             <div className="mt-4">
               <Link
                 to="/upcoming"
-                className="inline-flex min-h-11 items-center text-[13px] font-medium text-action"
+                className="inline-flex min-h-11 items-center t-body-sm font-medium text-action"
               >
                 {t('home.upcoming.more', { count: totalCount - rows.length })}
               </Link>
             </div>
           ) : null}
 
-          {/* Under the sequence, because it belongs to it: an overdue item is
-              still owed and is already counted inside every figure above (§18).
-              It stays a notice, never a verdict — what is waiting and what it
-              comes to, with the deciding left to the household (§16). */}
-          <OverdueBlock
-            overdue={overdue}
-            onComplete={onCompleteOverdue}
-            pendingId={completingEventId}
-          />
+          {/* Overdue items used to sit here, folded shut under the rail. They
+              are now their own card above this one (`OverdueSection`): they are
+              the only thing on Home waiting on a person, and the figures in
+              this section are computed as if they were already settled — so
+              they have to be read BEFORE it, not after. */}
         </div>
         </PanelSplit>
       </div>
@@ -354,142 +328,19 @@ function HorizonTotal({
         aria-hidden
       />
       <div className="min-w-0">
-        <p className="text-[12px] text-ink3">{label}</p>
-        <p className={cn('num mt-0.5 text-[25px] leading-tight font-medium', tone)}>
+        <p className="t-caption text-ink3">{label}</p>
+        <p className={cn('num mt-0.5 t-metric leading-tight', tone)}>
           {value}{' '}
           {/* §10.4 — the unit is stated once beside the figure, never baked in. */}
-          <span className="font-mono text-[11px] font-normal text-ink3">
+          <span className="font-mono t-caption-sm text-ink3">
             {t('units.million')}
           </span>
         </p>
-        <p className="mt-1 text-[12px] text-ink2">
+        <p className="mt-1 t-caption text-ink2">
           {t('home.upcoming.horizonCount', { count })}
         </p>
       </div>
     </div>
-  )
-}
-
-/**
- * Overdue items, inside §12.2 rather than as a section of their own.
- *
- * They belong here because they are the same sequence: an item that came due
- * before today has not gone anywhere — it is still owed, still inside
- * `startingLiquidBalance` and everything projected from it, and it keeps
- * counting toward what is upcoming. Splitting it into a separate panel would
- * imply a second, parallel pot of money.
- *
- * What the product never does is resolve one automatically. Marking an item
- * done is always a button somebody presses (§18), which is exactly why this
- * block has to exist: without it the lowest-balance figure above reads as
- * settled when part of it is still waiting on the household.
- *
- * Amber, never red (§5.2, §25). Nothing here is a shortfall, and a household
- * can have perfectly good reasons an item is still open — the block states what
- * is waiting and what it comes to, and never says what anyone should do.
- * It renders nothing at all when there is nothing waiting.
- */
-function OverdueBlock({
-  overdue,
-  onComplete,
-  pendingId,
-}: {
-  overdue: OverdueSummary
-  onComplete?: (sourceEventId: string, occurrenceDate: string) => void
-  /** The row currently being confirmed, so only ITS button shows a spinner. */
-  pendingId?: string | null
-}) {
-  const { t } = useTranslation()
-
-  if (overdue.totalCount === 0) return null
-
-  return (
-    /* One compact row that opens. Closed, it states the two facts that matter —
-       how many are waiting and that they are already counted — without spending
-       a screenful on them; open, every row keeps its own confirm button, which
-       is the ONLY way an item leaves this list (§18). */
-    <details className="group mt-5">
-      <summary className="flex cursor-pointer list-none items-center gap-3 rounded-control bg-wash px-4 py-3 text-left [&::-webkit-details-marker]:hidden">
-        <ClockAlert className="size-5 shrink-0 text-attention" strokeWidth={1.7} aria-hidden />
-        <span className="min-w-0 flex-1">
-          <span className="block text-[13px] font-medium">
-            {overdue.oldestDays === undefined
-              ? t('home.upcoming.overdue.count', { count: overdue.totalCount })
-              : t('home.upcoming.overdue.summary', {
-                  count: overdue.totalCount,
-                  days: overdue.oldestDays,
-                })}
-          </span>
-          <span className="mt-0.5 block text-[12px] leading-5 text-ink2">
-            {t('home.upcoming.overdue.note')}
-          </span>
-        </span>
-        <ChevronDown
-          className="size-4 shrink-0 text-ink2 transition-transform group-open:rotate-180"
-          strokeWidth={1.7}
-          aria-hidden
-        />
-      </summary>
-
-      <ul className="mt-2 space-y-1">
-        {overdue.rows.map((row) => (
-          <li
-            key={row.key}
-            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 rounded-control px-2 py-2.5 sm:grid-cols-[72px_minmax(0,1fr)_auto_auto]"
-          >
-            {/* When it FELL DUE, not the day it is listed under. Absent when
-                the source event is not loaded — better no date than today's. */}
-            <span className="order-1 font-mono text-[11px] text-attention sm:order-none">
-              {row.dueDate ? formatDayMonth(row.dueDate) : ''}
-            </span>
-
-            <span className="order-3 col-span-2 truncate text-[13px] font-medium sm:order-none sm:col-span-1">
-              {row.name}
-            </span>
-
-            <span
-              className={cn(
-                'num order-2 text-right text-[13px] font-medium sm:order-none',
-                row.signedAmount > 0 ? 'text-positive-ink' : 'text-alert-ink',
-              )}
-            >
-              {formatVndCellSigned(row.signedAmount)} {t('units.million')}
-            </span>
-
-            {onComplete ? (
-              // A real button, not a text link: this is the one action the
-              // block exists to offer, and at link weight it read as a caption
-              // beside the amount.
-              <button
-                type="button"
-                // `row.date` — day 0 — is the idempotency key the API expects,
-                // NOT `row.dueDate`, which is only what we show (§18).
-                onClick={() => onComplete(row.sourceEventId, row.date)}
-                disabled={pendingId === row.sourceEventId}
-                className="order-4 inline-flex min-h-8 shrink-0 items-center justify-center gap-1.5 justify-self-end rounded-control bg-attention px-3 text-[12px] font-medium text-panel transition-opacity hover:opacity-90 disabled:opacity-60 sm:order-none"
-              >
-                {pendingId === row.sourceEventId ? (
-                  <>
-                    <Loader2 className="size-3.5 animate-spin" />
-                    {t('home.upcoming.overdue.marking')}
-                  </>
-                ) : (
-                  t('home.upcoming.overdue.markDone')
-                )}
-              </button>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-
-      {overdue.totalCount > overdue.rows.length ? (
-        <p className="mt-3 px-2 text-[12px] text-ink2">
-          {t('home.upcoming.overdue.more', {
-            count: overdue.totalCount - overdue.rows.length,
-          })}
-        </p>
-      ) : null}
-    </details>
   )
 }
 
@@ -527,10 +378,10 @@ function TimelineRailRow({
       />
 
       <div className="min-w-0">
-        <p className="font-mono text-[11px] text-ink3">{formatDayMonth(row.date)}</p>
-        <p className="mt-0.5 text-[13px] font-medium">{row.name}</p>
+        <p className="font-mono t-caption-sm text-ink3">{formatDayMonth(row.date)}</p>
+        <p className="mt-0.5 t-body-sm font-medium">{row.name}</p>
         {row.unconfirmed ? (
-          <p className="mt-0.5 text-[12px] text-attention">
+          <p className="mt-0.5 t-caption text-attention">
             {t('home.upcoming.needsConfirm')}
           </p>
         ) : null}
@@ -539,18 +390,18 @@ function TimelineRailRow({
       <div className="shrink-0 pt-4 text-right">
         <p
           className={cn(
-            'num text-[13px] font-medium',
+            'num t-body-sm font-medium',
             isInflow ? 'text-positive-ink' : 'text-alert-ink',
           )}
         >
           {formatVndCellSigned(row.signedAmount)}{' '}
-          <span className="font-mono text-[11px] font-normal text-ink3">
+          <span className="font-mono t-caption-sm text-ink3">
             {t('units.million')}
           </span>
         </p>
         {/* The running balance — the one column this section exists for. */}
         {row.runningBalance === undefined || !canProject ? null : (
-          <p className="num mt-1 text-[11px] whitespace-nowrap text-ink3">
+          <p className="num mt-1 t-caption-sm whitespace-nowrap text-ink3">
             {t('home.upcoming.remainingShort', {
               value: `${formatVndCell(row.runningBalance)} ${t('units.million')}`,
             })}
@@ -634,8 +485,8 @@ function CashflowDeltaChart({
               const point = payload[0].payload as (typeof data)[number]
               return (
                 <div className="panel px-3 py-2 shadow-sm">
-                  <p className="font-mono text-[11px] text-ink3">{formatDayMonth(point.date)}</p>
-                  <p className="num mt-1 text-[13px] font-medium">
+                  <p className="font-mono t-caption-sm text-ink3">{formatDayMonth(point.date)}</p>
+                  <p className="num mt-1 t-body-sm font-medium">
                     {point.delta === 0
                       ? t('home.upcoming.chartSameAsToday')
                       : `${formatVndCellSigned(point.delta)} ${t('units.million')}`}

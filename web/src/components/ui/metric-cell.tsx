@@ -26,9 +26,9 @@ type MetricCellProps = {
 export function MetricCell({ label, value, hint, className }: MetricCellProps) {
   return (
     <div className={className}>
-      <p className="text-[14px] text-ink2">{label}</p>
-      <p className="money-number mt-1.5 text-[28px]">{value}</p>
-      {hint ? <p className="mt-1 text-[12px] text-ink3">{hint}</p> : null}
+      <p className="t-body-sm text-ink2">{label}</p>
+      <p className="money-number mt-1.5 t-metric">{value}</p>
+      {hint ? <p className="mt-1 t-caption text-ink3">{hint}</p> : null}
     </div>
   )
 }

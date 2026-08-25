@@ -42,17 +42,17 @@ export function FinancialStateSection({
 
   return (
     <Card className="apple-shadow">
-      <p className="text-sm text-ink2">
+      <p className="t-body-sm text-ink2">
         {t('home.financialState.eyebrow')}
       </p>
-      <h2 className={cn('page-title mt-2 text-3xl font-semibold', STATE_TONE[state])}>
+      <h2 className={cn('t-page-tracking mt-2 t-metric font-medium', STATE_TONE[state])}>
         {t(`home.financialState.state.${state}`)}
       </h2>
 
       {reasons.length > 0 ? (
         <ul className="mt-4 space-y-1.5">
           {reasons.map((reason) => (
-            <li key={reason} className="text-sm leading-6 text-ink2">
+            <li key={reason} className="t-body-sm leading-6 text-ink2">
               {t(`home.financialState.reason.${reason}`)}
             </li>
           ))}

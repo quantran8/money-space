@@ -79,7 +79,7 @@ export function MonthPicker({
           type="button"
           variant="outline"
           className={cn(
-            'h-11 w-full justify-start rounded-control px-4 text-left text-sm font-normal [&_svg]:text-ink3',
+            'h-11 w-full justify-start rounded-control px-4 text-left t-body-sm [&_svg]:text-ink3',
             !selected && 'text-ink3',
             ariaInvalid && 'outline-2 outline-alert',
             className
@@ -102,7 +102,7 @@ export function MonthPicker({
             >
               <ChevronLeftIcon className="size-4" />
             </Button>
-            <span className="select-none text-sm font-medium">{viewYear}</span>
+            <span className="select-none t-body-sm font-medium">{viewYear}</span>
             <Button
               type="button"
               variant="ghost"
@@ -132,7 +132,7 @@ export function MonthPicker({
                     setOpen(false)
                   }}
                   className={cn(
-                    'h-9 w-full rounded-control px-2 text-sm font-normal text-ink transition-colors hover:bg-wash hover:text-ink',
+                    'h-9 w-full rounded-control px-2 t-body-sm text-ink transition-colors hover:bg-wash hover:text-ink',
                     'data-[selected=true]:bg-action data-[selected=true]:text-white'
                   )}
                 >

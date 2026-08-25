@@ -120,7 +120,7 @@ Tính từ 5 nguồn · tất cả đều mới
 
 Rules:
 
-- Number 36–44px Light.
+- Number dùng `t-figure` (40/400), hoặc `t-metric` (28/400) khi là số thứ cấp.
 - Không tạo một card riêng cho mỗi số chỉ để lấp grid.
 - Không lặp number ở card khác.
 - Static metric không dùng action color.

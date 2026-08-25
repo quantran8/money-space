@@ -18,12 +18,12 @@ export function DataCard({ onDelete }: DataCardProps) {
       <div className="mt-7 grid gap-3 lg:grid-cols-2">
         <div className="sunk flex min-h-[118px] flex-col justify-between p-4">
           <div>
-            <p className="text-[13px] font-medium">{t('settings.data.export')}</p>
-            <p className="mt-1.5 text-[11px] leading-5 text-ink2">
+            <p className="t-body-sm font-medium">{t('settings.data.export')}</p>
+            <p className="mt-1.5 t-caption-sm leading-5 text-ink2">
               {t('settings.data.exportDescription')}
             </p>
           </div>
-          <button type="button" className="mt-4 flex w-fit items-center gap-2 text-[12px] font-medium text-action">
+          <button type="button" className="mt-4 flex w-fit items-center gap-2 t-caption font-medium text-action">
             <Download className="size-4" />
             {t('settings.data.exportAction')}
           </button>
@@ -31,8 +31,8 @@ export function DataCard({ onDelete }: DataCardProps) {
 
         <div className="sunk flex min-h-[118px] flex-col justify-between p-4">
           <div>
-            <p className="text-[13px] font-medium">{t('settings.data.delete')}</p>
-            <p className="mt-1.5 text-[11px] leading-5 text-ink2">
+            <p className="t-body-sm font-medium">{t('settings.data.delete')}</p>
+            <p className="mt-1.5 t-caption-sm leading-5 text-ink2">
               {t('settings.data.deleteDescription')}
             </p>
           </div>

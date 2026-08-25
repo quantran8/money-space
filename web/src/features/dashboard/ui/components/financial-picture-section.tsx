@@ -93,14 +93,14 @@ export function FinancialPictureSection({
 
   return (
     <Panel className="lg:p-7">
-      <h2 className="section-title text-[16px]">{t('home.picture.title')}</h2>
+      <h2 className="t-title">{t('home.picture.title')}</h2>
 
       {/* The hero and the ring are ONE answer read two ways, so they sit on a
           single optical line rather than in the generic answer/detail split:
           the figure states the amount, the ring states what share of the
           household's money that is. `items-center` is what keeps the ring from
           floating above a hero that has grown a second line. */}
-      <div className="mt-7 grid items-center gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(420px,.8fr)] xl:gap-14">
+      <div className="mt-7 grid items-center gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(420px,.8fr)] xl:gap-12">
         <div className="min-w-0">
           <Label>{t('home.picture.flexibleLabel')}</Label>
 
@@ -109,7 +109,7 @@ export function FinancialPictureSection({
           <div className="mt-2 flex flex-wrap items-end gap-2">
             <span
               className={cn(
-                'num text-[60px] leading-[1.02] font-normal tracking-[-.045em] sm:text-[72px]',
+                'num t-display tracking-[-.045em]',
                 isNegative && 'text-alert',
               )}
             >
@@ -118,7 +118,7 @@ export function FinancialPictureSection({
             {hero.unit ? (
               <span
                 className={cn(
-                  'pb-2 text-[24px] font-normal sm:text-[30px]',
+                  'pb-2 t-metric',
                   isNegative && 'text-alert',
                 )}
               >
@@ -127,7 +127,7 @@ export function FinancialPictureSection({
             ) : null}
           </div>
 
-          <p className="mt-4 text-[13px] leading-5 text-ink2">
+          <p className="mt-4 t-body-sm leading-5 text-ink2">
             {canProject
               ? t('home.picture.totals', {
                   cash: formatVndScale(composition.totalLiquid),
@@ -204,7 +204,7 @@ export function FinancialPictureSection({
               <button
                 type="button"
                 onClick={onQuickUpdate}
-                className="text-[13px] font-medium text-action"
+                className="t-body-sm font-medium text-action"
               >
                 {t('home.coverage.action')}
               </button>

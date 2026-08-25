@@ -37,7 +37,7 @@ export function NetWorthTabs({
           aria-selected={value === tab.value}
           onClick={() => onChange(tab.value)}
           className={cn(
-            'rounded-control px-4 py-2 text-[13px] transition-colors',
+            'rounded-control px-4 py-2 t-body-sm transition-colors',
             value === tab.value ? 'bg-card font-medium text-ink' : 'text-ink2 hover:text-ink',
           )}
         >

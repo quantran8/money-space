@@ -34,24 +34,24 @@ export function ActivityLogSection({ entries }: { entries: ActivityEntry[] }) {
       <PanelHeader
         title={t('home.activity.title')}
         action={
-          <Link to="/activity" className="text-[13px] text-action">
+          <Link to="/activity" className="t-body-sm text-action">
             {t('home.activity.viewAll')}
           </Link>
         }
       />
 
       {entries.length === 0 ? (
-        <p className="mt-6 py-4 text-[13px] text-ink2">{t('home.activity.empty')}</p>
+        <p className="mt-6 py-4 t-body-sm text-ink2">{t('home.activity.empty')}</p>
       ) : (
-        <ul className="mt-6 -mx-2.5 text-[14px]">
+        <ul className="mt-6 -mx-2.5 t-body-sm">
           {entries.map((entry) => {
             const impact = describeImpact(entry, t, formatVndSigned)
             return (
               <li key={entry.id} className="flex items-baseline gap-4 px-2.5 py-2.5">
-                <span className="w-20 shrink-0 font-mono text-[11px] text-ink3">
+                <span className="w-20 shrink-0 font-mono t-caption-sm text-ink3">
                   {formatRelativeDay(entry.occurredAt, t)}
                 </span>
-                <span className="w-6 shrink-0 font-mono text-[11px] text-ink3">
+                <span className="w-6 shrink-0 font-mono t-caption-sm text-ink3">
                   {actorInitials(entry)}
                 </span>
                 <span className="flex-1">{describeEntry(entry, t)}</span>
@@ -61,7 +61,7 @@ export function ActivityLogSection({ entries }: { entries: ActivityEntry[] }) {
                   </span>
                 )}
                 {impact ? (
-                  <span className="hidden w-40 text-right text-[12px] text-ink3 sm:block">
+                  <span className="hidden w-40 text-right t-caption text-ink3 sm:block">
                     {impact}
                   </span>
                 ) : null}

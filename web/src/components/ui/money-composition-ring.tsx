@@ -83,7 +83,7 @@ export function MoneyCompositionRing({
   return (
     <div
       className={cn(
-        'grid gap-6 sm:grid-cols-[170px_minmax(0,1fr)] sm:items-center sm:gap-10',
+        'grid gap-6 sm:grid-cols-[170px_minmax(0,1fr)] sm:items-center sm:gap-8',
         className,
       )}
     >
@@ -124,10 +124,10 @@ export function MoneyCompositionRing({
             so the percentage would shift width as it changes. `pointer-events-none`
             keeps it from swallowing hover on the arcs beneath it. */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="num text-[36px] leading-none font-normal tracking-[-.04em]">
+          <span className="num t-figure leading-none tracking-[-.04em]">
             {headline.percentLabel ?? `${headline.percent}%`}
           </span>
-          <span className="mt-1 text-[12px] text-ink3">{centerLabel}</span>
+          <span className="mt-1 t-caption text-ink3">{centerLabel}</span>
         </div>
       </div>
 
@@ -138,7 +138,7 @@ export function MoneyCompositionRing({
           <div
             key={segment.key}
             className={cn(
-              'grid grid-cols-[1fr_auto_auto] items-center gap-4 py-3.5 text-[13px]',
+              'grid grid-cols-[1fr_auto_auto] items-center gap-4 py-3.5 t-body-sm',
               index < segments.length - 1 && 'border-b border-divider',
             )}
           >
@@ -154,7 +154,7 @@ export function MoneyCompositionRing({
               />
               <span className="truncate">{segment.label}</span>
             </dt>
-            <span className="num text-[12px] text-ink3">
+            <span className="num t-caption text-ink3">
               {segment.percentLabel ?? `${segment.percent}%`}
             </span>
             <dd

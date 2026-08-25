@@ -28,12 +28,12 @@ export function HouseholdOverviewCard({ form }: HouseholdOverviewCardProps) {
 
   return (
     <Panel>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_1fr] lg:gap-x-14">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_1fr] lg:gap-x-12">
         <div>
           {isLoading ? (
             <Skeleton className="h-5 w-40" />
           ) : (
-            <div className="flex items-center gap-2 text-[13px]">
+            <div className="flex items-center gap-2 t-body-sm">
               <span className={allFresh ? 'size-1.5 rounded-full bg-action' : 'size-1.5 rounded-full bg-attention'} />
               {allFresh
                 ? t('freshness.upToDate.title')
@@ -42,15 +42,15 @@ export function HouseholdOverviewCard({ form }: HouseholdOverviewCardProps) {
           )}
 
           <p className="label mt-7">{t('household.merged.householdName')}</p>
-          <p className="mt-2 text-[30px] font-medium tracking-[-.03em]">
+          <p className="mt-2 t-metric">
             {activeHousehold?.name ?? t('shell.householdName')}
           </p>
         </div>
 
         <div>
           <div className="flex items-baseline justify-between gap-4">
-            <h2 className="section-title text-[16px]">{t('household.merged.generalSettings')}</h2>
-            <span className="font-mono text-[11px] text-ink3">
+            <h2 className="t-title">{t('household.merged.generalSettings')}</h2>
+            <span className="font-mono t-caption-sm text-ink3">
               {form.getValues('currency')} · {form.getValues('language').toUpperCase()}
             </span>
           </div>
@@ -61,7 +61,7 @@ export function HouseholdOverviewCard({ form }: HouseholdOverviewCardProps) {
                 name="currency"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="mt-2 h-auto bg-transparent p-0 text-[13px] focus-visible:outline-none">
+                    <SelectTrigger className="mt-2 h-auto bg-transparent p-0 t-body-sm focus-visible:outline-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -79,7 +79,7 @@ export function HouseholdOverviewCard({ form }: HouseholdOverviewCardProps) {
                 name="language"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="mt-2 h-auto bg-transparent p-0 text-[13px] focus-visible:outline-none">
+                    <SelectTrigger className="mt-2 h-auto bg-transparent p-0 t-body-sm focus-visible:outline-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

@@ -61,10 +61,10 @@ function MoneyValue({ value }: { value: number }) {
 
   return (
     <div className="mt-4 flex items-end gap-2">
-      <span className="money-number text-[48px] leading-[.9] sm:text-[54px]">
+      <span className="money-number t-hero leading-[.9]">
         {match?.[1] ?? formatted}
       </span>
-      {match?.[2] ? <span className="pb-1 text-[20px] font-medium">{match[2]}</span> : null}
+      {match?.[2] ? <span className="pb-1 t-subhead font-medium">{match[2]}</span> : null}
     </div>
   )
 }
@@ -72,8 +72,8 @@ function MoneyValue({ value }: { value: number }) {
 function LoanInfo({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p className="text-[12px] text-ink3">{label}</p>
-      <p className={mono ? 'money-number mt-1.5 font-mono text-[13px]' : 'mt-1.5 text-[14px] font-medium'}>
+      <p className="t-caption text-ink3">{label}</p>
+      <p className={mono ? 'money-number mt-1.5 font-mono t-body-sm' : 'mt-1.5 t-body-sm font-medium'}>
         {value}
       </p>
     </div>
@@ -159,9 +159,9 @@ export function DebtDetailPage() {
         <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/networth')}>
           <ChevronLeft className="size-4" /> {t('debts.detail.back')}
         </Button>
-        <Card className="py-10 text-center">
-          <p className="text-lg font-medium">{t('debts.detail.notFoundTitle')}</p>
-          <p className="mt-1 text-sm text-ink2">{t('debts.detail.notFoundBody')}</p>
+        <Card className="py-8 text-center">
+          <p className="t-subhead font-medium">{t('debts.detail.notFoundTitle')}</p>
+          <p className="mt-1 t-body-sm text-ink2">{t('debts.detail.notFoundBody')}</p>
         </Card>
       </div>
     )
@@ -198,7 +198,7 @@ export function DebtDetailPage() {
       <header className="px-0.5 pb-1">
         <button
           type="button"
-          className="-ml-2 inline-flex min-h-10 items-center gap-1.5 rounded-control px-2 text-[13px] text-action hover:bg-accent-soft"
+          className="-ml-2 inline-flex min-h-10 items-center gap-1.5 rounded-control px-2 t-body-sm text-action hover:bg-accent-soft"
           onClick={() => navigate('/networth')}
         >
           <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -207,18 +207,18 @@ export function DebtDetailPage() {
 
         <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-[13px] text-ink2">
-              <span className="rounded-full bg-card px-2.5 py-1 text-[11px] text-ink2">
+            <div className="flex flex-wrap items-center gap-2 t-body-sm text-ink2">
+              <span className="rounded-full bg-card px-2.5 py-1 t-caption-sm text-ink2">
                 {t(`options.debtStatus.${debt.status}`)}
               </span>
             </div>
-            <h1 className="page-title mt-2 truncate text-[27px] leading-tight sm:text-[30px]">
+            <h1 className="t-page-tracking mt-2 truncate t-metric leading-tight">
               {debt.name}
             </h1>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button className="h-10 px-4 text-[13px]" onClick={() => openEdit(debt.id)}>
+            <Button className="px-4 t-body-sm" onClick={() => openEdit(debt.id)}>
               <Pencil className="size-4" strokeWidth={1.75} />
               {t('common.edit')}
             </Button>
@@ -228,8 +228,8 @@ export function DebtDetailPage() {
 
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <h2 className="section-title text-[16px]">{t('debts.detail.overview.title')}</h2>
-          <p className="text-[12px] text-ink3">
+          <h2 className="t-title">{t('debts.detail.overview.title')}</h2>
+          <p className="t-caption text-ink3">
             {t('debts.detail.overview.updatedAt')}{' '}
             <span className="money-number font-mono">
               {displayUpdatedAt(latestUpdate, locale)}
@@ -237,7 +237,7 @@ export function DebtDetailPage() {
           </p>
         </div>
 
-        <div className="mt-7 grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-14">
+        <div className="mt-7 grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
           <div>
             <p className="label">{t('debts.detail.overview.outstanding')}</p>
             <MoneyValue value={debt.outstandingAmountValue} />
@@ -246,7 +246,7 @@ export function DebtDetailPage() {
           <div className="lg:pb-0.5">
             <div className="flex items-baseline justify-between gap-4">
               <p className="label">{t('debts.detail.overview.progress')}</p>
-              <p className="money-number text-[17px]">{progressLabel}%</p>
+              <p className="money-number t-body">{progressLabel}%</p>
             </div>
             <div
               className="mt-4 h-2 overflow-hidden rounded-full bg-wash"
@@ -261,7 +261,7 @@ export function DebtDetailPage() {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="mt-2.5 text-[12px] text-ink2">
+            <p className="mt-2.5 t-caption text-ink2">
               {t('debts.detail.overview.repaid')}{' '}
               <span className="money-number font-medium text-ink">{formatVndShort(repaid)}</span>
             </p>
@@ -270,23 +270,23 @@ export function DebtDetailPage() {
       </Card>
 
       <Card>
-        <h2 className="section-title text-[16px]">{t('debts.detail.loan.title')}</h2>
+        <h2 className="t-title">{t('debts.detail.loan.title')}</h2>
 
         <div className="mt-7 grid gap-7 sm:grid-cols-3 sm:gap-0">
           <div className="pr-0 sm:pr-7">
             <p className="label">{t('debts.detail.loan.payoff')}</p>
-            <p className="money-number mt-3 font-mono text-[24px]">
+            <p className="money-number mt-3 font-mono t-metric">
               {displayMonth(debt.expectedFinalDueDate, locale, t('debts.detail.noMonth'))}
             </p>
-            <p className="mt-2 text-[12px] text-ink2">{t('debts.detail.loan.payoffNote')}</p>
+            <p className="mt-2 t-caption text-ink2">{t('debts.detail.loan.payoffNote')}</p>
           </div>
 
           <div className="px-0 sm:border-l sm:border-divider sm:px-7">
             <p className="label">{t('debts.detail.loan.paid')}</p>
-            <p className="money-number mt-3 text-[24px]">
+            <p className="money-number mt-3 t-metric">
               {t('debts.detail.loan.installments', { count: repayments.length })}
             </p>
-            <p className="mt-2 text-[12px] text-ink2">
+            <p className="mt-2 t-caption text-ink2">
               {latestRepayment
                 ? t('debts.detail.loan.latestInstallment', {
                     date: displayDate(latestRepayment.isoDate, locale, t('debts.detail.noValue')),
@@ -297,10 +297,10 @@ export function DebtDetailPage() {
 
           <div className="px-0 sm:border-l sm:border-divider sm:px-7">
             <p className="label">{t('debts.detail.loan.remaining')}</p>
-            <p className="money-number mt-3 text-[24px]">
+            <p className="money-number mt-3 t-metric">
               {t('debts.detail.loan.installments', { count: upcomingPayments.length })}
             </p>
-            <p className="mt-2 text-[12px] text-ink2">
+            <p className="mt-2 t-caption text-ink2">
               {remainingMonths !== null
                 ? t('debts.detail.loan.remainingMonths', { count: remainingMonths })
                 : t('debts.detail.loan.noTerm')}
@@ -309,7 +309,7 @@ export function DebtDetailPage() {
         </div>
 
         <div className="sunk mt-8 p-5 sm:p-6">
-          <div className="grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
             <LoanInfo
               label={t('debts.detail.loan.lender')}
               value={debt.lenderName || t('debts.detail.loan.notUpdated')}
@@ -357,10 +357,10 @@ export function DebtDetailPage() {
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="section-title text-[16px]">{t('debts.detail.schedule.title')}</h2>
+          <h2 className="t-title">{t('debts.detail.schedule.title')}</h2>
           <button
             type="button"
-            className="min-h-10 text-[13px] text-action hover:underline"
+            className="min-h-10 t-body-sm text-action hover:underline"
             onClick={() => navigate('/events')}
           >
             {t('debts.detail.schedule.viewJournal')}
@@ -396,13 +396,13 @@ export function DebtDetailPage() {
                     <p
                       className={
                         item.paid
-                          ? 'money-number font-mono text-[12px] text-white/80'
-                          : 'money-number font-mono text-[12px] text-ink2'
+                          ? 'money-number font-mono t-caption text-white/80'
+                          : 'money-number font-mono t-caption text-ink2'
                       }
                     >
                       {displayDate(item.isoDate, locale, t('debts.detail.noValue'))}
                     </p>
-                    <p className="money-number mt-7 text-[17px]">
+                    <p className="money-number mt-7 t-body">
                       {formatVndShort(item.amount)}
                     </p>
                   </div>
@@ -411,7 +411,7 @@ export function DebtDetailPage() {
             </div>
           </div>
         ) : (
-          <p className="sunk mt-7 px-4 py-8 text-center text-[13px] text-ink2">
+          <p className="sunk mt-7 px-4 py-8 text-center t-body-sm text-ink2">
             {t('debts.detail.schedule.empty')}
           </p>
         )}

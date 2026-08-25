@@ -93,10 +93,10 @@ function Metric({
   return (
     <div className={className}>
       <Label>{label}</Label>
-      <p className={compact ? 'mt-2 text-[20px] font-medium' : 'money-number mt-2 text-[30px]'}>
+      <p className={compact ? 'mt-2 t-subhead font-medium' : 'money-number mt-2 t-metric'}>
         {value}
       </p>
-      <p className={`mt-2 text-[12px] leading-5 ${noteClassName ?? 'text-ink2'}`}>{note}</p>
+      <p className={`mt-2 t-caption leading-5 ${noteClassName ?? 'text-ink2'}`}>{note}</p>
     </div>
   )
 }

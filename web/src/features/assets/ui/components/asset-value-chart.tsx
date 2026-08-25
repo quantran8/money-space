@@ -82,7 +82,7 @@ export function AssetValueChart({ points, liquidity, markers = [] }: AssetValueC
 
   if (data.length < 2) {
     return (
-      <div className="flex h-[300px] items-center justify-center text-sm text-ink2">
+      <div className="flex h-[300px] items-center justify-center t-body-sm text-ink2">
         {t('assets.detail.chart.empty')}
       </div>
     )
@@ -122,10 +122,10 @@ export function AssetValueChart({ points, liquidity, markers = [] }: AssetValueC
               const point = payload[0].payload as (typeof data)[number]
               const marker = plottedMarkers.find((item) => item.day === label)
               return (
-                <div className="rounded-card bg-card px-3 py-2 text-sm">
-                  <p className="mb-1.5 text-xs font-medium text-ink2">{label}</p>
+                <div className="rounded-card bg-card px-3 py-2 t-body-sm">
+                  <p className="mb-1.5 t-caption font-medium text-ink2">{label}</p>
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-xs text-ink2">
+                    <span className="t-caption text-ink2">
                       {t('assets.detail.chart.value')}
                     </span>
                     <span className="money-number text-ink">
@@ -133,7 +133,7 @@ export function AssetValueChart({ points, liquidity, markers = [] }: AssetValueC
                     </span>
                   </div>
                   {marker ? (
-                    <p className="mt-1.5 text-xs text-ink2">{marker.label}</p>
+                    <p className="mt-1.5 t-caption text-ink2">{marker.label}</p>
                   ) : null}
                 </div>
               )

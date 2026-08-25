@@ -101,26 +101,26 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
       <Card className="xl:col-span-5">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Các kỳ sắp tới</h2>
+            <h2 className="t-title">Các kỳ sắp tới</h2>
           </div>
-          <Link to="/events" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <Link to="/events" className="t-body-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             Xem lịch đầy đủ
           </Link>
         </div>
         <div className="mt-5 divide-y divide-border">
-          {isLoading ? <p className="py-8 text-sm text-muted-foreground">Đang tải lịch trả nợ...</p> : null}
+          {isLoading ? <p className="py-8 t-body-sm text-muted-foreground">Đang tải lịch trả nợ...</p> : null}
           {!isLoading && upcoming.length === 0 ? (
-            <p className="py-8 text-sm text-muted-foreground">Chưa có kỳ trả nợ sắp tới.</p>
+            <p className="py-8 t-body-sm text-muted-foreground">Chưa có kỳ trả nợ sắp tới.</p>
           ) : null}
           {upcoming.map(({ payment, due }) => (
             <div key={payment.id} className="grid gap-3 py-4 first:pt-0 last:pb-0 sm:grid-cols-[72px_1fr_110px] sm:items-center">
               <div>
-                <p className="text-sm font-semibold">{due.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{dueLabel(due)}</p>
+                <p className="t-body-sm font-medium">{due.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</p>
+                <p className="mt-1 t-caption text-muted-foreground">{dueLabel(due)}</p>
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{payment.name}</p>
-                <p className={cn('mt-1 text-xs', readiness(payment) === 'ready' ? 'text-action' : 'text-muted-foreground')}>
+                <p className="truncate t-body-sm font-medium">{payment.name}</p>
+                <p className={cn('mt-1 t-caption', readiness(payment) === 'ready' ? 'text-action' : 'text-muted-foreground')}>
                   {readiness(payment) === 'ready'
                     ? 'Đã chuẩn bị nguồn'
                     : readiness(payment) === 'priority'
@@ -128,7 +128,7 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
                       : 'Chờ xác nhận'}
                 </p>
               </div>
-              <p className="money-number text-sm font-semibold sm:text-right">{formatVndShort(payment.amount)}</p>
+              <p className="money-number t-body-sm font-medium sm:text-right">{formatVndShort(payment.amount)}</p>
             </div>
           ))}
         </div>
@@ -137,8 +137,8 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
       <Card className="xl:col-span-7">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Dư nợ qua các lần cập nhật</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Tổng số còn phải trả, tính từ lịch sử vay và thanh toán.</p>
+            <h2 className="t-title">Dư nợ qua các lần cập nhật</h2>
+            <p className="mt-2 t-body-sm text-muted-foreground">Tổng số còn phải trả, tính từ lịch sử vay và thanh toán.</p>
           </div>
           <div className="inline-flex w-fit rounded-xl bg-muted p-1">
             {([6, 12] as const).map((value) => (
@@ -146,7 +146,7 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
                 key={value}
                 type="button"
                 onClick={() => setRange(value)}
-                className={cn('rounded-lg px-3 py-1.5 text-xs font-medium transition', range === value ? 'bg-card shadow-sm' : 'text-muted-foreground')}
+                className={cn('rounded-lg px-3 py-1.5 t-caption font-medium transition', range === value ? 'bg-card shadow-sm' : 'text-muted-foreground')}
               >
                 {value === 6 ? '6 tháng' : '1 năm'}
               </button>
@@ -156,10 +156,10 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
 
         <div className="mt-6 flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs text-muted-foreground">Hiện tại</p>
-            <p className="money-number mt-1 text-2xl font-semibold">{formatVndShort(current)}</p>
+            <p className="t-caption text-muted-foreground">Hiện tại</p>
+            <p className="money-number mt-1 t-metric font-medium">{formatVndShort(current)}</p>
           </div>
-          <p className={cn('text-sm font-medium', change <= 0 ? 'text-action' : 'text-alert')}>
+          <p className={cn('t-body-sm font-medium', change <= 0 ? 'text-action' : 'text-alert')}>
             {change > 0 ? '+' : change < 0 ? '−' : ''}{formatVndShort(Math.abs(change))}
           </p>
         </div>

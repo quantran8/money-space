@@ -206,12 +206,12 @@ export function GoalAllocationDialog({
     <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent className="grid max-h-[92dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[520px]">
         <ResponsiveDialogHeader className="px-5 pb-5 pt-5 pr-16 text-left sm:px-8 sm:pt-7 sm:pr-16">
-          <ResponsiveDialogTitle className="text-[19px] font-medium tracking-[-0.015em]">
+          <ResponsiveDialogTitle className="t-subhead font-medium tracking-[-0.015em]">
             {editing
               ? t('goals.allocations.editTitle')
               : t('goals.allocations.dialogTitle')}
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription className="mt-1 text-[13px] text-ink2">
+          <ResponsiveDialogDescription className="mt-1 t-body-sm text-ink2">
             {goalName}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
@@ -362,9 +362,9 @@ export function GoalAllocationDialog({
                     onChange={(event) =>
                       setPercent(sanitizeIntegerInput(event.target.value).slice(0, 3))
                     }
-                    className="num h-full w-full min-w-0 bg-transparent text-[16px] font-medium leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
+                    className="num h-full w-full min-w-0 bg-transparent t-body font-medium leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
                   />
-                  <span className="shrink-0 font-mono text-[12px] text-ink3">%</span>
+                  <span className="shrink-0 font-mono t-caption text-ink3">%</span>
                 </div>
               </Field>
             )}
@@ -389,13 +389,13 @@ export function GoalAllocationDialog({
             <Button
               type="button"
               variant="secondary"
-              className="h-10 px-4 text-[13px]"
+              className="px-4 t-body-sm"
               onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
             {/* §22.10 — always enabled; pressing it says what is missing. */}
-            <Button type="submit" className="h-10 px-5 text-[13px]">
+            <Button type="submit" className="px-5 t-body-sm">
               {isSubmitting
                 ? t('goals.form.saving')
                 : editing

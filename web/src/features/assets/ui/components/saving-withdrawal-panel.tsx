@@ -67,7 +67,7 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
     <Card>
       <div className="mb-4 flex items-center justify-between gap-2">
         <div>
-          <h2 className="section-title text-lg font-semibold">
+          <h2 className="t-title">
             {t('assets.detail.withdrawal.title')}
           </h2>
         </div>
@@ -78,7 +78,7 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
 
       {hasEarly ? (
         <div className="mb-5">
-          <div className="mb-2 flex items-center justify-between text-sm">
+          <div className="mb-2 flex items-center justify-between t-body-sm">
             <span className="text-ink2">
               {t('assets.detail.withdrawal.withdrawMonth', {
                 month: clampedMonth,
@@ -135,24 +135,24 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell className="font-semibold">
+            <TableCell className="font-medium">
               {t('assets.detail.withdrawal.total')}
             </TableCell>
-            <TableCell className="text-right font-semibold">
+            <TableCell className="text-right font-medium">
               <Money value={onTime.total} />
             </TableCell>
-            <TableCell className="text-right font-semibold">
+            <TableCell className="text-right font-medium">
               <Money value={earlyTotal} />
             </TableCell>
           </TableRow>
         </TableBody>
       </Table>
 
-      <div className="mt-4 flex items-center justify-between rounded-2xl bg-attention-tint px-4 py-3 text-sm">
+      <div className="mt-4 flex items-center justify-between rounded-2xl bg-attention-tint px-4 py-3 t-body-sm">
         <span className="text-ink2">
           {t('assets.detail.withdrawal.difference')}
         </span>
-        <span className="money-number font-semibold text-attention">
+        <span className="money-number font-medium text-attention">
           -{formatVndShort(Math.abs(difference))}
         </span>
       </div>

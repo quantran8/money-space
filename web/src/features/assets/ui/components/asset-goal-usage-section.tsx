@@ -39,7 +39,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
   if (isLoading) {
     return (
       <div>
-        <p className="text-[13px] font-medium">{t('assets.detail.goals.title')}</p>
+        <p className="t-body-sm font-medium">{t('assets.detail.goals.title')}</p>
         <div className="mt-4 space-y-2">
           {Array.from({ length: 2 }).map((_, index) => (
             <Skeleton key={index} className="h-10 w-full rounded-control" />
@@ -55,8 +55,8 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
   if (items.length === 0) {
     return (
       <div>
-        <p className="text-[13px] font-medium">{t('assets.detail.goals.title')}</p>
-        <p className="mt-4 rounded-control bg-wash px-4 py-10 text-center text-[13px] text-ink2">
+        <p className="t-body-sm font-medium">{t('assets.detail.goals.title')}</p>
+        <p className="mt-4 rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
           {t('assets.detail.goals.empty')}
         </p>
       </div>
@@ -80,7 +80,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
 
   return (
     <div>
-      <p className="text-[13px] font-medium">{t('assets.detail.goals.title')}</p>
+      <p className="t-body-sm font-medium">{t('assets.detail.goals.title')}</p>
 
       <div className="mt-4">
         <MoneyCompositionRing
@@ -119,7 +119,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
         />
       </div>
 
-      <Table className="mt-5 min-w-[360px] text-[14px]">
+      <Table className="mt-5 min-w-[360px] t-body-sm">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             {/* `.label-vi`: accented Vietnamese headings (§10.1). */}
@@ -156,7 +156,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
                   {/* A percent claim tracks the asset, so it is worth saying
                       which kind this is — "25% of it" and "25tr of it" behave
                       differently the next time the price moves. */}
-                  <span className="mt-0.5 block text-[12px] text-ink2">
+                  <span className="mt-0.5 block t-caption text-ink2">
                     {item.kind === 'percent'
                       ? t('assets.detail.goals.sharePercent', { percent: item.percent ?? 0 })
                       : t(`options.priority.${item.priority}`)}

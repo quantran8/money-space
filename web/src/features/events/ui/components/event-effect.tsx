@@ -56,7 +56,7 @@ export function EventEffect({
   return (
     <p
       aria-live="polite"
-      className="num rounded-[10px] bg-accent-soft px-4 py-3 text-[13px] font-medium leading-[1.6] text-ink2"
+      className="num rounded-[10px] bg-accent-soft px-4 py-3 t-body-sm font-medium leading-[1.6] text-ink2"
     >
       {sentence}
     </p>

@@ -104,12 +104,12 @@ export function EventFormDialog({
             <button
               type="button"
               onClick={onBack}
-              className="mb-2 self-start text-[13px] text-action transition-opacity hover:opacity-70"
+              className="mb-2 self-start t-body-sm text-action transition-opacity hover:opacity-70"
             >
               ← {t('events.form.back')}
             </button>
           ) : null}
-          <ResponsiveDialogTitle className="text-[19px] font-medium tracking-[-0.015em]">
+          <ResponsiveDialogTitle className="t-subhead font-medium tracking-[-0.015em]">
             {title}
           </ResponsiveDialogTitle>
           {/* §16.2 — a subtitle here would be mood, not meaning. */}

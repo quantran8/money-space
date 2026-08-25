@@ -67,7 +67,7 @@ export function EventsPage() {
       <CompactPageHeader
         title={t('events.history.title')}
         actions={
-          <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
+          <Button className="px-4 t-body-sm" onClick={openCreate}>
             <RefreshCw className="size-4" strokeWidth={1.75} />
             {t('events.history.quickUpdate')}
           </Button>

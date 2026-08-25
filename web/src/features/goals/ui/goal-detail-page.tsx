@@ -109,9 +109,9 @@ export function GoalDetailPage() {
     return (
       <div className="space-y-4 pb-3">
         <BackLink onClick={() => navigate('/goals')} label={t('goals.detail.back')} />
-        <Panel className="py-10 text-center">
-          <h1 className="section-title text-[16px]">{t('goals.detail.notFound.title')}</h1>
-          <p className="mt-1 text-[13px] text-ink2">{t('goals.detail.notFound.description')}</p>
+        <Panel className="py-8 text-center">
+          <h1 className="t-title">{t('goals.detail.notFound.title')}</h1>
+          <p className="mt-1 t-body-sm text-ink2">{t('goals.detail.notFound.description')}</p>
         </Panel>
       </div>
     )
@@ -147,13 +147,13 @@ export function GoalDetailPage() {
           {/* Priority sits beside the name, not on the panel below: it
               qualifies the goal, not the figure. */}
           <div className="flex min-w-0 items-baseline gap-3">
-            <h1 className="page-title min-w-0 truncate text-[19px]">{goal.name}</h1>
-            <span className="shrink-0 text-[12px] text-ink3">{priorityLabels[goal.priority]}</span>
+            <h1 className="t-page-tracking min-w-0 truncate t-subhead">{goal.name}</h1>
+            <span className="shrink-0 t-caption text-ink3">{priorityLabels[goal.priority]}</span>
           </div>
 
           <Button
             variant="secondary"
-            className="h-9 shrink-0 px-4 text-[13px]"
+            className="s-tap h-9 shrink-0 px-4 t-body-sm"
             onClick={() => openEdit(goal.id)}
           >
             <Pencil className="size-4" strokeWidth={1.75} />
@@ -167,21 +167,21 @@ export function GoalDetailPage() {
           side by side and left the household to sort out which answered what.
           The forecast now has a section of its own below. */}
       <Panel>
-        <div className="grid gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+        <div className="grid gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_260px]">
           <div className="min-w-0">
             <p className="label-vi">{t('goals.detail.picture.saved')}</p>
 
             <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-1">
-              <span className="money-number text-[44px] leading-[.9] sm:text-[58px]">
+              <span className="money-number t-hero leading-[.9]">
                 {savedFigure.amount}
               </span>
-              <span className="num mb-1 text-[12px] text-ink3">/ {formatVndScale(target)}</span>
+              <span className="num mb-1 t-caption text-ink3">/ {formatVndScale(target)}</span>
             </div>
 
             <div className="mt-6">
               {/* Percentage and shortfall read as one line above the bar: the
                   bar shows the shape, these two say what it amounts to. */}
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[13px]">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 t-body-sm">
                 <span className="text-ink2">
                   <Trans
                     i18nKey="goals.detail.picture.achieved"
@@ -227,8 +227,8 @@ export function GoalDetailPage() {
               what is being aimed at — are never read as one series. */}
           <div className="flex flex-col justify-center lg:items-end">
             <p className="label-vi">{t('goals.detail.picture.targetLabel')}</p>
-            <div className="money-number mt-2 text-[30px]">{formatVndScale(target)}</div>
-            <p className="mt-1 text-[12px] text-ink3 lg:text-right">
+            <div className="money-number mt-2 t-metric">{formatVndScale(target)}</div>
+            <p className="mt-1 t-caption text-ink3 lg:text-right">
               {projectedLabel
                 ? t('goals.detail.picture.projectedOn', { date: projectedLabel })
                 : goal.targetDate && goal.targetDate !== 'No deadline'
@@ -324,7 +324,7 @@ function BackLink({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <button
       type="button"
-      className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 text-[13px] font-medium text-action hover:bg-accent-soft"
+      className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 t-body-sm font-medium text-action hover:bg-accent-soft"
       onClick={onClick}
     >
       <ChevronLeft className="size-4" strokeWidth={1.75} />

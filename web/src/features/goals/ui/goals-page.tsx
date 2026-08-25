@@ -41,7 +41,7 @@ export function GoalsPage() {
       <CompactPageHeader
         title={t('goals.header.title')}
         actions={
-          <Button className="h-10 px-4 text-[13px]" onClick={openCreate}>
+          <Button className="px-4 t-body-sm" onClick={openCreate}>
             <Plus className="size-4" />
             {t('goals.form.submit')}
           </Button>

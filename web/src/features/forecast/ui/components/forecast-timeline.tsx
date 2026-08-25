@@ -135,8 +135,8 @@ export function ForecastTimeline({
           title={t('upcoming.timeline.title')}
           meta={t('upcoming.timeline.count', { count: 0 })}
         />
-        <div className="flex flex-col items-center gap-4 py-10">
-          <p className="text-center text-[13px] text-ink2">
+        <div className="flex flex-col items-center gap-4 py-8">
+          <p className="text-center t-body-sm text-ink2">
             {t('upcoming.timeline.empty')}
           </p>
           {onAdd ? (
@@ -233,7 +233,7 @@ export function ForecastTimeline({
 
       {rows.length > PAGE_SIZE ? (
         <div className="sunk mt-6 flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[12px] text-ink2">
+          <p className="t-caption text-ink2">
             {t('upcoming.timeline.showing', {
               from: firstVisible,
               to: lastVisible,
@@ -244,7 +244,7 @@ export function ForecastTimeline({
             <button
               type="button"
               disabled={safePage === 1}
-              className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] text-ink3 hover:bg-card disabled:opacity-40"
+              className="flex h-9 items-center gap-1 rounded-control px-3 t-caption text-ink3 hover:bg-card disabled:opacity-40"
               onClick={() => setPage((value) => Math.max(1, value - 1))}
             >
               <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -255,13 +255,13 @@ export function ForecastTimeline({
               return (
                 <span key={pageNumber} className="contents">
                   {previous && pageNumber - previous > 1 ? (
-                    <span className="grid size-9 place-items-center text-[12px] text-ink3">…</span>
+                    <span className="grid size-9 place-items-center t-caption text-ink3">…</span>
                   ) : null}
                   <button
                     type="button"
                     aria-current={safePage === pageNumber ? 'page' : undefined}
                     className={cn(
-                      'grid size-9 place-items-center rounded-control text-[12px]',
+                      'grid size-9 place-items-center rounded-control t-caption',
                       safePage === pageNumber
                         ? 'bg-card font-medium text-ink'
                         : 'text-ink2 hover:bg-card',
@@ -276,7 +276,7 @@ export function ForecastTimeline({
             <button
               type="button"
               disabled={safePage === totalPages}
-              className="flex h-9 items-center gap-1 rounded-control px-3 text-[12px] font-medium text-action hover:bg-card disabled:opacity-40"
+              className="flex h-9 items-center gap-1 rounded-control px-3 t-caption font-medium text-action hover:bg-card disabled:opacity-40"
               onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
             >
               {t('upcoming.timeline.next')}
@@ -315,7 +315,7 @@ function OccurrenceRow({
     // Each cell owns its own padding — the row is a grid below `lg` and a real
     // table row above it, so `TableCell`'s uniform `px-4 py-3` is overridden.
     <TableRow className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 lg:table-row lg:px-0 lg:py-0">
-      <TableCell className="col-start-1 row-start-1 px-0 py-0 font-mono text-[12px] text-ink3 lg:rounded-l-[8px] lg:py-3 lg:pl-3">
+      <TableCell className="col-start-1 row-start-1 px-0 py-0 font-mono t-caption text-ink3 lg:rounded-l-[8px] lg:py-3 lg:pl-3">
         {/* An overdue occurrence is pulled onto today so it still weighs on
             today's cash, but the date column states when the event happens —
             so it shows the real one. The clamp stays in `occurrence.date`,
@@ -326,7 +326,7 @@ function OccurrenceRow({
 
       <TableCell className="col-start-1 row-start-2 mt-1 min-w-0 px-0 py-0 lg:mt-0 lg:py-3 lg:pr-8">
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-          <span className="truncate text-[13px] font-medium lg:text-[14px]">
+          <span className="truncate t-body-sm font-medium">
             {occurrence.name}
           </span>
           {/* A filled chip, not bare text: a marker is a state the row is IN,
@@ -335,7 +335,7 @@ function OccurrenceRow({
           {markers.map((marker) => (
             <span
               key={marker}
-              className="inline-flex shrink-0 items-center rounded-[6px] bg-attention-tint px-2 py-1 text-[10px] font-medium text-attention"
+              className="inline-flex shrink-0 items-center rounded-[6px] bg-attention-tint px-2 py-1 t-caption-sm font-medium text-attention"
             >
               {t(`upcoming.markers.${marker}`)}
             </span>
@@ -343,13 +343,13 @@ function OccurrenceRow({
         </div>
       </TableCell>
 
-      <TableCell className="col-start-1 row-start-3 mt-2 px-0 py-0 text-[12px] text-ink2 lg:mt-0 lg:py-3 lg:pr-8 lg:text-[13px]">
+      <TableCell className="col-start-1 row-start-3 mt-2 px-0 py-0 t-caption text-ink2 lg:mt-0 lg:py-3 lg:pr-8 lg:t-body-sm">
         {ownerName ?? t('upcoming.timeline.householdOwner')}
       </TableCell>
 
       <TableCell
         className={cn(
-          'num col-start-2 row-start-2 mt-1 px-0 py-0 text-right text-[14px] font-medium lg:mt-0 lg:py-3 lg:pr-8',
+          'num col-start-2 row-start-2 mt-1 px-0 py-0 text-right t-body-sm font-medium lg:mt-0 lg:py-3 lg:pr-8',
           isIncoming && 'text-action',
         )}
       >
@@ -358,7 +358,7 @@ function OccurrenceRow({
 
       <TableCell
         className={cn(
-          'num col-start-2 row-start-3 mt-2 px-0 py-0 text-right text-[12px] text-ink2 lg:mt-0 lg:py-3 lg:pr-5 lg:text-[14px]',
+          'num col-start-2 row-start-3 mt-2 px-0 py-0 text-right t-caption text-ink2 lg:mt-0 lg:py-3 lg:pr-5 lg:t-body-sm',
           runningBalance !== undefined && BALANCE_TONE_CLASS[tone],
         )}
       >

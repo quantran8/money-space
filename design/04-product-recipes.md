@@ -568,8 +568,8 @@ nếu chúng chỉ là metadata/breakdown của các answer ở trên.
 8. Chart có data thật để tồn tại không?
 9. What-if có còn là contextual action không?
 10. Action có dùng ink/black thay vì data color không?
-11. Typography có đúng Urbanist 300/400/500 không?
-12. Heading/subheading/body có giữ hierarchy 72/20/16 tương ứng không?
+11. Text có dùng một bậc `t-*` không (không `text-[Npx]`, không preset)?
+12. Heading có lớn hơn thứ nó giới thiệu không (t-title 24 > t-subhead 20 > t-body 16)?
 13. Card có đang không dùng shadow không?
 14. Mobile có giữ answer trước detail không?
 ```

@@ -38,9 +38,9 @@ export function HeroCard({
       )}
     >
       <div className="flex min-w-0 flex-col gap-1">
-        {eyebrow ? <p className="text-[16px] text-ink2 lg:text-[20px]">{eyebrow}</p> : null}
-        <h1 className="page-title text-[36px] leading-[1.02] lg:text-[56px]">{title}</h1>
-        {context ? <div className="mt-1 text-[14px] text-ink">{context}</div> : null}
+        {eyebrow ? <p className="t-body text-ink2 lg:t-subhead">{eyebrow}</p> : null}
+        <h1 className="t-page-tracking t-figure leading-[1.02] lg:t-hero">{title}</h1>
+        {context ? <div className="mt-1 t-body-sm text-ink">{context}</div> : null}
       </div>
       {actions ? <div className="flex items-center gap-2.5">{actions}</div> : null}
     </section>

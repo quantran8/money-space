@@ -29,7 +29,7 @@ export function AuthDivider() {
   return (
     <div className="my-5 flex items-center gap-4 py-1">
       <div className="h-px flex-1 bg-divider" />
-      <span className="text-[11px] uppercase tracking-[0.12em] text-ink3">{t('auth.or')}</span>
+      <span className="t-caption-sm uppercase tracking-[0.12em] text-ink3">{t('auth.or')}</span>
       <div className="h-px flex-1 bg-divider" />
     </div>
   )

@@ -48,14 +48,14 @@ export const fieldShellSm =
  * viewport on focus (§22.3).
  */
 export const fieldInput =
-  'h-full min-w-0 w-full bg-transparent text-[16px] leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3'
+  'h-full min-w-0 w-full bg-transparent t-body leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3'
 
 /**
  * Class for a shadcn `SelectTrigger` / `DatePicker` placed inside {@link Field}.
  * Strips the control's own chrome so the sunk shell is the only surface.
  */
 export const fieldControlReset =
-  'h-full w-full rounded-none border-0 bg-transparent p-0 text-[16px] font-normal text-ink shadow-none hover:bg-transparent focus:ring-0 focus-visible:ring-0 data-[placeholder]:text-ink3'
+  'h-full w-full rounded-none border-0 bg-transparent p-0 t-body text-ink shadow-none hover:bg-transparent focus:ring-0 focus-visible:ring-0 data-[placeholder]:text-ink3'
 
 /**
  * There is deliberately NO `help` prop. §22.0 lists "mỗi trường có một dòng
@@ -75,12 +75,12 @@ export function Field({ label, htmlFor, error, children, className }: FieldProps
     <div className={className}>
       <label
         htmlFor={htmlFor}
-        className="mb-[7px] block text-[13px] font-normal leading-[1.4] text-ink2"
+        className="mb-2 block t-body-sm leading-[1.4] text-ink2"
       >
         {label}
       </label>
       {children}
-      {error ? <p className="mt-1.5 text-[12px] leading-[1.5] text-alert">{error}</p> : null}
+      {error ? <p className="mt-1.5 t-caption leading-[1.5] text-alert">{error}</p> : null}
     </div>
   )
 }
@@ -117,7 +117,7 @@ export function TextareaField({
         id={id}
         rows={rows}
         className={cn(
-          'w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card',
+          'w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-3 t-body leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card',
           error && 'border-alert',
         )}
         {...props}
@@ -180,7 +180,7 @@ export function MoneyField({
           onBlur={onBlur}
           className={cn(fieldInput, 'num font-medium')}
         />
-        <span className="shrink-0 font-mono text-[12px] text-ink3">{suffix}</span>
+        <span className="shrink-0 font-mono t-caption text-ink3">{suffix}</span>
       </div>
     </Field>
   )
@@ -215,7 +215,7 @@ export function DecimalField({
           className={cn(fieldInput, 'num font-medium')}
         />
         {suffix ? (
-          <span className="shrink-0 whitespace-nowrap text-[12px] text-ink3">{suffix}</span>
+          <span className="shrink-0 whitespace-nowrap t-caption text-ink3">{suffix}</span>
         ) : null}
       </div>
     </Field>
@@ -251,7 +251,7 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              'flex-1 rounded-[7px] px-3 py-2 text-[13px] transition-colors',
+              'flex-1 rounded-[7px] px-3 py-2 t-body-sm transition-colors',
               active ? 'bg-card font-medium text-ink shadow-sm' : 'text-ink2 hover:text-ink',
             )}
           >
@@ -287,7 +287,7 @@ export function Consequence({
     <div
       aria-live="polite"
       className={cn(
-        'rounded-[10px] bg-accent-soft px-4 py-3 text-[13px] leading-[1.6] text-ink2',
+        'rounded-[10px] bg-accent-soft px-4 py-3 t-body-sm leading-[1.6] text-ink2',
         className,
       )}
     >
@@ -321,7 +321,7 @@ export function Disclosure({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="text-[13px] text-action transition-opacity hover:opacity-70"
+        className="t-body-sm text-action transition-opacity hover:opacity-70"
       >
         {label}
       </button>

@@ -22,7 +22,7 @@ export function SubSection({ title, aside, children, className }: SubSectionProp
   return (
     <div className={className}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[12px] font-medium tracking-[0.02em] text-ink3">{title}</p>
+        <p className="t-caption font-medium tracking-[0.02em] text-ink3">{title}</p>
         {aside}
       </div>
       <div className="mt-3">{children}</div>

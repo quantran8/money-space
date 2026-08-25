@@ -19,7 +19,7 @@ export function AuthLogo({
   return (
     <Link
       to="/"
-      className={cn('inline-flex w-fit items-center gap-3 font-semibold tracking-[-0.02em]', className)}
+      className={cn('inline-flex w-fit items-center gap-3 font-medium tracking-[-0.02em]', className)}
     >
       <span className={cn('grid place-items-center text-action', markClassName)}>
         <svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true">

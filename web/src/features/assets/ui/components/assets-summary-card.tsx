@@ -20,7 +20,7 @@ export function AssetsSummaryCard({ totals, total }: AssetsSummaryCardProps) {
     <Card>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">{t('assets.summary.title')}</h2>
+          <h2 className="t-title">{t('assets.summary.title')}</h2>
         </div>
         <Landmark className="size-5 text-action" />
       </div>

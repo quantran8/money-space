@@ -87,7 +87,7 @@ export function GoalAllocationsSection({
             type="button"
             onClick={onAdd}
             disabled={!canAdd || isBusy}
-            className="hidden min-h-11 items-center gap-1.5 text-[13px] font-medium text-action disabled:text-ink3 sm:inline-flex"
+            className="hidden min-h-11 items-center gap-1.5 t-body-sm font-medium text-action disabled:text-ink3 sm:inline-flex"
           >
             <Plus className="size-4" strokeWidth={1.75} />
             {t('goals.allocations.addSource')}
@@ -101,12 +101,12 @@ export function GoalAllocationsSection({
           where the household finds out. Shown above the columns because it
           explains why the contribution column is missing entirely. */}
       {allocations.length > 0 && contributions.length === 0 ? (
-        <div className="mt-6 rounded-control bg-wash px-4 py-3 text-[13px] leading-5 text-ink2">
+        <div className="mt-6 rounded-control bg-wash px-4 py-3 t-body-sm leading-5 text-ink2">
           <p>{t('goals.allocations.noWalletTitle')}</p>
           <Button
             type="button"
             variant="secondary"
-            className="mt-3 h-10 px-4 text-[13px]"
+            className="s-tap mt-3 h-10 px-4 t-body-sm"
             disabled={!canAdd || isBusy}
             onClick={onAdd}
           >
@@ -119,12 +119,12 @@ export function GoalAllocationsSection({
         // A statement with no button leaves a brand-new asset-backed goal
         // reading as 0% with nothing to do about it. The invitation belongs
         // where the household is already looking.
-        <div className="mt-6 rounded-control bg-wash px-4 py-10 text-center">
-          <p className="text-[13px] text-ink2">{t('goals.allocations.empty')}</p>
+        <div className="mt-6 rounded-control bg-wash px-4 py-8 text-center">
+          <p className="t-body-sm text-ink2">{t('goals.allocations.empty')}</p>
           <Button
             type="button"
             variant="secondary"
-            className="mt-4 h-10 px-4 text-[13px]"
+            className="s-tap mt-4 h-10 px-4 t-body-sm"
             disabled={!canAdd || isBusy}
             onClick={onAdd}
           >
@@ -132,7 +132,7 @@ export function GoalAllocationsSection({
           </Button>
         </div>
       ) : (
-        <div className="mt-7 grid gap-x-14 gap-y-9 lg:grid-cols-2">
+        <div className="mt-7 grid gap-x-12 gap-y-8 lg:grid-cols-2">
           {/* Held value. Its total is the stock of money behind the goal. */}
           {holdings.length > 0 ? (
             <SourceColumn
@@ -209,7 +209,7 @@ export function GoalAllocationsSection({
           once, under the column it applies to, is what stops the goal's
           progress looking arbitrary. */}
       {holdings.length > 0 ? (
-        <p className="mt-7 text-[11px] text-ink3">{t('goals.allocations.marketNote')}</p>
+        <p className="mt-7 t-caption-sm text-ink3">{t('goals.allocations.marketNote')}</p>
       ) : null}
 
       {/* Mobile has no room for a header action, so the invitation sits at the
@@ -219,7 +219,7 @@ export function GoalAllocationsSection({
           type="button"
           onClick={onAdd}
           disabled={!canAdd || isBusy}
-          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-control bg-wash text-[13px] font-medium text-action disabled:text-ink3 sm:hidden"
+          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-control bg-wash t-body-sm font-medium text-action disabled:text-ink3 sm:hidden"
         >
           <Plus className="size-4" strokeWidth={1.75} />
           {t('goals.allocations.addSource')}
@@ -246,7 +246,7 @@ function SourceColumn({
       <div className="flex items-baseline justify-between gap-4">
         <div className="min-w-0">
           <p className="label-vi">{label}</p>
-          <div className="money-number mt-2 text-[22px]">{total}</div>
+          <div className="money-number mt-2 t-metric">{total}</div>
         </div>
         <span className="label-vi shrink-0">{count}</span>
       </div>
@@ -282,10 +282,10 @@ function SourceRow({
   return (
     <div className="flex items-center justify-between gap-4 rounded-control px-3 py-2.5 transition-colors hover:bg-wash">
       <div className="min-w-0">
-        <div className="truncate text-[14px]">{name}</div>
-        <div className="mt-0.5 truncate text-[11px] text-ink3">{note}</div>
+        <div className="truncate t-body-sm">{name}</div>
+        <div className="mt-0.5 truncate t-caption-sm text-ink3">{note}</div>
         {warning ? (
-          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-attention">
+          <div className="mt-1 flex items-center gap-1.5 t-caption-sm text-attention">
             <span className="size-1.5 shrink-0 rounded-full bg-attention" />
             {warning}
           </div>
@@ -294,8 +294,8 @@ function SourceRow({
 
       <div className="flex shrink-0 items-center gap-3">
         <div className="text-right">
-          <div className="num text-[14px] font-medium">{value}</div>
-          {sub ? <div className="num mt-0.5 text-[11px] text-ink3">{sub}</div> : null}
+          <div className="num t-body-sm font-medium">{value}</div>
+          {sub ? <div className="num mt-0.5 t-caption-sm text-ink3">{sub}</div> : null}
         </div>
 
         <DropdownMenu>
@@ -303,7 +303,7 @@ function SourceRow({
             <Button
               size="icon"
               variant="ghost"
-              className="size-9 shrink-0 text-ink3 hover:bg-card"
+              className="s-tap size-9 shrink-0 text-ink3 hover:bg-card"
               aria-label={t('goals.allocations.menuFor', { name })}
             >
               <MoreHorizontal className="size-4" />

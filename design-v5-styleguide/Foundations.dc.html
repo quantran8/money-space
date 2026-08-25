@@ -12,201 +12,256 @@
     body { margin: 0; font-family: Urbanist, ui-sans-serif, system-ui, sans-serif; }
     a { color: #0F1011; } a:hover { color: #596268; }
     .num { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1; }
+
+    /* The eleven steps, copied verbatim from web/src/index.css.
+       This page is rendered BY the scale it documents — the specimens below
+       are the same classes the app uses, not hand-set approximations. */
+    .t-display    { font-size: 72px; font-weight: 500; line-height: 1.02; letter-spacing: -0.035em; }
+    .t-hero       { font-size: 56px; font-weight: 400; line-height: 1.05; letter-spacing: -0.04em; }
+    .t-figure     { font-size: 40px; font-weight: 400; line-height: 1.1;  letter-spacing: -0.035em; }
+    .t-metric     { font-size: 28px; font-weight: 400; line-height: 1.15; letter-spacing: -0.03em; }
+    .t-title      { font-size: 24px; font-weight: 500; line-height: 1.3;  letter-spacing: -0.02em; }
+    .t-subtitle   { font-size: 20px; font-weight: 500; line-height: 1.35; letter-spacing: -0.01em; }
+    .t-subhead    { font-size: 20px; font-weight: 400; line-height: 1.3; }
+    .t-body       { font-size: 16px; font-weight: 300; line-height: 1.5; }
+    .t-body-sm    { font-size: 14px; font-weight: 300; line-height: 1.5; }
+    .t-caption    { font-size: 12px; font-weight: 300; line-height: 1.45; }
+    .t-caption-sm { font-size: 11px; font-weight: 300; line-height: 1.4; }
+
+    /* Page chrome. `.spec-label` names a specimen; `.swatch-name` names a
+       colour chip — both are metadata about the thing beside them, so they
+       take the caption tier with a weight bump to separate name from value. */
+    .ink2 { color: #596268; }
+    .ink3 { color: #879398; }
+    .spec-label  { font-size: 12px; font-weight: 300; color: #879398; }
+    .swatch-name { font-size: 12px; font-weight: 500; }
+    .group       { display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px; }
+    .sheet       { background: #FFFFFF; border-radius: 22px; padding: 28px 32px;
+                   display: flex; flex-direction: column; gap: 22px; }
+    .rule        { height: 1px; background: #EEF1F2; }
+    .spec        { display: flex; flex-direction: column; gap: 4px; }
+    .note        { max-width: 760px; }
   </style>
 </helmet>
 <div style="background: #EDF3F8; padding: 56px 56px 64px; color: #0F1011;">
 
   <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 44px;">
-    <div style="font-size: 20px; font-weight: 400; color: #596268;">Money Space Design System</div>
-    <div style="font-size: 64px; font-weight: 300; line-height: 1.02; letter-spacing: -0.035em;">Foundations</div>
-    <div style="font-size: 14px; font-weight: 400; color: #596268;">v5.0 — airy, cool, flat financial workspace</div>
+    <div class="t-subhead ink2">Money Space Design System</div>
+    <div class="t-display">Foundations</div>
+    <div class="t-body-sm ink2">v5.0 — airy, cool, flat financial workspace</div>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px;">
-    <div style="font-size: 16px; font-weight: 500;">Surface</div>
+    <div class="t-title">Surface</div>
     <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: linear-gradient(#C2D7EE, #ACC6E3);"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">page ground</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#C2D7EE → #ACC6E3</div>
+          <div class="swatch-name">page ground</div>
+          <div class="num spec-label">#C2D7EE → #ACC6E3</div>
         </div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: #EDF3F8;"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">canvas</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#EDF3F8</div>
+          <div class="swatch-name">canvas</div>
+          <div class="num spec-label">#EDF3F8</div>
         </div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: #FFFFFF; border: 1px solid #D8E0E4;"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">card</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#FFFFFF</div>
+          <div class="swatch-name">card</div>
+          <div class="num spec-label">#FFFFFF</div>
         </div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: #E3ECF2;"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">wash</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#E3ECF2</div>
+          <div class="swatch-name">wash</div>
+          <div class="num spec-label">#E3ECF2</div>
         </div>
       </div>
     </div>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px;">
-    <div style="font-size: 16px; font-weight: 500;">Atmosphere &amp; text</div>
+    <div class="t-title">Atmosphere &amp; text</div>
     <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: #B7D8F3;"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">hero</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#B7D8F3</div>
+          <div class="swatch-name">hero</div>
+          <div class="num spec-label">#B7D8F3</div>
         </div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: #73A4D7;"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">hero-deep</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#73A4D7</div>
+          <div class="swatch-name">hero-deep</div>
+          <div class="num spec-label">#73A4D7</div>
         </div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: #0F1011;"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">ink</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#0F1011</div>
+          <div class="swatch-name">ink</div>
+          <div class="num spec-label">#0F1011</div>
         </div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: #596268;"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">ink2</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#596268</div>
+          <div class="swatch-name">ink2</div>
+          <div class="num spec-label">#596268</div>
         </div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 76px; border-radius: 12px; background: #879398;"></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 12px; font-weight: 500;">ink3</div>
-          <div class="num" style="font-size: 12px; font-weight: 400; color: #879398;">#879398</div>
+          <div class="swatch-name">ink3</div>
+          <div class="num spec-label">#879398</div>
         </div>
       </div>
     </div>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px;">
-    <div style="font-size: 16px; font-weight: 500;">Data &amp; state</div>
+    <div class="t-title">Data &amp; state</div>
     <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px;">
       <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 64px; border-radius: 12px; background: #73A4D7;"></div>
-        <div style="font-size: 12px; font-weight: 500;">data-primary</div>
+        <div class="swatch-name">data-primary</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 64px; border-radius: 12px; background: #8FCDA4;"></div>
-        <div style="font-size: 12px; font-weight: 500;">positive</div>
+        <div class="swatch-name">positive</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 64px; border-radius: 12px; background: #E1BE68;"></div>
-        <div style="font-size: 12px; font-weight: 500;">attention</div>
+        <div class="swatch-name">attention</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 64px; border-radius: 12px; background: #E8A39A;"></div>
-        <div style="font-size: 12px; font-weight: 500;">alert</div>
+        <div class="swatch-name">alert</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 64px; border-radius: 12px; background: #D8E0E4;"></div>
-        <div style="font-size: 12px; font-weight: 500;">committed</div>
+        <div class="swatch-name">committed</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 64px; border-radius: 12px; background: #AFC0C7;"></div>
-        <div style="font-size: 12px; font-weight: 500;">protect</div>
+        <div class="swatch-name">protect</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
         <div style="height: 64px; border-radius: 12px; background: #EEF6F1;"></div>
-        <div style="font-size: 12px; font-weight: 500;">model</div>
+        <div class="swatch-name">model</div>
       </div>
     </div>
-    <div style="font-size: 14px; font-weight: 400; color: #596268; max-width: 760px;">Interaction never uses green. Action stays ink. Incoming and outgoing money carry no hue of their own — positive and alert appear only when a consequence genuinely means something.</div>
+    <div class="t-body-sm ink2 note">Interaction never uses green. Action stays ink. Incoming and outgoing money carry no hue of their own — positive and alert appear only when a consequence genuinely means something.</div>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px;">
-    <div style="font-size: 16px; font-weight: 500;">Type scale — Urbanist 300 / 400 / 500</div>
+    <div class="t-title">Type scale — Urbanist 300 / 400 / 500</div>
+    <div class="t-body-sm ink2 note">Eleven steps, and nothing between them. Size and weight are never written at the call site — a component names the role the text plays (<span style="font-weight: 500;">.t-body</span>, <span style="font-weight: 500;">.t-caption</span>) and the scale decides how it looks. Weight descends as size does: the display line is the only 500 on a page, the money tiers are 400, and everything at body size and below is 300. Emphasis inside a step is still allowed — a name in a dense row takes 500 — but a size outside these eleven is not. Headings are separate complete classes and never take a step: <span style="font-weight: 500;">.t-title</span> 24/500 outranks <span style="font-weight: 500;">.t-subtitle</span> 20/500, which outranks <span style="font-weight: 500;">.t-subhead</span> 20/400 by weight alone.</div>
     <div style="background: #FFFFFF; border-radius: 22px; padding: 28px 32px; display: flex; flex-direction: column; gap: 22px;">
       <div style="display: flex; flex-direction: column; gap: 4px;">
-        <div style="font-size: 12px; font-weight: 400; color: #879398;">Display / page hero · 64 · 300 · −0.035em</div>
-        <div style="font-size: 64px; font-weight: 300; line-height: 1.02; letter-spacing: -0.035em;">Bức tranh hôm nay</div>
+        <div class="spec-label">Display / page hero — .t-display · 72 · 500 · -0.035em</div>
+        <div class="t-display">Bức tranh hôm nay</div>
       </div>
       <div style="height: 1px; background: #EEF1F2;"></div>
       <div style="display: flex; flex-direction: column; gap: 4px;">
-        <div style="font-size: 12px; font-weight: 400; color: #879398;">Hero money · 56 · 300 · −0.04em · tabular</div>
-        <div class="num" style="font-size: 56px; font-weight: 300; line-height: 1.05; letter-spacing: -0.04em;">48,2 tr</div>
+        <div class="spec-label">Hero money — .t-hero · 56 · 400 · -0.04em · tabular</div>
+        <div class="num t-hero">48,2 tr</div>
       </div>
       <div style="height: 1px; background: #EEF1F2;"></div>
       <div style="display: flex; flex-direction: column; gap: 4px;">
-        <div style="font-size: 12px; font-weight: 400; color: #879398;">Primary KPI · 40 · 300 · −0.035em</div>
-        <div class="num" style="font-size: 40px; font-weight: 300; line-height: 1.1; letter-spacing: -0.035em;">1,81 tỷ</div>
+        <div class="spec-label">Figure — .t-figure · 40 · 400 · -0.035em · tabular</div>
+        <div class="num t-figure">1,81 tỷ</div>
       </div>
       <div style="height: 1px; background: #EEF1F2;"></div>
       <div style="display: flex; flex-direction: column; gap: 4px;">
-        <div style="font-size: 12px; font-weight: 400; color: #879398;">Subheading · 20 · 400</div>
-        <div style="font-size: 20px; font-weight: 400;">Tài chính gia đình</div>
+        <div class="spec-label">Metric — .t-metric · 28 · 400 · -0.03em · tabular</div>
+        <div class="num t-metric">12,4 tr</div>
       </div>
       <div style="height: 1px; background: #EEF1F2;"></div>
       <div style="display: flex; flex-direction: column; gap: 4px;">
-        <div style="font-size: 12px; font-weight: 400; color: #879398;">Body · 16 · 400 · line-height 1.5</div>
-        <div style="font-size: 16px; font-weight: 400; line-height: 1.5;">Sau các khoản đã có nhiệm vụ</div>
+        <div class="spec-label">Section heading — .t-title · 24 · 500 · -0.02em</div>
+        <div class="t-title">Khoản quá hạn</div>
       </div>
       <div style="height: 1px; background: #EEF1F2;"></div>
       <div style="display: flex; flex-direction: column; gap: 4px;">
-        <div style="font-size: 12px; font-weight: 400; color: #879398;">Caption / metadata · 12 · 400 · minimum readable</div>
-        <div style="font-size: 12px; font-weight: 400; color: #596268;">Tính từ 5 nguồn · tất cả đều mới</div>
+        <div class="spec-label">Subsection heading — .t-subtitle · 20 · 500 · -0.01em</div>
+        <div class="t-subtitle">Khoản cần xử lý</div>
+      </div>
+      <div style="height: 1px; background: #EEF1F2;"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="spec-label">Subheading — .t-subhead · 20 · 400</div>
+        <div class="t-subhead">Tài chính gia đình</div>
+      </div>
+      <div style="height: 1px; background: #EEF1F2;"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="spec-label">Body — .t-body · 16 · 300</div>
+        <div class="t-body">Sau các khoản đã có nhiệm vụ</div>
+      </div>
+      <div style="height: 1px; background: #EEF1F2;"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="spec-label">Body small — dense rows — .t-body-sm · 14 · 300</div>
+        <div class="t-body-sm">Hoàn tiền bảo hiểm</div>
+      </div>
+      <div style="height: 1px; background: #EEF1F2;"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="spec-label">Caption / metadata — .t-caption · 12 · 300</div>
+        <div class="t-caption">Tính từ 5 nguồn · tất cả đều mới</div>
+      </div>
+      <div style="height: 1px; background: #EEF1F2;"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="spec-label">Caption small — floor — .t-caption-sm · 11 · 300</div>
+        <div class="t-caption-sm">Trục biểu đồ · nhãn nhỏ nhất</div>
       </div>
     </div>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px;">
-    <div style="font-size: 16px; font-weight: 500;">Spacing</div>
-    <div style="font-size: 14px; font-weight: 400; color: #596268; max-width: 760px;">Density comes from a small card gap on a flat surface — never from a nested container. When there is little data, narrow the composition or stack it; do not stretch content to fill the width.</div>
+    <div class="t-title">Spacing</div>
+    <div class="t-body-sm ink2 note">Density comes from a small card gap on a flat surface — never from a nested container. When there is little data, narrow the composition or stack it; do not stretch content to fill the width.</div>
 
     <div style="background: #FFFFFF; border-radius: 22px; padding: 28px 32px; display: flex; flex-direction: column; gap: 22px;">
 
       <div style="display: flex; flex-direction: column; gap: 12px;">
-        <div style="font-size: 12px; font-weight: 500; color: #879398;">Scale</div>
+        <div class="swatch-name ink3">Scale</div>
         <div style="display: flex; align-items: flex-end; gap: 14px;">
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="width: 4px; height: 4px; background: #73A4D7; border-radius: 1px;"></div>
-            <span class="num" style="font-size: 12px; color: #879398;">4</span>
+            <span class="num t-caption ink3">4</span>
           </div>
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="width: 8px; height: 8px; background: #73A4D7; border-radius: 1px;"></div>
-            <span class="num" style="font-size: 12px; color: #879398;">8</span>
+            <span class="num t-caption ink3">8</span>
           </div>
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="width: 12px; height: 12px; background: #73A4D7; border-radius: 2px;"></div>
-            <span class="num" style="font-size: 12px; color: #879398;">12</span>
+            <span class="num t-caption ink3">12</span>
           </div>
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="width: 16px; height: 16px; background: #73A4D7; border-radius: 2px;"></div>
-            <span class="num" style="font-size: 12px; color: #879398;">16</span>
+            <span class="num t-caption ink3">16</span>
           </div>
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="width: 20px; height: 20px; background: #73A4D7; border-radius: 3px;"></div>
-            <span class="num" style="font-size: 12px; color: #879398;">20</span>
+            <span class="num t-caption ink3">20</span>
           </div>
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="width: 24px; height: 24px; background: #73A4D7; border-radius: 3px;"></div>
-            <span class="num" style="font-size: 12px; color: #879398;">24</span>
+            <span class="num t-caption ink3">24</span>
           </div>
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="width: 32px; height: 32px; background: #73A4D7; border-radius: 4px;"></div>
-            <span class="num" style="font-size: 12px; color: #879398;">32</span>
+            <span class="num t-caption ink3">32</span>
           </div>
           <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="width: 48px; height: 48px; background: #73A4D7; border-radius: 4px;"></div>
-            <span class="num" style="font-size: 12px; color: #879398;">48</span>
+            <span class="num t-caption ink3">48</span>
           </div>
         </div>
       </div>
@@ -215,37 +270,37 @@
 
       <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px;">
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="font-size: 12px; font-weight: 500; color: #879398;">Desktop</div>
+          <div class="swatch-name ink3">Desktop</div>
           <div style="display: flex; align-items: baseline; gap: 12px;">
-            <span style="font-size: 14px; color: #596268; flex-grow: 1;">Page edge</span>
-            <span class="num" style="font-size: 14px;">28–32</span>
+            <span class="t-body-sm ink2" style="flex-grow: 1;">Page edge</span>
+            <span class="num t-body-sm">28–32</span>
           </div>
           <div style="display: flex; align-items: baseline; gap: 12px;">
-            <span style="font-size: 14px; color: #596268; flex-grow: 1;">Hero padding</span>
-            <span class="num" style="font-size: 14px;">28–32</span>
+            <span class="t-body-sm ink2" style="flex-grow: 1;">Hero padding</span>
+            <span class="num t-body-sm">28–32</span>
           </div>
           <div style="display: flex; align-items: baseline; gap: 12px;">
-            <span style="font-size: 14px; color: #596268; flex-grow: 1;">Card padding</span>
-            <span class="num" style="font-size: 14px;">20–24</span>
+            <span class="t-body-sm ink2" style="flex-grow: 1;">Card padding</span>
+            <span class="num t-body-sm">20–24</span>
           </div>
           <div style="display: flex; align-items: baseline; gap: 12px;">
-            <span style="font-size: 14px; color: #596268; flex-grow: 1;">Large column gap</span>
-            <span class="num" style="font-size: 14px;">36–48</span>
+            <span class="t-body-sm ink2" style="flex-grow: 1;">Large column gap</span>
+            <span class="num t-body-sm">36–48</span>
           </div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="font-size: 12px; font-weight: 500; color: #879398;">Mobile</div>
+          <div class="swatch-name ink3">Mobile</div>
           <div style="display: flex; align-items: baseline; gap: 12px;">
-            <span style="font-size: 14px; color: #596268; flex-grow: 1;">Page edge</span>
-            <span class="num" style="font-size: 14px;">16–20</span>
+            <span class="t-body-sm ink2" style="flex-grow: 1;">Page edge</span>
+            <span class="num t-body-sm">16–20</span>
           </div>
           <div style="display: flex; align-items: baseline; gap: 12px;">
-            <span style="font-size: 14px; color: #596268; flex-grow: 1;">Card padding</span>
-            <span class="num" style="font-size: 14px;">18–20</span>
+            <span class="t-body-sm ink2" style="flex-grow: 1;">Card padding</span>
+            <span class="num t-body-sm">18–20</span>
           </div>
           <div style="display: flex; align-items: baseline; gap: 12px;">
-            <span style="font-size: 14px; color: #596268; flex-grow: 1;">Touch target</span>
-            <span class="num" style="font-size: 14px;">44 min</span>
+            <span class="t-body-sm ink2" style="flex-grow: 1;">Touch target</span>
+            <span class="num t-body-sm">44 min</span>
           </div>
         </div>
       </div>
@@ -253,26 +308,26 @@
       <div style="height: 1px; background: #EEF1F2;"></div>
 
       <div style="display: flex; flex-direction: column; gap: 10px;">
-        <div style="font-size: 12px; font-weight: 500; color: #879398;">Rhythm — both breakpoints</div>
+        <div class="swatch-name ink3">Rhythm — both breakpoints</div>
         <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px;">
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; align-items: baseline; gap: 12px;">
-              <span style="font-size: 14px; color: #596268; flex-grow: 1;">Card → card gap</span>
-              <span class="num" style="font-size: 14px;">8–12</span>
+              <span class="t-body-sm ink2" style="flex-grow: 1;">Card → card gap</span>
+              <span class="num t-body-sm">8–12</span>
             </div>
             <div style="display: flex; align-items: baseline; gap: 12px;">
-              <span style="font-size: 14px; color: #596268; flex-grow: 1;">Section → section</span>
-              <span class="num" style="font-size: 14px;">16–20</span>
+              <span class="t-body-sm ink2" style="flex-grow: 1;">Section → section</span>
+              <span class="num t-body-sm">16–20</span>
             </div>
           </div>
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; align-items: baseline; gap: 12px;">
-              <span style="font-size: 14px; color: #596268; flex-grow: 1;">Header → body</span>
-              <span class="num" style="font-size: 14px;">20–24</span>
+              <span class="t-body-sm ink2" style="flex-grow: 1;">Header → body</span>
+              <span class="num t-body-sm">20–24</span>
             </div>
             <div style="display: flex; align-items: baseline; gap: 12px;">
-              <span style="font-size: 14px; color: #596268; flex-grow: 1;">Dense row, vertical</span>
-              <span class="num" style="font-size: 14px;">10–12</span>
+              <span class="t-body-sm ink2" style="flex-grow: 1;">Dense row, vertical</span>
+              <span class="num t-body-sm">10–12</span>
             </div>
           </div>
         </div>
@@ -281,7 +336,48 @@
       <div style="height: 1px; background: #EEF1F2;"></div>
 
       <div style="display: flex; flex-direction: column; gap: 12px;">
-        <div style="font-size: 12px; font-weight: 500; color: #879398;">Card gap 8–12 is what makes the grid read as one surface</div>
+        <div class="swatch-name ink3">Named roles — the positions the system makes a promise about</div>
+        <div class="t-body-sm ink2 note">A plain <span class="med">mt-4</span> between two paragraphs is fine: it carries no rule anyone could get wrong. These do, so they are classes rather than numbers — the same reason type is <span class="med">.t-*</span> and not <span class="med">text-[16px]</span>.</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 32px;">
+          <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="t-body-sm med" style="flex-grow: 1;">.s-card</span>
+            <span class="num t-body-sm ink2">20 → 24 @sm</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="t-body-sm med" style="flex-grow: 1;">.s-page</span>
+            <span class="num t-body-sm ink2">16 → 28 @lg</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="t-body-sm med" style="flex-grow: 1;">.s-card-gap</span>
+            <span class="num t-body-sm ink2">12</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="t-body-sm med" style="flex-grow: 1;">.s-section-gap</span>
+            <span class="num t-body-sm ink2">20</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="t-body-sm med" style="flex-grow: 1;">.s-head-body</span>
+            <span class="num t-body-sm ink2">28</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="t-body-sm med" style="flex-grow: 1;">.s-split-gap</span>
+            <span class="num t-body-sm ink2">48 / 32</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="t-body-sm med" style="flex-grow: 1;">.s-row</span>
+            <span class="num t-body-sm ink2">10 dọc</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="t-body-sm med" style="flex-grow: 1;">.s-tap</span>
+            <span class="num t-body-sm ink2">44 min hit box</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 1px; background: #EEF1F2;"></div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="swatch-name ink3">Card gap 8–12 is what makes the grid read as one surface</div>
         <div style="display: flex; gap: 32px; align-items: flex-start;">
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="background: #EDF3F8; border-radius: 14px; padding: 10px; display: flex; gap: 10px;">
@@ -289,7 +385,7 @@
               <div style="width: 88px; height: 56px; border-radius: 10px; background: #FFFFFF;"></div>
               <div style="width: 88px; height: 56px; border-radius: 10px; background: #FFFFFF;"></div>
             </div>
-            <span style="font-size: 12px; font-weight: 500;">gap 10 — reads as one grid</span>
+            <span class="swatch-name">gap 10 — reads as one grid</span>
           </div>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="background: #EDF3F8; border-radius: 14px; padding: 10px; display: flex; gap: 28px;">
@@ -297,7 +393,7 @@
               <div style="width: 88px; height: 56px; border-radius: 10px; background: #FFFFFF;"></div>
               <div style="width: 88px; height: 56px; border-radius: 10px; background: #FFFFFF;"></div>
             </div>
-            <span style="font-size: 12px; font-weight: 400; color: #879398;">gap 28 — cards drift apart</span>
+            <span class="spec-label">gap 28 — cards drift apart</span>
           </div>
         </div>
       </div>
@@ -306,34 +402,34 @@
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 14px;">
-    <div style="font-size: 16px; font-weight: 500;">Radius &amp; elevation</div>
+    <div class="t-title">Radius &amp; elevation</div>
     <div style="display: flex; gap: 12px; align-items: flex-start;">
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; width: 176px;">
         <div style="height: 88px; border-radius: 28px; background: #B7D8F3;"></div>
-        <div style="font-size: 12px; font-weight: 500;">hero · 28</div>
+        <div class="swatch-name">hero · 28</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; width: 176px;">
         <div style="height: 88px; border-radius: 22px; background: #B7D8F3;"></div>
-        <div style="font-size: 12px; font-weight: 500;">card · 22</div>
+        <div class="swatch-name">card · 22</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; width: 176px;">
         <div style="height: 88px; border-radius: 14px; background: #B7D8F3;"></div>
-        <div style="font-size: 12px; font-weight: 500;">control · 14</div>
+        <div class="swatch-name">control · 14</div>
       </div>
       <div style="background: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; width: 176px;">
         <div style="height: 88px; border-radius: 999px; background: #B7D8F3;"></div>
-        <div style="font-size: 12px; font-weight: 500;">pill · full</div>
+        <div class="swatch-name">pill · full</div>
       </div>
       <div style="display: flex; flex-direction: column; gap: 12px; margin-left: 20px;">
         <div style="width: 240px; height: 88px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 1px 5px rgba(39, 62, 78, 0.018);"></div>
-        <div style="font-size: 12px; font-weight: 500;">Shadow/Card — optional, near-invisible</div>
+        <div class="swatch-name">Shadow/Card — optional, near-invisible</div>
       </div>
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <div style="width: 240px; height: 88px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 18px 50px rgba(20, 34, 43, 0.16);"></div>
-        <div style="font-size: 12px; font-weight: 500;">Shadow/Overlay — modal</div>
+        <div class="swatch-name">Shadow/Overlay — modal</div>
       </div>
     </div>
-    <div style="font-size: 14px; font-weight: 400; color: #596268; max-width: 760px;">In-page cards carry no shadow — a white surface on the page ground is separation enough. Shadow never proves a block is a card. Overlay elevation belongs to modals, dialogs, sheets and popovers.</div>
+    <div class="t-body-sm ink2 note">In-page cards carry no shadow — a white surface on the page ground is separation enough. Shadow never proves a block is a card. Overlay elevation belongs to modals, dialogs, sheets and popovers.</div>
   </div>
 
 </div>

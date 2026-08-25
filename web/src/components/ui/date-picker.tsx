@@ -55,7 +55,7 @@ export function DatePicker({
           type="button"
           variant="outline"
           className={cn(
-            'h-11 w-full justify-start rounded-control px-4 text-left text-sm font-normal [&_svg]:text-ink3',
+            'h-11 w-full justify-start rounded-control px-4 text-left t-body-sm [&_svg]:text-ink3',
             !selected && 'text-ink3',
             ariaInvalid && 'outline-2 outline-alert',
             className

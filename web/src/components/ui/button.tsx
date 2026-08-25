@@ -14,7 +14,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * action v5 §7 prefers over inventing a bordered secondary button.
  */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill t-body-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -27,8 +27,11 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-11 px-5 py-2',
-        sm: 'h-9 px-4 text-xs',
-        lg: 'h-12 px-6 text-base',
+        // 44 is the floor for anything tappable (Foundations, "Touch target").
+        // `sm` is the COMPACT variant, not the small-target one: it keeps the
+        // tighter padding and type but never drops below the minimum box.
+        sm: 'h-11 px-4 t-caption',
+        lg: 'h-12 px-6 t-body',
         icon: 'size-11',
       },
     },

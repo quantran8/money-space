@@ -35,7 +35,7 @@ export function UpcomingPage() {
         title={t('upcoming.title')}
         actions={
           <Button
-            className="h-10 px-4 text-[13px]"
+            className="s-tap h-10 px-4 t-body-sm"
             onClick={() => cashflowForm.openCreate('outgoing')}
           >
             <Plus className="size-4" />
@@ -57,7 +57,7 @@ export function UpcomingPage() {
             aria-selected={horizon === horizonDays}
             onClick={() => setHorizonDays(horizon as HorizonDays)}
             className={cn(
-              'h-9 flex-1 rounded-control px-4 text-[13px] font-medium transition-colors sm:flex-none',
+              'h-9 flex-1 rounded-control px-4 t-body-sm font-medium transition-colors sm:flex-none',
               horizon === horizonDays ? 'bg-card text-ink' : 'text-ink2 hover:text-ink',
             )}
           >

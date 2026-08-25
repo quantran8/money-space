@@ -35,11 +35,11 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
   return (
     <div>
       <div>
-        <p className="text-[13px] font-medium text-action">{t('auth.login.eyebrow')}</p>
-        <h2 className="mt-2 text-[34px] font-medium leading-tight tracking-[-0.035em]">
+        <p className="t-body-sm font-medium text-action">{t('auth.login.eyebrow')}</p>
+        <h2 className="mt-2 t-figure leading-tight">
           {t('auth.login.title')}
         </h2>
-        <p className="mt-3 text-[14px] leading-6 text-ink2">{t('auth.login.description')}</p>
+        <p className="mt-3 t-body-sm leading-6 text-ink2">{t('auth.login.description')}</p>
       </div>
 
       <GoogleButton
@@ -64,7 +64,7 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <Label>{t('auth.fields.password')}</Label>
-            <button type="button" className="text-[13px] font-medium text-action hover:underline">
+            <button type="button" className="t-body-sm font-medium text-action hover:underline">
               {t('auth.login.forgotPassword')}
             </button>
           </div>
@@ -75,11 +75,11 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
             {...register('password')}
           />
           {errors.password?.message ? (
-            <p className="text-xs font-medium text-alert">{errors.password.message}</p>
+            <p className="t-caption font-medium text-alert">{errors.password.message}</p>
           ) : null}
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 text-[13px] text-ink2">
+        <label className="flex cursor-pointer items-start gap-3 t-body-sm text-ink2">
           <Checkbox className="mt-[2px]" {...register('remember')} />
           <span>{t('auth.login.remember')}</span>
         </label>
@@ -89,7 +89,7 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
         </Button>
       </form>
 
-      <p className="mt-7 text-center text-[13px] text-ink2">
+      <p className="mt-7 text-center t-body-sm text-ink2">
         {t('auth.login.noAccount')}{' '}
         <Link to={signupPath} className="font-medium text-action hover:underline">
           {t('auth.tabs.signup')}

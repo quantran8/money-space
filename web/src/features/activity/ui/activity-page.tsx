@@ -40,13 +40,13 @@ export function ActivityPage() {
             ))}
           </div>
         ) : entries.length === 0 ? (
-          <p className="py-4 text-[13px] text-ink2">{t('activity.empty')}</p>
+          <p className="py-4 t-body-sm text-ink2">{t('activity.empty')}</p>
         ) : (
           <div className="space-y-7">
             {groups.map(([day, dayEntries]) => (
               <section key={day}>
                 <p className="label">{formatRelativeDay(day, t)}</p>
-                <ul className="mt-3 -mx-2.5 text-[14px]">
+                <ul className="mt-3 -mx-2.5 t-body-sm">
                   {dayEntries.map((entry) => {
                     const impact = describeImpact(entry, t, formatVndSigned)
                     return (
@@ -54,7 +54,7 @@ export function ActivityPage() {
                         key={entry.id}
                         className="flex items-baseline gap-4 px-2.5 py-2.5"
                       >
-                        <span className="w-6 shrink-0 font-mono text-[11px] text-ink3">
+                        <span className="w-6 shrink-0 font-mono t-caption-sm text-ink3">
                           {actorInitials(entry)}
                         </span>
                         <span className="flex-1">{describeEntry(entry, t)}</span>
@@ -64,7 +64,7 @@ export function ActivityPage() {
                           </span>
                         )}
                         {impact ? (
-                          <span className="hidden w-40 text-right text-[12px] text-ink3 sm:block">
+                          <span className="hidden w-40 text-right t-caption text-ink3 sm:block">
                             {impact}
                           </span>
                         ) : null}

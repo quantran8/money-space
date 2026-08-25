@@ -64,13 +64,13 @@ function PreviewRow({
 }) {
   if (before === after) return null
   return (
-    <div className="flex items-center justify-between gap-3 py-1.5 text-sm">
+    <div className="flex items-center justify-between gap-3 py-1.5 t-body-sm">
       <span className="shrink-0 text-[#6e6e73]">{label}</span>
       <span className="flex min-w-0 items-center gap-1.5 text-right">
         <span className="truncate text-[#8e8e93] line-through">{before}</span>
         <span className="shrink-0 text-[#8e8e93]">→</span>
         <span
-          className={`shrink-0 font-semibold ${emphasize ? 'text-action' : 'text-[#1d1d1f]'}`}
+          className={`shrink-0 font-medium ${emphasize ? 'text-action' : 'text-[#1d1d1f]'}`}
         >
           {after}
         </span>
@@ -100,8 +100,8 @@ function OptionCard({
           : 'border-[#e5e5ea] bg-white text-[#1d1d1f] hover:bg-[#f2f2f7]'
       }`}
     >
-      <p className="text-[14px] font-semibold tracking-[-0.01em]">{title}</p>
-      <p className={`mt-0.5 text-xs ${active ? 'text-white/70' : 'text-[#8e8e93]'}`}>{hint}</p>
+      <p className="t-body-sm font-medium tracking-[-0.01em]">{title}</p>
+      <p className={`mt-0.5 t-caption ${active ? 'text-white/70' : 'text-[#8e8e93]'}`}>{hint}</p>
     </button>
   )
 }
@@ -184,10 +184,10 @@ export function DebtUpdateModeDialog({
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="gap-0 overflow-hidden border-white bg-[#fcfcfd] p-0 shadow-[0_28px_80px_rgba(15,23,42,0.18)] sm:max-w-[480px] sm:rounded-[32px]">
         <ResponsiveDialogHeader className="gap-1.5 border-b border-[#e8e8ee] px-5 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
-          <ResponsiveDialogTitle className="text-[22px] font-semibold leading-tight tracking-[-0.03em] text-[#1d1d1f]">
+          <ResponsiveDialogTitle className="t-metric leading-tight text-[#1d1d1f]">
             Cập nhật khoản nợ đã có lịch sử
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription className="text-sm text-[#6e6e73]">
+          <ResponsiveDialogDescription className="t-body-sm text-[#6e6e73]">
             Khoản nợ này đã có giao dịch. Cho mình biết đây là loại thay đổi nào để cập nhật đúng.
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
@@ -195,7 +195,7 @@ export function DebtUpdateModeDialog({
         <div className="space-y-5 px-5 py-5 sm:px-6">
           {originalAmountChanged ? (
             <div className="space-y-2">
-              <p className="text-[13px] font-medium text-[#6e6e73]">
+              <p className="t-body-sm font-medium text-[#6e6e73]">
                 Bạn thay đổi số tiền vay — ý bạn là:
               </p>
               <OptionCard
@@ -235,27 +235,27 @@ export function DebtUpdateModeDialog({
           )}
 
           {mode === 'correction' ? (
-            <p className="rounded-[16px] bg-attention-tint px-4 py-3 text-[13px] leading-5 text-attention">
+            <p className="rounded-[16px] bg-attention-tint px-4 py-3 t-body-sm leading-5 text-attention">
               Thay đổi này sẽ cập nhật lại lịch sử và số dư khoản nợ.
             </p>
           ) : null}
 
           {showEffectiveDate ? (
             <div className="space-y-1.5">
-              <p className="text-[13px] font-medium text-[#6e6e73]">
+              <p className="t-body-sm font-medium text-[#6e6e73]">
                 Thay đổi này áp dụng từ ngày nào?
               </p>
               <DatePicker
                 value={effectiveDate}
                 onChange={setEffectiveDate}
-                className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white text-[15px]"
+                className="h-[52px] rounded-[20px] border-[#e5e5ea] bg-white t-body-sm"
               />
             </div>
           ) : null}
 
           {before && after ? (
             <div className="rounded-[20px] border border-[#e5e5ea] bg-white px-4 py-3">
-              <p className="text-[13px] font-semibold tracking-[-0.01em] text-[#1d1d1f]">
+              <p className="t-body-sm font-medium tracking-[-0.01em] text-[#1d1d1f]">
                 Xem trước thay đổi
               </p>
               <div className="mt-1 divide-y divide-[#f2f2f7]">
@@ -309,11 +309,11 @@ export function DebtUpdateModeDialog({
                 ) : null}
               </div>
               {hasVisibleChange ? (
-                <p className="mt-2 text-xs text-[#8e8e93]">
+                <p className="mt-2 t-caption text-[#8e8e93]">
                   Chỉ hiển thị các mục thay đổi. Bạn có thể quay lại để chỉnh trước khi lưu.
                 </p>
               ) : (
-                <p className="mt-1 text-sm text-[#6e6e73]">Không có thay đổi nào để áp dụng.</p>
+                <p className="mt-1 t-body-sm text-[#6e6e73]">Không có thay đổi nào để áp dụng.</p>
               )}
             </div>
           ) : null}

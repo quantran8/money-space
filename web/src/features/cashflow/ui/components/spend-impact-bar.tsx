@@ -54,7 +54,7 @@ export function SpendImpactBar({
         return (
           <div
             key={part.key}
-            className="flex min-w-[3px] items-center justify-center px-2 text-[12px] font-medium text-white"
+            className="flex min-w-[3px] items-center justify-center px-2 t-caption font-medium text-white"
             style={{ flexGrow: part.amount, flexBasis: 0, background: part.fill }}
           >
             {/* A sliver cannot hold a figure legibly, and a clipped number is

@@ -56,7 +56,7 @@ export function InviteQrDialog({
           not paint a dead scrollbar down the side of a dialog that fits. */}
       <ResponsiveDialogContent className="no-scrollbar gap-0 p-0 sm:max-w-[480px]">
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
-          <ResponsiveDialogTitle className="text-[26px] font-semibold tracking-[-0.035em] sm:text-[28px]">
+          <ResponsiveDialogTitle className="t-metric tracking-[-0.035em]">
             {t('invites.qr.title')}
           </ResponsiveDialogTitle>
           {/* Radix warns without a description, and a dialog with none is
@@ -79,7 +79,7 @@ export function InviteQrDialog({
                 wait while the code is minted. The steady state is the code
                 itself, which needs no caption. */}
             {error || isPreparing ? (
-              <p className="max-w-[280px] text-center text-[12px] leading-5 text-ink2">
+              <p className="max-w-[280px] text-center t-caption leading-5 text-ink2">
                 {error ?? t('invites.qr.preparing')}
               </p>
             ) : null}
@@ -99,12 +99,12 @@ export function InviteQrDialog({
             read out or typed by hand when even copy is not an option.
           */}
           <div className="space-y-2">
-            <p className="px-1 text-[11px] font-medium text-ink2">
+            <p className="px-1 t-caption-sm font-medium text-ink2">
               {t('invites.qr.linkLabel')}
             </p>
             <div className="sunk flex items-start gap-2 px-3 py-2.5">
               {joinUrl ? (
-                <span className="min-w-0 flex-1 break-all font-mono text-[11px] leading-5 text-ink2">
+                <span className="min-w-0 flex-1 break-all font-mono t-caption-sm leading-5 text-ink2">
                   {joinUrl}
                 </span>
               ) : (
@@ -114,7 +114,7 @@ export function InviteQrDialog({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="-mt-0.5 shrink-0 gap-1.5 text-[12px]"
+                className="-mt-0.5 shrink-0 gap-1.5 t-caption"
                 disabled={!joinUrl}
                 onClick={onCopyLink}
               >
@@ -125,7 +125,7 @@ export function InviteQrDialog({
           </div>
 
           {invite ? (
-            <p className="px-1 text-[11px] leading-5 text-ink3">
+            <p className="px-1 t-caption-sm leading-5 text-ink3">
               {t('invites.qr.expiresOn', { date: formatExpiry(invite.expiresAt) })}
             </p>
           ) : null}
@@ -135,7 +135,7 @@ export function InviteQrDialog({
               type="button"
               variant="ghost"
               size="sm"
-              className="gap-1.5 text-[12px] text-ink2"
+              className="gap-1.5 t-caption text-ink2"
               disabled={isRenewing}
               onClick={onRenew}
             >

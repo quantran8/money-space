@@ -47,7 +47,7 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+      <div className="flex h-[260px] items-center justify-center t-body-sm text-muted-foreground">
         {t('assets.charts.emptySnapshots')}
       </div>
     )
@@ -57,14 +57,14 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
     <div>
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs text-muted-foreground">{t('assets.charts.current')}</p>
-          <p className="money-number mt-1 text-2xl font-semibold">{formatVndShort(current)}</p>
+          <p className="t-caption text-muted-foreground">{t('assets.charts.current')}</p>
+          <p className="money-number mt-1 t-metric font-medium">{formatVndShort(current)}</p>
         </div>
         <p
           className={
             growth >= 0
-              ? 'text-sm font-medium text-action'
-              : 'text-sm font-medium text-alert'
+              ? 't-body-sm font-medium text-action'
+              : 't-body-sm font-medium text-alert'
           }
         >
           {growth >= 0 ? '+' : ''}
@@ -110,13 +110,13 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
                 if (!active || !payload?.length) return null
                 const point = payload[0].payload as (typeof data)[number]
                 return (
-                  <div className="rounded-[14px] border border-border bg-card px-3 py-2 text-sm shadow-md">
-                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{label}</p>
+                  <div className="rounded-[14px] border border-border bg-card px-3 py-2 t-body-sm shadow-md">
+                    <p className="mb-1.5 t-caption font-medium text-muted-foreground">{label}</p>
                     <div className="mb-1.5 flex items-center justify-between gap-4">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="t-caption text-muted-foreground">
                         {t('assets.summary.total')}
                       </span>
-                      <span className="money-number font-semibold text-foreground">
+                      <span className="money-number font-medium text-foreground">
                         {formatVndShort(point.total)}
                       </span>
                     </div>
@@ -143,7 +143,7 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-4 text-xs text-muted-foreground">
+      <div className="mt-3 flex items-center justify-between gap-4 t-caption text-muted-foreground">
         <span>{t('assets.charts.initialSnapshot', { value: formatVndShort(first) })}</span>
         <span>{t('assets.charts.snapshotCount', { count: data.length })}</span>
       </div>

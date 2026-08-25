@@ -36,7 +36,7 @@ export function OnboardingPage() {
       <OnboardingHeader user={user} />
 
       <div className="mx-auto w-full max-w-[960px] px-5 pb-12 pt-3 sm:px-7 sm:pb-16 sm:pt-7">
-        <section className="panel p-5 sm:p-8 lg:p-10">
+        <section className="panel p-5 sm:p-8 lg:p-8">
           {mode === 'choose' ? (
             <ChooseMode onCreate={() => setMode('create')} onJoin={() => setMode('join')} />
           ) : (
@@ -63,7 +63,7 @@ function BackTo({ onBack, children }: { onBack: () => void; children: ReactNode 
       <button
         type="button"
         onClick={onBack}
-        className="mb-7 -ml-1 flex min-h-11 items-center gap-2 rounded-control px-1 text-[13px] text-ink2 transition-colors hover:text-ink"
+        className="mb-7 -ml-1 flex min-h-11 items-center gap-2 rounded-control px-1 t-body-sm text-ink2 transition-colors hover:text-ink"
       >
         <ArrowLeft className="size-[17px]" strokeWidth={1.8} aria-hidden />
         {t('onboarding.choose.back')}
@@ -89,7 +89,7 @@ function ChooseMode({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
 
   return (
     <div className="mx-auto max-w-[760px]">
-      <h1 className="page-title max-w-[620px] text-[31px] leading-[1.2] sm:text-[38px]">
+      <h1 className="t-page-tracking max-w-[620px] t-metric leading-[1.2] sm:t-figure">
         {t('onboarding.choose.title')}
       </h1>
 
@@ -129,7 +129,7 @@ function ModeCard({
       </span>
 
       <span className="mt-auto flex items-center justify-between pt-8">
-        <span className="text-[18px] font-medium">{title}</span>
+        <span className="t-subhead font-medium">{title}</span>
         <ChevronRight
           className="size-[18px] text-action transition-transform group-hover:translate-x-[3px]"
           strokeWidth={1.8}

@@ -37,11 +37,11 @@ function SummaryValue({ value, sign = '' }: { value: number; sign?: string }) {
 
   return (
     <div className="mt-4 flex flex-wrap items-baseline gap-x-2.5">
-      <span className="money-number text-[48px] leading-none sm:text-[56px]">
+      <span className="money-number t-hero leading-none">
         {sign}
         {match?.[1] ?? formatted}
       </span>
-      {match?.[2] ? <span className="text-[15px] font-medium text-ink2">{match[2]}</span> : null}
+      {match?.[2] ? <span className="t-body-sm font-medium text-ink2">{match[2]}</span> : null}
     </div>
   )
 }
@@ -52,11 +52,11 @@ function MetricValue({ value, sign = '' }: { value: number; sign?: string }) {
 
   return (
     <div className="mt-3 flex flex-wrap items-baseline gap-x-2">
-      <span className="money-number text-[25px] leading-none">
+      <span className="money-number t-metric leading-none">
         {sign}
         {match?.[1] ?? formatted}
       </span>
-      {match?.[2] ? <span className="text-[13px] font-medium text-ink2">{match[2]}</span> : null}
+      {match?.[2] ? <span className="t-body-sm font-medium text-ink2">{match[2]}</span> : null}
     </div>
   )
 }
@@ -77,13 +77,13 @@ function ActivityRow({ entry, locale }: { entry: AssetEventEntry; locale: string
 
   return (
     <TableRow>
-      <TableCell className="font-mono text-[11px] text-ink3">
+      <TableCell className="font-mono t-caption-sm text-ink3">
         {new Date(entry.isoDate).toLocaleDateString(locale)}
       </TableCell>
       <TableCell className="max-w-[280px]">
         <p className="truncate font-medium">{entry.title}</p>
         {entry.note && entry.note !== entry.title ? (
-          <p className="mt-1 truncate text-[11px] text-ink3">{entry.note}</p>
+          <p className="mt-1 truncate t-caption-sm text-ink3">{entry.note}</p>
         ) : null}
       </TableCell>
       <TableCell className="text-ink2">
@@ -107,16 +107,16 @@ function ActivityCard({ entry, locale }: { entry: AssetEventEntry; locale: strin
   return (
     <div className="sunk px-4 py-3">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="font-mono text-[10px] text-ink3">
+        <span className="font-mono t-caption-sm text-ink3">
           {new Date(entry.isoDate).toLocaleDateString(locale)}
         </span>
-        <span className={cn('money-number text-[12px]', isPositive && 'text-action')}>
+        <span className={cn('money-number t-caption', isPositive && 'text-action')}>
           {isPositive ? '+' : '−'}
           {formatVndShort(Math.abs(entry.amount))}
         </span>
       </div>
-      <p className="mt-2 text-[13px]">{entry.title}</p>
-      <p className="mt-1 text-[11px] text-ink3">
+      <p className="mt-2 t-body-sm">{entry.title}</p>
+      <p className="mt-1 t-caption-sm text-ink3">
         {t(`options.eventType.${entry.type}`, { defaultValue: entry.type })}
       </p>
     </div>
@@ -237,9 +237,9 @@ export function AssetDetailPage() {
           <ChevronLeft className="size-4" />
           {t('assets.detail.back')}
         </Button>
-        <Card className="py-10 text-center">
-          <h1 className="text-lg font-medium">{t('assets.detail.notFound.title')}</h1>
-          <p className="mt-1 text-sm text-ink2">{t('assets.detail.notFound.description')}</p>
+        <Card className="py-8 text-center">
+          <h1 className="t-subhead font-medium">{t('assets.detail.notFound.title')}</h1>
+          <p className="mt-1 t-body-sm text-ink2">{t('assets.detail.notFound.description')}</p>
         </Card>
       </div>
     )
@@ -273,7 +273,7 @@ export function AssetDetailPage() {
       <header className="px-1 py-1 sm:px-0">
         <button
           type="button"
-          className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 text-[13px] font-medium text-action hover:bg-accent-soft"
+          className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 t-body-sm font-medium text-action hover:bg-accent-soft"
           onClick={() => navigate('/networth')}
         >
           <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -282,13 +282,13 @@ export function AssetDetailPage() {
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="page-title truncate text-[22px] leading-tight">{asset.name}</h1>
+            <h1 className="t-page-tracking truncate t-metric leading-tight">{asset.name}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-wash px-2 py-1 text-[10px] text-ink2">
+              <span className="rounded-full bg-wash px-2 py-1 t-caption-sm text-ink2">
                 {t(`options.assetType.${asset.type}`)}
               </span>
               {isSold ? (
-                <span className="rounded-full bg-wash px-2 py-1 text-[10px] font-medium text-ink2">
+                <span className="rounded-full bg-wash px-2 py-1 t-caption-sm font-medium text-ink2">
                   {t('options.assetStatus.sold')}
                 </span>
               ) : null}
@@ -299,7 +299,7 @@ export function AssetDetailPage() {
             {canUpdatePrice ? (
               <Button
                 variant="secondary"
-                className="h-10 px-4 text-[13px]"
+                className="s-tap h-10 px-4 t-body-sm"
                 onClick={handlePrimaryUpdate}
               >
                 <RefreshCw className="size-4" strokeWidth={1.75} />
@@ -308,7 +308,7 @@ export function AssetDetailPage() {
             ) : null}
             <Button
               variant="secondary"
-              className="h-10 px-4 text-[13px]"
+              className="s-tap h-10 px-4 t-body-sm"
               onClick={() => openEdit(asset.id)}
             >
               <Pencil className="size-4" strokeWidth={1.75} />
@@ -324,11 +324,11 @@ export function AssetDetailPage() {
           row rather than being split across panels. */}
       <Card>
         <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
-          <h2 className="section-title text-[16px]">
+          <h2 className="t-title">
             {t(isBalanceAsset ? 'assets.detail.overview' : 'assets.detail.hero.title')}
           </h2>
           {updatedAt ? (
-            <p className="text-[12px] text-ink3">
+            <p className="t-caption text-ink3">
               {t(
                 isBalanceAsset
                   ? 'assets.detail.balanceUpdatedAt'
@@ -356,7 +356,7 @@ export function AssetDetailPage() {
                 headline figure is a product of the two, and stating them
                 together is what makes it checkable. */}
             {isMarketPriced && position && quantity > 0 ? (
-              <p className="mt-4 text-[12px] text-ink2">
+              <p className="mt-4 t-caption text-ink2">
                 <Trans
                   i18nKey="assets.detail.hero.holdingLine"
                   values={{
@@ -390,7 +390,7 @@ export function AssetDetailPage() {
                   )}
                 </p>
                 <MetricValue value={profitLoss} sign={profitLoss >= 0 ? '+' : '−'} />
-                <p className="money-number mt-2 text-[12px]">
+                <p className="money-number mt-2 t-caption">
                   {profitLossPercent >= 0 ? '+' : '−'}
                   {Math.abs(profitLossPercent).toLocaleString(locale, { maximumFractionDigits: 1 })}%
                 </p>
@@ -401,10 +401,10 @@ export function AssetDetailPage() {
           <div className="min-w-0">
             <p className="label-vi">{t('assets.detail.hero.shareOfTotal')}</p>
             <div className="mt-3 flex items-baseline gap-x-1.5">
-              <span className="money-number text-[25px] leading-none">
+              <span className="money-number t-metric leading-none">
                 {share.toLocaleString(locale, { maximumFractionDigits: 1 })}
               </span>
-              <span className="text-[13px] font-medium text-ink2">%</span>
+              <span className="t-body-sm font-medium text-ink2">%</span>
             </div>
           </div>
         </div>
@@ -417,10 +417,10 @@ export function AssetDetailPage() {
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="section-title text-[16px]">
+            <h2 className="t-title">
               {t(isBalanceAsset ? 'assets.detail.chart.balanceTitle' : 'assets.detail.chart.title')}
             </h2>
-            <p className="mt-1 text-[11px] text-ink3">
+            <p className="mt-1 t-caption-sm text-ink3">
               {t(
                 isBalanceAsset
                   ? 'assets.detail.chart.balanceDescription'
@@ -429,7 +429,7 @@ export function AssetDetailPage() {
             </p>
           </div>
           <div
-            className="sunk flex h-9 items-center p-1 text-[11px]"
+            className="sunk flex h-9 items-center p-1 t-caption-sm"
             role="group"
             aria-label={t('assets.detail.chart.rangeLabel')}
           >
@@ -461,10 +461,10 @@ export function AssetDetailPage() {
 
           <div className="flex flex-col justify-between gap-6">
             <div>
-              <p className="text-[12px] text-ink2">{t('assets.detail.chart.rangeDelta')}</p>
+              <p className="t-caption text-ink2">{t('assets.detail.chart.rangeDelta')}</p>
               <p
                 className={cn(
-                  'money-number mt-1 text-[22px]',
+                  'money-number mt-1 t-metric',
                   rangeDelta < 0 ? 'text-alert' : rangeDelta > 0 ? 'text-action' : undefined,
                 )}
               >
@@ -472,7 +472,7 @@ export function AssetDetailPage() {
                 {formatVndShort(Math.abs(rangeDelta))}
               </p>
               {rangeDeltaPercent !== null ? (
-                <p className="money-number mt-1 text-[12px] text-ink3">
+                <p className="money-number mt-1 t-caption text-ink3">
                   {rangeDeltaPercent >= 0 ? '+' : '−'}
                   {Math.abs(rangeDeltaPercent).toLocaleString(locale, {
                     maximumFractionDigits: 1,
@@ -482,7 +482,7 @@ export function AssetDetailPage() {
               ) : null}
             </div>
 
-            <div className="space-y-4 text-[12px]">
+            <div className="space-y-4 t-caption">
               <div>
                 <p className="text-ink3">{t(`assets.detail.chart.inRange${chartRange}`)}</p>
                 <p className="mt-1 leading-5 text-ink2">
@@ -515,11 +515,11 @@ export function AssetDetailPage() {
           so it sits beside the facts rather than below them. */}
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="section-title text-[16px]">{t('assets.detail.info.roleTitle')}</h2>
+          <h2 className="t-title">{t('assets.detail.info.roleTitle')}</h2>
         </div>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:gap-14">
-          <dl className="space-y-5 text-[13px]">
+        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:gap-12">
+          <dl className="space-y-5 t-body-sm">
             {position ? (
               <>
                 <InfoRow
@@ -590,8 +590,8 @@ export function AssetDetailPage() {
             ) : null}
             {asset.note ? (
               <div>
-                <dt className="text-[12px] text-ink3">{t('assets.detail.notes.eyebrow')}</dt>
-                <dd className="mt-2 text-[13px] leading-5 text-ink2">{asset.note}</dd>
+                <dt className="t-caption text-ink3">{t('assets.detail.notes.eyebrow')}</dt>
+                <dd className="mt-2 t-body-sm leading-5 text-ink2">{asset.note}</dd>
               </div>
             ) : null}
           </dl>
@@ -608,9 +608,9 @@ export function AssetDetailPage() {
 
       <Card>
         <div className="flex items-center justify-between gap-4">
-          <h2 className="section-title text-[16px]">{t('assets.detail.events.title')}</h2>
+          <h2 className="t-title">{t('assets.detail.events.title')}</h2>
           {relatedEvents.length > 0 ? (
-            <span className="num text-[11px] text-ink3">
+            <span className="num t-caption-sm text-ink3">
               {t('assets.detail.events.count', { count: relatedEvents.length })}
             </span>
           ) : null}
@@ -624,7 +624,7 @@ export function AssetDetailPage() {
                 here the cards below are a real reflow, not a fallback for a
                 horizontal scroll. */}
             <div className="mt-5 hidden md:block">
-              <Table className="min-w-[640px] text-[13px]">
+              <Table className="min-w-[640px] t-body-sm">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     {/* `.label-vi`: accented Vietnamese headings, which mono
@@ -654,7 +654,7 @@ export function AssetDetailPage() {
             </div>
           </>
         ) : (
-          <p className="sunk mt-5 px-4 py-8 text-center text-[13px] text-ink2">
+          <p className="sunk mt-5 px-4 py-8 text-center t-body-sm text-ink2">
             {t('assets.detail.events.empty')}
           </p>
         )}

@@ -52,12 +52,12 @@ function CashflowField({ label, htmlFor, error, children }: CashflowFieldProps) 
     <div>
       <label
         htmlFor={htmlFor}
-        className="mb-[7px] block text-[13px] font-normal leading-[1.4] text-ink2"
+        className="mb-2 block t-body-sm leading-[1.4] text-ink2"
       >
         {label}
       </label>
       {children}
-      {error ? <p className="mt-1.5 text-[12px] leading-[1.45] text-alert">{error}</p> : null}
+      {error ? <p className="mt-1.5 t-caption text-alert">{error}</p> : null}
     </div>
   )
 }
@@ -65,9 +65,9 @@ function CashflowField({ label, htmlFor, error, children }: CashflowFieldProps) 
 const controlClass =
   'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
 const inputClass =
-  'h-full min-w-0 w-full bg-transparent text-[16px] leading-none text-ink outline-none placeholder:text-ink3'
+  'h-full min-w-0 w-full bg-transparent t-body leading-none text-ink outline-none placeholder:text-ink3'
 const selectClass =
-  'h-full rounded-none bg-transparent p-0 text-[16px] font-normal text-ink data-[placeholder]:text-ink3'
+  'h-full rounded-none bg-transparent p-0 t-body text-ink data-[placeholder]:text-ink3'
 
 /**
  * Create/edit a cashflow event — the only thing that feeds the forecast (§18).
@@ -160,18 +160,18 @@ export function CashflowEventFormDialog({
           </div>
         </CashflowField>
         {settlementAssetMissing ? (
-          <p className="rounded-control bg-surface2 px-3 py-2.5 text-[13px] leading-5 text-alert">
+          <p className="rounded-control bg-surface2 px-3 py-2.5 t-body-sm leading-5 text-alert">
             {t('upcoming.form.walletDeleted')}
           </p>
         ) : null}
-        <p className="px-1 text-[12px] leading-5 text-ink2">
+        <p className="px-1 t-caption leading-5 text-ink2">
           {t(isOutgoing ? 'upcoming.form.walletHintOut' : 'upcoming.form.walletHintIn')}
         </p>
       </>
     ) : (
       /* No eligible wallet exists. An outflow cannot be saved at all in this
          state, so say why instead of leaving the button dead. */
-      <p className="rounded-control bg-surface2 px-3 py-2.5 text-[13px] leading-5 text-ink2">
+      <p className="rounded-control bg-surface2 px-3 py-2.5 t-body-sm leading-5 text-ink2">
         {t(isOutgoing ? 'upcoming.form.walletNoneOut' : 'upcoming.form.walletNoneIn')}
       </p>
     )
@@ -190,7 +190,7 @@ export function CashflowEventFormDialog({
     <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent className="grid max-h-[88dvh] grid-rows-[auto_1fr_auto] gap-0 overflow-hidden p-0 sm:max-w-[520px]">
         <ResponsiveDialogHeader className="px-5 pb-4 pt-5 pr-16 text-left sm:px-8 sm:pt-7 sm:pr-16">
-          <ResponsiveDialogTitle className="text-[19px] font-medium tracking-[-0.015em]">
+          <ResponsiveDialogTitle className="t-subhead font-medium tracking-[-0.015em]">
             {isEditing ? t('upcoming.form.editTitle') : t('upcoming.form.title')}
           </ResponsiveDialogTitle>
           <ResponsiveDialogDescription className="sr-only">
@@ -217,7 +217,7 @@ export function CashflowEventFormDialog({
                         aria-pressed={field.value === value}
                         onClick={() => field.onChange(value)}
                         className={cn(
-                          'h-[38px] rounded-control text-[13px] font-medium text-ink2 transition-colors',
+                          'h-[38px] rounded-control t-body-sm font-medium text-ink2 transition-colors',
                           field.value === value && 'bg-card text-ink',
                         )}
                       >
@@ -240,7 +240,7 @@ export function CashflowEventFormDialog({
                     render={({ field }) => (
                       <EventMoneyInput
                         id="cashflow-amount"
-                        className="h-full text-[16px] font-medium tracking-normal sm:text-[16px]"
+                        className="h-full t-body font-medium tracking-normal"
                         placeholder="0"
                         value={field.value}
                         onChange={field.onChange}
@@ -248,7 +248,7 @@ export function CashflowEventFormDialog({
                       />
                     )}
                   />
-                  <span className="shrink-0 font-mono text-[12px] text-ink3">đ</span>
+                  <span className="shrink-0 font-mono t-caption text-ink3">đ</span>
                 </div>
               </CashflowField>
 
@@ -284,7 +284,7 @@ export function CashflowEventFormDialog({
                         value={field.value}
                         onChange={field.onChange}
                         aria-invalid={Boolean(errors.expectedDate)}
-                        className="h-full rounded-none bg-transparent p-0 font-mono text-[16px] font-normal hover:bg-transparent [&_svg]:hidden"
+                        className="h-full rounded-none bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden"
                       />
                     )}
                   />
@@ -312,7 +312,7 @@ export function CashflowEventFormDialog({
                   aria-expanded={detailsOpen}
                   aria-controls="cashflow-event-details"
                   onClick={() => setDetailsOpen((value) => !value)}
-                  className="flex min-h-11 w-full items-center justify-between rounded-control text-left text-[13px] font-medium text-action outline-none focus-visible:ring-2 focus-visible:ring-action focus-visible:ring-offset-2"
+                  className="flex min-h-11 w-full items-center justify-between rounded-control text-left t-body-sm font-medium text-action outline-none focus-visible:ring-2 focus-visible:ring-action focus-visible:ring-offset-2"
                 >
                   <span>{t('upcoming.form.moreDetails')}</span>
                   <ChevronDown
@@ -396,7 +396,7 @@ export function CashflowEventFormDialog({
                     </CashflowField>
 
                     {!isOutgoing && certainty === 'estimated' ? (
-                      <p className="px-1 text-[12px] leading-5 text-ink2">
+                      <p className="px-1 t-caption leading-5 text-ink2">
                         {t('upcoming.form.estimatedIncomingHint')}
                       </p>
                     ) : null}
@@ -412,7 +412,7 @@ export function CashflowEventFormDialog({
                         id="cashflow-note"
                         rows={3}
                         className={cn(
-                          'min-h-[88px] w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card',
+                          'min-h-[88px] w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-3 t-body leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card',
                           errors.note && 'border-alert',
                         )}
                         placeholder={t('upcoming.form.notePlaceholder')}
@@ -429,14 +429,14 @@ export function CashflowEventFormDialog({
             <Button
               type="button"
               variant="ghost"
-              className="h-11 px-4 text-[13px]"
+              className="h-11 px-4 t-body-sm"
               onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
             <Button
               type="submit"
-              className="h-11 px-5 text-[13px]"
+              className="h-11 px-5 t-body-sm"
               disabled={!isValid || isSubmitting}
             >
               {isEditing ? t('upcoming.form.saveEdit') : t('upcoming.form.title')}

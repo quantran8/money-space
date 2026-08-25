@@ -158,13 +158,13 @@ export function GoalFormDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={requestOpenChange}>
-      <ResponsiveDialogContent className="flex h-dvh max-h-dvh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none p-0 pb-0 md:h-[min(900px,92dvh)] md:max-h-[92dvh] md:max-w-[1080px] md:rounded-[18px] [&>button:last-child]:left-5 [&>button:last-child]:right-auto [&>button:last-child]:top-[18px] [&>button:last-child]:grid [&>button:last-child]:size-11 [&>button:last-child]:place-items-center [&>button:last-child]:rounded-[10px] md:[&>button:last-child]:left-6 md:[&>button:last-child]:top-[18px]">
+      <ResponsiveDialogContent className="flex h-dvh max-h-dvh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none p-0 pb-0 md:h-[min(900px,92dvh)] md:max-h-[92dvh] md:max-w-[1080px] md:rounded-[18px] [&>button:last-child]:left-5 [&>button:last-child]:right-auto [&>button:last-child]:top-5 [&>button:last-child]:grid [&>button:last-child]:size-11 [&>button:last-child]:place-items-center [&>button:last-child]:rounded-[10px] md:[&>button:last-child]:left-6 md:[&>button:last-child]:top-5">
         <header className="flex flex-none items-center gap-3 bg-card py-4 pl-[76px] pr-6 md:py-5 md:pl-[88px] md:pr-8">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] text-ink3">
+            <p className="t-caption-sm text-ink3">
               {isEditing ? t('goals.builder.editEyebrow') : t('goals.builder.createEyebrow')}
             </p>
-            <ResponsiveDialogTitle className="mt-0.5 truncate text-[18px] font-medium md:text-[20px]">
+            <ResponsiveDialogTitle className="mt-0.5 truncate t-subhead font-medium">
               {isEditing ? t('goals.form.editTitle') : t('goals.form.title')}
             </ResponsiveDialogTitle>
             <ResponsiveDialogDescription className="sr-only">
@@ -172,7 +172,7 @@ export function GoalFormDialog({
             </ResponsiveDialogDescription>
           </div>
           {!isEditing ? (
-            <p className="hidden font-mono text-[11px] text-ink3 md:block">
+            <p className="hidden font-mono t-caption-sm text-ink3 md:block">
               {t('goals.builder.stepStatus', { step })}
             </p>
           ) : null}
@@ -182,7 +182,7 @@ export function GoalFormDialog({
           <div className="min-h-0 flex-1 overflow-hidden bg-[var(--app)]">
             <div className="grid h-full md:grid-cols-[minmax(0,1fr)_320px]">
               <main className="min-h-0 overflow-y-auto">
-                <div className="mx-auto w-full max-w-[650px] px-[18px] py-6 md:px-10 md:py-8">
+                <div className="mx-auto w-full max-w-[650px] px-5 py-6 md:px-8 md:py-8">
                   {!isEditing ? <GoalStepper step={step} /> : null}
 
                   {isEditing ? (
@@ -231,7 +231,7 @@ export function GoalFormDialog({
                           )}
                         />
                         {target > 0 ? (
-                          <p className="num -mt-3 text-[12px] text-ink3">
+                          <p className="num -mt-3 t-caption text-ink3">
                             {formatVndScale(target)}
                           </p>
                         ) : null}
@@ -242,7 +242,7 @@ export function GoalFormDialog({
                           priority={priority}
                           priorityError={errors.priority?.message}
                         />
-                        <p className="-mt-2 text-[12px] leading-5 text-ink3">
+                        <p className="-mt-2 t-caption leading-5 text-ink3">
                           {t('goals.builder.priorityHelp')}
                         </p>
 
@@ -251,7 +251,7 @@ export function GoalFormDialog({
                             type="button"
                             aria-expanded={noteOpen}
                             onClick={() => setNoteOpen((value) => !value)}
-                            className="inline-flex min-h-11 items-center gap-2 rounded-[9px] px-2 text-[13px] font-medium text-action hover:bg-card"
+                            className="inline-flex min-h-11 items-center gap-2 rounded-[9px] px-2 t-body-sm font-medium text-action hover:bg-card"
                           >
                             <Plus
                               className={cn('size-4 transition-transform', noteOpen && 'rotate-45')}
@@ -271,7 +271,7 @@ export function GoalFormDialog({
                                 maxLength={120}
                                 {...register('note')}
                               />
-                              <p className="mt-1.5 text-right font-mono text-[11px] text-ink3">
+                              <p className="mt-1.5 text-right font-mono t-caption-sm text-ink3">
                                 {note.length}/120
                               </p>
                             </div>
@@ -352,13 +352,13 @@ export function GoalFormDialog({
               <Button
                 type="button"
                 variant="secondary"
-                className="min-h-11 px-4 text-[13px]"
+                className="min-h-11 px-4 t-body-sm"
                 onClick={() => setStep((step - 1) as BuilderStep)}
               >
                 {t('goals.builder.back')}
               </Button>
             ) : null}
-            <p className="hidden min-w-0 flex-1 truncate text-[11px] text-ink3 md:block">
+            <p className="hidden min-w-0 flex-1 truncate t-caption-sm text-ink3 md:block">
               {isEditing
                 ? t('goals.builder.editFooter')
                 : t('goals.builder.footerStep', { step })}
@@ -366,7 +366,7 @@ export function GoalFormDialog({
             {!isEditing && step < 3 ? (
               <Button
                 type="button"
-                className="ml-auto min-h-11 px-5 text-[13px]"
+                className="ml-auto min-h-11 px-5 t-body-sm"
                 onClick={() => void continueCreate()}
               >
                 {t('goals.builder.continue')}
@@ -375,7 +375,7 @@ export function GoalFormDialog({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="ml-auto min-h-11 px-5 text-[13px]"
+                className="ml-auto min-h-11 px-5 t-body-sm"
               >
                 {isSubmitting
                   ? t('goals.form.saving')
@@ -394,8 +394,8 @@ export function GoalFormDialog({
 function SectionIntro({ title, description }: { title: string; description: string }) {
   return (
     <div className="mb-7">
-      <h2 className="text-[22px] font-medium tracking-[-0.01em]">{title}</h2>
-      <p className="mt-2 max-w-[540px] text-[13px] leading-5 text-ink2">{description}</p>
+      <h2 className="t-metric tracking-[-0.01em]">{title}</h2>
+      <p className="mt-2 max-w-[540px] t-body-sm leading-5 text-ink2">{description}</p>
     </div>
   )
 }
@@ -419,14 +419,14 @@ function GoalStepper({ step }: { step: BuilderStep }) {
             <div className="flex items-center gap-2">
               <span
                 className={cn(
-                  'grid size-7 place-items-center rounded-full bg-wash font-mono text-[11px] font-medium text-ink3',
+                  'grid size-7 place-items-center rounded-full bg-wash font-mono t-caption-sm font-medium text-ink3',
                   active && 'bg-ink text-panel',
                   done && 'bg-accent-soft text-action',
                 )}
               >
                 {done ? <Check className="size-3.5" strokeWidth={2} /> : number}
               </span>
-              <span className={cn('hidden text-[12px] text-ink3 sm:inline', active && 'font-medium text-ink')}>
+              <span className={cn('hidden t-caption text-ink3 sm:inline', active && 'font-medium text-ink')}>
                 {label}
               </span>
             </div>
@@ -542,10 +542,10 @@ function EditPlanFields({
           maxLength={120}
           {...register('note')}
         />
-        <p className="text-right font-mono text-[11px] text-ink3">{note.length}/120</p>
+        <p className="text-right font-mono t-caption-sm text-ink3">{note.length}/120</p>
         <div className="rounded-[14px] bg-card p-4">
-          <p className="text-[13px] font-medium">{t('goals.builder.sources')}</p>
-          <p className="mt-1 text-[12px] leading-5 text-ink3">{t('goals.builder.sourcesManagedSeparately')}</p>
+          <p className="t-body-sm font-medium">{t('goals.builder.sources')}</p>
+          <p className="mt-1 t-caption leading-5 text-ink3">{t('goals.builder.sourcesManagedSeparately')}</p>
         </div>
       </div>
     </section>
@@ -599,7 +599,7 @@ function GoalSummary({
           />
         </div>
         <ProgressBar value={progress} />
-        <p className="mt-3 rounded-[10px] bg-accent-soft px-3.5 py-3 text-[12px] leading-5 text-ink2">
+        <p className="mt-3 rounded-[10px] bg-accent-soft px-3.5 py-3 t-caption leading-5 text-ink2">
           {forecast}
         </p>
       </section>
@@ -608,36 +608,36 @@ function GoalSummary({
 
   return (
     <div>
-      <p className="text-[11px] font-medium text-ink3">{t('goals.builder.goalPicture')}</p>
+      <p className="t-caption-sm font-medium text-ink3">{t('goals.builder.goalPicture')}</p>
       <div className="mt-6">
-        <p className="text-[12px] text-ink3">{t('goals.form.target')}</p>
-        <p className="num mt-1 text-[28px] font-medium tracking-[-0.03em]">
+        <p className="t-caption text-ink3">{t('goals.form.target')}</p>
+        <p className="num mt-1 t-metric">
           {target ? formatVndScale(target) : '—'}
         </p>
       </div>
       <div className="mt-6 rounded-[14px] bg-wash p-4">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[12px] text-ink2">{t('goals.builder.countingNow')}</span>
-          <span className="num text-[15px] font-medium">{formatVndScale(current)}</span>
+          <span className="t-caption text-ink2">{t('goals.builder.countingNow')}</span>
+          <span className="num t-body-sm font-medium">{formatVndScale(current)}</span>
         </div>
         <ProgressBar value={progress} />
-        <p className="num mt-3 text-[12px] text-ink3">
+        <p className="num mt-3 t-caption text-ink3">
           {target ? t('goals.builder.remainingAmount', { amount: formatVndScale(remaining) }) : t('goals.builder.noTarget')}
         </p>
       </div>
-      <p className="mt-5 rounded-[14px] bg-accent-soft p-4 text-[13px] leading-6 text-ink2">
+      <p className="mt-5 rounded-[14px] bg-accent-soft p-4 t-body-sm leading-6 text-ink2">
         {forecast}
       </p>
       <div className="mt-6">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-ink3">{t('goals.builder.sources')}</span>
-          <span className="font-mono text-[11px] text-ink3">
+          <span className="t-caption text-ink3">{t('goals.builder.sources')}</span>
+          <span className="font-mono t-caption-sm text-ink3">
             {isEditing ? t('goals.builder.saved') : allocations.length}
           </span>
         </div>
         <div className="mt-3 space-y-2">
           {isEditing ? (
-            <div className="flex items-center justify-between gap-3 text-[12px]">
+            <div className="flex items-center justify-between gap-3 t-caption">
               <span className="text-ink2">{t('goals.builder.savedAllocations')}</span>
               <span className="num font-medium">{formatVndScale(plannedMonthly)}/{t('goals.builder.perMonth')}</span>
             </div>
@@ -650,14 +650,14 @@ function GoalSummary({
                   ? `${row.percent || 0}%`
                   : formatVndScale(toNumber(row.amount))
               return (
-                <div key={row.assetId} className="flex items-center justify-between gap-3 text-[12px]">
+                <div key={row.assetId} className="flex items-center justify-between gap-3 t-caption">
                   <span className="min-w-0 truncate text-ink2">{asset?.name ?? row.assetId}</span>
                   <span className="num shrink-0">{detail}</span>
                 </div>
               )
             })
           ) : (
-            <p className="text-[12px] text-ink3">{t('goals.builder.noSourcesSelected')}</p>
+            <p className="t-caption text-ink3">{t('goals.builder.noSourcesSelected')}</p>
           )}
         </div>
       </div>
@@ -668,8 +668,8 @@ function GoalSummary({
 function SummaryMetric({ label, value, right = false }: { label: string; value: string; right?: boolean }) {
   return (
     <div className={right ? 'text-right' : undefined}>
-      <p className="text-[11px] text-ink3">{label}</p>
-      <p className="num mt-1 text-[17px] font-medium">{value}</p>
+      <p className="t-caption-sm text-ink3">{label}</p>
+      <p className="num mt-1 t-body font-medium">{value}</p>
     </div>
   )
 }
@@ -707,12 +707,12 @@ function GoalReview({
         <div className="rounded-[14px] bg-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[11px] text-ink3">{name}</p>
-              <p className="num mt-1 text-[24px] font-medium">{formatVndScale(target)}</p>
+              <p className="t-caption-sm text-ink3">{name}</p>
+              <p className="num mt-1 t-metric">{formatVndScale(target)}</p>
             </div>
             <ReviewEditButton onClick={() => onEdit(1)} />
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-4 text-[12px]">
+          <div className="mt-5 grid grid-cols-2 gap-4 t-caption">
             <div>
               <p className="text-ink3">{t('goals.builder.targetMonth')}</p>
               <p className="num mt-1 font-medium">{monthLabel(targetDate, noDeadline)}</p>
@@ -722,12 +722,12 @@ function GoalReview({
               <p className="mt-1 font-medium">{priorityLabel}</p>
             </div>
           </div>
-          {note ? <p className="mt-4 text-[12px] leading-5 text-ink2">{note}</p> : null}
+          {note ? <p className="mt-4 t-caption leading-5 text-ink2">{note}</p> : null}
         </div>
 
         <div className="rounded-[14px] bg-card p-5">
           <div className="flex items-center justify-between gap-4">
-            <h3 className="text-[13px] font-medium">
+            <h3 className="t-subtitle">
               {t('goals.builder.sourceCount', { count: allocations.length })}
             </h3>
             <ReviewEditButton onClick={() => onEdit(2)} />
@@ -749,15 +749,15 @@ function GoalReview({
                   : t('goals.builder.reviewFixed', { amount: formatVndScale(toNumber(row.amount)) })
               return (
                 <div key={row.assetId} className="py-2.5">
-                  <p className="text-[12px] font-medium">{asset?.name ?? row.assetId}</p>
-                  <p className="mt-1 text-[11px] text-ink3">{detail}</p>
+                  <p className="t-caption font-medium">{asset?.name ?? row.assetId}</p>
+                  <p className="mt-1 t-caption-sm text-ink3">{detail}</p>
                 </div>
               )
             })}
           </div>
         </div>
 
-        <p className="rounded-[14px] bg-accent-soft p-4 text-[12px] leading-5 text-ink2">
+        <p className="rounded-[14px] bg-accent-soft p-4 t-caption leading-5 text-ink2">
           {t('goals.builder.backendRecalculate')}
         </p>
       </div>
@@ -771,7 +771,7 @@ function ReviewEditButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="min-h-10 rounded-[9px] px-3 text-[12px] font-medium text-action hover:bg-wash"
+      className="min-h-10 rounded-[9px] px-3 t-caption font-medium text-action hover:bg-wash"
     >
       {t('common.edit')}
     </button>

@@ -45,7 +45,7 @@ export function GoalsSection({
         action={
           <Link
             to="/goals"
-            className="inline-flex min-h-11 shrink-0 items-center gap-2 text-[13px] font-medium text-action"
+            className="inline-flex min-h-11 shrink-0 items-center gap-2 t-body-sm font-medium text-action"
           >
             <span className="text-ink3">{t('home.goals.count', { count: goalCount })}</span>
             {goalCount > tracks.length
@@ -65,10 +65,10 @@ export function GoalsSection({
           total they add up to. */}
       {showSplit ? (
         <div className="mt-6 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-          <span className="num text-[34px] leading-none font-medium tracking-[-.03em]">
+          <span className="num t-figure leading-none tracking-[-.03em]">
             {formatVndScale(earmarkedForGoals!)}
           </span>
-          <span className="text-[13px] text-ink2">{t('home.goals.earmarked')}</span>
+          <span className="t-body-sm text-ink2">{t('home.goals.earmarked')}</span>
         </div>
       ) : null}
 
@@ -81,7 +81,7 @@ export function GoalsSection({
       </div>
 
       {hasMilestone ? (
-        <p className="mt-5 flex items-center gap-2 text-[12px] text-ink3">
+        <p className="mt-5 flex items-center gap-2 t-caption text-ink3">
           <span className="inline-block h-3 w-[2px] shrink-0 rounded-full bg-ink" />
           {t('home.goals.milestoneLegend')}
         </p>
@@ -106,12 +106,12 @@ function GoalTrackRow({ track }: { track: GoalTrack }) {
           the full row width for the milestone tick to be placeable at all, and
           at 220px the name column was truncating goals that had room to spare. */}
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <p className="min-w-0 truncate text-[14px] font-medium">{track.name}</p>
+        <p className="min-w-0 truncate t-body-sm font-medium">{track.name}</p>
         {track.isMain ? (
           /* Same treatment as the goals list (§2.10 — one concept, one
              look); the row sits on `--sunk` on hover, so a sunk badge
              would disappear into it. */
-          <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-action">
+          <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 t-caption-sm font-medium text-action">
             {t('home.goals.mainBadge')}
           </span>
         ) : null}
@@ -120,7 +120,7 @@ function GoalTrackRow({ track }: { track: GoalTrack }) {
             against the household's OWN declared pace, and a goal with no
             declared pace gets no dot rather than being judged (§16). */}
         {track.requiredPercent === undefined ? null : (
-          <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-[12px] font-medium text-ink2">
+          <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 t-caption font-medium text-ink2">
             <span
               className={cn(
                 'h-1.5 w-1.5 rounded-full',
@@ -156,11 +156,11 @@ function GoalTrackRow({ track }: { track: GoalTrack }) {
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-3">
-        <p className="num text-[12px] text-ink2">
+        <p className="num t-caption text-ink2">
           <span className="font-medium text-ink">{formatVndScale(track.current)}</span> /{' '}
           {formatVndScale(track.target)}
         </p>
-        <span className={cn('font-mono text-[11px]', tone)}>{percentLabel}</span>
+        <span className={cn('font-mono t-caption-sm', tone)}>{percentLabel}</span>
       </div>
     </div>
   )
