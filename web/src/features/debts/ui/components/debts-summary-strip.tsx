@@ -57,7 +57,7 @@ export function DebtsSummaryStrip({ summary, debts, payments }: DebtsSummaryStri
               : t('debts.demo.noConfirmedPayment')
           }
           noteClassName={upcoming.length === 0 ? 'text-attention' : undefined}
-          className="sm:border-l sm:border-hair sm:px-7"
+          className="sm:border-l sm:border-divider sm:px-7"
         />
         <Metric
           label={t('debts.demo.farthestPayoff')}
@@ -68,7 +68,7 @@ export function DebtsSummaryStrip({ summary, debts, payments }: DebtsSummaryStri
               : t('debts.demo.missingSchedule')
           }
           compact={!farthestDate}
-          className="sm:border-l sm:border-hair sm:pl-7"
+          className="sm:border-l sm:border-divider sm:pl-7"
         />
       </div>
     </Panel>
@@ -93,10 +93,10 @@ function Metric({
   return (
     <div className={className}>
       <Label>{label}</Label>
-      <p className={compact ? 'mt-2 text-[20px] font-medium' : 'money-number mt-2 text-[30px]'}>
+      <p className={compact ? 'mt-2 t-subhead font-medium' : 'money-number mt-2 t-metric'}>
         {value}
       </p>
-      <p className={`mt-2 text-[12px] leading-5 ${noteClassName ?? 'text-ink2'}`}>{note}</p>
+      <p className={`mt-2 t-caption leading-5 ${noteClassName ?? 'text-ink2'}`}>{note}</p>
     </div>
   )
 }

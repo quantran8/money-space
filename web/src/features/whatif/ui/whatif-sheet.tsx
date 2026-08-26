@@ -22,6 +22,7 @@ import { useWhatIf } from '@money-space/core/features/whatif/hooks/use-whatif'
 import { WhatIfResultBlocks } from '@/features/whatif/ui/components/whatif-result-blocks'
 import { buildShareSummary } from '@money-space/core/features/whatif/model/whatif-share'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { parseRawMoney } from '@money-space/core/shared/lib/number-format'
 import { useWhatIfStore, type WhatIfPrefill } from '@money-space/core/shared/stores/whatif-store'
 
@@ -88,73 +89,94 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
     }
   }
 
+  /**
+   * Once there is an answer, the ANSWER is the screen.
+   *
+   * The form and the result used to be stacked, which meant the figure the
+   * household came for opened below three fields they had just filled in — on a
+   * phone, below the fold. So the question collapses into the header line it
+   * can be stated in ("11,11 tỷ · 26/08/2026") and the result takes the body.
+   * `Thử số khác` puts the fields back with the previous answer dropped, which
+   * is also what makes the primary button unambiguous: it says `Xem thử` in
+   * exactly the state where the fields are on screen.
+   */
+  const showResult = Boolean(result)
+
   return (
     <ResponsiveDialogContent>
       <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>{t('whatif.title')}</ResponsiveDialogTitle>
-          <ResponsiveDialogDescription>{t('whatif.description')}</ResponsiveDialogDescription>
-        </ResponsiveDialogHeader>
+        <ResponsiveDialogTitle>{t('whatif.title')}</ResponsiveDialogTitle>
+        <ResponsiveDialogDescription>
+          {showResult
+            ? t('whatif.summary', {
+                amount: formatVndShort(amountValue),
+                date: plannedDate,
+                context: label.trim() || t('whatif.summaryNoLabel'),
+              })
+            : t('whatif.description')}
+        </ResponsiveDialogDescription>
+      </ResponsiveDialogHeader>
 
-        <div className="max-h-[60vh] space-y-4 overflow-y-auto">
-          {/* The note leads: naming the purchase first is what turns an abstract
-              number into the question the household is actually asking. */}
-          <EventField label={t('whatif.form.label')} htmlFor="whatif-label">
-            <EventFieldInput
-              id="whatif-label"
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-              placeholder={t('whatif.form.labelPlaceholder')}
-            />
-          </EventField>
+      <div className="max-h-[60vh] overflow-y-auto">
+        {showResult ? (
+          <WhatIfResultBlocks result={result!} />
+        ) : (
+          <div className="space-y-4">
+            {/* The note leads: naming the purchase first is what turns an abstract
+                number into the question the household is actually asking. */}
+            <EventField label={t('whatif.form.label')} htmlFor="whatif-label">
+              <EventFieldInput
+                id="whatif-label"
+                value={label}
+                onChange={(event) => setLabel(event.target.value)}
+                placeholder={t('whatif.form.labelPlaceholder')}
+              />
+            </EventField>
 
-          <EventField
-            label={t('whatif.form.amount')}
-            htmlFor="whatif-amount"
-            trailing={<span className="text-[13px] text-ink2">đ</span>}
-          >
-            <EventMoneyInput
-              id="whatif-amount"
-              value={amount}
-              onChange={setAmount}
-              placeholder="0"
-            />
-          </EventField>
+            <EventField
+              label={t('whatif.form.amount')}
+              htmlFor="whatif-amount"
+              trailing={<span className="t-body-sm text-ink2">đ</span>}
+            >
+              <EventMoneyInput
+                id="whatif-amount"
+                value={amount}
+                onChange={setAmount}
+                placeholder="0"
+              />
+            </EventField>
 
-          {/* No `htmlFor`: the picker's control is a button, not an input, so
-              a label pointing at an id would reference nothing. */}
-          <EventField label={t('whatif.form.plannedDate')}>
-            <DatePicker
-              value={plannedDate}
-              onChange={setPlannedDate}
-              className={eventDateTriggerClass}
-            />
-          </EventField>
+            {/* No `htmlFor`: the picker's control is a button, not an input, so
+                a label pointing at an id would reference nothing. */}
+            <EventField label={t('whatif.form.plannedDate')}>
+              <DatePicker
+                value={plannedDate}
+                onChange={setPlannedDate}
+                className={eventDateTriggerClass}
+              />
+            </EventField>
+          </div>
+        )}
+      </div>
 
-          {result ? <WhatIfResultBlocks result={result} /> : null}
-        </div>
-
-        <ResponsiveDialogFooter>
-          {result ? (
-            <>
-              <Button variant="ghost" onClick={reset}>
-                {t('whatif.actions.tryAnother')}
-              </Button>
-              <Button variant="outline" onClick={handleShare}>
-                {t('whatif.actions.share')}
-              </Button>
-            </>
-          ) : null}
-          {/* Once a result is on screen the button re-runs it against the
-              edited figures, so it stops reading as "show me" and becomes
-              "bring this up to date". */}
+      <ResponsiveDialogFooter>
+        {showResult ? (
+          <>
+            {/* Editing the figures means going back to them — there are no
+                fields on screen to re-run against. */}
+            <Button variant="ghost" onClick={reset}>
+              {t('whatif.actions.tryAnother')}
+            </Button>
+            <Button variant="outline" onClick={handleShare}>
+              {t('whatif.actions.share')}
+            </Button>
+          </>
+        ) : (
           <Button onClick={handleRun} disabled={!canRun || isRunning}>
-            {isRunning
-              ? t('whatif.actions.running')
-              : result
-                ? t('whatif.actions.update')
-                : t('whatif.actions.run')}
+            {isRunning ? t('whatif.actions.running') : t('whatif.actions.run')}
           </Button>
-        </ResponsiveDialogFooter>
+        )}
+      </ResponsiveDialogFooter>
     </ResponsiveDialogContent>
   )
 }

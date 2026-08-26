@@ -22,11 +22,11 @@ export function CalmNoteCard({
     <Card>
       <div className="flex items-start gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-tint">
-          <Icon className="size-5 text-accent" strokeWidth={1.8} />
+          <Icon className="size-5 text-action" strokeWidth={1.8} />
         </div>
         <div>
-          <p className="font-semibold">{title}</p>
-          <p className="mt-1 text-sm leading-6 text-ink2">
+          <p className="font-medium">{title}</p>
+          <p className="mt-1 t-body-sm leading-6 text-ink2">
             {description}
           </p>
         </div>

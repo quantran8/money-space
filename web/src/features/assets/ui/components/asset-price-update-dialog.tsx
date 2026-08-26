@@ -86,10 +86,10 @@ export function AssetPriceUpdateDialog({
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
       <ResponsiveDialogContent className="min-w-0 overflow-x-hidden p-0 sm:max-w-[500px]">
         <ResponsiveDialogHeader className="px-6 pt-6 sm:px-8 sm:pt-7">
-          <ResponsiveDialogTitle className="text-[28px] font-semibold tracking-[-0.035em]">
+          <ResponsiveDialogTitle className="t-metric tracking-[-0.035em]">
             {t('assets.priceUpdate.title')}
           </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription className="mt-1 text-[15px] leading-6">
+          <ResponsiveDialogDescription className="mt-1 t-body-sm leading-6">
             {t(isBond ? 'assets.priceUpdate.bondHelp' : 'assets.priceUpdate.marketHelp', {
               name: asset.name,
               unit: asset.marketPosition?.unit ?? '',
@@ -103,7 +103,7 @@ export function AssetPriceUpdateDialog({
               label={t(isBond ? 'assets.priceUpdate.bondValue' : 'assets.priceUpdate.unitPrice')}
               error={error}
               trailing={
-                <span className="text-lg font-semibold text-ink2">₫</span>
+                <span className="t-subhead font-medium text-ink2">₫</span>
               }
             >
               <EventMoneyInput value={price} onChange={(value) => { setPrice(value); setError('') }} placeholder="0" />

@@ -69,7 +69,7 @@ export function SymbolCombobox({
           type="button"
           role="combobox"
           aria-expanded={open}
-          className="flex w-full items-center justify-between gap-2 text-[17px] font-medium text-foreground outline-none"
+          className="flex w-full items-center justify-between gap-2 t-body font-medium text-foreground outline-none"
         >
           <span className={cn('truncate text-left', !value && 'text-ink2')}>
             {value || placeholder || t('assets.form.symbolPlaceholder')}
@@ -97,7 +97,7 @@ export function SymbolCombobox({
           />
           <CommandList>
             {isFetching && symbols.length === 0 ? (
-              <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 py-6 t-body-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
                 {t('common.loading')}
               </div>
@@ -125,7 +125,7 @@ export function SymbolCombobox({
                       popover wrapped the title one word per line. */}
                   <span className="truncate font-medium">{item.symbol}</span>
                   {item.exchange ? (
-                    <span className="ml-auto shrink-0 text-xs text-muted-foreground/70">
+                    <span className="ml-auto shrink-0 t-caption text-muted-foreground/70">
                       {item.exchange}
                     </span>
                   ) : null}

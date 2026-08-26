@@ -4,14 +4,14 @@ import { formatIntegerDisplay, sanitizeIntegerInput } from '@money-space/core/sh
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
- * The shared form field used across the app's create/edit modals: a sunk block
- * with a small `.label` inset above a borderless control. Originated in the
+ * The shared form field used across the app's create/edit modals: a white,
+ * hairline-bordered block with a small `.label` inset above a borderless control. Originated in the
  * events (money timeline) flows and is now the look for every form dialog —
  * events, debts, assets, goals, payments, members.
  *
- * Both variants are the same `--sunk` fill (design.md §2.2, §3): an input has no
- * border in v4.0, so `outline` no longer means "add a stroke" — it is kept only
- * because callers pass it, and it now differs only in radius. The field takes an
+ * Both variants are the same WHITE `--card` fill marked by a 1px `--committed`
+ * stroke, so `outline` no longer means "add a stroke" — it is kept only because
+ * callers pass it, and it now differs only in radius. The field takes an
  * `--alert` ring on error, the one case where an outline carries state (§5.2).
  */
 type EventFieldProps = {
@@ -30,8 +30,8 @@ export function EventField({ label, htmlFor, error, children, className, trailin
     <div className={className}>
       <div
         className={cn(
-          'bg-sunk px-5 py-4 transition duration-200',
-          variant === 'outline' ? 'rounded-panel' : 'rounded-sunk',
+          'border border-committed bg-card px-5 py-4 transition duration-200',
+          variant === 'outline' ? 'rounded-card' : 'rounded-control',
           error && 'outline-2 outline-alert',
         )}
       >
@@ -48,7 +48,7 @@ export function EventField({ label, htmlFor, error, children, className, trailin
         )}
       </div>
       {error ? (
-        <p className="mt-2 px-1 text-[13px] font-medium text-alert">{error}</p>
+        <p className="mt-2 px-1 t-body-sm font-medium text-alert">{error}</p>
       ) : null}
     </div>
   )
@@ -66,7 +66,7 @@ export function EventFieldInput({
     <input
       {...props}
       className={cn(
-        'w-full bg-transparent text-[17px] font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink3',
+        'w-full bg-transparent t-body font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink3',
         className,
       )}
     />
@@ -84,7 +84,7 @@ export function EventFieldTextarea({
     <textarea
       {...props}
       className={cn(
-        'w-full resize-none bg-transparent text-[16px] leading-6 text-ink outline-none placeholder:text-ink3',
+        'w-full resize-none bg-transparent t-body leading-6 text-ink outline-none placeholder:text-ink3',
         className,
       )}
     />
@@ -132,7 +132,7 @@ export function EventMoneyInput({
       }
       onBlur={onBlur}
       className={cn(
-        'money-number min-w-0 flex-1 bg-transparent text-[36px] text-ink outline-none placeholder:text-ink3 disabled:cursor-default disabled:opacity-100 sm:text-[42px]',
+        'money-number min-w-0 flex-1 bg-transparent t-figure text-ink outline-none placeholder:text-ink3 disabled:cursor-default disabled:opacity-100',
         className,
       )}
     />
@@ -175,7 +175,7 @@ export function EventDecimalInput({
       onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
       onBlur={onBlur}
       className={cn(
-        'num w-full bg-transparent text-[17px] font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink3 disabled:opacity-50',
+        'num w-full bg-transparent t-body font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink3 disabled:opacity-50',
         className,
       )}
     />
@@ -187,11 +187,11 @@ export function EventDecimalInput({
  * inside an {@link EventField}'s sunk block. Pass to `SelectTrigger`.
  */
 export const eventSelectTriggerClass =
-  'h-auto rounded-none bg-transparent p-0 text-[17px] font-medium text-ink data-[placeholder]:text-ink3'
+  'h-auto rounded-none border-0 bg-transparent p-0 t-body font-medium text-ink shadow-none focus-visible:shadow-none data-[placeholder]:text-ink3'
 
 /**
  * Trigger className to drop the global DatePicker button's own background so it
  * sits flush inside an {@link EventField}'s sunk block.
  */
 export const eventDateTriggerClass =
-  'h-auto justify-start rounded-none bg-transparent p-0 text-[17px] font-medium text-ink hover:bg-transparent [&_svg]:hidden'
+  'h-auto justify-start rounded-none border-0 bg-transparent p-0 t-body font-medium text-ink hover:bg-transparent [&_svg]:hidden'

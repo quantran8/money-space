@@ -1,10 +1,9 @@
 import { Save } from 'lucide-react'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { HouseholdOverviewCard } from '@/features/household/ui/components/household-overview-card'
@@ -15,7 +14,7 @@ import { deleteHousehold } from '@money-space/core/features/settings/api/setting
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
-import { DataCard } from '@/features/settings/ui/components/data-card'
+import { DangerCard, DataCard } from '@/features/settings/ui/components/data-card'
 import { InviteQrDialog } from '@/features/invites/ui/components/invite-qr-dialog'
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
 
@@ -30,7 +29,7 @@ import { MembersListSection } from '@/features/members/ui/components/members-lis
 export function HouseholdPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { activeHouseholdId } = useActiveHousehold()
+  const { activeHouseholdId, activeHousehold } = useActiveHousehold()
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const {
     members,
@@ -63,45 +62,74 @@ export function HouseholdPage() {
     submit: submitSettings,
   } = useSettingsPage()
 
+  // Nothing to save until something changed. A Save button that is always there
+  // asks the reader to decide whether they have pending work; "Đã lưu" answers
+  // it for them, and the button appears only when there is a change to commit.
+  const isDirty = settingsForm.formState.isDirty
+
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col pb-3">
       {/* Saving sits level with the title, not at the bottom of the settings
           card: the two selects below are the only thing it commits, and a
-          button buried inside one card of five reads as that card's footer. */}
-      <CompactPageHeader
-        title={t('household.header.title')}
-        actions={
-          !isSettingsLoading ? (
+          button buried inside one card of five reads as that card's footer.
+          Rendered here rather than through `CompactPageHeader` because that
+          component deliberately has no subtitle slot, and this page's second
+          line names the space every panel below belongs to. */}
+      <header className="flex flex-wrap items-end justify-between gap-5">
+        <div className="min-w-0">
+          <h1 className="t-page-tracking t-metric leading-[1.08] lg:t-figure">
+            {t('settings.header.pageTitle')}
+          </h1>
+          <p className="mt-1 t-body-sm text-ink2">
+            <Trans
+              i18nKey="settings.header.manageSpace"
+              values={{ name: activeHousehold?.name ?? t('shell.householdName') }}
+              components={{ 1: <span className="font-medium text-ink" /> }}
+            />
+          </p>
+        </div>
+
+        <div className="flex min-h-11 items-center gap-3">
+          {!isSettingsLoading && !isDirty ? (
+            <p className="flex items-center gap-2 t-body-sm text-ink2">
+              <span className="size-1.5 shrink-0 rounded-full bg-positive" />
+              {t('settings.header.savedState')}
+            </p>
+          ) : null}
+          {!isSettingsLoading && isDirty ? (
             <Button
               type="button"
-              className="h-10 px-4 text-[13px]"
               disabled={settingsSaving}
               onClick={() => void submitSettings()}
             >
-              <Save className="size-4" strokeWidth={1.75} />
+              <Save className="size-[17px]" strokeWidth={1.75} />
               {t('settings.header.save')}
             </Button>
-          ) : null
-        }
-      />
+          ) : null}
+        </div>
+      </header>
 
-      {!isSettingsLoading ? <HouseholdOverviewCard form={settingsForm} /> : null}
+      <div className="s-card-gap s-head-body flex flex-col">
+        {!isSettingsLoading ? <HouseholdOverviewCard form={settingsForm} /> : null}
 
-      <MembersListSection
-        members={members}
-        isLoading={isLoading}
-        invitedCount={invitedCount}
-        holdsByMember={holdsByMember}
-        ownerMemberId={ownerMemberId}
-        viewerMemberId={viewerMemberId}
-        isViewerOwner={isViewerOwner}
-        onInvite={invite.openQr}
-        onRemoveMember={setRemoveId}
-      />
+        <MembersListSection
+          members={members}
+          isLoading={isLoading}
+          invitedCount={invitedCount}
+          holdsByMember={holdsByMember}
+          ownerMemberId={ownerMemberId}
+          viewerMemberId={viewerMemberId}
+          isViewerOwner={isViewerOwner}
+          onInvite={invite.openQr}
+          onRemoveMember={setRemoveId}
+        />
 
-      <CategoriesCard />
+        <CategoriesCard />
 
-      <DataCard onDelete={() => setConfirmDeleteOpen(true)} />
+        <DataCard />
+
+        <DangerCard onDelete={() => setConfirmDeleteOpen(true)} />
+      </div>
 
       <InviteQrDialog
         open={invite.open}

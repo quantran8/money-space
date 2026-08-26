@@ -59,7 +59,7 @@ export function ConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm gap-4">
         <DialogHeader>
-          <DialogTitle className="text-xl">{title}</DialogTitle>
+          <DialogTitle className="t-subhead">{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
         <DialogFooter>

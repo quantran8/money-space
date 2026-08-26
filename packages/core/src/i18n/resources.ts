@@ -19,6 +19,8 @@ export const resources = {
         deleting: 'Đang xóa...',
         cancel: 'Hủy',
         done: 'Xong',
+        back: 'Quay lại',
+        apply: 'Áp dụng',
         create: 'Tạo',
         actions: 'Tùy chọn',
         quick: 'Nhanh',
@@ -341,6 +343,13 @@ export const resources = {
           debtCount: '{{count}} khoản nợ đang mở.',
           netWorth: 'Giá trị ròng',
           netWorthNote: 'Tài sản trừ dư nợ còn lại.',
+          totalAssets: 'Tổng tài sản {{value}}',
+          totalDebt: 'Dư nợ {{value}}',
+          byLiquidity: 'Theo thanh khoản',
+          sourceCount: '{{count}} nguồn',
+          heldBy: 'Người giữ: {{name}}',
+          householdInitials: 'CN',
+          optionsFor: 'Tuỳ chọn {{name}}',
           sources: 'Nguồn tiền',
           search: 'Tìm nguồn tiền…',
           filter: 'Lọc nguồn tiền',
@@ -590,6 +599,11 @@ export const resources = {
             claimed: 'Đã dành cho mục tiêu',
             free: 'Chưa dành cho mục tiêu nào',
             aria: '{{claimed}} đã dành cho mục tiêu, {{free}} còn tự do',
+            // Nhãn tâm vòng tròn — ngắn hơn `free`, vốn dài quá cho lỗ vòng.
+            ringCenter: 'tự do',
+            sectionTitle: 'Phân bổ mục tiêu',
+            freeTitle: 'Còn tự do',
+            freeNote: 'Có thể phân bổ',
             sharePercent: '{{percent}}% giá trị tài sản',
             columns: {
               goal: 'Mục tiêu',
@@ -619,6 +633,10 @@ export const resources = {
             range12: '1 năm',
             rangeLabel: 'Khoảng thời gian',
             rangeDelta: 'Thay đổi tổng giá trị',
+            movementTitle: 'Biến động giá trị',
+            change: 'Thay đổi',
+            high: 'Cao nhất',
+            low: 'Thấp nhất',
             inRange1: 'Trong 1 tháng',
             inRange6: 'Trong 6 tháng',
             inRange12: 'Trong 1 năm',
@@ -629,6 +647,7 @@ export const resources = {
           },
           hero: {
             title: 'Giá trị & hiệu suất',
+            valueTitle: 'Giá trị tài sản',
             currentValue: 'Giá trị hiện tại',
             balance: 'Số dư',
             marketPrice: 'Giá thị trường',
@@ -697,6 +716,8 @@ export const resources = {
             date: 'Ngày',
             event: 'Sự kiện',
             type: 'Loại',
+            person: 'Người',
+            actor: 'Người tạo: {{name}}',
             effect: 'Ảnh hưởng',
             empty: 'Chưa có sự kiện nào gắn với tài sản này.',
           },
@@ -762,9 +783,16 @@ export const resources = {
             progress: 'Tiến độ trả',
             progressAria: 'Đã trả {{percent}}% khoản vay',
             repaid: 'Đã trả',
+            balanceTitle: 'Dư nợ & tiến độ',
+            periodsDone: 'Đã hoàn thành {{done}} / {{total}} kỳ',
           },
           loan: {
             title: 'Thông tin khoản vay',
+            termsTitle: 'Điều khoản vay',
+            detailsTitle: 'Chi tiết khoản vay',
+            interestNote: 'Theo khoản vay hiện tại',
+            methodFixed: 'Số tiền cố định',
+            methodReducing: 'Dư nợ giảm dần',
             payoff: 'Tất toán dự kiến',
             payoffNote: 'Theo lịch trả hiện tại',
             paid: 'Đã thanh toán',
@@ -798,6 +826,8 @@ export const resources = {
             viewJournal: 'Xem nhật ký',
             paid: 'Đã thanh toán',
             next: 'Kỳ tiếp theo',
+            upcoming: 'Sắp tới',
+            periodIndex: 'Kỳ {{index}}',
             empty: 'Chưa có lịch thanh toán cho khoản nợ này.',
           },
         },
@@ -979,6 +1009,22 @@ export const resources = {
           // Không bắt buộc: what-if là câu hỏi thử, ép chọn ví thì lần thử nào
           // cũng thành phiền. Chọn ví thì đổi lại câu trả lời chi tiết hơn hẳn.
         },
+        // Câu hỏi thu lại thành một dòng khi đã có kết quả — chỗ của phần thân
+        // lúc đó là câu trả lời, không phải mấy ô vừa điền xong.
+        summary: '{{context}} · {{amount}} · {{date}}',
+        summaryNoLabel: 'Khoản chi thử',
+        delta: {
+          label: 'So với hiện tại',
+          from: 'Hiện tại {{amount}}',
+        },
+        metrics: {
+          spend: 'Khoản chi',
+          spendHint: 'từ ngày {{date}}',
+          atRisk: 'Khoản chưa đủ tiền',
+          atRiskHint: 'trong kỳ này',
+          flexible: 'Tiền linh hoạt',
+          flexibleHint: 'còn lại hôm nay',
+        },
         blocks: {
           upcomingSafety: 'Dòng tiền sắp tới',
           goal: 'Ảnh hưởng tới mục tiêu',
@@ -991,6 +1037,8 @@ export const resources = {
           goalCostFromSetAside: 'phần đã dành',
           atRisk: 'Khoản chưa đủ tiền trả',
           atRiskRow: '{{date}} · {{name}} thiếu {{amount}}',
+          atRiskCount: '{{count}} khoản',
+          atRiskNote: 'Chưa có khoản tiền vào nào đủ chắc chắn trong kỳ này.',
           atRiskNone: 'Các khoản sắp tới vẫn đủ tiền trả.',
           // Khác với "khoản chưa đủ tiền trả": ở đây là tiền không có sẵn để
           // chi, chứ không phải một hoá đơn sau này bị thiếu.
@@ -1176,6 +1224,17 @@ export const resources = {
           label: 'Khoảng thời gian',
           days: '{{count}} ngày',
         },
+        // Bộ chọn khoảng thời gian: cửa sổ cuốn chiếu trước, rồi kỳ theo lịch.
+        range: {
+          label: 'Khoảng thời gian',
+          days7: '7 ngày tới',
+          days30: '30 ngày tới',
+          days60: '60 ngày tới',
+          thisMonth: 'Tháng này',
+          nextMonth: 'Tháng sau',
+          custom: 'Khoảng tự chọn',
+          customOpen: 'Tuỳ chọn khoảng ngày…',
+        },
         summary: {
           title: 'Tóm tắt',
           incoming: 'Tiền vào',
@@ -1184,6 +1243,11 @@ export const resources = {
           outgoingNote: 'Trong đó {{required}} là khoản cố định',
           lowest: 'Thấp nhất dự kiến',
           lowestNote: 'Dự kiến vào {{date}}',
+          // Chỉ đếm khoản forecast thực sự cộng vào số dư (§2.16).
+          knownCount: '{{count}} khoản đã biết',
+          noneKnown: 'Chưa có khoản đã biết',
+          // Nói thẳng là số liệu dừng sớm hơn nhãn, không để người đọc tự suy.
+          truncated: 'Chỉ tính được đến {{date}}. Khoảng đã chọn dài hơn phần dự báo hiện có.',
           lowestNoSource:
             'Chưa có ví nào để tính số dư. Thêm một khoản tiền mặt hoặc tài khoản ngân hàng ở mục Tài sản.',
           today: 'Có thể dùng hôm nay',
@@ -1345,6 +1409,9 @@ export const resources = {
             committed: 'Đã có nhiệm vụ',
             flexible: 'Linh hoạt',
             aria: '{{committed}} đã có nhiệm vụ, {{flexible}} linh hoạt',
+            // Nhãn dưới số ở tâm vòng tròn. Phải ngắn — nó nằm trong lỗ vòng,
+            // không phải một dòng của legend.
+            ringCenter: 'linh hoạt',
           },
         },
         coverage: {
@@ -1353,6 +1420,9 @@ export const resources = {
           // Tuổi dữ liệu viết theo lối nói thường ("6 ngày trước", "hôm qua"),
           // giống hệt cột trong bảng, để hai chỗ đọc lên là một.
           sourceCount: '{{count}} nguồn',
+          // v5 02-components §16 — canonical one-line coverage on the ground.
+          lineAllFresh: 'Tính từ {{count}} nguồn · tất cả đều mới',
+          lineSomeStale: 'Tính từ {{count}} nguồn · {{stale}} cần cập nhật',
           oldest: 'cũ nhất',
           show: 'Hiện chi tiết',
           hide: 'Ẩn chi tiết',
@@ -1377,7 +1447,7 @@ export const resources = {
         },
         // Tên của cả khối: gồm phần quá hạn và phần 30 ngày tới.
         cashflow: {
-          title: 'Dòng tiền',
+          title: 'Dòng tiền 30 ngày tới',
           // Nửa "đã xảy ra" của §12.2 — ngữ cảnh cho phần dự kiến bên dưới,
           // nên viết nhỏ và không có số "ròng" (vào trừ ra là cách nói thứ ba).
           recordedEyebrow: 'Tháng này · đã xảy ra',
@@ -1395,6 +1465,9 @@ export const resources = {
             // Nói đúng ba điều: đã tính vào số bên dưới, vẫn đang chờ, và chỉ
             // gia đình mới xác nhận được. Không trách, không giục.
             note: 'Đã qua ngày dự kiến và vẫn đang được tính vào các số bên dưới. Các khoản này ở đây tới khi gia đình xác nhận.',
+            // Nhãn của danh sách bên dưới phần tóm tắt.
+            listLabel: 'Khoản cần xử lý',
+            age: 'Quá hạn {{count}} ngày',
             markDone: 'Xác nhận',
             marking: 'Đang lưu…',
             viewAll: 'Xem tất cả',
@@ -1423,6 +1496,11 @@ export const resources = {
           more: '{{count}} khoản nữa · xem timeline',
           viewTimeline: 'Xem timeline',
           needsConfirm: 'cần xác nhận',
+          // Tiêu đề cột phải: chuỗi sự kiện tạo ra điểm thấp nhất bên trái.
+          sequenceTitle: 'Điều gì sẽ xảy ra',
+          // Số khoản đứng sau mỗi tổng vào/ra của 30 ngày tới. "Đã biết" vì
+          // chỉ đếm những khoản forecast thực sự tính vào số dư (§2.16).
+          horizonCount: '{{count}} khoản đã biết',
           empty: 'Chưa có khoản nào trong 30 ngày tới.',
           column: {
             date: 'Ngày',
@@ -1436,6 +1514,15 @@ export const resources = {
             remainingUnit: 'Còn lại, tr',
           },
         },
+        // Tháng đã xảy ra — tách khỏi §12.2 (phần sắp tới) thành thẻ riêng.
+        spending: {
+          title: 'Chi tiêu tháng này',
+          meta: 'đến {{date}}',
+          income: 'Tổng thu',
+          outcome: 'Tổng chi',
+          recent: 'Giao dịch gần đây',
+          viewAll: 'Xem tất cả giao dịch',
+        },
         // §12.3 — every goal against the pace it needs, not one goal in detail.
         goals: {
           title: 'Mục tiêu',
@@ -1444,6 +1531,11 @@ export const resources = {
           earmarked: 'Đã dành cho mục tiêu',
           unassigned: 'Chưa gán mục tiêu',
           mainBadge: 'chính',
+          count: '{{count}} mục tiêu',
+          // Nói vị trí so với mốc gia đình tự đặt, không phải lời khen chê.
+          // Mục tiêu chưa khai báo mức góp thì không có mốc, nên không có nhãn.
+          paceOnTrack: 'Đúng nhịp',
+          paceBehind: 'Chậm hơn mốc',
           underOnePercent: '<1%',
           milestoneLegend: 'Mốc cần đạt hôm nay để về đúng hạn',
           trackAria: 'Đã đạt {{percent}}%.',
@@ -1499,6 +1591,11 @@ export const resources = {
           viewAll: 'Xem {{count}} nguồn',
           totalValue: 'Tổng giá trị',
           totalCash: 'Tổng tiền mặt',
+          barsTitle: 'Phân bổ theo nguồn',
+          // "Đang nắm" = phụ trách, không phải "ai tiêu" (§0.2, §16.4).
+          holderTitle: 'Ai đang nắm tài sản',
+          // Nguồn không ghi ai phụ trách thì thuộc về cả nhà, không gán bừa.
+          sharedHolder: 'Cả nhà',
           // "Phụ trách", never "ai tiêu" — the map names who holds a source.
           group: {
             // Chia theo lựa chọn của gia đình, không theo loại tài sản — đúng
@@ -1579,6 +1676,16 @@ export const resources = {
           unknownProjection: 'Chưa tính được',
           needMonthly: 'Cần thêm {{amount}} / tháng',
           setTargetDate: 'Đặt ngày mong muốn để tính khoản cần thêm.',
+          progressTitle: 'Tiến độ mục tiêu',
+          monthlyShort: 'Góp mỗi tháng',
+          withDeadline: '{{count}} mục tiêu có hạn',
+          noDeadlineGoals: 'Chưa mục tiêu nào có hạn',
+        },
+        card: {
+          target: 'Mục tiêu {{amount}}',
+          ofTarget: 'trên mục tiêu {{amount}}',
+          noMonthly: 'Chưa đặt mức góp mỗi tháng',
+          noProjection: 'Chưa tính được dự kiến',
         },
         strip: {
           count: 'Số mục tiêu',
@@ -2023,6 +2130,15 @@ export const resources = {
           allChanges: 'Tất cả thay đổi',
           sourceChanges: 'Nguồn tiền',
           debtChanges: 'Nợ',
+          changes: 'Thay đổi',
+          searchPlaceholder: 'Tìm thay đổi',
+          emptyFiltered: 'Không có thay đổi phù hợp',
+          actor: 'Người tạo: {{name}}',
+          typeIncome: 'Tiền vào',
+          typeExpense: 'Tiền ra',
+          typeAdjustment: 'Điều chỉnh',
+          typeAsset: 'Tài sản',
+          typePayment: 'Thanh toán',
           showing: 'Hiển thị {{from}}–{{to}} trong {{total}} thay đổi',
           pagination: 'Phân trang',
           previous: 'Trước',
@@ -2111,6 +2227,9 @@ export const resources = {
           received: 'Đã nhận',
           spent: 'Đã chi',
           net: 'Dòng tiền ròng',
+          title: 'Dòng tiền',
+          moneyIn: 'Tiền vào',
+          moneyOut: 'Tiền ra',
           // "đã xảy ra": chỉ đếm khoản đã ghi nhận / đã trả — khoản chưa xử lý
           // hay đã dời lại là tiền chưa chạy, không tính vào tháng này.
           recordedCount: '{{count}} sự kiện đã xảy ra',
@@ -2241,6 +2360,7 @@ export const resources = {
           pending: 'Chờ xác nhận',
           active: 'Đang hoạt động',
           holdsSources: '{{count}} nguồn tiền',
+          memberMenu: 'Tuỳ chọn {{name}}',
           soloPrompt: 'Mời thêm một thành viên để cùng theo dõi tài chính gia đình.',
           removed: 'Đã gỡ thành viên.',
           removeFailed: 'Chưa gỡ được thành viên.',
@@ -2348,6 +2468,9 @@ export const resources = {
             'Quản lý thông tin chung, nhịp cập nhật và thông báo.',
           save: 'Lưu thay đổi',
           saved: 'Đã lưu cài đặt.',
+          pageTitle: 'Cài đặt',
+          manageSpace: 'Quản lý không gian <1>{{name}}</1>',
+          savedState: 'Đã lưu',
         },
         household: {
           eyebrow: 'Thông tin chung',
@@ -2360,6 +2483,7 @@ export const resources = {
           language: 'Ngôn ngữ',
           languagePlaceholder: 'Chọn ngôn ngữ',
           createdAt: 'Hộ được tạo ngày {{date}}. Đơn vị tiền áp dụng cho toàn bộ số liệu trong không gian này.',
+          spaceTitle: 'Không gian gia đình',
         },
         reminders: {
           eyebrow: 'Nhắc nhở',
@@ -2383,6 +2507,7 @@ export const resources = {
           deleteConsequence:
             'Việc này xóa hẳn không gian chung: {{members}} thành viên và {{sources}} nguồn tiền. Không khôi phục lại được.',
           deleteAction: 'Xóa không gian',
+          dangerMeta: 'Không thể hoàn tác',
         },
         categories: {
           eyebrow: 'Phân loại',
@@ -2413,6 +2538,14 @@ export const resources = {
           defaultCleared: 'Đã bỏ danh mục mặc định.',
           defaultError: 'Không thể cập nhật danh mục mặc định.',
           manage: 'Quản lý nhóm sự kiện',
+          tabCustom: 'Riêng',
+          systemNote: 'Danh mục hệ thống có sẵn cho mọi không gian.',
+          customNote: 'Danh mục riêng chỉ áp dụng cho không gian này.',
+          countLabel: '{{count}} danh mục',
+          customEmptyTitle: 'Chưa có danh mục riêng',
+          customEmptyBody:
+            'Tạo danh mục riêng khi danh mục hệ thống chưa đủ để phân loại giao dịch của gia đình.',
+          rowMenu: 'Tuỳ chọn {{name}}',
         },
       },
       options: {
@@ -2722,6 +2855,8 @@ export const resources = {
         deleting: 'Deleting...',
         cancel: 'Cancel',
         done: 'Done',
+        back: 'Back',
+        apply: 'Apply',
         create: 'Create',
         actions: 'Options',
         quick: 'Quick',
@@ -3039,6 +3174,13 @@ export const resources = {
           debtCount: '{{count}} open debts.',
           netWorth: 'Net worth',
           netWorthNote: 'Assets minus outstanding debt.',
+          totalAssets: 'Total assets {{value}}',
+          totalDebt: 'Outstanding debt {{value}}',
+          byLiquidity: 'By liquidity',
+          sourceCount: '{{count}} sources',
+          heldBy: 'Held by: {{name}}',
+          householdInitials: 'HH',
+          optionsFor: 'Options for {{name}}',
           sources: 'Money sources',
           search: 'Search money sources…',
           filter: 'Filter money sources',
@@ -3281,6 +3423,10 @@ export const resources = {
             claimed: 'Set aside for goals',
             free: 'Not spoken for',
             aria: '{{claimed}} set aside for goals, {{free}} still free',
+            ringCenter: 'free',
+            sectionTitle: 'Goal allocation',
+            freeTitle: 'Still free',
+            freeNote: 'Available to allocate',
             sharePercent: '{{percent}}% of the asset',
             columns: {
               goal: 'GOAL',
@@ -3310,6 +3456,10 @@ export const resources = {
             range12: '1 year',
             rangeLabel: 'Time range',
             rangeDelta: 'Total value change',
+            movementTitle: 'Value over time',
+            change: 'Change',
+            high: 'Highest',
+            low: 'Lowest',
             inRange1: 'Over 1 month',
             inRange6: 'Over 6 months',
             inRange12: 'Over 1 year',
@@ -3320,6 +3470,7 @@ export const resources = {
           },
           hero: {
             title: 'Value & performance',
+            valueTitle: 'Asset value',
             currentValue: 'Current value',
             balance: 'Balance',
             marketPrice: 'Market price',
@@ -3388,6 +3539,8 @@ export const resources = {
             date: 'Date',
             event: 'Event',
             type: 'Type',
+            person: 'Person',
+            actor: 'Recorded by {{name}}',
             effect: 'Impact',
             empty: 'No events linked to this asset yet.',
           },
@@ -3453,9 +3606,16 @@ export const resources = {
             progress: 'Repayment progress',
             progressAria: '{{percent}}% of the loan repaid',
             repaid: 'Repaid',
+            balanceTitle: 'Balance & progress',
+            periodsDone: '{{done}} of {{total}} instalments done',
           },
           loan: {
             title: 'Loan details',
+            termsTitle: 'Loan terms',
+            detailsTitle: 'Loan detail',
+            interestNote: 'Based on the current loan',
+            methodFixed: 'A fixed amount',
+            methodReducing: 'On the reducing balance',
             payoff: 'Expected payoff',
             payoffNote: 'Based on the current schedule',
             paid: 'Paid',
@@ -3491,6 +3651,8 @@ export const resources = {
             viewJournal: 'Open the journal',
             paid: 'Paid',
             next: 'Next instalment',
+            upcoming: 'Upcoming',
+            periodIndex: 'Instalment {{index}}',
             empty: 'No repayment schedule for this debt yet.',
           },
         },
@@ -3667,6 +3829,20 @@ export const resources = {
           labelPlaceholder: 'e.g. new laptop',
           amountRequired: 'Enter an amount greater than 0.',
         },
+        summary: '{{context}} · {{amount}} · {{date}}',
+        summaryNoLabel: 'A trial spend',
+        delta: {
+          label: 'Against today',
+          from: 'Today {{amount}}',
+        },
+        metrics: {
+          spend: 'The spend',
+          spendHint: 'from {{date}}',
+          atRisk: 'Items short of money',
+          atRiskHint: 'in this window',
+          flexible: 'Flexible money',
+          flexibleHint: 'left today',
+        },
         blocks: {
           upcomingSafety: 'Cashflow ahead',
           goal: 'Effect on the goal',
@@ -3678,6 +3854,8 @@ export const resources = {
           goalCostFromSetAside: 'money set aside',
           atRisk: 'Items that would not be covered',
           atRiskRow: '{{date}} · {{name}} short by {{amount}}',
+          atRiskCount: '{{count}} items',
+          atRiskNote: 'No incoming money is certain enough to count in this window.',
           atRiskNone: 'Everything coming up still has money to cover it.',
           uncovered: '{{amount}} short — the wallets together do not hold this much.',
         },
@@ -3839,6 +4017,16 @@ export const resources = {
           label: 'Time range',
           days: '{{count}} days',
         },
+        range: {
+          label: 'Range',
+          days7: 'Next 7 days',
+          days30: 'Next 30 days',
+          days60: 'Next 60 days',
+          thisMonth: 'This month',
+          nextMonth: 'Next month',
+          custom: 'Custom range',
+          customOpen: 'Custom date range…',
+        },
         summary: {
           title: 'Summary',
           incoming: 'Money in',
@@ -3847,6 +4035,10 @@ export const resources = {
           outgoingNote: '{{required}} of it is fixed',
           lowest: 'Projected low',
           lowestNote: 'Expected on {{date}}',
+          knownCount_one: '{{count}} known item',
+          knownCount_other: '{{count}} known items',
+          noneKnown: 'No known items yet',
+          truncated: 'Only projected to {{date}}. The selected range runs past the available forecast.',
           lowestNoSource:
             'No wallet to run a balance against. Add cash or a bank account under Assets.',
           today: 'Usable today',
@@ -4003,12 +4195,15 @@ export const resources = {
             committed: 'Already spoken for',
             flexible: 'Flexible',
             aria: '{{committed}} already spoken for, {{flexible}} flexible',
+            ringCenter: 'flexible',
           },
         },
         coverage: {
           // i18next pluralises on `count`, so English needs both forms.
           sourceCount_one: '{{count}} source',
           sourceCount_other: '{{count}} sources',
+          lineAllFresh: 'From {{count}} sources · all up to date',
+          lineSomeStale: 'From {{count}} sources · {{stale}} need updating',
           oldest: 'oldest',
           show: 'Show details',
           hide: 'Hide details',
@@ -4030,7 +4225,7 @@ export const resources = {
           allFresh: 'Data is current',
         },
         cashflow: {
-          title: 'Cash flow',
+          title: 'Next 30 days',
           recordedEyebrow: 'This month · happened',
           recordedNote: 'Recorded through {{date}}',
           in: 'In',
@@ -4044,6 +4239,8 @@ export const resources = {
             count: '{{count}} items',
             summary: '{{count}} items · oldest {{days}} days',
             note: 'Past their expected date and still counted in the figures below. They stay here until you confirm them.',
+            listLabel: 'Needs attention',
+            age: '{{count}} days',
             markDone: 'Confirm',
             marking: 'Saving…',
             viewAll: 'See all',
@@ -4069,6 +4266,9 @@ export const resources = {
           more: '{{count}} more · view timeline',
           viewTimeline: 'View timeline',
           needsConfirm: 'needs confirming',
+          sequenceTitle: 'What happens next',
+          horizonCount: '{{count}} known item',
+          horizonCount_other: '{{count}} known items',
           empty: 'Nothing scheduled in the next 30 days.',
           column: {
             date: 'Date',
@@ -4081,6 +4281,14 @@ export const resources = {
             remainingUnit: 'Remaining, M',
           },
         },
+        spending: {
+          title: 'This month',
+          meta: 'to {{date}}',
+          income: 'Money in',
+          outcome: 'Money out',
+          recent: 'Recent activity',
+          viewAll: 'View all activity',
+        },
         goals: {
           title: 'Goals',
           details: 'Details',
@@ -4088,6 +4296,10 @@ export const resources = {
           earmarked: 'Set aside for goals',
           unassigned: 'Not assigned yet',
           mainBadge: 'main',
+          count_one: '{{count}} goal',
+          count_other: '{{count}} goals',
+          paceOnTrack: 'On pace',
+          paceBehind: 'Behind the mark',
           underOnePercent: '<1%',
           milestoneLegend: 'Where you need to be today to finish on time',
           trackAria: '{{percent}}% saved.',
@@ -4143,6 +4355,9 @@ export const resources = {
           viewAll: 'View {{count}} sources',
           totalValue: 'Total value',
           totalCash: 'Total cash',
+          barsTitle: 'By source',
+          holderTitle: 'Who looks after what',
+          sharedHolder: 'Shared',
           group: {
             usable_now: 'Usable now · {{count}} sources',
             held: 'Held · {{count}} sources',
@@ -4217,6 +4432,16 @@ export const resources = {
           unknownProjection: 'Not calculated',
           needMonthly: 'Add {{amount}} / month',
           setTargetDate: 'Set a target date to calculate what is needed.',
+          progressTitle: 'Goal progress',
+          monthlyShort: 'Monthly contribution',
+          withDeadline: '{{count}} goals with a deadline',
+          noDeadlineGoals: 'No goal has a deadline yet',
+        },
+        card: {
+          target: 'Target {{amount}}',
+          ofTarget: 'of a {{amount}} target',
+          noMonthly: 'No monthly contribution set',
+          noProjection: 'No projection yet',
         },
         strip: {
           count: 'Goals',
@@ -4658,6 +4883,15 @@ export const resources = {
           allChanges: 'All changes',
           sourceChanges: 'Money sources',
           debtChanges: 'Debt',
+          changes: 'Changes',
+          searchPlaceholder: 'Search changes',
+          emptyFiltered: 'No matching changes',
+          actor: 'Recorded by {{name}}',
+          typeIncome: 'Money in',
+          typeExpense: 'Money out',
+          typeAdjustment: 'Adjustment',
+          typeAsset: 'Assets',
+          typePayment: 'Payment',
           showing: 'Showing {{from}}–{{to}} of {{total}} changes',
           pagination: 'Pagination',
           previous: 'Previous',
@@ -4746,6 +4980,9 @@ export const resources = {
           received: 'Received',
           spent: 'Spent',
           net: 'Net cash flow',
+          title: 'Cash flow',
+          moneyIn: 'Money in',
+          moneyOut: 'Money out',
           recordedCount: '{{count}} events happened',
         },
         review: {
@@ -4871,6 +5108,7 @@ export const resources = {
           pending: 'Pending',
           active: 'Active',
           holdsSources: '{{count}} money sources',
+          memberMenu: 'Options for {{name}}',
           soloPrompt: 'Invite another member to manage your household finances together.',
           removed: 'Member removed.',
           removeFailed: 'Could not remove that member.',
@@ -4978,6 +5216,9 @@ export const resources = {
             'Manage general information, update rhythm, and notifications.',
           save: 'Save changes',
           saved: 'Settings saved.',
+          pageTitle: 'Settings',
+          manageSpace: 'Managing <1>{{name}}</1>',
+          savedState: 'Saved',
         },
         household: {
           eyebrow: 'General information',
@@ -4991,6 +5232,7 @@ export const resources = {
           languagePlaceholder: 'Choose a language',
           createdAt:
             'This household was created on {{date}}. The selected currency applies to all figures in this space.',
+          spaceTitle: 'Household space',
         },
         reminders: {
           eyebrow: 'Reminders',
@@ -5012,6 +5254,7 @@ export const resources = {
           deleteConsequence:
             'This permanently deletes the shared space: {{members}} members and {{sources}} money sources. It cannot be undone.',
           deleteAction: 'Delete space',
+          dangerMeta: 'Cannot be undone',
         },
         categories: {
           eyebrow: 'Categories',
@@ -5042,6 +5285,14 @@ export const resources = {
           defaultCleared: 'Default category cleared.',
           defaultError: 'Could not update the default category.',
           manage: 'Manage event groups',
+          tabCustom: 'Custom',
+          systemNote: 'System categories are built into every space.',
+          customNote: 'Custom categories apply to this space only.',
+          countLabel: '{{count}} categories',
+          customEmptyTitle: 'No custom categories yet',
+          customEmptyBody:
+            'Add one when the system categories do not cover how your household groups its money.',
+          rowMenu: 'Options for {{name}}',
         },
       },
       options: {

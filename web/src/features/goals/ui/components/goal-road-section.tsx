@@ -84,7 +84,7 @@ export function GoalRoadSection({
         action={
           <button
             type="button"
-            className="min-h-11 text-[13px] font-medium text-accent"
+            className="min-h-11 t-body-sm font-medium text-action"
             onClick={() => setExplainOpen((open) => !open)}
             aria-expanded={explainOpen}
           >
@@ -93,7 +93,7 @@ export function GoalRoadSection({
         }
       />
 
-      <div className="mt-7 grid gap-x-14 gap-y-9 lg:grid-cols-[minmax(0,300px)_1fr]">
+      <div className="mt-7 grid gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,300px)_1fr]">
         {/* The answer in words on the left, the same answer as a shape on the
             right. `PanelSplit`'s order (§7.2): answer first. */}
         <div className="flex min-w-0 flex-col justify-center">
@@ -110,17 +110,17 @@ export function GoalRoadSection({
               <p className="label-vi">{t('goals.detail.road.vsPlan')}</p>
               <div
                 className={cn(
-                  'money-number mt-2 text-[30px]',
+                  'money-number mt-2 t-metric',
                   chart.gapAtNow < 0 && 'text-attention',
                 )}
               >
                 {chart.gapAtNow >= 0 ? '+' : '−'}
                 {formatVndScale(Math.abs(chart.gapAtNow))}
               </div>
-              <p className="mt-1 text-[12px] text-ink3">{chart.nowLabel}</p>
+              <p className="mt-1 t-caption text-ink3">{chart.nowLabel}</p>
             </div>
           ) : (
-            <p className="mt-4 text-[14px] leading-7 text-ink2">
+            <p className="mt-4 t-body-sm leading-7 text-ink2">
               {paceLabel && projectedLabel ? (
                 <Trans
                   i18nKey="goals.detail.road.conclusion"
@@ -138,11 +138,11 @@ export function GoalRoadSection({
 
           <div className="mt-7">
             <p className="label-vi">{t('goals.detail.road.atCurrentPace')}</p>
-            <p className="money-number mt-2 font-mono text-[20px]">
+            <p className="money-number mt-2 font-mono t-subhead">
               {projectedLabel ?? t('goals.detail.road.noDate')}
             </p>
             {requiredMonthly != null && requiredMonthly > 0 && desiredLabel ? (
-              <p className="mt-2 text-[12px] text-ink3">
+              <p className="mt-2 t-caption text-ink3">
                 {t('goals.detail.road.toBeOnTime', { date: desiredLabel })}
                 {' · '}
                 {t('goals.detail.road.perMonth', { amount: formatVndScale(requiredMonthly) })}
@@ -151,10 +151,10 @@ export function GoalRoadSection({
           </div>
         </div>
 
-        <div className="min-w-0 rounded-sunk bg-sunk p-3 sm:p-5">
-          <div className="mb-1 flex flex-wrap items-center justify-end gap-x-5 gap-y-2 px-1 text-[10px] text-ink3">
+        <div className="min-w-0 rounded-control bg-wash p-3 sm:p-5">
+          <div className="mb-1 flex flex-wrap items-center justify-end gap-x-5 gap-y-2 px-1 t-caption-sm text-ink3">
             <span className="flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-accent" />
+              <span className="size-2.5 rounded-full bg-action" />
               {t('goals.detail.road.actualLine')}
             </span>
             <span className="flex items-center gap-2">
@@ -188,7 +188,7 @@ export function GoalRoadSection({
               household has eight months of line and no more. Saying so stops a
               short actual line reading as a gap in the saving. */}
           {chart.actual.length < 2 ? (
-            <p className="mt-2 px-1 text-[11px] text-ink3">
+            <p className="mt-2 px-1 t-caption-sm text-ink3">
               {t('goals.detail.road.notEnoughHistory')}
             </p>
           ) : null}
@@ -197,7 +197,7 @@ export function GoalRoadSection({
 
       {/* Every projected number has to be explainable (design.md §16). */}
       {explainOpen ? (
-        <Sunk className="mt-5 px-4 py-4 text-[13px] leading-6 text-ink2">
+        <Sunk className="mt-5 px-4 py-4 t-body-sm leading-6 text-ink2">
           <span className="font-medium text-ink">{t('goals.detail.road.calcTitle')}</span>{' '}
           {pace != null
             ? t('goals.detail.road.calc', {
@@ -255,9 +255,9 @@ function Badge({ tone, label }: { tone: 'accent' | 'attention' | 'muted'; label:
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 text-[12px] font-medium',
+        'inline-flex items-center gap-2 t-caption font-medium',
         tone === 'attention' && 'text-attention',
-        tone === 'accent' && 'text-accent',
+        tone === 'accent' && 'text-action',
         tone === 'muted' && 'text-ink2',
       )}
     >
@@ -265,7 +265,7 @@ function Badge({ tone, label }: { tone: 'accent' | 'attention' | 'muted'; label:
         className={cn(
           'size-1.5 rounded-full',
           tone === 'attention' && 'bg-attention',
-          tone === 'accent' && 'bg-accent',
+          tone === 'accent' && 'bg-action',
           tone === 'muted' && 'bg-protect',
         )}
       />

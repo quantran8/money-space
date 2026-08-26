@@ -28,16 +28,16 @@ export function OnboardingHeader({ user }: OnboardingHeaderProps) {
   return (
     <header className="mx-auto flex w-full max-w-[960px] items-center justify-between px-5 py-5 sm:px-7">
       <div className="flex items-center gap-3">
-        <span className="flex size-9 items-center justify-center rounded-sunk bg-panel text-accent">
+        <span className="flex size-9 items-center justify-center rounded-control bg-card text-action">
           <Wallet className="size-[19px]" strokeWidth={1.75} aria-hidden />
         </span>
-        <span className="text-[16px] font-semibold tracking-[-0.01em]">
+        <span className="t-body font-medium tracking-[-0.01em]">
           {t('onboarding.appName')}
         </span>
       </div>
 
       <div
-        className="flex size-10 items-center justify-center rounded-full bg-panel text-[13px] font-semibold"
+        className="flex size-10 items-center justify-center rounded-full bg-card t-body-sm font-medium"
         title={displayName}
       >
         {initialsOf(user?.displayName ?? user?.fullName ?? null, user?.email ?? null)}

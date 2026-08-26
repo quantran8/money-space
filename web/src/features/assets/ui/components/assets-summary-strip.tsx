@@ -1,21 +1,32 @@
 import { useTranslation } from 'react-i18next'
 
-import { Label, Panel, PanelHeader } from '@/components/ui/panel'
+import { Panel, PanelHeader, PanelSplit } from '@/components/ui/panel'
+import { AssetCompositionChart } from '@/features/assets/ui/components/asset-composition-chart'
+import type { AssetTotals } from '@money-space/core/features/assets/model/assets-form'
 import { formatVndScale } from '@money-space/core/shared/lib/format-money'
 
 type AssetsSummaryStripProps = {
   total: number
-  assetCount: number
+  totals: AssetTotals
   totalDebt: number
-  debtCount: number
   asOf: string
 }
 
+/**
+ * Net worth, and the one detail that is genuinely different from it.
+ *
+ * This used to be three metrics of equal weight — assets, debt, net worth —
+ * side by side. Two of them were the arithmetic of the third, so the block
+ * asked the household to do the subtraction before it could answer the question
+ * it was there to answer. Net worth is now the single hero figure, with assets
+ * and debt demoted to the line beneath it, and the space that bought back goes
+ * to the liquidity split: how much of the total is actually reachable, which is
+ * the thing the headline cannot tell you.
+ */
 export function AssetsSummaryStrip({
   total,
-  assetCount,
+  totals,
   totalDebt,
-  debtCount,
   asOf,
 }: AssetsSummaryStripProps) {
   const { t, i18n } = useTranslation()
@@ -28,47 +39,26 @@ export function AssetsSummaryStrip({
 
   return (
     <Panel>
-      <PanelHeader title={t('assets.demo.overview')} meta={updatedAt} />
-      <div className="mt-7 grid gap-5 sm:grid-cols-3 sm:gap-0">
-        <Metric
-          label={t('assets.demo.assets')}
-          value={formatVndScale(total)}
-          note={t('assets.demo.assetCount', { count: assetCount })}
-          className="sm:pr-7"
-        />
-        <Metric
-          label={t('assets.demo.debt')}
-          value={formatVndScale(totalDebt)}
-          note={t('assets.demo.debtCount', { count: debtCount })}
-          className="sm:border-l sm:border-hair sm:px-7"
-        />
-        <Metric
-          label={t('assets.demo.netWorth')}
-          value={formatVndScale(total - totalDebt)}
-          note={t('assets.demo.netWorthNote')}
-          className="sm:border-l sm:border-hair sm:pl-7"
-        />
-      </div>
-    </Panel>
-  )
-}
+      <PanelHeader title={t('assets.demo.netWorth')} meta={updatedAt} />
 
-function Metric({
-  label,
-  value,
-  note,
-  className,
-}: {
-  label: string
-  value: string
-  note: string
-  className?: string
-}) {
-  return (
-    <div className={className}>
-      <Label>{label}</Label>
-      <p className="money-number mt-2 text-[30px]">{value}</p>
-      <p className="mt-2 text-[12px] leading-5 text-ink2">{note}</p>
-    </div>
+      <PanelSplit>
+        <div>
+          <p className="money-number t-hero">{formatVndScale(total - totalDebt)}</p>
+          {/* The two operands, stated once and small: they explain the figure
+              above without competing with it. */}
+          <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 t-caption text-ink3">
+            <span>{t('assets.demo.totalAssets', { value: formatVndScale(total) })}</span>
+            <span>{t('assets.demo.totalDebt', { value: formatVndScale(totalDebt) })}</span>
+          </p>
+        </div>
+
+        <div>
+          <h3 className="t-subtitle">{t('assets.demo.byLiquidity')}</h3>
+          <div className="mt-5">
+            <AssetCompositionChart totals={totals} />
+          </div>
+        </div>
+      </PanelSplit>
+    </Panel>
   )
 }

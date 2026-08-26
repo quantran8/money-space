@@ -1,10 +1,17 @@
 import { apiRequest } from '#/shared/api/http'
 import type { HouseholdSummary } from '#/shared/hooks/use-active-household'
 
-export function updateHouseholdConfig(householdId: string, currency: string) {
+/**
+ * The household's own settings. Every field is optional on the server and
+ * validated only when present, so a caller may send one or both.
+ */
+export function updateHouseholdConfig(
+  householdId: string,
+  payload: { currency?: string; name?: string },
+) {
   return apiRequest<HouseholdSummary>(`/households/${householdId}/config`, {
     method: 'PATCH',
-    body: JSON.stringify({ currency }),
+    body: JSON.stringify(payload),
   })
 }
 

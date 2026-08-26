@@ -36,7 +36,7 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
 
   if (total <= 0) {
     return (
-      <div className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">
+      <div className="flex h-[240px] items-center justify-center t-body-sm text-muted-foreground">
         {t('assets.charts.empty')}
       </div>
     )
@@ -72,7 +72,7 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
                 const slice = payload[0].payload as Slice
                 const share = Math.round((slice.value / total) * 100)
                 return (
-                  <div className="rounded-[14px] border border-border bg-card px-3 py-2 text-sm shadow-md">
+                  <div className="rounded-[14px] border border-border bg-card px-3 py-2 t-body-sm shadow-md">
                     <div className="flex items-center gap-2">
                       <span
                         className="size-2.5 rounded-full"
@@ -91,8 +91,8 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
         </ResponsiveContainer>
         {/* Hero total in the donut hole */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xs text-muted-foreground">{t('assets.summary.total')}</span>
-          <span className="money-number mt-1 text-xl font-semibold text-foreground">
+          <span className="t-caption text-muted-foreground">{t('assets.summary.total')}</span>
+          <span className="money-number mt-1 t-subhead font-medium text-foreground">
             {formatVndShort(total)}
           </span>
         </div>
@@ -104,7 +104,7 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
           const share = Math.round((slice.value / total) * 100)
           return (
             <li key={slice.liquidity} className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-sm text-foreground">
+              <span className="flex items-center gap-2 t-body-sm text-foreground">
                 <span
                   className="size-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: slice.color }}
@@ -112,10 +112,10 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
                 {slice.label}
               </span>
               <span className="flex shrink-0 items-center gap-2">
-                <span className="money-number text-sm font-medium text-foreground">
+                <span className="money-number t-body-sm font-medium text-foreground">
                   {formatVndShort(slice.value)}
                 </span>
-                <span className="w-9 text-right text-xs tabular-nums text-muted-foreground">
+                <span className="w-9 text-right t-caption tabular-nums text-muted-foreground">
                   {share}%
                 </span>
               </span>

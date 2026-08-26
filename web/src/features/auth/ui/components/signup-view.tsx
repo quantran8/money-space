@@ -32,11 +32,11 @@ export function SignupView({ form, onSubmit, onGoogle, googlePending }: SignupVi
   return (
     <div>
       <div>
-        <p className="text-[13px] font-medium text-accent">{t('auth.signup.eyebrow')}</p>
-        <h2 className="mt-2 text-[34px] font-medium leading-tight tracking-[-0.035em]">
+        <p className="t-body-sm font-medium text-action">{t('auth.signup.eyebrow')}</p>
+        <h2 className="mt-2 t-figure leading-tight">
           {t('auth.signup.title')}
         </h2>
-        <p className="mt-3 text-[14px] leading-6 text-ink2">{t('auth.signup.description')}</p>
+        <p className="mt-3 t-body-sm leading-6 text-ink2">{t('auth.signup.description')}</p>
       </div>
 
       <GoogleButton
@@ -87,20 +87,20 @@ export function SignupView({ form, onSubmit, onGoogle, googlePending }: SignupVi
         </FormField>
 
         <div>
-          <label className="flex cursor-pointer items-start gap-3 text-[13px] leading-5 text-ink2">
+          <label className="flex cursor-pointer items-start gap-3 t-body-sm leading-5 text-ink2">
             <Checkbox className="mt-0.5" {...register('agreeTerms')} />
             <span>
               <Trans
                 i18nKey="auth.signup.agree"
                 components={{
-                  terms: <a href="#" className="font-medium text-accent hover:underline" />,
-                  privacy: <a href="#" className="font-medium text-accent hover:underline" />,
+                  terms: <a href="#" className="font-medium text-action hover:underline" />,
+                  privacy: <a href="#" className="font-medium text-action hover:underline" />,
                 }}
               />
             </span>
           </label>
           {errors.agreeTerms?.message ? (
-            <p className="mt-1.5 text-xs font-medium text-alert">
+            <p className="mt-1.5 t-caption font-medium text-alert">
               {errors.agreeTerms.message}
             </p>
           ) : null}
@@ -111,9 +111,9 @@ export function SignupView({ form, onSubmit, onGoogle, googlePending }: SignupVi
         </Button>
       </form>
 
-      <p className="mt-7 text-center text-[13px] text-ink2">
+      <p className="mt-7 text-center t-body-sm text-ink2">
         {t('auth.signup.haveAccount')}{' '}
-        <Link to={loginPath} className="font-medium text-accent hover:underline">
+        <Link to={loginPath} className="font-medium text-action hover:underline">
           {t('auth.tabs.login')}
         </Link>
       </p>

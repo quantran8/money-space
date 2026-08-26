@@ -76,7 +76,7 @@ export function HouseholdAdminDisclosure({
           >
             <div className="flex shrink-0 items-center gap-2">
               <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
-                <SelectTrigger className="h-9 min-w-[160px] text-[12px]">
+                <SelectTrigger className="h-9 min-w-[160px] t-caption">
                   <SelectValue placeholder={t('household.admin.removeMember.pick')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -92,7 +92,7 @@ export function HouseholdAdminDisclosure({
                 variant="ghost"
                 size="sm"
                 disabled={!selectedMemberId}
-                className="bg-panel text-alert hover:bg-alert-tint hover:text-alert"
+                className="bg-card text-alert hover:bg-alert-tint hover:text-alert"
                 onClick={() => selectedMemberId && onRemoveMember(selectedMemberId)}
               >
                 {t('common.remove')}
@@ -111,7 +111,7 @@ export function HouseholdAdminDisclosure({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="shrink-0 bg-panel text-alert hover:bg-alert-tint hover:text-alert"
+                  className="shrink-0 bg-card text-alert hover:bg-alert-tint hover:text-alert"
                   onClick={onDeleteHousehold}
                 >
                   {t('settings.data.deleteAction')}
@@ -137,8 +137,8 @@ function AdminRow({
   return (
     <div className="sunk flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <p className="text-[13px] font-medium">{title}</p>
-        <p className="mt-1 text-[11px] leading-5 text-ink2">{description}</p>
+        <p className="t-body-sm font-medium">{title}</p>
+        <p className="mt-1 t-caption-sm leading-5 text-ink2">{description}</p>
       </div>
       {children}
     </div>

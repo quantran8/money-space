@@ -23,20 +23,20 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
 
   return (
     <Card>
-      <h2 className="section-title text-xl font-semibold">{t('goals.projection.title')}</h2>
+      <h2 className="t-title">{t('goals.projection.title')}</h2>
 
       <div className="mt-4">
         <div className="flex items-baseline justify-between gap-3">
-          <p className="text-sm text-ink2">
+          <p className="t-body-sm text-ink2">
             {t('goals.projection.progress')}
           </p>
-          <p className="money-number text-sm font-semibold">
+          <p className="money-number t-body-sm font-medium">
             {formatVndShort(projection.currentAmount)} /{' '}
             {formatVndShort(projection.targetAmount)}
           </p>
         </div>
-        <Progress value={projection.progressPercent} className="mt-3 h-3" />
-        <p className="mt-2 text-xs text-ink2">
+        <Progress value={projection.progressPercent} className="mt-3 h-6" />
+        <p className="mt-2 t-caption text-ink2">
           {t('goals.projection.remaining', {
             amount: formatVndShort(projection.remainingAmount),
           })}
@@ -46,11 +46,11 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
       {showsDate ? (
         <div className="mt-4 space-y-3">
           <SubSection title={t('goals.projection.atCurrentPace')}>
-            <p className="money-number text-lg font-semibold">
+            <p className="money-number t-subhead font-medium">
               {projection.projectedCompletionDate}
             </p>
             {projection.estimatedMonthsToGoal !== null ? (
-              <p className="mt-1 text-xs text-ink2">
+              <p className="mt-1 t-caption text-ink2">
                 {t('goals.projection.months', { count: projection.estimatedMonthsToGoal })}
               </p>
             ) : null}
@@ -58,7 +58,7 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
 
           {projection.requiredMonthlyContributionForTargetDate !== null ? (
             <SubSection title={t('goals.projection.toHitTargetDate')}>
-              <p className="money-number text-lg font-semibold">
+              <p className="money-number t-subhead font-medium">
                 {t('goals.projection.perMonth', {
                   amount: formatVndShort(
                     projection.requiredMonthlyContributionForTargetDate,
@@ -71,7 +71,7 @@ export function GoalProjectionPanel({ projection }: { projection: GoalProjection
       ) : (
         // No declared contribution → progress only, plus a calm invitation to
         // declare one. Never a projected date.
-        <p className="mt-4 text-sm leading-6 text-ink2">
+        <p className="mt-4 t-body-sm leading-6 text-ink2">
           {t(`goals.projection.reason.${projection.reason}`)}
         </p>
       )}

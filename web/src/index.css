@@ -2,18 +2,40 @@
 @import "tw-animate-css";
 
 /**
- * Money Space — Web Design System v4.0 (family-finance-v3.1/design.md).
+ * Money Space — Web Design System v5.0 (money-space-design-system-v5/).
  *
- * Three surfaces separated by LIGHTNESS, not by strokes: app → panel → sunk
- * (§2.1). Because borders, dividers and shadows are gone (§2.2–2.4), that
- * lightness step is the only remaining mechanism that draws a section boundary
- * — which is why the page background is tinted and white is reserved for panels.
+ * Surfaces separate by LIGHTNESS, not by strokes: page ground → canvas → card,
+ * with `--wash` reserved for controls INSIDE a card (§2.2–2.4). Cards carry no
+ * border and no shadow, so that lightness step is the only boundary — which is
+ * why card/canvas separation is tuned deliberately (1.12) rather than left to
+ * chance.
  *
- * The `--ledger` palette is the shipped one. `--archive` exists as the approved
- * alternate (§5.1) but is NOT a user-facing theme switcher (§25).
+ * Interaction is ink, never green: `--action` is the CTA colour and
+ * `--data-primary` carries chart and composition emphasis (§4). A static metric
+ * never wears the action colour.
+ *
+ * v4 names (--app, --panel, --sunk, --accent, --hair) remain as ALIASES so the
+ * ~90 files that predate the rename keep working. New code uses the v5 names.
  */
 @theme inline {
-  /* v4.0 surfaces & ink. Raw hex — these are NOT hsl-triplet tokens. */
+  /* v5 surfaces. Raw hex — these are NOT hsl-triplet tokens. */
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-wash: var(--wash);
+  --color-hero: var(--hero);
+  --color-hero-deep: var(--hero-deep);
+  --color-action: var(--action);
+  --color-action-inverse: var(--action-inverse);
+  --color-data-primary: var(--data-primary);
+  --color-positive: var(--positive);
+  --color-positive-ink: var(--positive-ink);
+  --color-data-ink: var(--data-ink);
+  --color-alert-ink: var(--alert-ink);
+  --color-attention-ink: var(--attention-ink);
+  --color-divider: var(--divider);
+  --color-model: var(--model);
+
+  /* v4 aliases — kept so existing callers keep resolving. */
   --color-app: var(--app);
   --color-panel: var(--panel);
   --color-sunk: var(--sunk);
@@ -30,6 +52,7 @@
   --color-accent-tint: var(--accent-tint);
   --color-attention-tint: var(--attention-tint);
   --color-alert-tint: var(--alert-tint);
+  --color-positive-tint: var(--positive-tint);
 
   /* shadcn compatibility layer. Mapped onto the v4.0 surfaces (§6) so the
      primitives keep working while features migrate off them. */
@@ -63,13 +86,15 @@
   --radius-control: var(--radius-control);
   --radius-sunk: var(--radius-sunk);
   --radius-panel: var(--radius-panel);
-  --radius-card: var(--radius-panel);
+  --radius-card: var(--radius-card);
+  --radius-hero: var(--radius-hero);
+  --radius-pill: var(--radius-pill);
   --radius-sm: var(--radius-control);
   --radius-md: var(--radius-control);
   --radius-lg: var(--radius-sunk);
   --radius-xl: var(--radius-panel);
 
-  --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
+  --font-sans: "Urbanist", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
@@ -77,28 +102,71 @@
   /* Ledger — the shipped palette (§5.1). Cool neutral, saturated banking green. */
   :root,
   .ledger {
-    --app: #eef1f3;
-    --panel: #ffffff;
-    --sunk: #f5f7f8;
-    --ink: #15181c;
-    --ink2: #525860;
-    --ink3: #868d96;
-    --hair: #e5e9ec;
-    --scrim: rgba(21, 24, 28, 0.34);
-    --accent: #0a6b47;
-    --accent-soft: #e3efea;
-    --attention: #b07a1e;
+    /* v5 surfaces (01-foundations §2.1). */
+    --canvas: #edf3f8;
+    --card: #ffffff;
+    --wash: #e3ecf2;
+    --hero: #b5cde8;
+    --hero-deep: #acc6e3;
+    --divider: #eef1f2;
+
+    /* Ink ramp. --ink3 is lifted from v4's #868d96 so 12px metadata on a
+       white card clears AA (3.15 → 4.66). */
+    --ink: #0f1011;
+    --ink2: #596268;
+    --ink3: #6b767c;
+
+    /* Interaction is ink, never green (§4). */
+    --action: #0f1011;
+    --action-inverse: #ffffff;
+    --data-primary: #73a4d7;
+    --positive: #8fcda4;
+    --model: #eef6f1;
+
+    /**
+     * Text-safe counterparts to the fill colours above.
+     *
+     * `--positive`, `--data-primary` and `--alert` are tuned as FILLS — a ring
+     * segment, a bar, a dot — and every one of them fails AA as text on white
+     * (`--positive` at #8fcda4 is 1.9:1). A money figure set in the fill colour
+     * is unreadable, so each fill gets an ink counterpart that clears 4.5:1 and
+     * is used wherever the colour has to carry a number or a glyph.
+     *
+     * This does NOT reintroduce green as an interaction colour (§4): these are
+     * DATA tones — direction of a movement, a total's provenance — and the CTA
+     * colour stays `--action`. A button never wears one of these.
+     */
+    --positive-ink: #4e855f;
+    --data-ink: #356fa8;
+    --alert-ink: #a9544d;
+    --attention-ink: #8c6817;
+
+    --scrim: rgba(15, 16, 17, 0.34);
+
+    /* v4 aliases → v5 values. */
+    --app: var(--canvas);
+    --panel: var(--card);
+    --sunk: var(--wash);
+    --hair: var(--divider);
+    --accent: var(--action);
+    --accent-soft: #eef1f2;
+    --attention: #8a6410;
     /* The amber counterpart to `--accent-soft`. Opaque, unlike
        `--attention-tint`, so a block filled with it can sit on either the panel
        or the sunk surface and read the same. */
     --attention-soft: #f6eddc;
-    --alert: #b23a26;
-    --committed: #d2d6da;
-    --protect: #a9b0b8;
+    --alert: #a8341f;
+    --committed: #d8e0e4;
+    --protect: #afc0c7;
 
-    --radius-panel: 14px;
-    --radius-sunk: 10px;
-    --radius-control: 8px;
+    /* v5 geometry (§2.1, §8). */
+    --radius-hero: 28px;
+    --radius-card: 22px;
+    --radius-control: 14px;
+    --radius-pill: 999px;
+    /* v4 aliases. */
+    --radius-panel: var(--radius-card);
+    --radius-sunk: var(--radius-control);
 
     /**
      * Tinted fills for badges and soft backgrounds.
@@ -111,9 +179,14 @@
      * accent for positive/inflow, attention for "needs a look", alert for a real
      * shortfall. There is no blue and no separate green.
      */
-    --accent-tint: rgba(10, 107, 71, 0.1);
-    --attention-tint: rgba(176, 122, 30, 0.12);
-    --alert-tint: rgba(178, 58, 38, 0.1);
+    --accent-tint: rgba(15, 16, 17, 0.06);
+    --attention-tint: rgba(225, 190, 104, 0.3);
+    --alert-tint: rgba(232, 163, 154, 0.3);
+    /* The one tint keyed to `--positive` rather than to an alert tone: a
+       settled instalment is a good consequence, which is the only thing v5 §4
+       lets green mean. Kept far weaker than the alert tints — "done" should
+       register as a calm band, not as something to look at. */
+    --positive-tint: rgba(143, 205, 164, 0.14);
   }
 
   /* Archive — approved alternate (§5.1). Warm ivory, wine red. */
@@ -137,6 +210,13 @@
     --accent-tint: rgba(140, 47, 57, 0.1);
     --attention-tint: rgba(154, 106, 22, 0.12);
     --alert-tint: rgba(168, 57, 31, 0.1);
+    --positive-tint: rgba(143, 205, 164, 0.14);
+
+    /* Ink counterparts, warmed to sit in Archive's ivory ground. */
+    --positive-ink: #4a7554;
+    --data-ink: #3d6384;
+    --alert-ink: #a8391f;
+    --attention-ink: #8a5f14;
   }
 
   html {
@@ -150,7 +230,7 @@
     min-height: 100vh;
     background: var(--app);
     color: var(--ink);
-    font-family: "Be Vietnam Pro", system-ui, sans-serif;
+    font-family: "Urbanist", system-ui, sans-serif;
   }
 
   button,
@@ -164,14 +244,22 @@
     min-height: 100vh;
   }
 
-  /* Focus is the one place a stroke is always allowed (§24). */
+  /**
+   * Focus is the one place a stroke is always allowed (§24).
+   *
+   * `[data-slot='input']` opts out: the Input primitive draws its own focus as
+   * a blue border plus a soft ring, and stacking an ink outline on top of that
+   * gives a bordered field two concentric rings in two different colours. The
+   * primitive's own signal is the indicator there — it is never removed, only
+   * drawn differently.
+   */
   a:focus-visible,
   button:focus-visible,
-  input:focus-visible,
+  input:not([data-slot='input']):focus-visible,
   select:focus-visible,
   textarea:focus-visible,
   [tabindex]:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--action);
     outline-offset: 2px;
   }
 }
@@ -179,14 +267,133 @@
 @layer utilities {
   /* --- Surfaces (§2.1, §11.1–11.2) ------------------------------------- */
 
+  /* A top-level card: sits DIRECTLY on the canvas. No border, no shadow, and
+     never wrapped in a group panel or sheet (02-components §2). */
+  .card-surface,
   .panel {
-    background: var(--panel);
-    border-radius: var(--radius-panel);
+    background: var(--card);
+    border-radius: var(--radius-card);
   }
 
+  /* `--wash` is a CONTROL surface — fields, hover rows, a small chart bed.
+     It is not a card level: never use it to wrap an empty state, a summary
+     metric or a whole section inside a card (§2.4). */
+  .wash,
   .sunk {
-    background: var(--sunk);
-    border-radius: var(--radius-sunk);
+    background: var(--wash);
+    border-radius: var(--radius-control);
+  }
+
+  /**
+   * The shell backdrop: a very soft tint in the hero hue bleeding down the left
+   * edge, so the glass sidebar has something real to refract. It is a BACKDROP,
+   * not a surface — no card ever sits on it, and the content area keeps
+   * `--canvas` as its ground (§2.2).
+   */
+  .shell-backdrop {
+    background:
+      radial-gradient(38% 48% at 1% 3%, rgba(155, 189, 226, 0.9) 0%, rgba(155, 189, 226, 0) 70%),
+      radial-gradient(30% 40% at 9% 58%, rgba(181, 205, 232, 0.75) 0%, rgba(181, 205, 232, 0) 72%),
+      radial-gradient(34% 42% at 0% 100%, rgba(172, 198, 227, 0.8) 0%, rgba(172, 198, 227, 0) 68%),
+      var(--canvas);
+  }
+
+  /**
+   * Glass — chrome only, never content.
+   *
+   * It is TINTED rather than whitened: the surface picks up the blue behind it
+   * instead of frosting over it, which is what separates glass from a
+   * translucent white panel. Three parts carry that read:
+   *   - a gradient fill that is lighter at the top and cooler at the bottom;
+   *   - a bright hairline on the TOP edge only, catching light like a real
+   *     lip — a full border would flatten it back into a rectangle;
+   *   - a soft outer shadow, no hard stroke.
+   *
+   * A card stays opaque `--card`. Translucency is what distinguishes navigation
+   * from the thing being navigated.
+   */
+  .glass {
+    position: relative;
+    /* Opacity is set by CONTRAST, not by taste: nav labels are --ink2, and at
+       the darkest stop they must still clear AA (4.5) against the tint behind
+       the glass. That fixes the floor at ~0.76. */
+    background: linear-gradient(
+      170deg,
+      rgba(255, 255, 255, 0.86) 0%,
+      rgba(240, 246, 252, 0.8) 48%,
+      rgba(220, 233, 247, 0.76) 100%
+    );
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.85),
+      0 12px 40px rgba(20, 34, 43, 0.06);
+  }
+
+  /**
+   * A rail item: icon only, 44×44 (§11 touch target). Active is a dark filled
+   * circle — the one place ink is used as a background in navigation, because
+   * an icon alone cannot carry "you are here" by weight.
+   *
+   * Every item still needs an aria-label AND a tooltip: v5 §15 permits an
+   * icon-only rail only when both are present.
+   */
+  .rail-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    color: var(--ink2);
+    transition:
+      background 0.14s ease,
+      color 0.14s ease;
+  }
+
+  .rail-item:hover {
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--ink);
+  }
+
+  .rail-item[aria-current] {
+    background: var(--action);
+    color: var(--action-inverse);
+  }
+
+  /**
+   * The sidebar runs the full height of the shell rather than floating as a
+   * card, so its lit edge is the RIGHT one — that is where it meets the
+   * content. A top rim on a full-bleed panel reads as a seam, not a lip.
+   */
+  .glass-edge {
+    box-shadow:
+      inset -1px 0 0 rgba(255, 255, 255, 0.7),
+      12px 0 40px rgba(20, 34, 43, 0.05);
+  }
+
+  /**
+   * Without backdrop-filter the translucent fill would let the tint show
+   * through as a muddy wash, so the surface goes opaque instead.
+   */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass {
+      background: var(--card);
+    }
+  }
+
+  /**
+   * The hero card — the only surface that may use `--hero` (§3). A tonal
+   * blue-on-blue gradient is allowed for depth; a multicolour one is not.
+   */
+  .hero-surface {
+    background: linear-gradient(180deg, #c8dcf1 0%, var(--hero) 52%, var(--hero-deep) 100%);
+    border-radius: var(--radius-hero);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--divider);
   }
 
   /**
@@ -228,10 +435,10 @@
    * be applied to a sentence or to any accented text (§10.1, §10.3).
    */
   .label {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-family: "Urbanist", system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
     color: var(--ink3);
   }
 
@@ -249,34 +456,299 @@
    * more than the horizontal.
    */
   .label-vi {
-    font-family: "Be Vietnam Pro", system-ui, sans-serif;
-    font-size: 10px;
+    font-family: "Urbanist", system-ui, sans-serif;
+    font-size: 12px;
     font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
     line-height: 1.5;
     color: var(--ink3);
   }
 
   /**
-   * Negative tracking is for NUMBERS only. Applying it to Vietnamese text
-   * crushes the diacritics (§10.3).
+   * Tabular figures for a money value. It sets NO size, weight or tracking —
+   * those come from the scale step beside it (`t-hero`, `t-metric`, …).
+   *
+   * It used to hardcode `font-weight: 300` and `letter-spacing: -0.035em`,
+   * which silently beat whatever the call site asked for, since both rules
+   * land in the same layer. Now it does one thing: make the digits line up.
    */
   .money-number {
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings: "tnum" 1;
+  }
+
+  /* --- The type scale (Foundations, "Type scale") ----------------------- */
+
+  /**
+   * NINE steps, and nothing between them. Before this existed the app carried
+   * 35 distinct font sizes across 658 call sites — every component picked its
+   * own `text-[Npx]`, so "one size smaller than body" meant 15px in one card,
+   * 14px in the next and 13px in the one below. None of that was a decision;
+   * it was drift.
+   *
+   * So size and weight are no longer written at the call site. A component
+   * names the ROLE the text plays — `t-body`, `t-caption`, `t-figure` — and the
+   * scale decides what that looks like. Changing the whole app's caption size
+   * is then one line here, and a step that is not on the scale cannot be
+   * reached by accident.
+   *
+   * Weight descends as size does, which is what makes the surface read airy:
+   * the display line is the only 500 on a page, the two money tiers are 400,
+   * and everything at body size and below sits at 300.
+   *
+   *   t-display    72 · 500    page hero, one per page
+   *   t-hero       56 · 400    the page's primary money figure
+   *   t-figure     40 · 400    a section's primary figure
+   *   t-metric     28 · 400    a summary-strip figure, secondary to a t-figure
+   *   t-subhead    20 · 400    subheading
+   *   t-body       16 · 300    body copy
+   *   t-body-sm    14 · 300    dense rows — tables, list items
+   *   t-caption    12 · 300    metadata
+   *   t-caption-sm 11 · 300    axis ticks, chart labels — the floor
+   *
+   * The weight in each step is the DEFAULT, not a lock: a name inside a dense
+   * row still takes `font-medium` to separate it from the note beneath it.
+   * That is emphasis within a step, which the scale is there to support. What
+   * it does not permit is a size that is not one of these nine.
+   *
+   * `font-semibold` is not among them and must never be used: Urbanist is
+   * loaded at 300/400/500 only (see index.html), so 600 is synthesised by the
+   * browser — a smeared approximation of a weight the family does not have.
+   */
+  .t-display {
+    font-size: 72px;
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+
+  .t-hero {
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+  }
+
+  .t-figure {
+    font-size: 40px;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
+
+  .t-metric {
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.15;
     letter-spacing: -0.03em;
-    font-weight: 500;
   }
 
-  .page-title {
-    letter-spacing: -0.015em;
-    font-weight: 500;
+  .t-subhead {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.3;
   }
 
-  .section-title {
+  .t-body {
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .t-body-sm {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .t-caption {
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1.45;
+  }
+
+  /* The floor. Nothing in the app may be smaller — below this Vietnamese
+     diacritics stop resolving at normal viewing distance. */
+  .t-caption-sm {
+    font-size: 11px;
+    font-weight: 300;
+    line-height: 1.4;
+  }
+
+  /* --- Spacing roles (Foundations, "Spacing") --------------------------- */
+
+  /**
+   * The spacing scale is 4 · 8 · 12 · 16 · 20 · 24 · 28 · 32 · 48, and these
+   * classes name the POSITIONS the scale defines rather than the numbers.
+   *
+   * Unlike type, spacing does not need a token at every call site — a one-off
+   * `mt-4` between two paragraphs is fine, because it carries no rule anyone
+   * could get wrong. What does need naming is the handful of positions the
+   * design system makes a promise about: card padding, the gap that makes a
+   * grid read as one surface, the step from a section header to its body, the
+   * vertical rhythm of a dense row, and the page edge.
+   *
+   * Those five were the ones that had drifted (`p-5`/`p-6`/`p-7` for the same
+   * card, `mt-6`/`mt-7`/`mt-8` for the same header gap), and they are the ones
+   * a reviewer cannot check by eye. Everything else stays plain Tailwind, on
+   * the scale.
+   */
+
+  /** A card's inner padding: 20 on mobile, 24 from `sm` up. */
+  .s-card {
+    padding: 20px;
+  }
+
+  /** The page edge: 16 on mobile, 28 from `lg` up. */
+  .s-page {
+    padding: 16px;
+  }
+
+  /**
+   * Card → card. Small deliberately: at this gap a grid of cards reads as one
+   * surface, and at ~28 they drift apart into separate objects.
+   */
+  .s-card-gap {
+    gap: 12px;
+  }
+
+  /** Section → section, when sections stack rather than sit in a grid. */
+  .s-section-gap {
+    gap: 20px;
+  }
+
+  /**
+   * A section header to the body under it. 28 rather than 24: the header is a
+   * heading plus its metadata line, so the gap is measured from a two-line
+   * block and needs the extra step to read as separation rather than leading.
+   */
+  .s-head-body {
+    margin-top: 28px;
+  }
+
+  /** The two columns of a `PanelSplit`. */
+  .s-split-gap {
+    column-gap: 48px;
+    row-gap: 32px;
+  }
+
+  /** One row of a dense list or table — vertical only; the row sets its own x. */
+  .s-row {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  /**
+   * The minimum tappable box (Foundations, "Touch target 44 min").
+   *
+   * A control may LOOK smaller than 44 — a compact toolbar button often
+   * should — but the box a finger has to hit may not be. This keeps the
+   * painted size and grows the hit area around it, so a dense row of controls
+   * stays dense without any of them becoming hard to tap.
+   */
+  .s-tap {
+    position: relative;
+  }
+
+  .s-tap::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+  }
+
+  @media (min-width: 40rem) {
+    .s-card {
+      padding: 24px;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .s-page {
+      padding: 28px;
+    }
+  }
+
+  /* --- v5 app shell (01-foundations §2.2, §3; 04-recipes §15) ---------- */
+
+  /**
+   * A nav pill on the page ground. Active is a filled white circle; inactive is
+   * a hairline outline. Icon-only, so every item carries an aria-label and a
+   * title (§11, 02-components §8).
+   */
+  .nav-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    color: var(--ink);
+    border: 1px solid rgba(15, 16, 17, 0.14);
+    transition:
+      background 0.14s ease,
+      border-color 0.14s ease;
+  }
+
+  .nav-pill:hover {
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  .nav-pill[aria-current] {
+    background: var(--card);
+    border-color: transparent;
+  }
+
+  /* --- Headings --------------------------------------------------------- */
+
+  /**
+   * The heading ladder, and the one rule it has to obey: a heading OUTRANKS
+   * the text it introduces, at every level.
+   *
+   *   t-title      24 · 500   the <h2> at the top of a card
+   *   t-subtitle   20 · 500   an <h3> one level inside that card
+   *   t-subhead    20 · 400   a subheading in running copy
+   *   t-body       16 · 300   the copy itself
+   *
+   * `t-title` at 24 sits a full step above `t-subhead`'s 20, so a card heading
+   * can never be confused with the text under it. `t-subtitle` shares 20 with
+   * `t-subhead` but carries 500 against its 400 — at the same size, weight is
+   * what separates a heading from a lead-in sentence.
+   *
+   * Both are COMPLETE steps, not modifiers: each sets its own size and weight
+   * and must never be paired with another `t-*` class. A section heading is
+   * one role, so it gets one appearance — pairing it with a step is exactly
+   * what let the same heading render at three different sizes across the app,
+   * and the lint guard rejects the combination.
+   */
+  .t-title {
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  .t-subtitle {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.35;
     letter-spacing: -0.01em;
-    font-weight: 500;
+  }
+
+  /**
+   * A page heading. Unlike `t-title` this one IS a modifier — page titles
+   * legitimately range from `t-metric` on a detail page to `t-display` on the
+   * dashboard — so it carries tracking only and takes its size and weight
+   * from the step beside it. It keeps the `t-` prefix because it belongs to
+   * the same scale; the trailing `-tracking` is what marks it as a modifier.
+   */
+  .t-page-tracking {
+    letter-spacing: -0.035em;
   }
 
   /* --- Nav (§7.4, §21) --------------------------------------------------- */
@@ -285,7 +757,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 33px;
+    /* 40px on desktop is v5's control size; the drawer bumps it to 44 (§11). */
+    height: 40px;
     padding: 0 12px;
     border-radius: var(--radius-control);
     font-size: 14px;
@@ -296,12 +769,12 @@
   }
 
   .nav-item:hover {
-    background: var(--sunk);
+    background: rgba(255, 255, 255, 0.6);
     color: var(--ink);
   }
 
   .nav-item[aria-current] {
-    background: var(--panel);
+    background: var(--card);
     color: var(--ink);
     font-weight: 500;
   }
@@ -331,6 +804,55 @@
   .table-dense th:last-child {
     padding-right: 10px;
     border-radius: 0 7px 7px 0;
+  }
+
+  /**
+   * The goal track, drawn as TICKS rather than as a solid bar.
+   *
+   * A solid fill reads as a liquid level — how full the goal is — which is the
+   * wrong metaphor for money set aside over time. Ticks read as increments,
+   * which is how the household actually gets there: a contribution at a time.
+   * It also gives the pace marker something to sit against, so "behind" is a
+   * countable distance rather than a shade difference.
+   *
+   * `--progress` is set per row; the filled half is painted over the unfilled
+   * one and clipped to that width.
+   */
+  .goal-progress {
+    position: relative;
+    height: 24px;
+    overflow: hidden;
+  }
+
+  .goal-progress::before,
+  .goal-progress::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--committed) 0 2px,
+      transparent 2px 6px
+    );
+  }
+
+  .goal-progress::after {
+    right: auto;
+    width: var(--progress);
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--data-primary) 0 2px,
+      transparent 2px 6px
+    );
+  }
+
+  /** Behind the household's own pace: the same ticks, in amber (§5.2). */
+  .goal-progress[data-behind="true"]::after {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--attention) 0 2px,
+      transparent 2px 6px
+    );
   }
 
   /* --- Motion (§24) ------------------------------------------------------ */

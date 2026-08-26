@@ -42,7 +42,7 @@ export function MobileBottomNav() {
         'fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around',
         // Bottom nav is one of the two places §2.4 still allows a divider — the
         // bar floats over scrolling content and needs an edge to sit on.
-        'border-t border-hair bg-panel lg:hidden',
+        'border-t border-divider bg-card lg:hidden',
         // Clear the home indicator on iOS.
         'pb-[env(safe-area-inset-bottom)]',
       )}
@@ -55,7 +55,7 @@ export function MobileBottomNav() {
           className={({ isActive }) =>
             cn(
               // 44px minimum touch target (§24).
-              'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2.5 text-[11px] transition-colors',
+              'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2.5 t-caption-sm transition-colors',
               // A merged item stays lit on its sibling routes too.
               isActive ||
                 (alsoActiveOn ?? []).some(

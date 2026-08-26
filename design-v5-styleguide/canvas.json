@@ -1,0 +1,61 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1220,
+      "title": "Home — desktop"
+    },
+    {
+      "file": "Mobile.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 390,
+      "h": 1760,
+      "title": "Home — mobile"
+    },
+    {
+      "file": "Foundations.dc.html",
+      "x": 0,
+      "y": 1380,
+      "w": 1440,
+      "h": 2260
+    },
+    {
+      "file": "Components.dc.html",
+      "x": 0,
+      "y": 3800,
+      "w": 1440,
+      "h": 3480,
+      "title": "Components — web/src/components/ui"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-system",
+      "x": 2100,
+      "y": 0,
+      "w": 340,
+      "text": "Money Space Design System v5.0\n\nAiry, cool, flat financial workspace.\n\nHierarchy comes from type scale, alignment and spacing — never from stacked cards, borders on every block, or strong shadows.\n\nCards sit directly on the page. No group panel, no white sheet, no nested rounded box."
+    },
+    {
+      "id": "note-overlap",
+      "x": 2100,
+      "y": 320,
+      "w": 340,
+      "text": "Page anatomy follows Clerio: the blue is the page ground, full-bleed with no radius. Nav and hero text sit directly on it.\n\nA single white sheet with a 32px top radius rises from the bottom and holds the card grid.\n\nThis overrides v5 §2.2 (which forbids a sheet around a card grid) and §3 (hero as a rounded surface) — the spec needs updating to match."
+    },
+    {
+      "id": "note-appcomponents",
+      "x": 1560,
+      "y": 3800,
+      "w": 340,
+      "text": "Every component the app ships, drawn from the real inventory in web/src/components/ui (40 files).\n\nEach block names its source file and states the rule it follows — these are the components as they are, not a migration diff."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

@@ -21,6 +21,7 @@ import {
   getTimelineGroupOrder,
   isAttentionRecord,
   isEditableEventType,
+  matchesRecordTab,
   isQuickActualAction,
   parseAmountInput,
   summarizeRecords,
@@ -201,10 +202,7 @@ export function useEventsPage() {
     return timelineRecords.filter((record) => {
       if (record.date.slice(0, 7) !== selectedMonth) return false
       if (selectedMember !== 'all' && record.ownerMemberId !== selectedMember) return false
-      const isDebt = Boolean(record.debtId) || record.eventType === 'debt_update'
-      const isSource = !isDebt && Boolean(record.fromAssetId || record.toAssetId)
-      if (tab === 'source' && !isSource) return false
-      if (tab === 'debt' && !isDebt) return false
+      if (!matchesRecordTab(record, tab)) return false
       if (!needle) return true
       return (
         record.title.toLowerCase().includes(needle) ||

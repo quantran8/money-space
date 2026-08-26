@@ -10,8 +10,8 @@ export function AuthCallbackPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      <div className="flex items-center gap-3 text-sm text-ink2">
-        <Loader2 className="size-5 animate-spin text-accent" />
+      <div className="flex items-center gap-3 t-body-sm text-ink2">
+        <Loader2 className="size-5 animate-spin text-action" />
         {t('auth.callback.signingIn')}
       </div>
     </main>

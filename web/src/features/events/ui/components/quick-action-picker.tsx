@@ -69,7 +69,7 @@ export function QuickActionPicker({
             }
             onSelect(action)
           }}
-          className="flex min-h-[46px] items-center rounded-[10px] bg-sunk px-4 text-left text-[15px] text-ink transition-colors hover:bg-accent-soft"
+          className="flex min-h-[46px] items-center rounded-[10px] bg-wash px-4 text-left t-body-sm text-ink transition-colors hover:bg-accent-soft"
         >
           {t(`events.form.action.${action}`)}
         </button>

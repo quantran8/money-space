@@ -101,7 +101,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
           fallback, not a decision the household made — saying so is what lets
           them go and make it. */}
       {needsShareDecision ? (
-        <p className="mt-4 rounded-sunk bg-sunk px-4 py-3 text-[13px] text-ink2">
+        <p className="mt-4 rounded-control bg-wash px-4 py-3 t-body-sm text-ink2">
           {t('goals.monthly.shareUndecided')}
         </p>
       ) : null}
@@ -113,7 +113,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="mt-6 rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">
+        <p className="mt-6 rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
           {t('goals.monthly.empty')}
         </p>
       ) : (
@@ -123,18 +123,18 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
             <RecentMonthsChart months={chartMonths} hasPace={hasPace} />
           </div>
 
-          <h3 className="mt-7 text-[14px] font-medium">{t('goals.monthly.historyTitle')}</h3>
+          <h3 className="mt-7 t-subtitle">{t('goals.monthly.historyTitle')}</h3>
 
           {/* A goal in its first month has a running month and nothing else.
               Column headings over an empty body would promise a record that
               does not exist yet. */}
           {ordered.length === 0 ? (
-            <div className="mt-3 grid place-items-center gap-3 rounded-sunk bg-sunk px-4 py-10 text-center">
+            <div className="mt-3 grid place-items-center gap-3 rounded-control bg-wash px-4 py-8 text-center">
               <CalendarClock className="size-6 text-ink3" strokeWidth={1.5} />
-              <p className="text-[13px] text-ink2">{t('goals.monthly.historyEmpty')}</p>
+              <p className="t-body-sm text-ink2">{t('goals.monthly.historyEmpty')}</p>
             </div>
           ) : (
-          <Table className="mt-3 min-w-[480px] text-[13px]">
+          <Table className="mt-3 min-w-[480px] t-body-sm">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="label-vi">{t('goals.monthly.columns.month')}</TableHead>
@@ -163,7 +163,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
 
           {ordered.length > PAGE_SIZE ? (
             <div className="mt-3 flex items-center justify-between gap-3 px-1">
-              <span className="font-mono text-[10px] text-ink3">
+              <span className="font-mono t-caption-sm text-ink3">
                 {t('goals.monthly.pageRange', {
                   from: safePage * PAGE_SIZE + 1,
                   to: Math.min(safePage * PAGE_SIZE + PAGE_SIZE, ordered.length),
@@ -195,7 +195,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
           already hold is a different thing, and the two must never be read as
           one number — that conflation is why a month nobody contributed to could
           read "đủ nhịp". */}
-      <p className="mt-4 text-[11px] text-ink3">{t('goals.monthly.marketNote')}</p>
+      <p className="mt-4 t-caption-sm text-ink3">{t('goals.monthly.marketNote')}</p>
     </Panel>
   )
 }
@@ -214,10 +214,10 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
 
   return (
     <div className="p-1">
-      <p className="text-[12px] font-medium">
+      <p className="t-caption font-medium">
         {t('goals.monthly.currentMonth', { month: monthNumber(month.month) })}
       </p>
-      <p className="mt-0.5 font-mono text-[10px] text-ink3">{t('goals.monthly.inProgress')}</p>
+      <p className="mt-0.5 font-mono t-caption-sm text-ink3">{t('goals.monthly.inProgress')}</p>
 
       <div className="mt-5 flex items-end justify-between gap-4">
         <div>
@@ -229,17 +229,17 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
               Either way the figure is measured against the wallet as it stands,
               with scheduled outflows still in it; what those will cost is
               reported on its own line, never folded into this number. */}
-          <p className="text-[11px] text-ink3">
+          <p className="t-caption-sm text-ink3">
             {month.isEstimate
               ? t('goals.monthly.couldContribute')
               : t('goals.monthly.contributed')}
           </p>
-          <p className="money-number mt-1 text-[30px]">{formatAmount(actual)}</p>
+          <p className="money-number mt-1 t-metric">{formatAmount(actual)}</p>
         </div>
         {planned != null ? (
           <div className="pb-1 text-right">
-            <p className="text-[11px] text-ink3">{t('goals.monthly.monthlyRate')}</p>
-            <p className="money-number mt-1 text-[14px]">{formatAmount(planned)}</p>
+            <p className="t-caption-sm text-ink3">{t('goals.monthly.monthlyRate')}</p>
+            <p className="money-number mt-1 t-body-sm">{formatAmount(planned)}</p>
           </div>
         ) : null}
       </div>
@@ -256,11 +256,11 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
             planned: formatAmount(planned ?? 0),
           })}
         >
-          <div className="seg h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
+          <div className="seg h-full rounded-full bg-action" style={{ width: `${percent}%` }} />
         </div>
       ) : null}
 
-      <p className="mt-4 text-[12px] leading-5 text-ink2">
+      <p className="mt-4 t-caption leading-5 text-ink2">
         {left === null ? (
           t('goals.monthly.noRate')
         ) : month.isEstimate ? (
@@ -307,11 +307,11 @@ function RecentMonthsChart({
   return (
     <div className="min-w-0">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-[12px] font-medium">{t('goals.monthly.recentMonths')}</p>
+        <p className="t-caption font-medium">{t('goals.monthly.recentMonths')}</p>
         {hasPace ? (
-          <div className="hidden items-center gap-4 text-[10px] text-ink3 sm:flex">
+          <div className="hidden items-center gap-4 t-caption-sm text-ink3 sm:flex">
             <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-[2px] bg-accent" />
+              <span className="size-2 rounded-[2px] bg-action" />
               {t('goals.monthly.legendActual')}
             </span>
             <span className="flex items-center gap-1.5">
@@ -322,7 +322,7 @@ function RecentMonthsChart({
         ) : null}
       </div>
 
-      <div className="relative mt-5 h-[168px] rounded-sunk bg-sunk px-4 pb-7 pt-6 sm:px-6">
+      <div className="relative mt-5 h-[168px] rounded-control bg-wash px-4 pb-7 pt-6 sm:px-6">
         {planShare !== null ? (
           <>
             <div
@@ -330,7 +330,7 @@ function RecentMonthsChart({
               style={{ bottom: `calc(28px + ${planShare} * (100% - 52px) / 100)` }}
             />
             <div
-              className="absolute right-4 font-mono text-[9px] text-ink3 sm:right-6"
+              className="absolute right-4 font-mono t-caption-sm text-ink3 sm:right-6"
               style={{ bottom: `calc(32px + ${planShare} * (100% - 52px) / 100)` }}
             >
               {formatAmount(planned ?? 0)}
@@ -355,14 +355,14 @@ function RecentMonthsChart({
               >
                 <div
                   className={cn(
-                    'seg w-full max-w-[42px] rounded-t-[5px] bg-accent transition-opacity group-hover:opacity-80',
+                    'seg w-full max-w-[42px] rounded-t-[5px] bg-action transition-opacity group-hover:opacity-80',
                     // A month still running is partial by definition — it reads
                     // lighter so a half-height bar is not mistaken for a miss.
                     month.inProgress && 'opacity-60',
                   )}
                   style={{ height: `${Math.max(height, value > 0 ? 4 : 0)}%` }}
                 />
-                <span className="mt-2 font-mono text-[9px] text-ink3">
+                <span className="mt-2 font-mono t-caption-sm text-ink3">
                   {monthNumber(month.month)}
                 </span>
               </div>
@@ -388,7 +388,7 @@ function MonthRow({ month, hasPace }: { month: GoalMonthProgress; hasPace: boole
 
   return (
     <TableRow>
-      <TableCell className="font-mono text-[11px] text-ink3">{month.month}</TableCell>
+      <TableCell className="font-mono t-caption-sm text-ink3">{month.month}</TableCell>
       <TableCell
         className={cn(
           'num text-right font-medium',
@@ -434,7 +434,7 @@ function PageButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid size-9 place-items-center rounded-control text-ink2 transition-colors hover:bg-sunk disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+      className="grid size-9 place-items-center rounded-control text-ink2 transition-colors hover:bg-wash disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
     >
       {children}
     </button>

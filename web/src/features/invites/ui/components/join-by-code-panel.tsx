@@ -44,7 +44,7 @@ export function JoinByCodePanel() {
 
   return (
     <div>
-      <h1 className="page-title text-[31px] leading-[1.2] sm:text-[38px]">
+      <h1 className="t-page-tracking t-metric leading-[1.2] sm:t-figure">
         {t('invites.joinByCode.title')}
       </h1>
 
@@ -56,7 +56,7 @@ export function JoinByCodePanel() {
         }}
         noValidate
       >
-        <label htmlFor="invite-code" className="mb-2 block text-[13px] text-ink2">
+        <label htmlFor="invite-code" className="mb-2 block t-body-sm text-ink2">
           {t('invites.joinByCode.inputLabel')}
         </label>
         <Input
@@ -70,16 +70,16 @@ export function JoinByCodePanel() {
           aria-invalid={!!error}
           autoComplete="off"
           spellCheck={false}
-          className="font-mono text-[14px]"
+          className="font-mono t-body-sm"
         />
-        {error ? <p className="mt-2 text-[12px] font-medium text-alert">{error}</p> : null}
+        {error ? <p className="mt-2 t-caption font-medium text-alert">{error}</p> : null}
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
           {!scanning ? (
             <Button
               type="button"
               variant="secondary"
-              className="h-11 flex-1 px-[18px] text-[14px]"
+              className="h-11 flex-1 px-5"
               onClick={() => {
                 setError(null)
                 setScanning(true)
@@ -91,7 +91,7 @@ export function JoinByCodePanel() {
           ) : null}
           <Button
             type="submit"
-            className="h-11 flex-1 px-[18px] text-[14px]"
+            className="h-11 flex-1 px-5"
             disabled={!value.trim()}
           >
             {t('invites.joinByCode.submit')}
@@ -102,12 +102,12 @@ export function JoinByCodePanel() {
       {scanning ? (
         <div className="sunk mt-6 p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[13px] font-medium">{t('invites.joinByCode.scanTitle')}</p>
+            <p className="t-body-sm font-medium">{t('invites.joinByCode.scanTitle')}</p>
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="gap-1.5 text-[12px]"
+              className="gap-1.5 t-caption"
               onClick={() => setScanning(false)}
             >
               <X className="size-3.5" aria-hidden />
@@ -134,7 +134,7 @@ export function JoinByCodePanel() {
             />
           </div>
 
-          <p className="mt-3 text-center text-[12px] leading-5 text-ink2">
+          <p className="mt-3 text-center t-caption leading-5 text-ink2">
             {t('invites.joinByCode.scanHint')}
           </p>
         </div>

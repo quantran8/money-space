@@ -28,7 +28,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        'group/calendar bg-panel p-3 text-ink [--cell-size:2.25rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent',
+        'group/calendar bg-card p-3 text-ink [--cell-size:2.25rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent',
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -63,12 +63,12 @@ function Calendar({
         button_previous: cn(
           defaultClassNames.button_previous,
           buttonVariants({ variant: buttonVariant }),
-          'size-(--cell-size) select-none rounded-control bg-transparent p-0 text-ink3 hover:bg-sunk hover:text-ink aria-disabled:opacity-50'
+          'size-(--cell-size) select-none rounded-control bg-transparent p-0 text-ink3 hover:bg-wash hover:text-ink aria-disabled:opacity-50'
         ),
         button_next: cn(
           defaultClassNames.button_next,
           buttonVariants({ variant: buttonVariant }),
-          'size-(--cell-size) select-none rounded-control bg-transparent p-0 text-ink3 hover:bg-sunk hover:text-ink aria-disabled:opacity-50'
+          'size-(--cell-size) select-none rounded-control bg-transparent p-0 text-ink3 hover:bg-wash hover:text-ink aria-disabled:opacity-50'
         ),
         month_caption: cn(
           defaultClassNames.month_caption,
@@ -76,22 +76,22 @@ function Calendar({
         ),
         dropdowns: cn(
           defaultClassNames.dropdowns,
-          'flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm font-medium'
+          'flex h-(--cell-size) w-full items-center justify-center gap-1.5 t-body-sm font-medium'
         ),
         dropdown_root: cn(
           defaultClassNames.dropdown_root,
-          'relative rounded-control bg-sunk'
+          'relative rounded-control bg-wash'
         ),
         dropdown: cn(
           defaultClassNames.dropdown,
-          'absolute inset-0 bg-panel opacity-0'
+          'absolute inset-0 bg-card opacity-0'
         ),
         caption_label: cn(
           defaultClassNames.caption_label,
           'select-none font-medium',
           captionLayout === 'label'
-            ? 'text-sm'
-            : 'flex h-8 items-center gap-1 rounded-control pl-2 pr-1 text-sm [&>svg]:size-3.5 [&>svg]:text-ink3'
+            ? 't-body-sm'
+            : 'flex h-8 items-center gap-1 rounded-control pl-2 pr-1 t-body-sm [&>svg]:size-3.5 [&>svg]:text-ink3'
         ),
         month_grid: cn(defaultClassNames.month_grid, 'w-fit table-fixed border-separate border-spacing-0.5'),
         weekdays: cn(defaultClassNames.weekdays, ''),
@@ -122,7 +122,7 @@ function Calendar({
         range_end: cn(defaultClassNames.range_end, 'rounded-r-control bg-accent-soft'),
         today: cn(
           defaultClassNames.today,
-          'rounded-control text-ink [&>button]:bg-sunk [&>button]:text-ink'
+          'rounded-control text-ink [&>button]:bg-wash [&>button]:text-ink'
         ),
         outside: cn(
           defaultClassNames.outside,
@@ -215,7 +215,7 @@ function CalendarDayButton({
         // `size="icon"` is deliberately NOT passed: it pins the button to
         // `size-11`, which overrode `--cell-size` and stretched every cell.
         // Height comes from the grid instead, as upstream does.
-        'mx-auto flex size-full flex-col items-center justify-center gap-1 rounded-control p-0 text-sm font-normal leading-none text-ink transition-colors hover:bg-sunk hover:text-ink data-[selected-single=true]:bg-accent data-[selected-single=true]:text-white data-[range-middle=true]:rounded-none data-[range-middle=true]:bg-accent-soft data-[range-middle=true]:text-ink data-[range-start=true]:rounded-l-control data-[range-start=true]:bg-accent data-[range-start=true]:text-white data-[range-end=true]:rounded-r-control data-[range-end=true]:bg-accent data-[range-end=true]:text-white group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:outline-2 group-data-[focused=true]/day:outline-accent group-data-[focused=true]/day:outline-offset-2 [&>span]:text-xs [&>span]:opacity-70',
+        'mx-auto flex size-full flex-col items-center justify-center gap-1 rounded-control p-0 t-body-sm leading-none text-ink transition-colors hover:bg-wash hover:text-ink data-[selected-single=true]:bg-action data-[selected-single=true]:text-white data-[range-middle=true]:rounded-none data-[range-middle=true]:bg-accent-soft data-[range-middle=true]:text-ink data-[range-start=true]:rounded-l-control data-[range-start=true]:bg-action data-[range-start=true]:text-white data-[range-end=true]:rounded-r-control data-[range-end=true]:bg-action data-[range-end=true]:text-white group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:outline-2 group-data-[focused=true]/day:outline-action group-data-[focused=true]/day:outline-offset-2 [&>span]:t-caption [&>span]:opacity-70',
         className
       )}
       {...props}

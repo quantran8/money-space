@@ -77,18 +77,18 @@ export function GoalScheduledOutflowsSection({
       >
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="section-title text-[16px]">
+            <h2 className="t-title">
               {t('goals.scheduledOutflows.heading')}
             </h2>
-            <span className="rounded-full bg-attention-soft px-2 py-0.5 text-[10px] font-medium text-attention">
+            <span className="rounded-full bg-attention-soft px-2 py-0.5 t-caption-sm font-medium text-attention">
               {t('goals.scheduledOutflows.count', { count: impact.events.length })}
             </span>
           </div>
 
           {/* The whole answer on one line: when, from which wallet, how much,
               and where the goal stands afterwards. */}
-          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
-            <span className="font-mono text-[11px] text-ink3">{dayMonth(lead.expectedDate)}</span>
+          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 t-body-sm">
+            <span className="font-mono t-caption-sm text-ink3">{dayMonth(lead.expectedDate)}</span>
             <span className="font-medium">{lead.assetName}</span>
             <span className="text-ink3">·</span>
             <span className="num font-medium text-alert">
@@ -103,7 +103,7 @@ export function GoalScheduledOutflowsSection({
           </div>
         </div>
 
-        <span className="flex shrink-0 items-center gap-2 pt-0.5 text-[12px] text-ink3">
+        <span className="flex shrink-0 items-center gap-2 pt-0.5 t-caption text-ink3">
           <span className="hidden sm:inline">
             {open ? t('goals.scheduledOutflows.hide') : t('goals.scheduledOutflows.show')}
           </span>
@@ -116,7 +116,7 @@ export function GoalScheduledOutflowsSection({
 
       {open ? (
         <div className="mt-7">
-          <p className="text-[13px] leading-5 text-ink2">
+          <p className="t-body-sm leading-5 text-ink2">
             {t('goals.scheduledOutflows.description')}
           </p>
 
@@ -124,7 +124,7 @@ export function GoalScheduledOutflowsSection({
               strikethrough pair: the household reads two complete pictures
               rather than reconstructing one from edits to the other. */}
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-sunk bg-sunk p-4">
+            <div className="rounded-control bg-wash p-4">
               <p className="label-vi">{t('goals.scheduledOutflows.beforeLabel')}</p>
               <ImpactFigures
                 held={impact.currentAmount}
@@ -134,10 +134,10 @@ export function GoalScheduledOutflowsSection({
               />
             </div>
 
-            <div className="rounded-sunk bg-attention-soft p-4">
+            <div className="rounded-control bg-attention-soft p-4">
               <div className="flex items-baseline justify-between gap-4">
                 <p className="label-vi text-attention">{t('goals.scheduledOutflows.afterLabel')}</p>
-                <span className="num text-[11px] font-medium text-attention">
+                <span className="num t-caption-sm font-medium text-attention">
                   −{formatAmount(impact.outflowAmount)}
                 </span>
               </div>
@@ -153,14 +153,14 @@ export function GoalScheduledOutflowsSection({
           {/* The bills themselves. Naming them is what makes the block explain
               rather than merely assert — the household can recognise the spend
               and go change it if the trade is not one they want. */}
-          <ul className="mt-4 space-y-2 border-t border-hair pt-4">
+          <ul className="mt-4 space-y-2 border-t border-divider pt-4">
             {impact.events.map((event) => (
               <li
                 key={event.id}
-                className="flex items-baseline justify-between gap-4 text-[12px] leading-5"
+                className="flex items-baseline justify-between gap-4 t-caption leading-5"
               >
                 <span className="min-w-0 truncate text-ink2">
-                  <span className="font-mono text-[11px] text-ink3">
+                  <span className="font-mono t-caption-sm text-ink3">
                     {dayMonth(event.expectedDate)}
                   </span>{' '}
                   {event.name}
@@ -174,7 +174,7 @@ export function GoalScheduledOutflowsSection({
             ))}
           </ul>
 
-          <p className="mt-3 text-[12px] leading-5 text-ink3">
+          <p className="mt-3 t-caption leading-5 text-ink3">
             {t('goals.scheduledOutflows.paceNote')}
           </p>
         </div>
@@ -200,7 +200,7 @@ function ImpactFigures({
   const share = percent(held)
 
   return (
-    <dl className="mt-4 space-y-3 text-[13px]">
+    <dl className="mt-4 space-y-3 t-body-sm">
       <Figure label={t('goals.scheduledOutflows.totalLabel')} value={formatAmount(held)} />
       <Figure label={t('goals.scheduledOutflows.remainingLabel')} value={formatAmount(remaining)} />
       {share ? (

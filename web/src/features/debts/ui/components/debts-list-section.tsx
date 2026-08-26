@@ -67,14 +67,14 @@ export function DebtsListSection({
   return (
     <Panel>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="section-title text-[16px]">{t('debts.demo.listTitle')}</h2>
-        <label className="sunk flex h-10 items-center gap-2 px-3 sm:w-[250px]">
+        <h2 className="t-title">{t('debts.demo.listTitle')}</h2>
+        <label className="flex h-10 items-center gap-2 rounded-control border border-committed bg-card px-3 sm:w-[250px]">
           <Search className="size-4 text-ink3" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t('debts.demo.search')}
-            className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink3"
+            className="min-w-0 flex-1 bg-transparent t-body-sm outline-none placeholder:text-ink3"
           />
         </label>
       </div>
@@ -117,7 +117,7 @@ export function DebtsListSection({
           {!isLoading && visibleDebts.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={8}>
-                <p className="rounded-sunk bg-sunk px-4 py-10 text-center text-[13px] text-ink2">
+                <p className="rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
                   {debts.length === 0 ? t('debts.demo.empty') : t('debts.demo.emptySearch')}
                 </p>
               </TableCell>
@@ -144,10 +144,10 @@ export function DebtsListSection({
 
       {!isLoading && missingScheduleCount > 0 ? (
         <div className="sunk mt-5 flex flex-col gap-1.5 px-4 py-3.5 sm:flex-row sm:items-baseline sm:justify-between">
-          <span className="text-[13px] text-ink2">
+          <span className="t-body-sm text-ink2">
             {t('debts.demo.missingPaymentCount', { count: missingScheduleCount })}
           </span>
-          <Link to="/upcoming" className="text-[13px] font-medium text-accent">
+          <Link to="/upcoming" className="t-body-sm font-medium text-action">
             {t('debts.demo.addSchedule')}
           </Link>
         </div>

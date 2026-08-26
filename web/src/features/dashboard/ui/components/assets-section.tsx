@@ -40,18 +40,18 @@ export function AssetsSection({
       <PanelHeader
         title={t('home.assets.title')}
         action={
-          <Link to="/networth" className="text-[13px] text-accent">
+          <Link to="/networth" className="t-body-sm text-action">
             {t('home.assets.viewAll')}
           </Link>
         }
       />
 
       {rows.length === 0 ? (
-        <p className="mt-7 py-6 text-[13px] text-ink2">{t('home.assets.empty')}</p>
+        <p className="mt-7 py-6 t-body-sm text-ink2">{t('home.assets.empty')}</p>
       ) : (
         <>
           <div className="mt-7 -mx-2.5">
-            <Table className="min-w-[360px] text-[14px]">
+            <Table className="min-w-[360px] t-body-sm">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   {/* `.label-vi`: accented Vietnamese headings (§10.1). */}
@@ -79,7 +79,7 @@ export function AssetsSection({
 
           {/* The table is capped, so the total would otherwise look wrong (§2.16). */}
           {totalCount > rows.length ? (
-            <p className="mt-3 font-mono text-[10px] text-ink3">
+            <p className="mt-3 font-mono t-caption-sm text-ink3">
               {t('home.assets.more', { count: totalCount - rows.length })}
             </p>
           ) : null}

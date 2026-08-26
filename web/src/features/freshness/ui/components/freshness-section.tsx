@@ -45,8 +45,8 @@ export function FreshnessSection() {
     <Card>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="font-semibold">{t('freshness.needsCheck.title')}</p>
-          <p className="mt-1 text-sm leading-6 text-ink2">
+          <p className="font-medium">{t('freshness.needsCheck.title')}</p>
+          <p className="mt-1 t-body-sm leading-6 text-ink2">
             {t('freshness.needsCheck.description', {
               count: freshness.counts.stale,
               days: freshness.oldestDaysSinceUpdate ?? 0,

@@ -27,15 +27,15 @@ type EventsDataTableProps = {
 }
 
 function getAmountTone(direction: MoneyEventItem['direction']) {
-  if (direction === 'inflow') return 'text-accent'
+  if (direction === 'inflow') return 'text-action'
   if (direction === 'outflow') return 'text-alert'
-  return 'text-accent'
+  return 'text-action'
 }
 
 function getDirectionMark(direction: MoneyEventItem['direction']) {
-  if (direction === 'inflow') return { glyph: '+', className: 'bg-accent-tint text-accent' }
+  if (direction === 'inflow') return { glyph: '+', className: 'bg-accent-tint text-action' }
   if (direction === 'outflow') return { glyph: '−', className: 'bg-alert-tint text-alert' }
-  return { glyph: '↗', className: 'bg-accent-tint text-accent' }
+  return { glyph: '↗', className: 'bg-accent-tint text-action' }
 }
 
 type MonthGroup = {
@@ -75,7 +75,7 @@ export function EventsDataTable({
       {groups.length ? (
         groups.map((group) => (
           <div key={group.key}>
-            <div className="border-b border-border bg-sunk/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="border-b border-border bg-wash/60 px-5 py-3 t-caption font-medium uppercase tracking-[0.14em] text-muted-foreground">
               {group.label}
             </div>
             {group.events.map((event) => {
@@ -87,7 +87,7 @@ export function EventsDataTable({
                 >
                   <div className="flex gap-4">
                     <div
-                      className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full text-base font-semibold ${mark.className}`}
+                      className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full t-body font-medium ${mark.className}`}
                       aria-hidden
                     >
                       {mark.glyph}
@@ -107,17 +107,17 @@ export function EventsDataTable({
                           })}
                         </Badge>
                         {event.assetName && (
-                          <Badge variant="secondary" className="bg-accent-tint text-accent border-none">
+                          <Badge variant="secondary" className="bg-accent-tint text-action border-none">
                             {event.assetName}
                           </Badge>
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="text-sm text-muted-foreground md:text-right">{event.date}</div>
+                  <div className="t-body-sm text-muted-foreground md:text-right">{event.date}</div>
                   <div className="flex items-center justify-between gap-2 md:justify-end">
                     <p
-                      className={`money-number text-xl font-semibold ${getAmountTone(event.direction)}`}
+                      className={`money-number t-subhead font-medium ${getAmountTone(event.direction)}`}
                     >
                       {formatVndSigned(event.amount)}
                     </p>
@@ -126,7 +126,7 @@ export function EventsDataTable({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-9 rounded-full text-muted-foreground hover:text-foreground"
+                          className="s-tap size-9 rounded-full text-muted-foreground hover:text-foreground"
                           aria-label={t('events.table.openActions', { title: event.note })}
                         >
                           <MoreHorizontal />
@@ -155,9 +155,9 @@ export function EventsDataTable({
           </div>
         ))
       ) : (
-        <p className="px-5 py-16 text-center text-sm text-muted-foreground">{emptyMessage}</p>
+        <p className="px-5 py-16 text-center t-body-sm text-muted-foreground">{emptyMessage}</p>
       )}
-      <p className="px-5 py-5 text-sm leading-6 text-muted-foreground">{t('events.table.note')}</p>
+      <p className="px-5 py-5 t-body-sm leading-6 text-muted-foreground">{t('events.table.note')}</p>
     </div>
   )
 }

@@ -15,23 +15,26 @@ type SummaryTileProps = {
 }
 
 /**
- * One tile in a detail-page summary strip (design.md §14, §2.6).
+ * One tile in a DETAIL-page summary strip (v5 02-components §3).
  *
- * A panel surface: no border, no shadow, radius 14 (§2.2–2.3). The `inverted`
- * variant no longer paints a dark tile — no section in v4.0 uses a dark ground
- * (§4.3, §19) — so the headline total is distinguished by an accent value on
- * the same panel instead.
+ * A card surface: no border, no shadow, radius 22. Valid on a detail page where
+ * each tile answers a different question — but NOT on Home: v5 04-recipes §16
+ * rules out atomising Home into Total / Committed / Flexible when Flexible
+ * Money is already the canonical answer.
+ *
+ * `inverted` marks the headline total by WEIGHT, never by the action colour —
+ * a static metric never wears it (§4).
  */
 export function SummaryTile({ label, value, dotColor, inverted, className }: SummaryTileProps) {
   return (
-    <div className={cn('rounded-panel bg-panel p-5', className)}>
+    <div className={cn('card-surface p-5', className)}>
       <div className="flex items-center gap-2">
         {dotColor ? (
           <span className="size-2.5 rounded-full" style={{ backgroundColor: dotColor }} />
         ) : null}
-        <p className="text-[13px] text-ink2">{label}</p>
+        <p className="t-body-sm text-ink2">{label}</p>
       </div>
-      <p className={cn('money-number mt-3 text-[30px]', inverted && 'text-accent')}>{value}</p>
+      <p className={cn('money-number mt-2 t-metric', inverted && 'font-normal text-ink')}>{value}</p>
     </div>
   )
 }

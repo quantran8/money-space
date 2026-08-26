@@ -208,7 +208,7 @@ export function ActualRecordForm({
           type="button"
           onClick={onToggleMoreDetails}
           aria-expanded={showMoreDetails}
-          className="text-[13px] text-accent transition-opacity hover:opacity-70"
+          className="t-body-sm text-action transition-opacity hover:opacity-70"
         >
           {showMoreDetails ? t('events.form.less') : t('events.form.more')}
         </button>
@@ -236,8 +236,8 @@ export function ActualRecordForm({
 
 
             {!isRevaluation ? (
-              <div className="flex items-center justify-between gap-4 rounded-[10px] bg-sunk px-4 py-3">
-                <span className="text-[13px] text-ink2">{t('events.form.attention')}</span>
+              <div className="flex items-center justify-between gap-4 rounded-[10px] bg-wash px-4 py-3">
+                <span className="t-body-sm text-ink2">{t('events.form.attention')}</span>
                 <Controller
                   control={control}
                   name="isAttentionNeeded"
@@ -264,13 +264,13 @@ export function ActualRecordForm({
         <Button
           type="button"
           variant="secondary"
-          className="h-10 px-4 text-[13px]"
+          className="px-4"
           onClick={onCancel}
         >
           {t('common.cancel')}
         </Button>
         {/* §22.10 — always enabled; errors say what is missing. */}
-        <Button type="submit" className="h-10 px-5 text-[13px]" disabled={isSaving}>
+        <Button type="submit" className="px-5" disabled={isSaving}>
           {isSaving
             ? t('events.form.saving')
             : isEditing

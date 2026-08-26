@@ -27,7 +27,7 @@ export function NetWorthTabs({
     <div
       role="tablist"
       aria-label={t('assets.tabs.label')}
-      className="flex w-fit items-center gap-1 rounded-sunk bg-sunk p-1"
+      className="flex w-fit items-center gap-1 rounded-control bg-wash p-1"
     >
       {TABS.map((tab) => (
         <button
@@ -37,8 +37,8 @@ export function NetWorthTabs({
           aria-selected={value === tab.value}
           onClick={() => onChange(tab.value)}
           className={cn(
-            'rounded-control px-4 py-2 text-[13px] transition-colors',
-            value === tab.value ? 'bg-panel font-medium text-ink' : 'text-ink2 hover:text-ink',
+            'rounded-control px-4 py-2 t-body-sm transition-colors',
+            value === tab.value ? 'bg-card font-medium text-ink' : 'text-ink2 hover:text-ink',
           )}
         >
           {t(tab.labelKey)}
