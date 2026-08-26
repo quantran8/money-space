@@ -389,13 +389,13 @@ export function GoalAllocationDialog({
             <Button
               type="button"
               variant="secondary"
-              className="px-4 t-body-sm"
+              className="px-4"
               onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
             {/* §22.10 — always enabled; pressing it says what is missing. */}
-            <Button type="submit" className="px-5 t-body-sm">
+            <Button type="submit" className="px-5">
               {isSubmitting
                 ? t('goals.form.saving')
                 : editing

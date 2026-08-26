@@ -9,7 +9,9 @@ import { configureJoinUrlBase } from '@money-space/core/features/invites/model/i
 import { configureEnv } from '@money-space/core/shared/api/env'
 import { queryClient } from '@money-space/core/shared/api/query-client'
 import { hydrateAuth } from '@money-space/core/shared/stores/auth-store'
+import { configureNavigation } from '@money-space/core/shared/navigation'
 import { configureStorage } from '@money-space/core/shared/storage'
+import { webNavigation } from '@/shared/web-navigation'
 import { webStorage } from '@/shared/web-storage'
 
 // Core reads its environment through injection: the web has `import.meta.env`,
@@ -17,6 +19,9 @@ import { webStorage } from '@/shared/web-storage'
 // valid in the other's bundler.
 configureEnv({ apiBaseUrl: import.meta.env.VITE_API_BASE_URL })
 configureStorage(webStorage)
+// Without this, every `navigate()` inside a core hook is a silent no-op — see
+// `shared/web-navigation.ts`.
+configureNavigation(webNavigation)
 // An invite QR is scanned on a phone standing next to this browser, so the
 // origin that works here is the one that works there.
 configureJoinUrlBase(window.location.origin)

@@ -20,6 +20,13 @@ type MonthPickerProps = {
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+  /**
+   * How the chosen month reads on the trigger. Defaults to `MM/yyyy`, which is
+   * what a form field wants; a page-level scope control passes a spelled-out
+   * month instead, because there the label IS the heading for everything under
+   * it.
+   */
+  formatLabel?: (date: Date) => string
   'aria-invalid'?: boolean
 }
 
@@ -44,6 +51,7 @@ export function MonthPicker({
   onChange,
   placeholder,
   className,
+  formatLabel,
   'aria-invalid': ariaInvalid,
 }: MonthPickerProps) {
   const { i18n, t } = useTranslation()
@@ -79,7 +87,7 @@ export function MonthPicker({
           type="button"
           variant="outline"
           className={cn(
-            'h-11 w-full justify-start rounded-control px-4 text-left t-body-sm [&_svg]:text-ink3',
+            'h-11 w-full justify-start rounded-control border border-committed bg-card px-4 text-left t-body-sm hover:bg-card [&_svg]:text-ink3',
             !selected && 'text-ink3',
             ariaInvalid && 'outline-2 outline-alert',
             className
@@ -87,7 +95,9 @@ export function MonthPicker({
           aria-invalid={ariaInvalid}
         >
           <CalendarIcon className="mr-2 size-4 text-ink3" />
-          {selected ? format(selected, 'MM/yyyy') : resolvedPlaceholder}
+          {selected
+            ? (formatLabel ?? ((date: Date) => format(date, 'MM/yyyy')))(selected)
+            : resolvedPlaceholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">

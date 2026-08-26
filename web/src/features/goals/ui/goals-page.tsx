@@ -37,11 +37,11 @@ export function GoalsPage() {
   } = useGoalsPage()
 
   return (
-    <div className="space-y-4 pb-3">
+    <div className="s-section-gap flex flex-col pb-3">
       <CompactPageHeader
         title={t('goals.header.title')}
         actions={
-          <Button className="px-4 t-body-sm" onClick={openCreate}>
+          <Button onClick={openCreate}>
             <Plus className="size-4" />
             {t('goals.form.submit')}
           </Button>

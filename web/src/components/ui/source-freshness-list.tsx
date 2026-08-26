@@ -90,7 +90,7 @@ export function SourceFreshnessList({
             type="button"
             onClick={() => setIsOpen((open) => !open)}
             aria-expanded={isOpen}
-            className="t-body-sm font-medium text-action"
+            className="t-body font-medium text-action"
           >
             {isOpen ? labels.hide : labels.show}
           </button>

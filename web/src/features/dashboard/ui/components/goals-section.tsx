@@ -45,7 +45,7 @@ export function GoalsSection({
         action={
           <Link
             to="/goals"
-            className="inline-flex min-h-11 shrink-0 items-center gap-2 t-body-sm font-medium text-action"
+            className="inline-flex min-h-11 shrink-0 items-center gap-2 t-body font-medium text-action"
           >
             <span className="text-ink3">{t('home.goals.count', { count: goalCount })}</span>
             {goalCount > tracks.length

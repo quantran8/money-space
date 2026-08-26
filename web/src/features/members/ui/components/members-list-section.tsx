@@ -1,3 +1,4 @@
+import { UserPlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -35,22 +36,22 @@ export function MembersListSection({
 }: MembersListSectionProps) {
   const { t } = useTranslation()
 
-  /* A solo household gets a more prominent invitation prompt; once there are
-   * multiple members, the compact header action keeps the same flow available.
-   */
-  const isSolo = !isLoading && members.length < 2
-
   return (
     <Panel>
       <PanelHeader
         title={t('household.merged.membersTitle')}
         action={
           <div className="flex items-center gap-3">
-            <span className="font-mono t-caption-sm text-ink3">
+            <span className="num t-caption text-ink3">
               {t('members.list.count', { count: members.length })}
             </span>
-            {!isLoading && !isSolo ? (
+            {/* Always available, including in a solo household. A separate
+                "mời thêm người" prompt used to take the button's place below the
+                list, which meant the one household that most needs the action
+                was the one household without it in the header. */}
+            {!isLoading ? (
               <Button type="button" variant="secondary" size="sm" onClick={onInvite}>
+                <UserPlus className="size-4" strokeWidth={1.75} />
                 {t('members.invite.action')}
               </Button>
             ) : null}
@@ -58,7 +59,7 @@ export function MembersListSection({
         }
       />
 
-      <div className="mt-7 space-y-1">
+      <div className="s-head-body flex flex-col">
         {isLoading
           ? Array.from({ length: 2 }).map((_, index) => <MemberRowSkeleton key={index} />)
           : null}
@@ -76,19 +77,12 @@ export function MembersListSection({
           ))}
       </div>
 
-      {isSolo ? (
-        <div className="sunk mt-5 flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="t-body-sm leading-5 text-ink2">{t('members.list.soloPrompt')}</p>
-          <Button type="button" className="shrink-0 px-4 t-body-sm" onClick={onInvite}>
-            {t('members.invite.action')}
-          </Button>
-        </div>
-      ) : invitedCount > 0 ? (
-        <div className="sunk mt-5 px-4 py-3.5">
-          <p className="t-caption leading-5 text-ink2">
-            {t('members.list.invitedCount', { count: invitedCount })}
-          </p>
-        </div>
+      {/* A plain line, not a wash strip: it is one more fact about the list
+          above it, not a block of its own. */}
+      {!isLoading && invitedCount > 0 ? (
+        <p className="mt-5 t-caption text-ink3">
+          {t('members.list.invitedCount', { count: invitedCount })}
+        </p>
       ) : null}
     </Panel>
   )

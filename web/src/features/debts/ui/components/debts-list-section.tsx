@@ -68,7 +68,7 @@ export function DebtsListSection({
     <Panel>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="t-title">{t('debts.demo.listTitle')}</h2>
-        <label className="sunk flex h-10 items-center gap-2 px-3 sm:w-[250px]">
+        <label className="flex h-10 items-center gap-2 rounded-control border border-committed bg-card px-3 sm:w-[250px]">
           <Search className="size-4 text-ink3" />
           <input
             value={query}

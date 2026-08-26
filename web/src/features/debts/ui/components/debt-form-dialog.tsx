@@ -75,11 +75,11 @@ function formatVnd(value: number | string) {
 }
 
 const controlClass =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 const inputClass =
   'h-full min-w-0 w-full bg-transparent t-body leading-none text-ink outline-none placeholder:text-ink3'
 const selectClass =
-  'h-full rounded-none bg-transparent p-0 t-body text-ink data-[placeholder]:text-ink3'
+  'h-full rounded-none border-0 bg-transparent p-0 t-body text-ink shadow-none focus-visible:shadow-none data-[placeholder]:text-ink3'
 
 type DebtFieldProps = {
   label: string
@@ -422,7 +422,7 @@ export function DebtFormDialog({
                   <DebtField label={t('debts.form.fields.borrowedAt')} error={errors.borrowedAt?.message}>
                     <div className={cn(controlClass, errors.borrowedAt && 'border-alert')}>
                       <Controller control={control} name="borrowedAt" render={({ field }) => (
-                        <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.borrowedAt)} className="h-full rounded-none bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
+                        <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.borrowedAt)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                       )} />
                     </div>
                   </DebtField>
@@ -474,7 +474,7 @@ export function DebtFormDialog({
                     <>
                       <div className={cn(controlClass, errors.firstPaymentDate && 'border-alert')}>
                         <Controller control={control} name="firstPaymentDate" render={({ field }) => (
-                          <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.firstPaymentDate)} className="h-full rounded-none bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
+                          <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.firstPaymentDate)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                         )} />
                       </div>
                       <p className="mt-1.5 t-caption leading-5 text-ink3">
@@ -503,7 +503,7 @@ export function DebtFormDialog({
                   <DebtField label={t('debts.form.fields.finalDueDate')} error={errors.expectedFinalDueDate?.message}>
                     <div className={cn(controlClass, errors.expectedFinalDueDate && 'border-alert')}>
                       <Controller control={control} name="expectedFinalDueDate" render={({ field }) => (
-                        <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.expectedFinalDueDate)} className="h-full rounded-none bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
+                        <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.expectedFinalDueDate)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                       )} />
                     </div>
                   </DebtField>
@@ -601,7 +601,7 @@ export function DebtFormDialog({
                 </div>
 
                 <DebtField label={t('debts.form.fields.note')} htmlFor="debt-note" optional>
-                  <textarea id="debt-note" rows={3} className="min-h-[92px] w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-3 t-body leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card" placeholder={t('debts.form.fields.notePlaceholder')} {...register('note')} />
+                  <textarea id="debt-note" rows={3} className="min-h-[92px] w-full resize-y rounded-[10px] border border-committed bg-card px-3.5 py-3 t-body leading-6 text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3 focus:border-data-primary focus:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]" placeholder={t('debts.form.fields.notePlaceholder')} {...register('note')} />
                 </DebtField>
               </div>
             ) : null}
@@ -635,19 +635,19 @@ export function DebtFormDialog({
           <ResponsiveDialogFooter className="shrink-0 flex-row items-center justify-between px-5 pb-5 pt-3 sm:px-8 sm:pb-7">
             <div>
               {step > 1 ? (
-                <Button type="button" variant="ghost" className="h-11 px-4 t-body-sm" onClick={() => goToStep((step - 1) as Step)}>
+                <Button type="button" variant="ghost" className="h-11 px-4" onClick={() => goToStep((step - 1) as Step)}>
                   ← {t('debts.form.actions.back')}
                 </Button>
               ) : null}
             </div>
             <div className="flex items-center gap-2.5">
-              <Button type="button" variant="ghost" className="h-11 px-4 t-body-sm" onClick={() => handleOpenChange(false)}>{t('common.cancel')}</Button>
+              <Button type="button" variant="ghost" className="h-11 px-4" onClick={() => handleOpenChange(false)}>{t('common.cancel')}</Button>
               {step < 4 ? (
-                <Button type="button" className="h-11 px-5 t-body-sm" onClick={() => void requestStep((step + 1) as Step)}>
+                <Button type="button" className="h-11 px-5" onClick={() => void requestStep((step + 1) as Step)}>
                   {t(step === 3 ? 'debts.form.actions.review' : 'debts.form.actions.continue')}
                 </Button>
               ) : (
-                <Button type="submit" className="h-11 px-5 t-body-sm" disabled={!isValid || isSavingDebt}>
+                <Button type="submit" className="h-11 px-5" disabled={!isValid || isSavingDebt}>
                   {isSavingDebt
                     ? t('debts.form.actions.saving')
                     : editingId

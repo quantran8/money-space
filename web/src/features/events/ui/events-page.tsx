@@ -8,6 +8,7 @@ import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dial
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useEventsPage } from '@money-space/core/features/events/hooks/use-events-page'
 import { EventFormDialog } from '@/features/events/ui/components/event-form-dialog'
+import { EventsMonthScope } from '@/features/events/ui/components/events-month-scope'
 import { EventsSummaryStrip } from '@/features/events/ui/components/events-summary-strip'
 import { EventsTimelineCard } from '@/features/events/ui/components/events-timeline-card'
 import type { QuickAction } from '@money-space/core/features/events/model/events-form'
@@ -26,6 +27,8 @@ export function EventsPage() {
     setSelectedMonth,
     selectedMember,
     setSelectedMember,
+    query,
+    setQuery,
     formOpen,
     quickAction,
     setQuickAction,
@@ -63,34 +66,41 @@ export function EventsPage() {
   }
 
   return (
-    <div className="space-y-4 pb-3">
+    <div className="s-section-gap flex flex-col pb-3">
       <CompactPageHeader
         title={t('events.history.title')}
         actions={
-          <Button className="px-4 t-body-sm" onClick={openCreate}>
+          <Button onClick={openCreate}>
             <RefreshCw className="size-4" strokeWidth={1.75} />
             {t('events.history.quickUpdate')}
           </Button>
         }
+        scope={<EventsMonthScope month={selectedMonth} onChange={setSelectedMonth} />}
       />
 
-      <EventsSummaryStrip summary={periodSummary} month={selectedMonth} />
+      {/* The summary and the list are two readings of the SAME month, so they
+          sit at card-gap rather than section-gap — a wider gap would read as
+          two unrelated sections and invite the month to be named twice. */}
+      <div className="s-card-gap flex flex-col">
+        <EventsSummaryStrip summary={periodSummary} />
 
-      <EventsTimelineCard
-        tab={tab}
-        onTabChange={setTab}
-        groupedRecords={groupedRecords}
-        memberOptions={memberOptions}
-        selectedMonth={selectedMonth}
-        onMonthChange={setSelectedMonth}
-        selectedMember={selectedMember}
-        onMemberChange={setSelectedMember}
-        isLoading={isLoading}
-        onEditEvent={openEditEvent}
-        onDuplicateEvent={duplicateEvent}
-        onToggleEventAttention={toggleEventAttention}
-        onDeleteEvent={setDeleteEventId}
-      />
+        <EventsTimelineCard
+          tab={tab}
+          onTabChange={setTab}
+          groupedRecords={groupedRecords}
+          memberOptions={memberOptions}
+          selectedMonth={selectedMonth}
+          selectedMember={selectedMember}
+          onMemberChange={setSelectedMember}
+          query={query}
+          onQueryChange={setQuery}
+          isLoading={isLoading}
+          onEditEvent={openEditEvent}
+          onDuplicateEvent={duplicateEvent}
+          onToggleEventAttention={toggleEventAttention}
+          onDeleteEvent={setDeleteEventId}
+        />
+      </div>
 
       <Button className="w-full sm:hidden" onClick={openCreate}>
         <RefreshCw className="size-4" strokeWidth={1.75} />

@@ -14,11 +14,13 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * display surfaces around it, and the two rules that matter most are the ones
  * easiest to get wrong:
  *
- *  - §22.3 — an input MUST carry a `--sunk` fill. The display system drops
- *    borders (§2.2), but a borderless field on a panel is indistinguishable
- *    from static text. Focus then INVERTS the surface: the fill lightens to
- *    `--panel` and an accent stroke appears. This is the only place in the
- *    product a border is used for purely visual purposes.
+ *  - §22.3 — an input MUST separate itself from the panel it sits on. This kit
+ *    does it with a WHITE `--card` fill plus a 1px `--committed` stroke rather
+ *    than a recessed fill: on an already-white card a wash box read as a second
+ *    surface level. Focus turns the stroke `--data-primary` plus a 3px tinted
+ *    ring — the same signal the Input primitive draws, not the v4 ink stroke,
+ *    which at this radius read as a disabled slab. This is the only place in
+ *    the product a border is used for purely visual purposes.
  *  - §22.4 — field labels are 13px sentence-case `--ink2`. NOT `.label`
  *    (mono uppercase): that is a sparse accessory of the display surfaces, and
  *    a column of seven of them turns a form into a form-builder.
@@ -33,15 +35,16 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * The sunk control box. Exported because a few controls (Select, DatePicker)
  * are wrapped rather than composed, and need the same shell.
  *
- * 46px is the §22.3 standard height; `--sunk` fill, transparent border that
- * turns accent on focus so the box never reflows.
+ * 46px is the §22.3 standard height; white fill, `--committed` border that
+ * turns `--data-primary` on focus so the box never reflows — the ring is a
+ * box-shadow for the same reason.
  */
 export const fieldShell =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 
 /** Secondary/optional fields sit at 40px (§22.3). */
 export const fieldShellSm =
-  'flex h-10 w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
+  'flex h-10 w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 
 /**
  * 16px is not a style choice — anything smaller makes iOS Safari zoom the
@@ -52,10 +55,10 @@ export const fieldInput =
 
 /**
  * Class for a shadcn `SelectTrigger` / `DatePicker` placed inside {@link Field}.
- * Strips the control's own chrome so the sunk shell is the only surface.
+ * Strips the control's own chrome so the field shell is the only surface.
  */
 export const fieldControlReset =
-  'h-full w-full rounded-none border-0 bg-transparent p-0 t-body text-ink shadow-none hover:bg-transparent focus:ring-0 focus-visible:ring-0 data-[placeholder]:text-ink3'
+  'h-full w-full rounded-none border-0 bg-transparent p-0 t-body text-ink shadow-none hover:bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:shadow-none data-[placeholder]:text-ink3'
 
 /**
  * There is deliberately NO `help` prop. §22.0 lists "mỗi trường có một dòng
@@ -117,7 +120,7 @@ export function TextareaField({
         id={id}
         rows={rows}
         className={cn(
-          'w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-3 t-body leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card',
+          'w-full resize-y rounded-[10px] border border-committed bg-card px-3.5 py-3 t-body leading-6 text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3 focus:border-data-primary focus:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
           error && 'border-alert',
         )}
         {...props}

@@ -153,7 +153,7 @@ export function GoalDetailPage() {
 
           <Button
             variant="secondary"
-            className="s-tap h-9 shrink-0 px-4 t-body-sm"
+            className="s-tap h-9 shrink-0 px-4"
             onClick={() => openEdit(goal.id)}
           >
             <Pencil className="size-4" strokeWidth={1.75} />

@@ -1,8 +1,17 @@
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Inbox,
+  Search,
+  SlidersHorizontal,
+  UserRound,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Panel } from '@/components/ui/panel'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { FinancialRecordItem, RecordTab } from '@money-space/core/features/events/model/events-form'
 import { TODAY } from '@money-space/core/features/events/model/events-form'
@@ -21,31 +30,17 @@ type EventsTimelineCardProps = {
   onTabChange: (tab: RecordTab) => void
   groupedRecords: Array<[string, FinancialRecordItem[]]>
   memberOptions: Option[]
-  /** `YYYY-MM`. Owned by the page so the summary strip describes the same rows. */
+  /** `YYYY-MM`, owned by the page. Read-only here — it only resets paging. */
   selectedMonth: string
-  onMonthChange: (monthKey: string) => void
   selectedMember: string
   onMemberChange: (memberId: string) => void
+  query: string
+  onQueryChange: (query: string) => void
   isLoading?: boolean
   onEditEvent: (id: string) => void
   onDuplicateEvent: (id: string) => void
   onToggleEventAttention: (id: string) => void
   onDeleteEvent: (id: string) => void
-}
-
-function shiftMonth(monthKey: string, delta: number) {
-  const [year, month] = monthKey.split('-').map(Number)
-  const next = new Date(year, month - 1 + delta, 1)
-  return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`
-}
-
-function monthLabel(monthKey: string, locale: string) {
-  const [year, month] = monthKey.split('-').map(Number)
-  if (locale === 'vi-VN') return `Tháng ${month} / ${year}`
-  return new Date(year, month - 1, 1).toLocaleDateString(locale, {
-    month: 'long',
-    year: 'numeric',
-  })
 }
 
 export function EventsTimelineCard({
@@ -54,9 +49,10 @@ export function EventsTimelineCard({
   groupedRecords,
   memberOptions,
   selectedMonth,
-  onMonthChange,
   selectedMember,
   onMemberChange,
+  query,
+  onQueryChange,
   isLoading = false,
   onEditEvent,
   onDuplicateEvent,
@@ -67,8 +63,8 @@ export function EventsTimelineCard({
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
   const [page, setPage] = useState(1)
 
-  // Month and person are already applied upstream — `groupedRecords` arrives
-  // filtered — so this only flattens and orders what it was handed.
+  // Month, person, type and search are all applied upstream — `groupedRecords`
+  // arrives filtered — so this only flattens and orders what it was handed.
   const filteredRecords = useMemo(
     () =>
       groupedRecords
@@ -76,6 +72,17 @@ export function EventsTimelineCard({
         .sort((left, right) => right.date.localeCompare(left.date)),
     [groupedRecords],
   )
+
+  // The month lives on the page now, so its change arrives as new data rather
+  // than through a handler here — and page 4 of August is not page 4 of July.
+  // Adjusted during render rather than in an effect: an effect would paint the
+  // wrong page once before correcting it.
+  const [pagedMonth, setPagedMonth] = useState(selectedMonth)
+  if (pagedMonth !== selectedMonth) {
+    setPagedMonth(selectedMonth)
+    setPage(1)
+  }
+
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
   const visibleRecords = filteredRecords.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
@@ -97,104 +104,107 @@ export function EventsTimelineCard({
     onDeleteEvent,
   }
 
-  function changeMonth(delta: number) {
-    onMonthChange(shiftMonth(selectedMonth, delta))
-    setPage(1)
-  }
-
-  function changeTab(value: RecordTab) {
-    onTabChange(value)
-    setPage(1)
-  }
-
   const firstVisible = filteredRecords.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1
   const lastVisible = Math.min(safePage * PAGE_SIZE, filteredRecords.length)
+  const isNarrowed = tab !== 'all' || selectedMember !== 'all' || query.trim().length > 0
 
   return (
     <Panel>
-      <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className="grid size-9 place-items-center rounded-control text-ink2 hover:bg-wash"
-            aria-label={t('events.history.previousMonth')}
-            onClick={() => changeMonth(-1)}
-          >
-            <ChevronLeft className="size-4" strokeWidth={1.75} />
-          </button>
-          <div className="min-w-[164px] text-center">
-            <h2 className="t-title capitalize">
-              {monthLabel(selectedMonth, locale)}
-            </h2>
-            <span className="font-mono t-caption-sm text-ink3">
-              {t('events.history.changeCount', { count: filteredRecords.length })}
-            </span>
-          </div>
-          <button
-            type="button"
-            className="grid size-9 place-items-center rounded-control text-ink2 hover:bg-wash"
-            aria-label={t('events.history.nextMonth')}
-            onClick={() => changeMonth(1)}
-          >
-            <ChevronRight className="size-4" strokeWidth={1.75} />
-          </button>
-        </div>
+      <PanelHeader
+        title={t('events.history.changes')}
+        meta={t('events.history.changeCount', { count: filteredRecords.length })}
+      />
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+      {/* Filters are controls, not metadata — they sit under the header rather
+          than inside it (§11.1), search first because it is the one that finds
+          a specific row rather than narrowing a class of them. */}
+      <div className="mt-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <label className="flex min-h-11 w-full items-center gap-2 rounded-control border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)] md:max-w-[320px]">
+          <Search className="size-[17px] shrink-0 text-ink3" strokeWidth={1.75} />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => {
+              onQueryChange(event.target.value)
+              setPage(1)
+            }}
+            placeholder={t('events.history.searchPlaceholder')}
+            aria-label={t('events.history.searchPlaceholder')}
+            className="min-w-0 flex-1 bg-transparent t-body-sm outline-none placeholder:text-ink3"
+          />
+        </label>
+
+        <div className="flex flex-wrap gap-2 md:justify-end">
           <FilterSelect
+            icon={UserRound}
             label={t('events.history.person')}
             value={selectedMember}
             onChange={(value) => {
               onMemberChange(value)
               setPage(1)
             }}
-            options={[
-              { value: 'all', label: t('events.history.allPeople') },
-              ...memberOptions,
-            ]}
+            options={[{ value: 'all', label: t('events.history.allPeople') }, ...memberOptions]}
           />
           <FilterSelect
+            icon={SlidersHorizontal}
             label={t('events.history.type')}
             value={tab}
-            onChange={(value) => changeTab(value as RecordTab)}
-            className="sm:min-w-[210px]"
+            onChange={(value) => {
+              onTabChange(value as RecordTab)
+              setPage(1)
+            }}
             options={[
               { value: 'all', label: t('events.history.allChanges') },
-              { value: 'source', label: t('events.history.sourceChanges') },
-              { value: 'debt', label: t('events.history.debtChanges') },
+              { value: 'income', label: t('events.history.typeIncome') },
+              { value: 'expense', label: t('events.history.typeExpense') },
+              { value: 'adjustment', label: t('events.history.typeAdjustment') },
+              { value: 'asset', label: t('events.history.typeAsset') },
+              { value: 'payment', label: t('events.history.typePayment') },
             ]}
           />
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-7">
         {isLoading ? <TimelineSkeleton /> : null}
+
         {!isLoading && filteredRecords.length === 0 ? (
-          <p className="sunk px-5 py-12 text-center t-body-sm text-ink2">
-            {t('events.history.empty')}
-          </p>
+          <div className="py-12 text-center">
+            <Inbox className="mx-auto size-7 text-ink3" strokeWidth={1.75} aria-hidden />
+            <p className="mt-3 t-body-sm text-ink2">
+              {isNarrowed ? t('events.history.emptyFiltered') : t('events.history.empty')}
+            </p>
+          </div>
         ) : null}
-        {!isLoading
-          ? recordsByDate.map(([date, items], index) => (
-              <section key={date} className={index === 0 ? '' : 'mt-7'}>
-                <h3 className="px-3 pb-2 pt-1 font-mono t-caption-sm font-medium uppercase text-ink3">
+
+        {/*
+          The date is a GUTTER, not a heading over the rows.
+
+          As a heading it took a full line per day, and on a month where most
+          days hold a single row the list became more date than change. In a
+          fixed left column the eye reads dates down one edge and changes down
+          the other, and a day with three rows still costs one date. Below `md`
+          there is no room for two columns, so it goes back to a line above.
+        */}
+        {!isLoading && recordsByDate.length > 0 ? (
+          <div className="flex flex-col gap-7">
+            {recordsByDate.map(([date, items]) => (
+              <section key={date} className="grid gap-x-4 gap-y-2 md:grid-cols-[84px_1fr]">
+                <h3 className="num t-caption text-ink3 md:pt-3">
                   {formatGroupDate(date, TODAY, locale, t('events.history.today'))}
                 </h3>
-                <div className="space-y-1">
+                <div className="flex flex-col gap-1">
                   {items.map((record) => (
-                    <RecordCard
-                      key={record.id}
-                      record={record}
-                      {...recordProps}
-                    />
+                    <RecordCard key={record.id} record={record} {...recordProps} />
                   ))}
                 </div>
               </section>
-            ))
-          : null}
+            ))}
+          </div>
+        ) : null}
 
-        {!isLoading && filteredRecords.length > 0 ? (
-          <div className="sunk mt-8 flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+        {!isLoading && filteredRecords.length > PAGE_SIZE ? (
+          <div className="mt-8 flex flex-col gap-3 border-t border-divider pt-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="t-caption text-ink2">
               {t('events.history.showing', {
                 from: firstVisible,
@@ -206,7 +216,7 @@ export function EventsTimelineCard({
               <button
                 type="button"
                 disabled={safePage === 1}
-                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption text-ink3 hover:bg-card disabled:opacity-40"
+                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption text-ink3 hover:bg-wash disabled:opacity-40"
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
                 <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -225,8 +235,8 @@ export function EventsTimelineCard({
                       className={cn(
                         'grid size-9 place-items-center rounded-control t-caption',
                         safePage === pageNumber
-                          ? 'bg-card font-medium text-ink'
-                          : 'text-ink2 hover:bg-card',
+                          ? 'bg-wash font-medium text-ink'
+                          : 'text-ink2 hover:bg-wash',
                       )}
                       onClick={() => setPage(pageNumber)}
                     >
@@ -238,7 +248,7 @@ export function EventsTimelineCard({
               <button
                 type="button"
                 disabled={safePage === totalPages}
-                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption font-medium text-action hover:bg-card disabled:opacity-40"
+                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption font-medium text-action hover:bg-wash disabled:opacity-40"
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
                 {t('events.history.next')}
@@ -253,12 +263,14 @@ export function EventsTimelineCard({
 }
 
 function FilterSelect({
+  icon: Icon,
   label,
   value,
   options,
   onChange,
   className,
 }: {
+  icon: LucideIcon
   label: string
   value: string
   options: Option[]
@@ -268,15 +280,17 @@ function FilterSelect({
   return (
     <label
       className={cn(
-        'sunk flex h-10 min-w-[160px] items-center gap-2 px-3',
+        'flex min-h-11 min-w-0 items-center gap-2 rounded-control border border-committed bg-card px-3.5',
         className,
       )}
     >
-      <span className="shrink-0 t-caption text-ink3">{label}</span>
+      <Icon className="size-[17px] shrink-0 text-ink3" strokeWidth={1.75} aria-hidden />
+      <span className="shrink-0 t-body-sm text-ink3">{label}:</span>
       <select
         className="min-w-0 flex-1 appearance-none bg-transparent t-body-sm text-ink outline-none"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        aria-label={label}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -284,7 +298,7 @@ function FilterSelect({
           </option>
         ))}
       </select>
-      <ChevronDown className="size-4 shrink-0 text-ink3" strokeWidth={1.75} />
+      <ChevronDown className="size-4 shrink-0 text-ink3" strokeWidth={1.75} aria-hidden />
     </label>
   )
 }
@@ -298,7 +312,7 @@ function formatGroupDate(dateValue: string, today: string, locale: string, today
 
 function TimelineSkeleton() {
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2">
       {Array.from({ length: 5 }).map((_, index) => (
         <Skeleton key={index} className="h-16 w-full rounded-control" />
       ))}

@@ -45,6 +45,7 @@ export function MoneyCompositionRing({
   ariaLabel,
   formatAmount,
   centerLabel,
+  legend = true,
   className,
 }: {
   segments: CompositionSegment[]
@@ -53,6 +54,12 @@ export function MoneyCompositionRing({
   formatAmount: (value: number) => string
   /** The word under the centre figure, e.g. "linh hoạt". Caller-translated. */
   centerLabel: string
+  /**
+   * Render the built-in legend beside the ring. Off when the caller has its own
+   * — the asset page pairs the ring with a legend that also lists the goals
+   * behind the committed share, which this one cannot express.
+   */
+  legend?: boolean
   className?: string
 }) {
   // Weights must be non-negative, and a segment that rounds to nothing still
@@ -83,7 +90,8 @@ export function MoneyCompositionRing({
   return (
     <div
       className={cn(
-        'grid gap-6 sm:grid-cols-[170px_minmax(0,1fr)] sm:items-center sm:gap-8',
+        'grid gap-6 sm:items-center sm:gap-8',
+        legend && 'sm:grid-cols-[170px_minmax(0,1fr)]',
         className,
       )}
     >
@@ -133,6 +141,7 @@ export function MoneyCompositionRing({
 
       {/* A grid, not a flex row: the percent and the amount columns must line up
           down the legend, and the label column absorbs the slack. */}
+      {legend ? (
       <dl className="w-full min-w-0 space-y-0">
         {segments.map((segment, index) => (
           <div
@@ -168,6 +177,7 @@ export function MoneyCompositionRing({
           </div>
         ))}
       </dl>
+      ) : null}
     </div>
   )
 }

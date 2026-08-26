@@ -37,7 +37,7 @@ function emptyAllocation(option: AllocationAssetOption): GoalAllocationDraft {
 
 function MoneyInput({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
-    <div className="flex h-12 items-center gap-2 rounded-[10px] border border-transparent bg-card px-3.5 transition-colors focus-within:border-action">
+    <div className="flex h-12 items-center gap-2 rounded-[10px] border border-transparent bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]">
       <input
         type="text"
         inputMode="numeric"
@@ -237,7 +237,7 @@ export function GoalAllocationsField({
                             <label className="flex-1 t-caption-sm leading-4 text-attention">
                               {t('goals.allocations.shareLabel')}
                             </label>
-                            <div className="flex h-12 w-24 items-center rounded-[10px] border border-transparent bg-card px-3 focus-within:border-action">
+                            <div className="flex h-12 w-24 items-center rounded-[10px] border border-transparent bg-card px-3 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]">
                               <input
                                 type="text"
                                 inputMode="numeric"

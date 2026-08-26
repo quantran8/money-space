@@ -126,7 +126,7 @@ export function SpendingSection({
 
           <Link
             to="/events"
-            className="mt-3 inline-flex min-h-11 items-center t-body-sm font-medium text-action"
+            className="mt-3 inline-flex min-h-11 items-center t-body font-medium text-action"
           >
             {t('home.spending.viewAll')}
           </Link>

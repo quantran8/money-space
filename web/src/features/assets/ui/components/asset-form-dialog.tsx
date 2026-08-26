@@ -316,13 +316,13 @@ export function AssetFormDialog({
               <Button
                 type="button"
                 variant="secondary"
-                className="px-4 t-body-sm"
+                className="px-4"
                 onClick={() => handleOpenChange(false)}
               >
                 {t('common.cancel')}
               </Button>
               {/* §22.10 — never disabled on validity; errors explain the reason. */}
-              <Button type="submit" className="px-5 t-body-sm" disabled={isSubmitting}>
+              <Button type="submit" className="px-5" disabled={isSubmitting}>
                 {isSubmitting
                   ? t('assets.form.saving')
                   : isEditing

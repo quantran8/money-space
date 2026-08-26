@@ -63,11 +63,11 @@ function CashflowField({ label, htmlFor, error, children }: CashflowFieldProps) 
 }
 
 const controlClass =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-wash px-3.5 transition-colors focus-within:border-action focus-within:bg-card'
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 const inputClass =
   'h-full min-w-0 w-full bg-transparent t-body leading-none text-ink outline-none placeholder:text-ink3'
 const selectClass =
-  'h-full rounded-none bg-transparent p-0 t-body text-ink data-[placeholder]:text-ink3'
+  'h-full rounded-none border-0 bg-transparent p-0 t-body text-ink shadow-none focus-visible:shadow-none data-[placeholder]:text-ink3'
 
 /**
  * Create/edit a cashflow event — the only thing that feeds the forecast (§18).
@@ -284,7 +284,7 @@ export function CashflowEventFormDialog({
                         value={field.value}
                         onChange={field.onChange}
                         aria-invalid={Boolean(errors.expectedDate)}
-                        className="h-full rounded-none bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden"
+                        className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden"
                       />
                     )}
                   />
@@ -412,7 +412,7 @@ export function CashflowEventFormDialog({
                         id="cashflow-note"
                         rows={3}
                         className={cn(
-                          'min-h-[88px] w-full resize-y rounded-[10px] border border-transparent bg-wash px-3.5 py-3 t-body leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-action focus:bg-card',
+                          'min-h-[88px] w-full resize-y rounded-[10px] border border-committed bg-card px-3.5 py-3 t-body leading-6 text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3 focus:border-data-primary focus:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
                           errors.note && 'border-alert',
                         )}
                         placeholder={t('upcoming.form.notePlaceholder')}
@@ -429,14 +429,14 @@ export function CashflowEventFormDialog({
             <Button
               type="button"
               variant="ghost"
-              className="h-11 px-4 t-body-sm"
+              className="h-11 px-4"
               onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
             <Button
               type="submit"
-              className="h-11 px-5 t-body-sm"
+              className="h-11 px-5"
               disabled={!isValid || isSubmitting}
             >
               {isEditing ? t('upcoming.form.saveEdit') : t('upcoming.form.title')}

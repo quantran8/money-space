@@ -49,7 +49,7 @@ export function OverdueSection({
         action={
           <Link
             to="/upcoming"
-            className="inline-flex min-h-11 items-center gap-1 t-body-sm font-medium text-action"
+            className="inline-flex min-h-11 items-center gap-1 t-body font-medium text-action"
           >
             {t('home.upcoming.overdue.viewAll')}
             <ArrowUpRight className="size-4 shrink-0" strokeWidth={1.8} aria-hidden />
@@ -166,7 +166,7 @@ function OverdueRowItem({
           // `row.dueDate`, which is only what we show (§18).
           onClick={() => onComplete(row.sourceEventId, row.date)}
           disabled={pending}
-          className="col-span-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-control bg-action px-4 t-body-sm font-medium text-action-inverse transition-opacity hover:opacity-90 disabled:opacity-60 sm:col-span-1 sm:justify-self-end"
+          className="col-span-2 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-control bg-action px-4 t-body font-medium text-action-inverse transition-opacity hover:opacity-90 disabled:opacity-60 sm:col-span-1 sm:justify-self-end"
         >
           {pending ? (
             <>

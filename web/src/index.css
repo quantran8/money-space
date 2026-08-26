@@ -52,6 +52,7 @@
   --color-accent-tint: var(--accent-tint);
   --color-attention-tint: var(--attention-tint);
   --color-alert-tint: var(--alert-tint);
+  --color-positive-tint: var(--positive-tint);
 
   /* shadcn compatibility layer. Mapped onto the v4.0 surfaces (§6) so the
      primitives keep working while features migrate off them. */
@@ -181,6 +182,11 @@
     --accent-tint: rgba(15, 16, 17, 0.06);
     --attention-tint: rgba(225, 190, 104, 0.3);
     --alert-tint: rgba(232, 163, 154, 0.3);
+    /* The one tint keyed to `--positive` rather than to an alert tone: a
+       settled instalment is a good consequence, which is the only thing v5 §4
+       lets green mean. Kept far weaker than the alert tints — "done" should
+       register as a calm band, not as something to look at. */
+    --positive-tint: rgba(143, 205, 164, 0.14);
   }
 
   /* Archive — approved alternate (§5.1). Warm ivory, wine red. */
@@ -204,6 +210,7 @@
     --accent-tint: rgba(140, 47, 57, 0.1);
     --attention-tint: rgba(154, 106, 22, 0.12);
     --alert-tint: rgba(168, 57, 31, 0.1);
+    --positive-tint: rgba(143, 205, 164, 0.14);
 
     /* Ink counterparts, warmed to sit in Archive's ivory ground. */
     --positive-ink: #4a7554;

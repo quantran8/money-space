@@ -352,7 +352,7 @@ export function GoalFormDialog({
               <Button
                 type="button"
                 variant="secondary"
-                className="min-h-11 px-4 t-body-sm"
+                className="min-h-11 px-4"
                 onClick={() => setStep((step - 1) as BuilderStep)}
               >
                 {t('goals.builder.back')}
@@ -366,7 +366,7 @@ export function GoalFormDialog({
             {!isEditing && step < 3 ? (
               <Button
                 type="button"
-                className="ml-auto min-h-11 px-5 t-body-sm"
+                className="ml-auto min-h-11 px-5"
                 onClick={() => void continueCreate()}
               >
                 {t('goals.builder.continue')}
@@ -375,7 +375,7 @@ export function GoalFormDialog({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="ml-auto min-h-11 px-5 t-body-sm"
+                className="ml-auto min-h-11 px-5"
               >
                 {isSubmitting
                   ? t('goals.form.saving')

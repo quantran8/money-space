@@ -105,7 +105,7 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
         {/* Stays enabled with the field empty (design.md §22.10): clicking is how
             the user finds out what is missing, and a dead button says nothing. */}
         <div className="mt-8 flex justify-end">
-          <Button type="submit" className="h-11 px-5 t-body-sm" disabled={isCreating}>
+          <Button type="submit" className="h-11 px-5" disabled={isCreating}>
             {isCreating ? t('onboarding.form.submitting') : t('onboarding.form.submit')}
           </Button>
         </div>

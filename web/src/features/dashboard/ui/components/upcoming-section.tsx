@@ -72,7 +72,7 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
             </span>
             <Link
               to="/upcoming"
-              className="inline-flex min-h-11 items-center t-body-sm font-medium text-action"
+              className="inline-flex min-h-11 items-center t-body font-medium text-action"
             >
               {t('home.upcoming.viewTimeline')}
             </Link>
@@ -158,7 +158,7 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
                     </p>
                     <Link
                       to="/networth"
-                      className="mt-3 inline-flex h-9 items-center rounded-control bg-action px-4 t-body-sm font-medium text-panel transition-opacity hover:opacity-90"
+                      className="mt-3 inline-flex h-11 items-center rounded-control bg-action px-4 t-body font-medium text-panel transition-opacity hover:opacity-90"
                     >
                       {t('home.upcoming.addSource')}
                     </Link>
@@ -231,7 +231,7 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
             <div className="mt-4">
               <Link
                 to="/upcoming"
-                className="inline-flex min-h-11 items-center t-body-sm font-medium text-action"
+                className="inline-flex min-h-11 items-center t-body font-medium text-action"
               >
                 {t('home.upcoming.more', { count: totalCount - rows.length })}
               </Link>

@@ -14,7 +14,16 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * action v5 §7 prefers over inventing a bordered secondary button.
  */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill t-body-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  // NO `t-*` step here — the SIZE owns the type.
+  //
+  // `cn` is twMerge, which only knows Tailwind's own utilities: two custom
+  // `t-*` classes are not recognised as conflicting, so a step in this base
+  // string and a step in a size variant BOTH survive into the DOM and CSS
+  // source order silently decides the winner. That is what made `size="lg"`
+  // render at 14px — `.t-body-sm` here is declared after `.t-body` in
+  // index.css, so the base was overriding the variant that was meant to
+  // override it. Declaring the step once, per size, removes the ambiguity.
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-colors focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -26,12 +35,15 @@ const buttonVariants = cva(
         link: 'text-action underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-11 px-5 py-2',
+        // A button label is a CONTROL, not dense-row metadata. At `t-body-sm`
+        // it sat at the same size as a table cell and read as a caption that
+        // happened to have a fill behind it — undersized against a 44px pill.
+        default: 'h-11 px-5 py-2 t-body',
         // 44 is the floor for anything tappable (Foundations, "Touch target").
         // `sm` is the COMPACT variant, not the small-target one: it keeps the
         // tighter padding and type but never drops below the minimum box.
-        sm: 'h-11 px-4 t-caption',
-        lg: 'h-12 px-6 t-body',
+        sm: 'h-11 px-4 t-body-sm',
+        lg: 'h-12 px-6 t-subhead',
         icon: 'size-11',
       },
     },

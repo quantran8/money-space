@@ -20,6 +20,12 @@ export type AssetEventEntry = {
   type: MoneyEventItem['type']
   direction: MoneyEventItem['direction']
   note?: string
+  /**
+   * Auth profile id of whoever recorded it — resolve against
+   * `MemberItem.profileId` to name them. Absent for system-generated entries
+   * (saving-interest accrual), which no person recorded.
+   */
+  createdById?: string
 }
 
 /** One point on the asset's value-over-time chart. */
@@ -104,6 +110,7 @@ export function useAssetDetail(assetId: string | undefined) {
           type: event.type,
           direction: event.direction,
           note: event.note || undefined,
+          createdById: event.createdById,
         }
       })
       .sort((a, b) => (a.isoDate < b.isoDate ? 1 : a.isoDate > b.isoDate ? -1 : 0))

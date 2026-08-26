@@ -1,4 +1,4 @@
-import { Check, Pencil, Plus, Star, Trash2, X } from 'lucide-react'
+import { Check, MoreHorizontal, Pencil, Plus, Star, Trash2, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -14,8 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { Panel } from '@/components/ui/panel'
+import { Panel, PanelHeader } from '@/components/ui/panel'
+import { cn } from '@money-space/core/shared/lib/utils'
 import { useEventCategories } from '@money-space/core/features/events/hooks/use-event-categories'
 import type { EventCategoryItem } from '@money-space/core/features/events/api/event-categories.repository'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
@@ -34,11 +41,22 @@ export function CategoriesCard() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingLabel, setEditingLabel] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<EventCategoryItem | null>(null)
+  const [tab, setTab] = useState<'system' | 'custom'>('system')
 
   // Localized display name for a category — follows the user's language via the
   // code, falling back to the row's DB label for custom categories.
   const displayName = (category: EventCategoryItem) =>
     t(`options.eventCategory.${category.code}`, { defaultValue: category.label })
+
+  const systemCategories = useMemo(
+    () => categories.filter((category) => category.isSystem),
+    [categories],
+  )
+  const customCategories = useMemo(
+    () => categories.filter((category) => !category.isSystem),
+    [categories],
+  )
+  const visible = tab === 'system' ? systemCategories : customCategories
 
   const canAdd = useMemo(
     () => CODE_PATTERN.test(newCode.trim().toLowerCase()) && newLabel.trim().length > 0,
@@ -113,143 +131,183 @@ export function CategoriesCard() {
 
   return (
     <Panel>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="t-title">{t('settings.categories.title')}</h2>
-          <p className="mt-2 max-w-[680px] t-caption leading-5 text-ink2">
-            {t('settings.categories.description')}
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="font-mono t-caption-sm text-ink3">
-            {t('household.merged.categoryCount', {
-              system: categories.filter((category) => category.isSystem).length,
-              custom: categories.filter((category) => !category.isSystem).length,
-            })}
-          </span>
+      <PanelHeader
+        title={t('settings.categories.title')}
+        action={
           <Button type="button" variant="secondary" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus className="size-3.5" />
+            <Plus className="size-4" strokeWidth={1.75} />
             {t('settings.categories.addAction')}
           </Button>
+        }
+      />
+
+      {/*
+        System and custom are two different things, not two flags on one list.
+        A single mixed list put sixteen rows the household cannot change in
+        front of the handful it can, and marked the difference with a badge at
+        the end of each row — the reader had to scan every row to find their
+        own. The segmented control puts that question first.
+      */}
+      <div className="s-head-body flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="inline-flex w-fit items-center gap-1 rounded-control bg-wash p-1" role="tablist">
+          <TabButton
+            isActive={tab === 'system'}
+            count={systemCategories.length}
+            label={t('settings.categories.system')}
+            onClick={() => setTab('system')}
+          />
+          <TabButton
+            isActive={tab === 'custom'}
+            count={customCategories.length}
+            label={t('settings.categories.tabCustom')}
+            onClick={() => setTab('custom')}
+          />
         </div>
+        <p className="t-caption text-ink3">
+          {t(tab === 'system' ? 'settings.categories.systemNote' : 'settings.categories.customNote')}
+        </p>
       </div>
 
-      <ul className="mt-7 grid gap-x-8 gap-y-1 md:grid-cols-2">
-        {categories.length === 0 ? (
-          <li className="rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2 md:col-span-2">
-            {t('settings.categories.empty')}
-          </li>
-        ) : null}
+      {visible.length === 0 ? (
+        <div className="mt-7">
+          <p className="t-subtitle">
+            {t(tab === 'custom' ? 'settings.categories.customEmptyTitle' : 'settings.categories.empty')}
+          </p>
+          {tab === 'custom' ? (
+            <p className="mt-2 max-w-[560px] t-body-sm leading-5 text-ink2">
+              {t('settings.categories.customEmptyBody')}
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <>
+          <div className="mt-7 flex items-baseline justify-between gap-4">
+            <p className="t-subtitle">
+              {t(tab === 'system' ? 'settings.categories.system' : 'settings.categories.tabCustom')}
+            </p>
+            <p className="num t-caption text-ink3">
+              {t('settings.categories.countLabel', { count: visible.length })}
+            </p>
+          </div>
 
-        {categories.map((category) => {
-          const isEditing = editingId === category.id
-          return (
-            <li
-              key={category.id}
-              className="flex min-h-12 items-center gap-2 rounded-control px-3 py-2 transition-colors hover:bg-wash"
-            >
-              {isEditing ? (
-                <Input
-                  value={editingLabel}
-                  onChange={(event) => setEditingLabel(event.target.value)}
-                  className="h-9"
-                  autoFocus
-                />
-              ) : (
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate t-body-sm font-medium text-foreground">
-                      {displayName(category)}
-                    </p>
-                    {category.isDefault ? (
-                      <Badge variant="secondary" className="shrink-0 t-caption-sm">
-                        {t('settings.categories.default')}
-                      </Badge>
-                    ) : null}
-                  </div>
-                  {!category.isSystem ? (
-                    <p className="truncate t-caption-sm text-ink3">
-                      {category.code}
-                    </p>
-                  ) : null}
-                </div>
-              )}
-
-              {/* Default toggle — available for system AND custom rows (the
-                  default is a per-household pointer, not a row flag). Hidden
-                  while inline-editing a label. */}
-              {!isEditing ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleToggleDefault(category)}
-                  disabled={setDefaultCategory.isPending}
-                  aria-pressed={category.isDefault}
-                  aria-label={
-                    category.isDefault
-                      ? t('settings.categories.unsetDefault')
-                      : t('settings.categories.setDefault')
-                  }
-                  className={
-                    category.isDefault ? 'text-action' : 'text-muted-foreground'
-                  }
+          <ul className="mt-3 grid gap-x-6 gap-y-1 md:grid-cols-2">
+            {visible.map((category) => {
+              const isEditing = editingId === category.id
+              const name = displayName(category)
+              return (
+                <li
+                  key={category.id}
+                  className="group flex min-h-[52px] items-center gap-1 rounded-control py-1 pl-3 pr-1 transition-colors hover:bg-wash"
                 >
-                  <Star className={category.isDefault ? 'size-4 fill-current' : 'size-4'} />
-                </Button>
-              ) : null}
+                  {isEditing ? (
+                    <Input
+                      value={editingLabel}
+                      onChange={(event) => setEditingLabel(event.target.value)}
+                      className="h-9"
+                      autoFocus
+                    />
+                  ) : (
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate t-body-sm">{name}</p>
+                        {category.isDefault ? (
+                          <Badge variant="secondary" className="shrink-0 t-caption-sm">
+                            {t('settings.categories.default')}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      {!category.isSystem ? (
+                        <p className="truncate t-caption-sm text-ink3">{category.code}</p>
+                      ) : null}
+                    </div>
+                  )}
 
-              {category.isSystem ? (
-                <Badge variant="secondary" className="t-caption-sm text-ink3">{t('settings.categories.system')}</Badge>
-              ) : isEditing ? (
-                <div className="flex shrink-0 items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleSaveEdit(category)}
-                    disabled={!editingLabel.trim() || updateCategory.isPending}
-                    aria-label={t('common.saveChanges')}
-                  >
-                    <Check className="size-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditingId(null)}
-                    aria-label={t('common.cancel')}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex shrink-0 items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => startEdit(category)}
-                    aria-label={t('common.edit')}
-                  >
-                    <Pencil className="size-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setDeleteTarget(category)}
-                    className="text-alert hover:bg-alert-tint"
-                    aria-label={t('common.delete')}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              )}
-            </li>
-          )
-        })}
-      </ul>
+                  {isEditing ? (
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleSaveEdit(category)}
+                        disabled={!editingLabel.trim() || updateCategory.isPending}
+                        aria-label={t('common.saveChanges')}
+                      >
+                        <Check className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditingId(null)}
+                        aria-label={t('common.cancel')}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* The default toggle is available on system rows too —
+                          the default is a per-household pointer, not a row
+                          flag — so it stays visible rather than fading in with
+                          the overflow. */}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleToggleDefault(category)}
+                        disabled={setDefaultCategory.isPending}
+                        aria-pressed={category.isDefault}
+                        aria-label={
+                          category.isDefault
+                            ? t('settings.categories.unsetDefault')
+                            : t('settings.categories.setDefault')
+                        }
+                        className={cn('shrink-0', category.isDefault ? 'text-action' : 'text-ink3')}
+                      >
+                        <Star className={category.isDefault ? 'size-4 fill-current' : 'size-4'} />
+                      </Button>
+
+                      {/* No menu on a system row: rename and delete are the
+                          only two items in it, and the backend allows neither.
+                          An empty overflow is worse than none. */}
+                      {!category.isSystem ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="shrink-0 text-ink2 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+                              aria-label={t('settings.categories.rowMenu', { name })}
+                            >
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={() => startEdit(category)}>
+                              <Pencil className="size-4" />
+                              {t('common.edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-alert focus:text-alert"
+                              onSelect={() => setDeleteTarget(category)}
+                            >
+                              <Trash2 className="size-4" />
+                              {t('common.delete')}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <span className="size-11 shrink-0" aria-hidden />
+                      )}
+                    </>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </>
+      )}
 
       <Dialog open={addOpen} onOpenChange={handleAddOpenChange}>
         <DialogContent className="max-w-md gap-5">
@@ -307,5 +365,33 @@ export function CategoriesCard() {
         onConfirm={() => (deleteTarget ? handleDelete(deleteTarget) : undefined)}
       />
     </Panel>
+  )
+}
+
+function TabButton({
+  isActive,
+  label,
+  count,
+  onClick,
+}: {
+  isActive: boolean
+  label: string
+  count: number
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={isActive}
+      onClick={onClick}
+      className={cn(
+        'inline-flex min-h-9 items-center gap-2 rounded-[10px] px-3 t-body-sm transition-colors',
+        isActive ? 'bg-card font-medium text-ink' : 'text-ink2 hover:text-ink',
+      )}
+    >
+      {label}
+      <span className="num t-caption text-ink3">{count}</span>
+    </button>
   )
 }

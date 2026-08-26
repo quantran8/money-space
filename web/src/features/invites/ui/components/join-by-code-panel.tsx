@@ -79,7 +79,7 @@ export function JoinByCodePanel() {
             <Button
               type="button"
               variant="secondary"
-              className="h-11 flex-1 px-5 t-body-sm"
+              className="h-11 flex-1 px-5"
               onClick={() => {
                 setError(null)
                 setScanning(true)
@@ -91,7 +91,7 @@ export function JoinByCodePanel() {
           ) : null}
           <Button
             type="submit"
-            className="h-11 flex-1 px-5 t-body-sm"
+            className="h-11 flex-1 px-5"
             disabled={!value.trim()}
           >
             {t('invites.joinByCode.submit')}

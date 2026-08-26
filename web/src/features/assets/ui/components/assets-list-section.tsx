@@ -91,7 +91,7 @@ export function AssetsListSection({
 
   const toolbar = (
     <div className="flex items-center gap-2">
-      <label className="sunk flex h-10 min-w-0 flex-1 items-center gap-2 px-3 sm:w-[250px]">
+      <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-control border border-committed bg-card px-3 sm:w-[250px]">
         <Search className="size-4 shrink-0 text-ink3" />
         <input
           value={query}
@@ -105,7 +105,7 @@ export function AssetsListSection({
         onValueChange={(value) => onLiquidityFilterChange(value as AssetLiquidity | 'all')}
       >
         <SelectTrigger
-          className="h-10 w-[112px] bg-wash px-3 t-body-sm"
+          className="h-10 w-[112px] px-3 t-body-sm"
           aria-label={t('assets.demo.filter')}
         >
           <SelectValue />

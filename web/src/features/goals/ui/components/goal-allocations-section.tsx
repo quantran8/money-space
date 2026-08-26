@@ -106,7 +106,7 @@ export function GoalAllocationsSection({
           <Button
             type="button"
             variant="secondary"
-            className="s-tap mt-3 h-10 px-4 t-body-sm"
+            className="s-tap mt-3 h-10 px-4"
             disabled={!canAdd || isBusy}
             onClick={onAdd}
           >
@@ -124,7 +124,7 @@ export function GoalAllocationsSection({
           <Button
             type="button"
             variant="secondary"
-            className="s-tap mt-4 h-10 px-4 t-body-sm"
+            className="s-tap mt-4 h-10 px-4"
             disabled={!canAdd || isBusy}
             onClick={onAdd}
           >

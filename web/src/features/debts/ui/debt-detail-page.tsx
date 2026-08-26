@@ -1,9 +1,11 @@
-import { Check, ChevronLeft, Pencil } from 'lucide-react'
+import { ChevronLeft, Pencil } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Panel, PanelHeader } from '@/components/ui/panel'
+import { Progress } from '@/components/ui/progress'
 import { useDebtDetail, type DebtHistoryEntry } from '@money-space/core/features/debts/hooks/use-debt-detail'
 import { useDebtsPage } from '@money-space/core/features/debts/hooks/use-debts-page'
 import { formatDate } from '@money-space/core/features/debts/model/debts-form'
@@ -12,12 +14,47 @@ import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
 import type { CashflowEvent } from '@money-space/core/features/cashflow/model/cashflow.types'
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { cn } from '@money-space/core/shared/lib/utils'
 
-type RepaymentCalendarItem = {
+/** Where one instalment sits in the run: settled, the one due next, or later. */
+type PeriodState = 'paid' | 'next' | 'upcoming'
+
+type RepaymentPeriod = {
   id: string
+  /** 1-based position in the whole schedule, paid and unpaid together. */
+  index: number
   isoDate: string
   amount: number
-  paid: boolean
+  state: PeriodState
+}
+
+/**
+ * The dot beside each state.
+ *
+ * Green for settled is the one thing v5 §4 still lets green mean — a good
+ * consequence, not "this is clickable". Blue marks the instalment the household
+ * is actually looking for; amber marks the rest as scheduled money that has yet
+ * to leave.
+ */
+const PERIOD_DOT: Record<PeriodState, string> = {
+  paid: 'bg-positive',
+  next: 'bg-data-primary',
+  upcoming: 'bg-attention',
+}
+
+/** Only the two states worth marking take a fill; "later" is the default. */
+const PERIOD_FILL: Record<PeriodState, string> = {
+  paid: 'bg-positive-tint',
+  next: 'bg-wash',
+  upcoming: '',
+}
+
+const STATUS_DOT: Record<string, string> = {
+  active: 'bg-data-primary',
+  paid_off: 'bg-positive',
+  overdue: 'bg-alert',
+  paused: 'bg-attention',
+  cancelled: 'bg-committed',
 }
 
 function displayDate(value: string | undefined, locale: string, fallback: string) {
@@ -44,46 +81,17 @@ function displayUpdatedAt(value: string, locale: string) {
   return `${day} · ${time}`
 }
 
-function monthsUntil(value?: string) {
-  if (!value) return null
-  const today = new Date()
-  const target = new Date(`${value.slice(0, 10)}T00:00:00`)
-  if (Number.isNaN(target.getTime())) return null
-  return Math.max(
-    0,
-    (target.getFullYear() - today.getFullYear()) * 12 + target.getMonth() - today.getMonth(),
-  )
-}
-
-function MoneyValue({ value }: { value: number }) {
-  const formatted = formatVndShort(value)
-  const match = formatted.match(/^(.+)\s+(triệu|tỷ)$/)
-
-  return (
-    <div className="mt-4 flex items-end gap-2">
-      <span className="money-number t-hero leading-[.9]">
-        {match?.[1] ?? formatted}
-      </span>
-      {match?.[2] ? <span className="pb-1 t-subhead font-medium">{match[2]}</span> : null}
-    </div>
-  )
-}
-
-function LoanInfo({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div>
-      <p className="t-caption text-ink3">{label}</p>
-      <p className={mono ? 'money-number mt-1.5 font-mono t-body-sm' : 'mt-1.5 t-body-sm font-medium'}>
-        {value}
-      </p>
-    </div>
-  )
-}
-
-function buildCalendar(
+/**
+ * The whole run of instalments, settled and scheduled, in date order.
+ *
+ * They are numbered ACROSS both halves — "kỳ 3" is the third payment of the
+ * loan, not the first of the upcoming ones — which is the only numbering that
+ * still means something once the groups are shown apart.
+ */
+function buildSchedule(
   repayments: DebtHistoryEntry[],
   upcomingPayments: CashflowEvent[],
-): RepaymentCalendarItem[] {
+): RepaymentPeriod[] {
   const paid = repayments.map((entry) => ({
     id: `paid-${entry.id}`,
     isoDate: entry.isoDate.slice(0, 10),
@@ -97,8 +105,50 @@ function buildCalendar(
     paid: false,
   }))
 
-  return [...paid, ...upcoming].sort((left, right) =>
-    left.isoDate.localeCompare(right.isoDate),
+  let seenUnpaid = false
+  return [...paid, ...upcoming]
+    .sort((left, right) => left.isoDate.localeCompare(right.isoDate))
+    .map((item, index) => {
+      const isNext = !item.paid && !seenUnpaid
+      if (!item.paid) seenUnpaid = true
+      return {
+        id: item.id,
+        index: index + 1,
+        isoDate: item.isoDate,
+        amount: item.amount,
+        state: item.paid ? 'paid' : isNext ? 'next' : 'upcoming',
+      } satisfies RepaymentPeriod
+    })
+}
+
+/** One figure in the "Điều khoản vay" row: label, value, and what it rests on. */
+function Term({
+  label,
+  value,
+  note,
+  className,
+}: {
+  label: string
+  value: string
+  note?: string | null
+  className?: string
+}) {
+  return (
+    <div className={cn('min-w-0', className)}>
+      <p className="t-body-sm text-ink2">{label}</p>
+      <p className="money-number mt-1 t-metric">{value}</p>
+      {note ? <p className="mt-1 t-caption text-ink3">{note}</p> : null}
+    </div>
+  )
+}
+
+/** One reference fact under the terms row. */
+function Detail({ label, value, num = false }: { label: string; value: ReactNode; num?: boolean }) {
+  return (
+    <div className="min-w-0">
+      <dt className="t-caption text-ink3">{label}</dt>
+      <dd className={cn('mt-1 t-body-sm', num && 'num')}>{value}</dd>
+    </div>
   )
 }
 
@@ -117,7 +167,6 @@ export function DebtDetailPage() {
     upcomingPayments,
     isLoading,
   } = useDebtDetail(debtId)
-
   const {
     receiveAssetOptions,
     memberOptions,
@@ -155,14 +204,14 @@ export function DebtDetailPage() {
 
   if (!debt) {
     return (
-      <div className="space-y-6">
+      <div className="s-section-gap flex flex-col">
         <Button variant="ghost" className="-ml-2 gap-1" onClick={() => navigate('/networth')}>
           <ChevronLeft className="size-4" /> {t('debts.detail.back')}
         </Button>
-        <Card className="py-8 text-center">
+        <Panel className="py-8 text-center">
           <p className="t-subhead font-medium">{t('debts.detail.notFoundTitle')}</p>
           <p className="mt-1 t-body-sm text-ink2">{t('debts.detail.notFoundBody')}</p>
-        </Card>
+        </Panel>
       </div>
     )
   }
@@ -177,16 +226,16 @@ export function DebtDetailPage() {
   const latestUpdate = history[0]?.isoDate ?? debt.borrowedAt
   const stages = debt.interestPeriods ?? []
   const calc = calcFromBackendEnum(debt.interestCalculation)
-  const calendarItems = buildCalendar(repayments, upcomingPayments)
-  const latestRepayment = repayments[0]
-  const remainingMonths = monthsUntil(debt.expectedFinalDueDate)
+  const schedule = buildSchedule(repayments, upcomingPayments)
+  const paidPeriods = schedule.filter((period) => period.state === 'paid')
+  const openPeriods = schedule.filter((period) => period.state !== 'paid')
   const progressLabel = progress.toLocaleString(locale, { maximumFractionDigits: 1 })
-  // "Hàng tháng · dư nợ giảm dần" — the calculation half only means something
-  // once the debt actually has interest stages.
   const frequencyLabel = t(`debts.form.frequency.${debt.paymentFrequency ?? 'none'}`)
-  const repaymentMethod = stages.length
-    ? `${frequencyLabel} · ${t(`debts.detail.calc.${calc}`, { defaultValue: calc })}`
-    : frequencyLabel
+  // The calculation half only means something once the debt actually has
+  // interest stages — "số tiền cố định" under a 0% loan says nothing.
+  const methodNote = stages.length
+    ? t(calc === 'fixed' ? 'debts.detail.loan.methodFixed' : 'debts.detail.loan.methodReducing')
+    : null
   const paymentDay = nextDate
     ? new Date(`${nextDate}T00:00:00`).getDate()
     : debt.firstPaymentDate
@@ -194,228 +243,213 @@ export function DebtDetailPage() {
       : null
 
   return (
-    <div className="space-y-4 pb-3">
-      <header className="px-0.5 pb-1">
+    <div className="flex flex-col pb-3">
+      <header>
         <button
           type="button"
-          className="-ml-2 inline-flex min-h-10 items-center gap-1.5 rounded-control px-2 t-body-sm text-action hover:bg-accent-soft"
+          className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-control px-2 t-body-sm text-ink2 transition-colors hover:text-ink"
           onClick={() => navigate('/networth')}
         >
-          <ChevronLeft className="size-4" strokeWidth={1.75} />
+          <ChevronLeft className="size-[17px]" strokeWidth={1.75} />
           {t('debts.detail.back')}
         </button>
 
-        <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 t-body-sm text-ink2">
-              <span className="rounded-full bg-card px-2.5 py-1 t-caption-sm text-ink2">
-                {t(`options.debtStatus.${debt.status}`)}
-              </span>
-            </div>
-            <h1 className="t-page-tracking mt-2 truncate t-metric leading-tight">
-              {debt.name}
-            </h1>
+            {/* A dot and a word, not a chip. The status is context for the
+                title under it; a filled pill gave it the weight of a control. */}
+            <p className="flex items-center gap-2 t-body-sm text-ink2">
+              <span
+                className={cn(
+                  'size-1.5 shrink-0 rounded-full',
+                  STATUS_DOT[debt.status] ?? 'bg-committed',
+                )}
+              />
+              {t(`options.debtStatus.${debt.status}`)}
+            </p>
+            <h1 className="t-page-tracking mt-2 truncate t-metric leading-tight">{debt.name}</h1>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button className="px-4 t-body-sm" onClick={() => openEdit(debt.id)}>
-              <Pencil className="size-4" strokeWidth={1.75} />
-              {t('common.edit')}
-            </Button>
-          </div>
+          <Button onClick={() => openEdit(debt.id)}>
+            <Pencil className="size-[17px]" strokeWidth={1.75} />
+            {t('common.edit')}
+          </Button>
         </div>
       </header>
 
-      <Card>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <h2 className="t-title">{t('debts.detail.overview.title')}</h2>
-          <p className="t-caption text-ink3">
-            {t('debts.detail.overview.updatedAt')}{' '}
-            <span className="money-number font-mono">
-              {displayUpdatedAt(latestUpdate, locale)}
-            </span>
-          </p>
-        </div>
+      <div className="s-card-gap mt-5 flex flex-col">
+        {/* What is still owed, and how far through the run that puts them. Two
+            readings of one thing, so they share a row: the figure states the
+            amount, the bar states the share. */}
+        <Panel>
+          <PanelHeader
+            title={t('debts.detail.overview.balanceTitle')}
+            meta={displayUpdatedAt(latestUpdate, locale)}
+          />
 
-        <div className="mt-7 grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
-          <div>
-            <p className="label">{t('debts.detail.overview.outstanding')}</p>
-            <MoneyValue value={debt.outstandingAmountValue} />
-          </div>
-
-          <div className="lg:pb-0.5">
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="label">{t('debts.detail.overview.progress')}</p>
-              <p className="money-number t-body">{progressLabel}%</p>
+          <div className="s-head-body grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,.9fr)] lg:gap-12">
+            <div className="min-w-0">
+              <p className="t-body-sm text-ink2">{t('debts.detail.overview.outstanding')}</p>
+              <p className="money-number mt-1 t-figure lg:t-hero">
+                {formatVndShort(debt.outstandingAmountValue)}
+              </p>
             </div>
-            <div
-              className="mt-4 h-2 overflow-hidden rounded-full bg-wash"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(progress)}
-              aria-label={t('debts.detail.overview.progressAria', { percent: progressLabel })}
-            >
-              <div
-                className="h-full rounded-full bg-action"
-                style={{ width: `${progress}%` }}
+
+            <div className="min-w-0">
+              <div className="flex items-center justify-between gap-4">
+                <p className="t-body-sm text-ink2">{t('debts.detail.overview.progress')}</p>
+                <p className="num t-body-sm text-ink2">{progressLabel}%</p>
+              </div>
+              {/* The shared tick bar, at the compact height: the same scale the
+                  goals use, so a share reads the same everywhere. */}
+              <Progress
+                value={progress}
+                className="mt-2.5 h-2"
+                aria-label={t('debts.detail.overview.progressAria', { percent: progressLabel })}
               />
+              {/* Instalments, not money: the percentage above already says the
+                  money, and "2 / 5 kỳ" is the half a household counts. */}
+              <p className="num mt-2.5 t-caption text-ink3">
+                {schedule.length > 0
+                  ? t('debts.detail.overview.periodsDone', {
+                      done: paidPeriods.length,
+                      total: schedule.length,
+                    })
+                  : `${t('debts.detail.overview.repaid')} ${formatVndShort(repaid)}`}
+              </p>
             </div>
-            <p className="mt-2.5 t-caption text-ink2">
-              {t('debts.detail.overview.repaid')}{' '}
-              <span className="money-number font-medium text-ink">{formatVndShort(repaid)}</span>
-            </p>
           </div>
-        </div>
-      </Card>
+        </Panel>
 
-      <Card>
-        <h2 className="t-title">{t('debts.detail.loan.title')}</h2>
-
-        <div className="mt-7 grid gap-7 sm:grid-cols-3 sm:gap-0">
-          <div className="pr-0 sm:pr-7">
-            <p className="label">{t('debts.detail.loan.payoff')}</p>
-            <p className="money-number mt-3 font-mono t-metric">
-              {displayMonth(debt.expectedFinalDueDate, locale, t('debts.detail.noMonth'))}
-            </p>
-            <p className="mt-2 t-caption text-ink2">{t('debts.detail.loan.payoffNote')}</p>
-          </div>
-
-          <div className="px-0 sm:border-l sm:border-divider sm:px-7">
-            <p className="label">{t('debts.detail.loan.paid')}</p>
-            <p className="money-number mt-3 t-metric">
-              {t('debts.detail.loan.installments', { count: repayments.length })}
-            </p>
-            <p className="mt-2 t-caption text-ink2">
-              {latestRepayment
-                ? t('debts.detail.loan.latestInstallment', {
-                    date: displayDate(latestRepayment.isoDate, locale, t('debts.detail.noValue')),
-                  })
-                : t('debts.detail.loan.noInstallment')}
-            </p>
+        {/* The run of instalments. Settled and scheduled are shown APART rather
+            than as one strip of tiles: they answer different questions — what
+            has gone out, and what is still coming — and a single strip made the
+            reader find the boundary for themselves. */}
+        <Panel>
+          <div className="flex flex-wrap items-baseline justify-between gap-4">
+            <h2 className="t-title">{t('debts.detail.schedule.title')}</h2>
+            <button
+              type="button"
+              className="min-h-11 t-caption text-ink2 transition-colors hover:text-ink"
+              onClick={() => navigate('/events')}
+            >
+              {t('debts.detail.schedule.viewJournal')}
+            </button>
           </div>
 
-          <div className="px-0 sm:border-l sm:border-divider sm:px-7">
-            <p className="label">{t('debts.detail.loan.remaining')}</p>
-            <p className="money-number mt-3 t-metric">
-              {t('debts.detail.loan.installments', { count: upcomingPayments.length })}
-            </p>
-            <p className="mt-2 t-caption text-ink2">
-              {remainingMonths !== null
-                ? t('debts.detail.loan.remainingMonths', { count: remainingMonths })
-                : t('debts.detail.loan.noTerm')}
-            </p>
-          </div>
-        </div>
+          {schedule.length > 0 ? (
+            <>
+              <div className="s-head-body grid grid-cols-2">
+                <div className="min-w-0 pr-5 sm:pr-8">
+                  <p className="t-body-sm text-ink2">{t('debts.detail.schedule.paid')}</p>
+                  <p className="money-number mt-1 t-metric lg:t-figure">
+                    {t('debts.detail.loan.installments', { count: paidPeriods.length })}
+                  </p>
+                </div>
+                <div className="min-w-0 border-l border-divider pl-5 sm:pl-8">
+                  <p className="t-body-sm text-ink2">{t('debts.detail.loan.remaining')}</p>
+                  <p className="money-number mt-1 t-metric lg:t-figure">
+                    {t('debts.detail.loan.installments', { count: openPeriods.length })}
+                  </p>
+                </div>
+              </div>
 
-        <div className="sunk mt-8 p-5 sm:p-6">
-          <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-            <LoanInfo
+              <div className="mt-8 flex flex-col gap-8">
+                {paidPeriods.length > 0 ? (
+                  <PeriodGroup
+                    title={t('debts.detail.schedule.paid')}
+                    periods={paidPeriods}
+                    locale={locale}
+                  />
+                ) : null}
+                {openPeriods.length > 0 ? (
+                  <PeriodGroup
+                    title={t('debts.detail.schedule.upcoming')}
+                    periods={openPeriods}
+                    locale={locale}
+                  />
+                ) : null}
+              </div>
+            </>
+          ) : (
+            <p className="mt-7 rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
+              {t('debts.detail.schedule.empty')}
+            </p>
+          )}
+        </Panel>
+
+        {/* The terms: three figures that decide what the schedule above looks
+            like, then the reference facts underneath. */}
+        <Panel>
+          <PanelHeader title={t('debts.detail.loan.termsTitle')} />
+
+          <div className="s-head-body grid gap-7 sm:grid-cols-3 sm:gap-0">
+            <Term
+              label={t('debts.detail.loan.payoff')}
+              value={displayMonth(debt.expectedFinalDueDate, locale, t('debts.detail.noMonth'))}
+              note={t('debts.detail.loan.payoffNote')}
+              className="sm:pr-6"
+            />
+            <Term
+              label={t('debts.detail.loan.interest')}
+              value={debt.interestSummary || t('debts.detail.loan.noInterest')}
+              note={t('debts.detail.loan.interestNote')}
+              className="sm:border-l sm:border-divider sm:px-6"
+            />
+            <Term
+              label={t('debts.detail.loan.method')}
+              value={frequencyLabel}
+              note={methodNote}
+              className="sm:border-l sm:border-divider sm:pl-6"
+            />
+          </div>
+
+          <p className="mt-7 t-caption font-medium text-ink3">
+            {t('debts.detail.loan.detailsTitle')}
+          </p>
+          {/* Interest and repayment method are NOT repeated here — they are two
+              of the three figures above, and §9 keeps one fact in one place. */}
+          <dl className="mt-4 grid gap-x-12 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+            <Detail
               label={t('debts.detail.loan.lender')}
               value={debt.lenderName || t('debts.detail.loan.notUpdated')}
             />
-            {/* Moved here from the list row, which now shows the name alone.
-                The fact is worth keeping — a loan from a relative is not the
-                same kind of obligation as one from a bank — it just does not
-                need a line in a table that is one click away from this. */}
-            <LoanInfo
+            {/* Kept off the list row, which shows the name alone. The fact is
+                worth having — a loan from a relative is not the same kind of
+                obligation as one from a bank — it just does not need a column
+                in a table that is one click from here. */}
+            <Detail
               label={t('debts.detail.loan.lenderType')}
               value={t(`debts.form.lenderType.${debt.lenderType}`)}
             />
-            <LoanInfo
+            <Detail
               label={t('debts.detail.loan.originalAmount')}
               value={formatVndShort(debt.originalAmountValue)}
+              num
             />
-            <LoanInfo
-              label={t('debts.detail.loan.interest')}
-              value={debt.interestSummary || t('debts.detail.loan.noInterest')}
-            />
-            <LoanInfo label={t('debts.detail.loan.method')} value={repaymentMethod} />
             {paymentDay ? (
-              <LoanInfo
+              <Detail
                 label={t('debts.detail.loan.paymentDay')}
                 value={t('debts.detail.loan.paymentDayValue', { day: paymentDay })}
-                mono
+                num
               />
             ) : null}
-            <LoanInfo
+            <Detail
               label={t('debts.detail.loan.owner')}
               value={ownerName || t('debts.detail.loan.unassigned')}
             />
-            <LoanInfo
+            <Detail
               label={t('debts.detail.loan.receivedInto')}
               value={receivedToAssetName || t('debts.detail.loan.notUpdated')}
             />
-            <LoanInfo
+            <Detail
               label={t('debts.detail.loan.disbursedAt')}
               value={displayDate(debt.borrowedAt, locale, t('debts.detail.noValue'))}
-              mono
+              num
             />
-          </div>
-        </div>
-      </Card>
-
-      <Card>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="t-title">{t('debts.detail.schedule.title')}</h2>
-          <button
-            type="button"
-            className="min-h-10 t-body-sm text-action hover:underline"
-            onClick={() => navigate('/events')}
-          >
-            {t('debts.detail.schedule.viewJournal')}
-          </button>
-        </div>
-
-        {calendarItems.length > 0 ? (
-          <div className="sunk mt-7 p-2.5">
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-              {calendarItems.map((item, index) => {
-                const isNext = !item.paid && !calendarItems.slice(0, index).some((entry) => !entry.paid)
-                return (
-                  <div
-                    key={item.id}
-                    className={
-                      item.paid
-                        ? 'relative min-h-[96px] rounded-[9px] bg-action p-3.5 text-white'
-                        : 'relative min-h-[96px] rounded-[9px] bg-card p-3.5'
-                    }
-                  >
-                    {item.paid ? (
-                      <Check
-                        className="absolute right-3 top-3 size-4 text-white/80"
-                        strokeWidth={1.75}
-                        aria-label={t('debts.detail.schedule.paid')}
-                      />
-                    ) : isNext ? (
-                      <span
-                        className="absolute right-3 top-3 size-2 rounded-full bg-attention"
-                        aria-label={t('debts.detail.schedule.next')}
-                      />
-                    ) : null}
-                    <p
-                      className={
-                        item.paid
-                          ? 'money-number font-mono t-caption text-white/80'
-                          : 'money-number font-mono t-caption text-ink2'
-                      }
-                    >
-                      {displayDate(item.isoDate, locale, t('debts.detail.noValue'))}
-                    </p>
-                    <p className="money-number mt-7 t-body">
-                      {formatVndShort(item.amount)}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        ) : (
-          <p className="sunk mt-7 px-4 py-8 text-center t-body-sm text-ink2">
-            {t('debts.detail.schedule.empty')}
-          </p>
-        )}
-      </Card>
+          </dl>
+        </Panel>
+      </div>
 
       <DebtFormDialog
         open={dialogOpen}
@@ -453,6 +487,57 @@ export function DebtDetailPage() {
           onConfirm={confirmUpdateMode}
         />
       ) : null}
+    </div>
+  )
+}
+
+function PeriodGroup({
+  title,
+  periods,
+  locale,
+}: {
+  title: string
+  periods: RepaymentPeriod[]
+  locale: string
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <div className="min-w-0">
+      <p className="t-caption font-medium text-ink3">{title}</p>
+      <ul className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {periods.map((period) => (
+          <li
+            key={period.id}
+            // Uniform padding across every tile, including the unfilled ones:
+            // the mockup pads only the highlighted tiles, which steps their
+            // text 16px away from their neighbours' in the same grid row.
+            className={cn(
+              'flex min-w-0 flex-col gap-2 rounded-control px-4 py-3.5',
+              PERIOD_FILL[period.state],
+            )}
+          >
+            <div className="flex flex-col gap-0.5">
+              <span className="t-caption text-ink3">
+                {t('debts.detail.schedule.periodIndex', { index: period.index })}
+              </span>
+              <span className="num t-body-sm">
+                {displayDate(period.isoDate, locale, t('debts.detail.noValue'))}
+              </span>
+            </div>
+            <span className="money-number t-subhead">{formatVndShort(period.amount)}</span>
+            <span
+              className={cn(
+                'inline-flex items-center gap-2 t-caption font-medium',
+                period.state === 'paid' ? 'text-positive-ink' : 'text-ink2',
+              )}
+            >
+              <span className={cn('size-1.5 shrink-0 rounded-full', PERIOD_DOT[period.state])} />
+              {t(`debts.detail.schedule.${period.state}`)}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

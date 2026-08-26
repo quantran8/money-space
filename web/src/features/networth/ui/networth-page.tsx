@@ -114,7 +114,7 @@ export function NetWorthPage() {
         title={t('networth.header.title')}
         actions={
           <Button
-            className="s-tap h-10 px-4 t-body-sm"
+            className="s-tap h-10 px-4"
             // Wrapped, not passed by reference: `openAssetCreate` takes an
             // optional acquisition and a click event would land in it.
             onClick={onAssets ? () => openAssetCreate() : debtsPage.openCreate}

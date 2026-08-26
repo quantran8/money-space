@@ -204,7 +204,7 @@ export function FinancialPictureSection({
               <button
                 type="button"
                 onClick={onQuickUpdate}
-                className="t-body-sm font-medium text-action"
+                className="t-body font-medium text-action"
               >
                 {t('home.coverage.action')}
               </button>

@@ -264,13 +264,13 @@ export function ActualRecordForm({
         <Button
           type="button"
           variant="secondary"
-          className="px-4 t-body-sm"
+          className="px-4"
           onClick={onCancel}
         >
           {t('common.cancel')}
         </Button>
         {/* §22.10 — always enabled; errors say what is missing. */}
-        <Button type="submit" className="px-5 t-body-sm" disabled={isSaving}>
+        <Button type="submit" className="px-5" disabled={isSaving}>
           {isSaving
             ? t('events.form.saving')
             : isEditing

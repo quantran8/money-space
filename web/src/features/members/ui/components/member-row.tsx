@@ -1,8 +1,14 @@
-import { LogOut, Trash2 } from 'lucide-react'
+import { LogOut, MoreHorizontal, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { StatusChip } from '@/components/ui/status-chip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { cn } from '@money-space/core/shared/lib/utils'
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
 
 type MemberRowProps = {
@@ -33,7 +39,14 @@ type MemberRowProps = {
  * because the household's guard resolves against that row. Anyone else sees
  * "leave" on their own row and nothing on the other person's: taking a partner
  * out of the shared picture is the creator's call, not something either of them
- * can do to the other.
+ * can do to the other. It lives in an overflow menu rather than as a standing
+ * red button, because a destructive action does not belong at rest in a row
+ * whose job is to state a fact.
+ *
+ * `-mx-3 px-3` is what keeps the row FLUSH with the panel's content edge while
+ * its hover band bleeds 12px past it on both sides. Padding alone would indent
+ * every row from the heading above; padding added only on hover would shift the
+ * text as the pointer arrives.
  */
 export function MemberRow({
   member,
@@ -45,63 +58,68 @@ export function MemberRow({
 }: MemberRowProps) {
   const { t } = useTranslation()
   const exit = isOwner ? 'none' : isSelf ? 'leave' : canRemoveOthers ? 'remove' : 'none'
+  const isActive = member.status === 'active'
+  const displayName = member.name || member.email
 
   return (
-    <article className="rounded-control px-3 py-3 transition-colors hover:bg-wash sm:px-4">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="grid size-10 shrink-0 place-items-center rounded-full bg-wash t-caption font-medium">
-            {member.initials}
-          </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="truncate t-body-sm font-medium">{member.name}</p>
-              {member.status === 'invited' ? (
-                <span className="rounded-full bg-attention-tint px-2 py-1 t-caption-sm text-attention">
-                  {t('members.list.pending')}
-                </span>
-              ) : null}
-            </div>
-            <p className="mt-1 truncate t-caption-sm text-ink3">{member.email}</p>
-          </div>
+    <article className="-mx-3 grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-2 rounded-control px-3 py-1 transition-colors hover:bg-wash sm:grid-cols-[minmax(0,1fr)_auto_auto_44px]">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="grid size-11 shrink-0 place-items-center rounded-full bg-wash t-caption font-medium text-ink2">
+          {member.initials}
         </div>
+        <div className="min-w-0">
+          <p className="truncate t-body-sm font-medium">{member.name}</p>
+          <p className="mt-0.5 truncate t-caption text-ink3">{member.email}</p>
+        </div>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:justify-end">
-          {holdsCount > 0 ? (
-            <p className="t-caption text-ink2">
-              {t('members.list.holdsSources', { count: holdsCount })}
-            </p>
-          ) : null}
-          <StatusChip tone={member.status === 'active' ? 'accent' : 'attention'}>
-            {member.status === 'active'
-              ? t('members.list.active')
-              : t('members.list.pending')}
-          </StatusChip>
-          {member.status === 'active' && exit !== 'none' ? (
+      {/* Below `sm` the two facts drop under the name rather than squeezing
+          four columns onto a phone. The indent is not a spacing step — it is
+          the avatar (44) plus its gap (12), so the facts line up with the copy
+          rather than with the row edge.
+
+          A member with no sources keeps the empty cell from `sm` up, so status
+          lands in the same column on every row; on a phone it is a blank line
+          instead, so it is dropped there. */}
+      <p className="num order-3 col-span-2 pl-[56px] t-caption text-ink3 empty:hidden sm:order-none sm:col-span-1 sm:whitespace-nowrap sm:pl-0 sm:empty:block">
+        {holdsCount > 0 ? t('members.list.holdsSources', { count: holdsCount }) : null}
+      </p>
+
+      <p className="order-4 col-span-2 flex items-center gap-2 pl-[56px] t-body-sm text-ink2 sm:order-none sm:col-span-1 sm:whitespace-nowrap sm:pl-0">
+        <span
+          className={cn('size-1.5 shrink-0 rounded-full', isActive ? 'bg-positive' : 'bg-attention')}
+        />
+        {isActive ? t('members.list.active') : t('members.list.pending')}
+      </p>
+
+      {isActive && exit !== 'none' ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button
               type="button"
               variant="ghost"
-              size="sm"
-              className="text-alert hover:bg-alert-tint hover:text-alert"
-              onClick={() => onRemove(member.id)}
-              aria-label={
-                exit === 'leave'
-                  ? t('members.list.leave')
-                  : t('common.confirmDelete.description', {
-                      name: member.name || member.email,
-                    })
-              }
+              size="icon"
+              className="justify-self-end text-ink2"
+              aria-label={t('members.list.memberMenu', { name: displayName })}
             >
-              {exit === 'leave' ? (
-                <LogOut className="size-3.5" />
-              ) : (
-                <Trash2 className="size-3.5" />
-              )}
-              {exit === 'leave' ? t('members.list.leave') : t('common.remove')}
+              <MoreHorizontal className="size-[18px]" strokeWidth={1.75} />
             </Button>
-          ) : null}
-        </div>
-      </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              className="text-alert focus:text-alert"
+              onSelect={() => onRemove(member.id)}
+            >
+              {exit === 'leave' ? <LogOut className="size-4" /> : <Trash2 className="size-4" />}
+              {exit === 'leave' ? t('members.list.leave') : t('common.remove')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        // Holds the column so every row's facts line up, whether or not the
+        // row has a way out.
+        <span className="hidden sm:block sm:size-11" aria-hidden />
+      )}
     </article>
   )
 }

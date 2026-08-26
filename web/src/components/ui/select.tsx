@@ -10,7 +10,12 @@ const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
 
-/** The trigger is an input: no border, `--sunk` fill (design.md §2.2, §3). */
+/**
+ * The trigger is an input, so it wears the same chrome as `Input`: a WHITE
+ * `--card` fill marked by a 1px `--committed` stroke. A wash-filled trigger read
+ * as a second surface level inside an already-white card; the stroke does that
+ * job without spending a lightness step.
+ */
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
@@ -18,7 +23,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-11 w-full items-center justify-between whitespace-nowrap rounded-control bg-wash px-4 py-2 t-body-sm text-ink outline-none transition data-[placeholder]:text-ink3 focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:outline-2 aria-[invalid=true]:outline-alert [&>span]:line-clamp-1',
+      'flex h-11 w-full items-center justify-between whitespace-nowrap rounded-control border border-committed bg-card px-4 py-2 t-body-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 data-[placeholder]:text-ink3 focus-visible:border-data-primary focus-visible:shadow-[0_0_0_3px_rgba(115,164,215,0.16)] disabled:cursor-not-allowed disabled:border-divider disabled:bg-wash disabled:text-ink3 disabled:opacity-100 aria-[invalid=true]:border-alert aria-[invalid=true]:shadow-[0_0_0_3px_var(--alert-tint)] [&>span]:line-clamp-1',
       className
     )}
     {...props}
