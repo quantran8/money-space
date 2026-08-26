@@ -77,6 +77,26 @@ const SPACING = new RegExp(
  */
 const SPACING_ALLOW = new Set([16, 24])
 
+/**
+ * Wash is a CONTROL surface (Foundations §2.4): segmented controls, secondary
+ * buttons, row hover, selected states, chart beds, skeletons, table headers.
+ * It is not a card level, so it must never bed ordinary CONTENT — an empty
+ * state, a notice, a summary block, a list item, a whole section.
+ *
+ * The tell is a static `bg-wash` carrying a text class on a NON-interactive
+ * element. Hover/focus/disabled/data- variants are the legitimate uses, and a
+ * button or an element with a hover fill is a control by definition — all are
+ * excluded, so what is left is wash bedding prose.
+ *
+ * It cannot see across lines, so a multi-line className or a wrapper whose
+ * text sits on a child still needs review by eye. It catches the single-line
+ * shape that all nine of the original violations shared.
+ */
+const WASH_CONTENT = new RegExp(
+  String.raw`(?<!hover:)(?<!focus:)(?<!disabled:)(?<!checked:)\bbg-wash\b`,
+)
+const WASH_CONTENT_TELL = /\btext-center\b|\bt-body-sm\b|\bt-body\b|\bleading-\d/
+
 const violations = []
 for (const file of walk(SRC)) {
   const lines = readFileSync(file, 'utf8').split('\n')
@@ -97,6 +117,27 @@ for (const file of walk(SRC)) {
           why: `off the spacing scale (${step * 4}px) — use 4/8/12/16/20/24/28/32/48`,
         })
       }
+    }
+
+    // Wash bedding content rather than serving as a control surface.
+    if (
+      WASH_CONTENT.test(line) &&
+      WASH_CONTENT_TELL.test(line) &&
+      !/data-\[/.test(line) &&
+      // A control: anything that paints a hover state on the same element...
+      !/hover:/.test(line) &&
+      // ...or an element whose opening tag is a button/link. The tag often
+      // sits several lines above its className, so look back a little.
+      !/<(?:button|a|Button|Link|NavLink)\b/.test(
+        lines.slice(Math.max(0, i - 6), i + 1).join(' '),
+      )
+    ) {
+      violations.push({
+        file: relative(root, file),
+        line: i + 1,
+        text: 'bg-wash + content',
+        why: 'wash is a control surface — content sits on the card (§2.4); use spacing or a divider',
+      })
     }
 
     // A title class carrying its own size or weight on top.

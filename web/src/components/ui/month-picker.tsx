@@ -108,7 +108,7 @@ export function MonthPicker({
               variant="ghost"
               onClick={() => setViewYear((year) => year - 1)}
               aria-label={t('common.previousYear')}
-              className="absolute left-0 size-8 rounded-control bg-transparent p-0 text-ink3 hover:bg-wash hover:text-ink"
+              className="absolute left-0 size-8 rounded-control bg-transparent p-0 text-ink3 hover:bg-canvas hover:text-ink"
             >
               <ChevronLeftIcon className="size-4" />
             </Button>
@@ -118,7 +118,7 @@ export function MonthPicker({
               variant="ghost"
               onClick={() => setViewYear((year) => year + 1)}
               aria-label={t('common.nextYear')}
-              className="absolute right-0 size-8 rounded-control bg-transparent p-0 text-ink3 hover:bg-wash hover:text-ink"
+              className="absolute right-0 size-8 rounded-control bg-transparent p-0 text-ink3 hover:bg-canvas hover:text-ink"
             >
               <ChevronRightIcon className="size-4" />
             </Button>
@@ -142,7 +142,7 @@ export function MonthPicker({
                     setOpen(false)
                   }}
                   className={cn(
-                    'h-9 w-full rounded-control px-2 t-body-sm text-ink transition-colors hover:bg-wash hover:text-ink',
+                    'h-9 w-full rounded-control px-2 t-body-sm text-ink transition-colors hover:bg-canvas hover:text-ink',
                     'data-[selected=true]:bg-action data-[selected=true]:text-white'
                   )}
                 >

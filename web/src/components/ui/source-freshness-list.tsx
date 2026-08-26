@@ -4,7 +4,6 @@ import * as React from 'react'
 import type { SourceFreshnessRow } from '@money-space/core/shared/presentation.types'
 
 import { easeOut } from '@/components/ui/motion'
-import { Sunk } from '@/components/ui/panel'
 import {
   Table,
   TableBody,
@@ -76,8 +75,11 @@ export function SourceFreshnessList({
   const [isOpen, setIsOpen] = React.useState(false)
 
   return (
-    <Sunk className={cn('mt-6', className)}>
-      <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+    /* No wash bed. This is CONTENT inside a card, and §2.4 keeps wash for
+       control surfaces — the summary/detail relation is carried by a divider
+       and by spacing instead (§9), which is what the rest of the app does. */
+    <div className={cn('mt-6 border-t border-divider', className)}>
+      <div className="flex items-center justify-between gap-3 py-3.5">
         <p className="t-body-sm leading-5 text-ink2">{summary}</p>
 
         <span className="flex shrink-0 items-center gap-3">
@@ -118,7 +120,7 @@ export function SourceFreshnessList({
             }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4">
+            <div className="pb-4">
               <Table className="t-body-sm">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
@@ -138,10 +140,10 @@ export function SourceFreshnessList({
 
                 <TableBody>
                   {rows.map((row) => (
-                    // This table sits INSIDE a sunk block, so its hover band goes
-                    // lighter (`--panel`) rather than the darker `--sunk` a table
-                    // on a panel uses — same band, one surface up.
-                    <TableRow key={row.id} className="hover:bg-card">
+                    // Row hover is one of wash's legitimate control uses
+                    // (§2.4). The table sits on the card now, not in a sunk
+                    // block, so the band is the standard `--wash`.
+                    <TableRow key={row.id} className="hover:bg-canvas">
                       {/* A row header, not a column header: `TableHead` carries
                           `.label`, whose mono face must never touch the accented
                           Vietnamese of a source name (§10.1). The primitive has
@@ -179,6 +181,6 @@ export function SourceFreshnessList({
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </Sunk>
+    </div>
   )
 }

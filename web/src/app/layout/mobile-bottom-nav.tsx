@@ -1,9 +1,10 @@
-import { CalendarDays, LayoutGrid, Target, Users, Wallet } from 'lucide-react'
+import { Calculator, CalendarClock, House, Settings, Target, Wallet } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, useLocation } from 'react-router-dom'
 
 import { cn } from '@money-space/core/shared/lib/utils'
+import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
 
 type BottomNavItem = {
   to: string
@@ -19,8 +20,8 @@ type BottomNavItem = {
  * nobody can hit.
  */
 const items: BottomNavItem[] = [
-  { to: '/', labelKey: 'nav.dashboard', icon: LayoutGrid },
-  { to: '/upcoming', labelKey: 'nav.upcoming', icon: CalendarDays },
+  { to: '/', labelKey: 'nav.dashboard', icon: House },
+  { to: '/upcoming', labelKey: 'nav.upcoming', icon: CalendarClock },
   { to: '/goals', labelKey: 'nav.goals', icon: Target },
   {
     to: '/networth',
@@ -29,15 +30,38 @@ const items: BottomNavItem[] = [
     // The asset/debt detail routes belong to this destination too.
     alsoActiveOn: ['/assets', '/debts'],
   },
-  { to: '/household', labelKey: 'nav.household', icon: Users },
+  { to: '/household', labelKey: 'nav.household', icon: Settings },
 ]
 
 export function MobileBottomNav() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
+  const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
 
   return (
-    <nav
+    <>
+      {/* What-if is not a route (§2.9), so it cannot be a tab — it is an action.
+          It used to live in the mobile drawer; with the drawer gone this button
+          is its only entry point on small screens, so it sits above the bar
+          rather than inside it: a floating action reads as "do a thing", which
+          is what it is, and it keeps the five tabs at full width. */}
+      <button
+        type="button"
+        onClick={() => openWhatIf({ source: 'other' })}
+        aria-label={t('home.picture.simulate')}
+        title={t('home.picture.simulate')}
+        className={cn(
+          'fixed right-4 z-30 flex size-14 items-center justify-center rounded-pill',
+          'bg-action text-action-inverse shadow-lg lg:hidden',
+          // Clears the bar (its own height plus the home indicator) so the
+          // button never covers a tab label.
+          'bottom-[calc(env(safe-area-inset-bottom)+5.5rem)]',
+        )}
+      >
+        <Calculator className="size-6" strokeWidth={1.5} />
+      </button>
+
+      <nav
       className={cn(
         'fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around',
         // Bottom nav is one of the two places §2.4 still allows a divider — the
@@ -70,6 +94,7 @@ export function MobileBottomNav() {
           <span className="truncate px-1">{t(labelKey)}</span>
         </NavLink>
       ))}
-    </nav>
+      </nav>
+    </>
   )
 }

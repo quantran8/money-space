@@ -158,12 +158,11 @@ export function GoalFormDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={requestOpenChange}>
-      <ResponsiveDialogContent className="flex h-dvh max-h-dvh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none p-0 pb-0 md:h-[min(900px,92dvh)] md:max-h-[92dvh] md:max-w-[1080px] md:rounded-[18px] [&>button:last-child]:left-5 [&>button:last-child]:right-auto [&>button:last-child]:top-5 [&>button:last-child]:grid [&>button:last-child]:size-11 [&>button:last-child]:place-items-center [&>button:last-child]:rounded-[10px] md:[&>button:last-child]:left-6 md:[&>button:last-child]:top-5">
-        <header className="flex flex-none items-center gap-3 bg-card py-4 pl-[76px] pr-6 md:py-5 md:pl-[88px] md:pr-8">
+      <ResponsiveDialogContent className="flex h-dvh max-h-dvh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none p-0 pb-0 md:h-[min(900px,92dvh)] md:max-h-[92dvh] md:max-w-[1080px] md:rounded-[18px] [&>button:last-child]:right-5 [&>button:last-child]:top-5 [&>button:last-child]:grid [&>button:last-child]:size-11 [&>button:last-child]:place-items-center [&>button:last-child]:rounded-[10px] md:[&>button:last-child]:right-6 md:[&>button:last-child]:top-5">
+        {/* The right gutter is the close button's; the title runs up to it
+            rather than under it. */}
+        <header className="flex flex-none items-center gap-3 bg-card py-4 pl-5 pr-[76px] md:py-5 md:pl-8 md:pr-[88px]">
           <div className="min-w-0 flex-1">
-            <p className="t-caption-sm text-ink3">
-              {isEditing ? t('goals.builder.editEyebrow') : t('goals.builder.createEyebrow')}
-            </p>
             <ResponsiveDialogTitle className="mt-0.5 truncate t-subhead font-medium">
               {isEditing ? t('goals.form.editTitle') : t('goals.form.title')}
             </ResponsiveDialogTitle>
@@ -171,15 +170,10 @@ export function GoalFormDialog({
               {t('goals.form.help')}
             </ResponsiveDialogDescription>
           </div>
-          {!isEditing ? (
-            <p className="hidden font-mono t-caption-sm text-ink3 md:block">
-              {t('goals.builder.stepStatus', { step })}
-            </p>
-          ) : null}
         </header>
 
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit} noValidate>
-          <div className="min-h-0 flex-1 overflow-hidden bg-[var(--app)]">
+          <div className="min-h-0 flex-1 overflow-hidden">
             <div className="grid h-full md:grid-cols-[minmax(0,1fr)_320px]">
               <main className="min-h-0 overflow-y-auto">
                 <div className="mx-auto w-full max-w-[650px] px-5 py-6 md:px-8 md:py-8">
@@ -615,7 +609,10 @@ function GoalSummary({
           {target ? formatVndScale(target) : '—'}
         </p>
       </div>
-      <div className="mt-6 rounded-[14px] bg-wash p-4">
+      {/* No wash: a read-only summary is content (§2.4), and the accent-soft
+          forecast directly below made two tinted blocks stack. The progress bar
+          is the visual anchor this block needs. */}
+      <div className="mt-6 border-t border-divider pt-4">
         <div className="flex items-baseline justify-between gap-3">
           <span className="t-caption text-ink2">{t('goals.builder.countingNow')}</span>
           <span className="num t-body-sm font-medium">{formatVndScale(current)}</span>
@@ -771,7 +768,7 @@ function ReviewEditButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="min-h-10 rounded-[9px] px-3 t-caption font-medium text-action hover:bg-wash"
+      className="min-h-10 rounded-[9px] px-3 t-caption font-medium text-action hover:bg-canvas"
     >
       {t('common.edit')}
     </button>

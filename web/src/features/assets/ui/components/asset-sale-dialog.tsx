@@ -242,7 +242,7 @@ export function AssetSaleDialog({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-foreground hover:bg-wash"
+              className="text-foreground hover:bg-canvas"
             >
               {t('common.cancel')}
             </Button>

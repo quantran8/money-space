@@ -2,7 +2,6 @@ import {
   CalendarDays,
   ChartNoAxesColumnIncreasing,
   Eye,
-  Flag,
   MoreVertical,
   Pencil,
   Plus,
@@ -22,10 +21,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { GoalPriorityMark } from '@/features/goals/ui/components/goal-priority-mark'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { hasProjectedDate } from '@money-space/core/features/goals/model/goal-projection.types'
-import type { GoalItem, GoalPriority } from '@money-space/core/features/goals/model/goals'
+import type { GoalItem } from '@money-space/core/features/goals/model/goals'
 import { formatAmount, goalAmount, priorityRank } from '@money-space/core/features/goals/model/goals-form'
 import { formatMonthYear } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -146,14 +146,14 @@ export function GoalsListSection({
 function GoalCard({
   goal,
   locale,
-  isPrimary,
   onOpen,
   onEdit,
   onDelete,
 }: {
   goal: GoalItem
   locale: string
-  isPrimary: boolean
+  /** The household's main goal. Reserved: no distinct card treatment yet. */
+  isPrimary?: boolean
   onOpen: (goalId: string) => void
   onEdit: (goalId: string) => void
   onDelete: (goalId: string) => void
@@ -199,15 +199,10 @@ function GoalCard({
           >
             {goal.name}
           </button>
-          {isPrimary ? (
-            <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 t-caption-sm font-medium text-action">
-              {t('home.mainGoal.badge')}
-            </span>
-          ) : null}
+          <GoalPriorityMark priority={goal.priority} />
         </div>
 
         <div className="flex shrink-0 items-center gap-1" onClick={(event) => event.stopPropagation()}>
-          <PriorityMark priority={goal.priority} />
           <GoalMenu goalId={goal.id} goalName={goal.name} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
         </div>
       </div>
@@ -303,31 +298,6 @@ function Fact({
       <Icon className={cn('size-[18px] shrink-0', tone)} strokeWidth={1.75} aria-hidden />
       <span className="sr-only">{label}: </span>
       <span className={cn('num t-body-sm font-medium', valueClassName)}>{value}</span>
-    </span>
-  )
-}
-
-/**
- * Priority is shown only when it CHANGES something: a high-priority goal is
- * funded first when a wallet cannot cover every goal, a low one last. `medium`
- * is the default, and a flag on every card would say nothing.
- */
-function PriorityMark({ priority }: { priority: GoalPriority }) {
-  const { t } = useTranslation()
-  if (priority === 'medium') return null
-
-  const label = t(`options.priority.${priority}`)
-  return (
-    <span
-      className="inline-flex size-11 items-center justify-center rounded-control"
-      role="img"
-      aria-label={label}
-      title={label}
-    >
-      <Flag
-        className={cn('size-[18px]', priority === 'high' ? 'text-attention-ink' : 'text-ink3')}
-        strokeWidth={1.75}
-      />
     </span>
   )
 }

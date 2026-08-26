@@ -124,7 +124,10 @@ export function GoalScheduledOutflowsSection({
               strikethrough pair: the household reads two complete pictures
               rather than reconstructing one from edits to the other. */}
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-control bg-wash p-4">
+            {/* Only the "after" half is tinted. Wash here was making the pair
+                look symmetrical, which is decoration — the contrast IS the
+                message, so the unchanged side stays on the panel (§2.4). */}
+            <div className="p-4">
               <p className="label-vi">{t('goals.scheduledOutflows.beforeLabel')}</p>
               <ImpactFigures
                 held={impact.currentAmount}

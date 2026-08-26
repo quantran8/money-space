@@ -31,7 +31,7 @@ const buttonVariants = cva(
         destructive: 'bg-alert text-white hover:bg-alert/90',
         outline: 'bg-wash text-ink hover:bg-committed',
         secondary: 'bg-wash text-ink hover:bg-committed',
-        ghost: 'text-action hover:bg-wash',
+        ghost: 'text-action hover:bg-canvas',
         link: 'text-action underline-offset-4 hover:underline',
       },
       size: {

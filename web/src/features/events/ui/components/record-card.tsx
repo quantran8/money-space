@@ -44,7 +44,7 @@ export function RecordCard({
   const actorLabel = t('events.history.actor', { name: actor })
 
   return (
-    <article className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-5 rounded-control px-2 py-2 transition-colors hover:bg-wash">
+    <article className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-5 rounded-control px-2 py-2 transition-colors hover:bg-canvas">
       {/* Everything that says WHAT happened, left. */}
       <div className="flex min-w-0 items-center gap-3">
         <span

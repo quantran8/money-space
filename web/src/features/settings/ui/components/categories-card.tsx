@@ -197,7 +197,7 @@ export function CategoriesCard() {
               return (
                 <li
                   key={category.id}
-                  className="group flex min-h-[52px] items-center gap-1 rounded-control py-1 pl-3 pr-1 transition-colors hover:bg-wash"
+                  className="group flex min-h-[52px] items-center gap-1 rounded-control py-1 pl-3 pr-1 transition-colors hover:bg-canvas"
                 >
                   {isEditing ? (
                     <Input

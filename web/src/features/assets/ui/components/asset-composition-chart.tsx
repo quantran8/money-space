@@ -9,6 +9,15 @@ import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 type AssetCompositionChartProps = {
   /** Total value per liquidity bucket, in VND. */
   totals: Record<AssetLiquidity, number>
+  /**
+   * Fill per bucket, for the arc and its legend swatch alike.
+   *
+   * Defaults to `liquidityColors` so existing call sites keep the palette they
+   * had. Pass `liquidityRampColors` for the single-hue ramp, or any other
+   * complete set — the component never reaches for a colour of its own, so a
+   * caller that supplies this owns the whole encoding.
+   */
+  colors?: Record<AssetLiquidity, string>
 }
 
 type Slice = {
@@ -18,7 +27,10 @@ type Slice = {
   color: string
 }
 
-export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
+export function AssetCompositionChart({
+  totals,
+  colors = liquidityColors,
+}: AssetCompositionChartProps) {
   const { t } = useTranslation()
 
   const slices = useMemo<Slice[]>(
@@ -27,12 +39,17 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
           liquidity,
           label: t(`options.liquidity.${liquidity}`),
           value: totals[liquidity],
-          color: liquidityColors[liquidity],
+          color: colors[liquidity],
         })),
-    [totals, t],
+    [totals, colors, t],
   )
 
   const total = slices.reduce((sum, slice) => sum + slice.value, 0)
+  /* Empty buckets stay in the legend — a household reading "0" for illiquid
+     learns something — but they must not reach the arc. With rounded caps a
+     zero-value segment still renders its corner radius, so it would appear as
+     a stray nub holding open a gap of its own. */
+  const arcSlices = slices.filter((slice) => slice.value > 0)
 
   if (total <= 0) {
     return (
@@ -46,22 +63,29 @@ export function AssetCompositionChart({ totals }: AssetCompositionChartProps) {
     <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
       <div className="relative mx-auto h-44 w-44 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          {/* Zeroed: PieChart's default 5px margin on every side would shrink
+              the ring inside its box and leave the centre total sitting in a
+              hole that no longer matches the arc. */}
+          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             <Pie
-              data={slices}
+              data={arcSlices}
               dataKey="value"
               nameKey="label"
-              innerRadius={52}
-              outerRadius={76}
-              // 2px surface gap between adjacent segments (dataviz spacer rule).
-              paddingAngle={2}
-              stroke="hsl(var(--card))"
-              strokeWidth={2}
+              innerRadius="68%"
+              outerRadius="100%"
+              /* The gap and the rounded caps: each bucket reads as its own
+                 token rather than as a slice of a divided disc, which is what
+                 keeps this a composition and not a pie. A card-coloured stroke
+                 would only re-cut the segments the rounding just released, so
+                 the padding angle is left to do the separating on its own. */
+              paddingAngle={arcSlices.length > 1 ? 2 : 0}
+              cornerRadius={6}
+              stroke="none"
               startAngle={90}
               endAngle={-270}
               isAnimationActive={false}
             >
-              {slices.map((slice) => (
+              {arcSlices.map((slice) => (
                 <Cell key={slice.liquidity} fill={slice.color} />
               ))}
             </Pie>

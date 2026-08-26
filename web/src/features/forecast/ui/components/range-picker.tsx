@@ -88,7 +88,7 @@ export function RangePicker({
           type="button"
           aria-haspopup="dialog"
           aria-expanded={open}
-          className="group flex min-h-11 min-w-[190px] items-center justify-between gap-4 rounded-control border border-committed bg-card px-4 py-2 text-left transition-colors hover:bg-wash"
+          className="group flex min-h-11 min-w-[190px] items-center justify-between gap-4 rounded-control border border-committed bg-card px-4 py-2 text-left transition-colors hover:bg-canvas"
         >
           <span>
             <span className="block t-body-sm font-medium">{label}</span>
@@ -162,7 +162,7 @@ export function RangePicker({
                     }}
                     className={cn(
                       'flex min-h-11 w-full items-center justify-between gap-3 rounded-control px-3 py-2 text-left transition-colors',
-                      active ? 'bg-wash' : 'hover:bg-wash',
+                      active ? 'bg-wash' : 'hover:bg-canvas',
                     )}
                   >
                     <span className={cn('t-body-sm', active && 'font-medium')}>
@@ -188,7 +188,7 @@ export function RangePicker({
                 setShowCalendar(true)
               }}
               className={cn(
-                'flex min-h-11 w-full items-center gap-3 rounded-control px-3 py-2 text-left transition-colors hover:bg-wash',
+                'flex min-h-11 w-full items-center gap-3 rounded-control px-3 py-2 text-left transition-colors hover:bg-canvas',
                 range.kind === 'custom' && 'bg-wash',
               )}
             >

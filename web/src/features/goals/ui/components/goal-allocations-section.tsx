@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Plus, Trash2, Wallet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import type { GoalAllocationRecord } from '@money-space/core/features/goals/api/goals.repository'
 import { formatAmount } from '@money-space/core/features/goals/model/goals-form'
@@ -101,7 +102,7 @@ export function GoalAllocationsSection({
           where the household finds out. Shown above the columns because it
           explains why the contribution column is missing entirely. */}
       {allocations.length > 0 && contributions.length === 0 ? (
-        <div className="mt-6 rounded-control bg-wash px-4 py-3 t-body-sm leading-5 text-ink2">
+        <div className="mt-6 t-body-sm leading-5 text-ink2">
           <p>{t('goals.allocations.noWalletTitle')}</p>
           <Button
             type="button"
@@ -119,18 +120,23 @@ export function GoalAllocationsSection({
         // A statement with no button leaves a brand-new asset-backed goal
         // reading as 0% with nothing to do about it. The invitation belongs
         // where the household is already looking.
-        <div className="mt-6 rounded-control bg-wash px-4 py-8 text-center">
-          <p className="t-body-sm text-ink2">{t('goals.allocations.empty')}</p>
-          <Button
-            type="button"
-            variant="secondary"
-            className="s-tap mt-4 h-10 px-4"
-            disabled={!canAdd || isBusy}
-            onClick={onAdd}
-          >
-            {t('goals.allocations.addSource')}
-          </Button>
-        </div>
+        <EmptyState
+          icon={Wallet}
+          className="mt-6"
+          action={
+            <Button
+              type="button"
+              variant="secondary"
+              className="s-tap mt-1 h-10 px-4"
+              disabled={!canAdd || isBusy}
+              onClick={onAdd}
+            >
+              {t('goals.allocations.addSource')}
+            </Button>
+          }
+        >
+          {t('goals.allocations.empty')}
+        </EmptyState>
       ) : (
         <div className="mt-7 grid gap-x-12 gap-y-8 lg:grid-cols-2">
           {/* Held value. Its total is the stock of money behind the goal. */}
@@ -280,7 +286,7 @@ function SourceRow({
   const { t } = useTranslation()
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-control px-3 py-2.5 transition-colors hover:bg-wash">
+    <div className="flex items-center justify-between gap-4 rounded-control px-3 py-2.5 transition-colors hover:bg-canvas">
       <div className="min-w-0">
         <div className="truncate t-body-sm">{name}</div>
         <div className="mt-0.5 truncate t-caption-sm text-ink3">{note}</div>

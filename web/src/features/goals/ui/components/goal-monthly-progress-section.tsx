@@ -2,6 +2,7 @@ import { CalendarClock, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
+import { EmptyState } from '@/components/ui/empty-state'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import {
   Table,
@@ -101,7 +102,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
           fallback, not a decision the household made — saying so is what lets
           them go and make it. */}
       {needsShareDecision ? (
-        <p className="mt-4 rounded-control bg-wash px-4 py-3 t-body-sm text-ink2">
+        <p className="mt-4 t-body-sm text-ink2">
           {t('goals.monthly.shareUndecided')}
         </p>
       ) : null}
@@ -113,9 +114,9 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="mt-6 rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
+        <EmptyState icon={CalendarClock} className="mt-6">
           {t('goals.monthly.empty')}
-        </p>
+        </EmptyState>
       ) : (
         <>
           <div className="mt-6 grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
@@ -129,10 +130,9 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
               Column headings over an empty body would promise a record that
               does not exist yet. */}
           {ordered.length === 0 ? (
-            <div className="mt-3 grid place-items-center gap-3 rounded-control bg-wash px-4 py-8 text-center">
-              <CalendarClock className="size-6 text-ink3" strokeWidth={1.5} />
-              <p className="t-body-sm text-ink2">{t('goals.monthly.historyEmpty')}</p>
-            </div>
+            <EmptyState icon={CalendarClock} className="mt-3">
+              {t('goals.monthly.historyEmpty')}
+            </EmptyState>
           ) : (
           <Table className="mt-3 min-w-[480px] t-body-sm">
             <TableHeader>
@@ -434,7 +434,7 @@ function PageButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid size-9 place-items-center rounded-control text-ink2 transition-colors hover:bg-wash disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+      className="grid size-9 place-items-center rounded-control text-ink2 transition-colors hover:bg-canvas disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
     >
       {children}
     </button>

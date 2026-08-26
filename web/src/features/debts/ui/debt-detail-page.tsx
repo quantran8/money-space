@@ -1,9 +1,10 @@
-import { ChevronLeft, Pencil } from 'lucide-react'
+import { CalendarClock, ChevronLeft, Pencil } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Progress } from '@/components/ui/progress'
 import { useDebtDetail, type DebtHistoryEntry } from '@money-space/core/features/debts/hooks/use-debt-detail'
@@ -372,9 +373,9 @@ export function DebtDetailPage() {
               </div>
             </>
           ) : (
-            <p className="mt-7 rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
+            <EmptyState icon={CalendarClock} className="mt-7">
               {t('debts.detail.schedule.empty')}
-            </p>
+            </EmptyState>
           )}
         </Panel>
 

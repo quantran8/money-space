@@ -92,6 +92,9 @@ export const resources = {
         openMenu: 'Mở menu',
         closeMenu: 'Đóng menu',
         logout: 'Đăng xuất',
+        // Trang Gia đình là nơi đăng xuất trên mobile, sau khi bỏ drawer.
+        logoutMeta: 'Tài khoản',
+        logoutDescription: 'Thoát khỏi tài khoản trên thiết bị này. Dữ liệu của gia đình vẫn được giữ nguyên.',
       },
       dashboard: {
         status: {
@@ -380,6 +383,10 @@ export const resources = {
           // Chưa ghi nhận gì — khác hẳn "lọc không ra". Không được hiển thị 0đ
           // cho trạng thái này.
           noneYet: 'Gia đình chưa ghi nhận nguồn tiền nào.',
+          // Cùng cách phân biệt trên, nhưng cho MỘT nhóm thanh khoản đang rỗng
+          // trong khi các nhóm khác vẫn có khoản.
+          groupNoneYet: 'Chưa có khoản nào ở nhóm này.',
+          groupEmpty: 'Không có khoản nào khớp bộ lọc.',
         },
         list: {
           eyebrow: 'Danh sách tài sản',
@@ -2965,6 +2972,8 @@ export const resources = {
         openMenu: 'Open menu',
         closeMenu: 'Close menu',
         logout: 'Sign out',
+        logoutMeta: 'Account',
+        logoutDescription: 'Sign out on this device. Your household data stays as it is.',
       },
       dashboard: {
         status: {
@@ -3209,6 +3218,8 @@ export const resources = {
           all: 'All',
           empty: 'No matching assets.',
           noneYet: 'No money sources recorded yet.',
+          groupNoneYet: 'Nothing in this group yet.',
+          groupEmpty: 'Nothing here matches the filter.',
         },
         list: {
           eyebrow: 'Asset list',
