@@ -216,7 +216,7 @@ export function EventsTimelineCard({
               <button
                 type="button"
                 disabled={safePage === 1}
-                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption text-ink3 hover:bg-wash disabled:opacity-40"
+                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption text-ink3 hover:bg-canvas disabled:opacity-40"
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
                 <ChevronLeft className="size-4" strokeWidth={1.75} />
@@ -236,7 +236,7 @@ export function EventsTimelineCard({
                         'grid size-9 place-items-center rounded-control t-caption',
                         safePage === pageNumber
                           ? 'bg-wash font-medium text-ink'
-                          : 'text-ink2 hover:bg-wash',
+                          : 'text-ink2 hover:bg-canvas',
                       )}
                       onClick={() => setPage(pageNumber)}
                     >
@@ -248,7 +248,7 @@ export function EventsTimelineCard({
               <button
                 type="button"
                 disabled={safePage === totalPages}
-                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption font-medium text-action hover:bg-wash disabled:opacity-40"
+                className="flex h-9 items-center gap-1 rounded-control px-3 t-caption font-medium text-action hover:bg-canvas disabled:opacity-40"
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
                 {t('events.history.next')}

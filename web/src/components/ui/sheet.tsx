@@ -74,7 +74,7 @@ const SheetContent = React.forwardRef<
       <div className="mx-auto -mt-2 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-committed" />
       {children}
       <SheetPrimitive.Close
-        className="absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-wash hover:opacity-100"
+        className="absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-canvas hover:opacity-100"
         aria-label="Close"
       >
         <X className="size-4" />

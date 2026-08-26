@@ -115,9 +115,16 @@ export function GoalAllocationsField({
           const kind = row.role === 'contribution' ? 'fixed' : row.kind
 
           return (
-            <article key={row.assetId} className="rounded-[14px] bg-wash p-4">
+            /* List items are content, not controls (§2.4). Wash here also
+               inverted the hierarchy: these rows sat one surface BELOW the
+               `bg-card` "add source" block beside them, and stacked a third
+               surface for the icon tile. A divider separates them instead. */
+            <article
+              key={row.assetId}
+              className="border-t border-divider py-4 first:border-t-0 first:pt-0"
+            >
               <div className="flex items-start gap-3">
-                <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-card text-ink2">
+                <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-wash text-ink2">
                   {wallet ? (
                     <WalletCards className="size-4" strokeWidth={1.75} />
                   ) : (

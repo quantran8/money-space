@@ -12,7 +12,7 @@
 import type { CompositionSegment, SourceFreshnessRow } from '#/shared/presentation.types'
 import type { Asset } from '#/features/assets/model/assets.types'
 import type { DebtItem } from '#/features/debts/model/debts.types'
-import type { GoalItem } from '#/features/goals/model/goals.types'
+import type { GoalItem, GoalPriority } from '#/features/goals/model/goals.types'
 import { goalAmount } from '#/features/goals/model/goals-form'
 import type { DataFreshnessResult, FreshnessItem } from '#/features/freshness/model/freshness.types'
 import type {
@@ -424,6 +424,8 @@ export type GoalTrack = {
   requiredPercent?: number
   /** The household's first goal — the one Home used to show on its own. */
   isMain: boolean
+  /** Funding rank. Home marks it the same way the goals list does. */
+  priority: GoalPriority
   /** Far enough behind the milestone to be worth a colour (§5.2). */
   behind: boolean
 }
@@ -472,6 +474,7 @@ export function buildGoalTracks(goals: GoalItem[], limit = 3): GoalTrack[] {
       percent,
       requiredPercent,
       isMain: index === 0,
+      priority: goal.priority,
       behind:
         requiredPercent !== undefined && percent < requiredPercent - BEHIND_THRESHOLD_POINTS,
     }

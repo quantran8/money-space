@@ -27,6 +27,30 @@ export const liquidityColors: Record<AssetLiquidity, string> = {
 }
 
 /**
+ * Alternate liquidity palette: one hue, three weights.
+ *
+ * `liquidityColors` encodes the ramp with three separate tokens (accent /
+ * protect / committed), which are close in weight but not actually the same
+ * hue — as rounded donut segments with air between them, the buckets read as
+ * three unrelated greys rather than as one quantity split three ways.
+ *
+ * This set spends a single token and steps it down instead, which is the same
+ * move the money-sources rank bars make: weight, not hue (§5.4). The eye reads
+ * the ordering off saturation, so "usable now" carries the full accent and
+ * long-term holdings recede toward the card.
+ *
+ * `color-mix` toward `--card` rather than an alpha channel: this chart is used
+ * on both the panel and the sunk surface, and a translucent fill would take a
+ * different tone on each. Mixing toward the card keeps the ramp identical on
+ * both, and keeps it following the active palette (Ledger or Archive).
+ */
+export const liquidityRampColors: Record<AssetLiquidity, string> = {
+  usable_now: 'var(--accent)',
+  not_immediately_usable: 'color-mix(in srgb, var(--accent) 55%, var(--card))',
+  long_term: 'color-mix(in srgb, var(--accent) 25%, var(--card))',
+}
+
+/**
  * Stroke used to separate adjacent chart marks (pie slices, active dots).
  *
  * Charts sit inside a sunk block, so the separator is the sunk fill itself —

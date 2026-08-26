@@ -40,7 +40,7 @@ export function EventsMonthScope({ month, onChange }: EventsMonthScopeProps) {
     <div className="flex items-center gap-1">
       <button
         type="button"
-        className="grid size-11 place-items-center rounded-control text-ink2 transition-colors hover:bg-wash"
+        className="grid size-11 place-items-center rounded-control text-ink2 transition-colors hover:bg-canvas"
         aria-label={t('events.history.previousMonth')}
         onClick={() => onChange(shiftMonth(month, -1))}
       >
@@ -56,7 +56,7 @@ export function EventsMonthScope({ month, onChange }: EventsMonthScopeProps) {
 
       <button
         type="button"
-        className="grid size-11 place-items-center rounded-control text-ink2 transition-colors hover:bg-wash"
+        className="grid size-11 place-items-center rounded-control text-ink2 transition-colors hover:bg-canvas"
         aria-label={t('events.history.nextMonth')}
         onClick={() => onChange(shiftMonth(month, 1))}
       >

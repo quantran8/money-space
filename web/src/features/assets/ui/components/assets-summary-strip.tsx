@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Panel, PanelHeader, PanelSplit } from '@/components/ui/panel'
 import { AssetCompositionChart } from '@/features/assets/ui/components/asset-composition-chart'
 import type { AssetTotals } from '@money-space/core/features/assets/model/assets-form'
+import { liquidityRampColors } from '@money-space/core/shared/constants/colors'
 import { formatVndScale } from '@money-space/core/shared/lib/format-money'
 
 type AssetsSummaryStripProps = {
@@ -55,7 +56,11 @@ export function AssetsSummaryStrip({
         <div>
           <h3 className="t-subtitle">{t('assets.demo.byLiquidity')}</h3>
           <div className="mt-5">
-            <AssetCompositionChart totals={totals} />
+            {/* The single-hue ramp, not the three-token default: beside the
+                net-worth hero this block is a breakdown, not a set of
+                categories, and one accent stepping down reads as one quantity
+                split three ways. */}
+            <AssetCompositionChart totals={totals} colors={liquidityRampColors} />
           </div>
         </div>
       </PanelSplit>

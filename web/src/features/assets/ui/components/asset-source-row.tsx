@@ -55,7 +55,7 @@ export function AssetSourceRow({
   const freshness = formatFreshness(asset.valueUpdatedAt, t)
 
   return (
-    <div className="group grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-x-3 rounded-control py-3 transition hover:bg-wash sm:px-2">
+    <div className="group grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-x-3 rounded-control py-3 transition hover:bg-canvas sm:px-2">
       <div
         className="grid size-8 place-items-center text-ink2"
         role="img"

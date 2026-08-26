@@ -12,7 +12,7 @@ import {
   type XAxisTickContentProps,
 } from 'recharts'
 
-import { Label, Panel, PanelHeader, PanelSplit, Sunk } from '@/components/ui/panel'
+import { Label, Panel, PanelHeader, PanelSplit } from '@/components/ui/panel'
 import {
   buildDeltaSeries,
   buildTimelineRows,
@@ -67,9 +67,9 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
           <span className="flex shrink-0 items-center gap-4">
             {/* The window every figure in this section is measured over. Mono
                 is safe here — a date range has no diacritics (§10.1). */}
-            <span className="num font-mono t-caption-sm text-ink3">
+            {/* <span className="num font-mono t-caption-sm text-ink3">
               {formatDayMonth(forecast.asOfDate)} — {formatDayMonth(forecast.horizonEndDate)}
-            </span>
+            </span> */}
             <Link
               to="/upcoming"
               className="inline-flex min-h-11 items-center t-body font-medium text-action"
@@ -149,7 +149,7 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
             {/* The one thing that unblocks the figure above, stated as an action
                 rather than as an instruction buried in a sentence (§2.10). */}
             {!canProject ? (
-              <Sunk className="mt-6 p-4">
+              <div className="mt-6 border-t border-divider pt-4">
                 <div className="flex items-start gap-3">
                   <span className="mt-[6px] size-1.5 shrink-0 rounded-full bg-attention" />
                   <div className="min-w-0">
@@ -164,7 +164,7 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
                     </Link>
                   </div>
                 </div>
-              </Sunk>
+              </div>
             ) : null}
 
             {/* Now the section's main visual rather than a footnote to it, so

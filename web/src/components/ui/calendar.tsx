@@ -63,12 +63,12 @@ function Calendar({
         button_previous: cn(
           defaultClassNames.button_previous,
           buttonVariants({ variant: buttonVariant }),
-          'size-(--cell-size) select-none rounded-control bg-transparent p-0 text-ink3 hover:bg-wash hover:text-ink aria-disabled:opacity-50'
+          'size-(--cell-size) select-none rounded-control bg-transparent p-0 text-ink3 hover:bg-canvas hover:text-ink aria-disabled:opacity-50'
         ),
         button_next: cn(
           defaultClassNames.button_next,
           buttonVariants({ variant: buttonVariant }),
-          'size-(--cell-size) select-none rounded-control bg-transparent p-0 text-ink3 hover:bg-wash hover:text-ink aria-disabled:opacity-50'
+          'size-(--cell-size) select-none rounded-control bg-transparent p-0 text-ink3 hover:bg-canvas hover:text-ink aria-disabled:opacity-50'
         ),
         month_caption: cn(
           defaultClassNames.month_caption,
@@ -215,7 +215,7 @@ function CalendarDayButton({
         // `size="icon"` is deliberately NOT passed: it pins the button to
         // `size-11`, which overrode `--cell-size` and stretched every cell.
         // Height comes from the grid instead, as upstream does.
-        'mx-auto flex size-full flex-col items-center justify-center gap-1 rounded-control p-0 t-body-sm leading-none text-ink transition-colors hover:bg-wash hover:text-ink data-[selected-single=true]:bg-action data-[selected-single=true]:text-white data-[range-middle=true]:rounded-none data-[range-middle=true]:bg-accent-soft data-[range-middle=true]:text-ink data-[range-start=true]:rounded-l-control data-[range-start=true]:bg-action data-[range-start=true]:text-white data-[range-end=true]:rounded-r-control data-[range-end=true]:bg-action data-[range-end=true]:text-white group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:outline-2 group-data-[focused=true]/day:outline-action group-data-[focused=true]/day:outline-offset-2 [&>span]:t-caption [&>span]:opacity-70',
+        'mx-auto flex size-full flex-col items-center justify-center gap-1 rounded-control p-0 t-body-sm leading-none text-ink transition-colors hover:bg-canvas hover:text-ink data-[selected-single=true]:bg-action data-[selected-single=true]:text-white data-[range-middle=true]:rounded-none data-[range-middle=true]:bg-accent-soft data-[range-middle=true]:text-ink data-[range-start=true]:rounded-l-control data-[range-start=true]:bg-action data-[range-start=true]:text-white data-[range-end=true]:rounded-r-control data-[range-end=true]:bg-action data-[range-end=true]:text-white group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:outline-2 group-data-[focused=true]/day:outline-action group-data-[focused=true]/day:outline-offset-2 [&>span]:t-caption [&>span]:opacity-70',
         className
       )}
       {...props}

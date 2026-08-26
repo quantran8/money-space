@@ -62,7 +62,7 @@ export function MemberRow({
   const displayName = member.name || member.email
 
   return (
-    <article className="-mx-3 grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-2 rounded-control px-3 py-1 transition-colors hover:bg-wash sm:grid-cols-[minmax(0,1fr)_auto_auto_44px]">
+    <article className="-mx-3 grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-2 rounded-control px-3 py-1 transition-colors hover:bg-canvas sm:grid-cols-[minmax(0,1fr)_auto_auto_44px]">
       <div className="flex min-w-0 items-center gap-3">
         <div className="grid size-11 shrink-0 place-items-center rounded-full bg-wash t-caption font-medium text-ink2">
           {member.initials}

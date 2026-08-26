@@ -1,8 +1,9 @@
-import { Search } from 'lucide-react'
+import { Search, SearchX, Landmark } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { EmptyState } from '@/components/ui/empty-state'
 import { Panel } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -117,9 +118,9 @@ export function DebtsListSection({
           {!isLoading && visibleDebts.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={8}>
-                <p className="rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
+                <EmptyState icon={debts.length === 0 ? Landmark : SearchX}>
                   {debts.length === 0 ? t('debts.demo.empty') : t('debts.demo.emptySearch')}
-                </p>
+                </EmptyState>
               </TableCell>
             </TableRow>
           ) : null}

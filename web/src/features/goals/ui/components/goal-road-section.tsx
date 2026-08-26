@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
-import { Panel, PanelHeader, Sunk } from '@/components/ui/panel'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 import type { GoalMonthProgress } from '@money-space/core/features/goals/api/goals.repository'
 import type { GoalProjection } from '@money-space/core/features/goals/model/goal-projection.types'
 import { hasProjectedDate } from '@money-space/core/features/goals/model/goal-projection.types'
@@ -197,7 +197,7 @@ export function GoalRoadSection({
 
       {/* Every projected number has to be explainable (design.md §16). */}
       {explainOpen ? (
-        <Sunk className="mt-5 px-4 py-4 t-body-sm leading-6 text-ink2">
+        <div className="mt-5 border-t border-divider pt-4 t-body-sm leading-6 text-ink2">
           <span className="font-medium text-ink">{t('goals.detail.road.calcTitle')}</span>{' '}
           {pace != null
             ? t('goals.detail.road.calc', {
@@ -209,7 +209,7 @@ export function GoalRoadSection({
           {projection ? (
             <span className="mt-2 block">{t(`goals.projection.reason.${projection.reason}`)}</span>
           ) : null}
-        </Sunk>
+        </div>
       ) : null}
     </Panel>
   )

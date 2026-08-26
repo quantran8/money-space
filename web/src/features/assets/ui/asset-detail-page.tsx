@@ -1,9 +1,10 @@
-import { ChevronLeft, Pencil, RefreshCw } from 'lucide-react'
+import { ChevronLeft, Pencil, RefreshCw, Timeline } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import {
   Table,
@@ -129,7 +130,7 @@ function ActivityCard({
   const typeLabel = t(`options.eventType.${entry.type}`, { defaultValue: entry.type })
 
   return (
-    <article className="flex items-center gap-3 rounded-control px-2 py-2 transition-colors hover:bg-wash">
+    <article className="flex items-center gap-3 rounded-control px-2 py-2 transition-colors hover:bg-canvas">
       <span
         className="grid size-6 shrink-0 place-items-center text-ink3"
         role="img"
@@ -713,9 +714,9 @@ export function AssetDetailPage() {
               </div>
             </>
           ) : (
-            <p className="mt-5 rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
+            <EmptyState icon={Timeline} className="mt-5">
               {t('assets.detail.events.empty')}
-            </p>
+            </EmptyState>
           )}
         </Panel>
       </div>

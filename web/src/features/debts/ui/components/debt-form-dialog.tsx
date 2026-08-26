@@ -609,7 +609,7 @@ export function DebtFormDialog({
             {step === 4 ? (
               <div className="space-y-5">
                 <h2 className="t-title">{t(editingId ? 'debts.form.sections.reviewEdit' : 'debts.form.sections.reviewCreate')}</h2>
-                <div className="rounded-[10px] bg-wash p-4">
+                <div className="border-t border-divider pt-4">
                   <dl className="space-y-3 t-body-sm">
                     <SummaryRow label={t('debts.form.fields.name')} value={name || '—'} />
                     <SummaryRow label={t('debts.form.fields.lender')} value={lenderName || '—'} />

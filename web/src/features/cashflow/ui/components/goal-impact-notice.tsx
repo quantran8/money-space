@@ -75,11 +75,9 @@ export function GoalImpactNotice({
 
   if (!hasFigures) {
     return (
-      <div className="rounded-control bg-wash px-4 py-3">
-        <p className="t-body-sm leading-5 text-ink2">
-          {t('upcoming.complete.goalImpact.pending')}
-        </p>
-      </div>
+      <p className="border-t border-divider pt-4 t-body-sm leading-5 text-ink2">
+        {t('upcoming.complete.goalImpact.pending')}
+      </p>
     )
   }
 
@@ -98,7 +96,9 @@ export function GoalImpactNotice({
   const showPerGoal = impact.goals.length > 1
 
   return (
-    <section className="rounded-control bg-wash p-4 sm:p-5">
+    /* No wash bed: this is content, and §2.4 reserves wash for controls. The
+       divider plus the type scale below carries the separation (§9). */
+    <section className="border-t border-divider pt-4 sm:pt-5">
       {/* The spend, and the one-phrase answer to where it comes from. */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

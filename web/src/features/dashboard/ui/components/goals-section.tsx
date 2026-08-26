@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { Panel, PanelHeader } from '@/components/ui/panel'
+import { GoalPriorityMark } from '@/features/goals/ui/components/goal-priority-mark'
 import type { GoalTrack } from '@money-space/core/features/dashboard/model/home-derivations'
 import { formatVndScale } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -47,7 +48,7 @@ export function GoalsSection({
             to="/goals"
             className="inline-flex min-h-11 shrink-0 items-center gap-2 t-body font-medium text-action"
           >
-            <span className="text-ink3">{t('home.goals.count', { count: goalCount })}</span>
+            {/* <span className="text-ink3">{t('home.goals.count', { count: goalCount })}</span> */}
             {goalCount > tracks.length
               ? t('home.goals.viewAll', { count: goalCount })
               : t('home.goals.details')}
@@ -100,12 +101,16 @@ function GoalTrackRow({ track }: { track: GoalTrack }) {
     track.percent === 0 && track.current > 0 ? t('home.goals.underOnePercent') : `${track.percent}%`
 
   return (
-    <div className="rounded-control px-3 py-4 transition-colors hover:bg-wash">
+    <div className="rounded-control px-3 py-4 transition-colors hover:bg-canvas">
       {/* Name and pace on one line, then the track, then the pair of amounts
           under it. Stacked rather than in three fixed columns: the track needs
           the full row width for the milestone tick to be placeable at all, and
           at 220px the name column was truncating goals that had room to spare. */}
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        {/* Same mark as the goals list (§2.10 — one concept, one look), in its
+            compact form: these rows are denser than the list's cards, and the
+            mark is not interactive here so it need not carry a tap target. */}
+        <GoalPriorityMark priority={track.priority} size="compact" />
         <p className="min-w-0 truncate t-body-sm font-medium">{track.name}</p>
         {track.isMain ? (
           /* Same treatment as the goals list (§2.10 — one concept, one

@@ -14,7 +14,7 @@ import { deleteHousehold } from '@money-space/core/features/settings/api/setting
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
-import { DangerCard, DataCard } from '@/features/settings/ui/components/data-card'
+import { DangerCard, DataCard, SignOutCard } from '@/features/settings/ui/components/data-card'
 import { InviteQrDialog } from '@/features/invites/ui/components/invite-qr-dialog'
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
 
@@ -127,6 +127,11 @@ export function HouseholdPage() {
         <CategoriesCard />
 
         <DataCard />
+
+        {/* Above the danger card, not below it: signing out is the ordinary way
+            to leave, and it should be reachable without scrolling past the one
+            action that cannot be undone. */}
+        <SignOutCard />
 
         <DangerCard onDelete={() => setConfirmDeleteOpen(true)} />
       </div>

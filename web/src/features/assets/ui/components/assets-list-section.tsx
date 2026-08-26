@@ -1,7 +1,8 @@
-import { Search } from 'lucide-react'
+import { Search, SearchX, Wallet } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { EmptyState } from '@/components/ui/empty-state'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import {
   Select,
@@ -89,6 +90,11 @@ export function AssetsListSection({
     [assets, asOf],
   )
 
+  /* Which absence this is. "Nothing recorded yet" and "the filter excluded it"
+     look identical in an empty card but mean opposite things to a household —
+     the first is a prompt to add, the second is a prompt to clear the filter. */
+  const isFiltered = query.trim().length > 0 || liquidityFilter !== 'all'
+
   const toolbar = (
     <div className="flex items-center gap-2">
       <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-control border border-committed bg-card px-3 sm:w-[250px]">
@@ -147,9 +153,9 @@ export function AssetsListSection({
           <h2 className="t-title">{t('assets.demo.sources')}</h2>
           {toolbar}
         </div>
-        <p className="s-head-body rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
+        <EmptyState icon={SearchX} className="s-head-body">
           {t('assets.toolbar.empty')}
-        </p>
+        </EmptyState>
       </Panel>
     )
   }
@@ -163,10 +169,12 @@ export function AssetsListSection({
 
       <div className="s-card-gap grid lg:grid-cols-2">
         {groups.map(({ liquidity, items, subtotal }) => {
-          // A group with nothing in it is dropped rather than shown empty: the
-          // filter above already explains the absence, and an empty card in the
-          // middle of the grid reads as a loading failure.
-          if (items.length === 0) return null
+          /* The one case where dropping the card is still right: the reader
+             narrowed to a single group on purpose, so the other two are not
+             an absence worth reporting — they are the filter working. */
+          if (liquidityFilter !== 'all' && liquidityFilter !== liquidity) return null
+
+          const isEmpty = items.length === 0
 
           return (
             <Panel
@@ -185,6 +193,18 @@ export function AssetsListSection({
                 })}
               </p>
 
+              {isEmpty ? (
+                /* The card stays in the grid rather than being dropped, so the
+                   three liquidity groups are always in the same place and the
+                   reader learns "nothing here" instead of having to notice a
+                   card is missing. The subtotal above is a truthful 0đ, so the
+                   only thing to replace is the row list. */
+                <EmptyState icon={isFiltered ? SearchX : Wallet} className="mt-5 py-6">
+                  {isFiltered
+                    ? t('assets.toolbar.groupEmpty')
+                    : t('assets.toolbar.groupNoneYet')}
+                </EmptyState>
+              ) : (
               <div
                 className={
                   liquidity === 'long_term'
@@ -222,6 +242,7 @@ export function AssetsListSection({
                       />
                     ))}
               </div>
+              )}
             </Panel>
           )
         })}

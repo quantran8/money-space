@@ -1,4 +1,6 @@
 import { Target } from 'lucide-react'
+
+import { EmptyState } from '@/components/ui/empty-state'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
@@ -55,9 +57,9 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
     return (
       <div>
         <p className="t-body-sm text-ink2">{t('assets.detail.goals.sectionTitle')}</p>
-        <p className="mt-5 rounded-control bg-wash px-4 py-8 text-center t-body-sm text-ink2">
+        <EmptyState icon={Target} className="mt-5">
           {t('assets.detail.goals.empty')}
-        </p>
+        </EmptyState>
       </div>
     )
   }
@@ -156,7 +158,7 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
                   <button
                     type="button"
                     onClick={() => navigate(`/goals/${item.goalId}`)}
-                    className="flex min-h-11 w-full items-center justify-between gap-5 rounded-control text-left outline-none transition-colors hover:bg-wash focus-visible:ring-2 focus-visible:ring-action"
+                    className="flex min-h-11 w-full items-center justify-between gap-5 rounded-control text-left outline-none transition-colors hover:bg-canvas focus-visible:ring-2 focus-visible:ring-action"
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       <Target className="size-[17px] shrink-0 text-ink3" strokeWidth={1.75} aria-hidden />
