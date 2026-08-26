@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { Panel, PanelHeader } from '@/components/ui/panel'
+import { Progress } from '@/components/ui/progress'
 import { hasProjectedDate } from '@money-space/core/features/goals/model/goal-projection.types'
 import type { GoalItem } from '@money-space/core/features/goals/model/goals.types'
 import { goalAmount } from '@money-space/core/features/goals/model/goals-form'
@@ -36,34 +37,29 @@ export function MainGoalSection({
       <PanelHeader
         title={t('home.mainGoal.title')}
         action={
-          <Link to="/goals" className="text-[13px] text-accent">
+          <Link to="/goals" className="t-body-sm text-action">
             {t('home.mainGoal.viewAll', { count: goalCount })}
           </Link>
         }
       />
 
-      <div className="mt-7 grid gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,380px)_1fr]">
+      <div className="mt-7 grid gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,380px)_1fr]">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <p className="text-[15px] font-medium">{goal.name}</p>
-            <span className="sunk rounded-full px-2 py-0.5 font-mono text-[10px] text-ink2">
+            <p className="t-body-sm font-medium">{goal.name}</p>
+            <span className="sunk rounded-full px-2 py-0.5 font-mono t-caption-sm text-ink2">
               {t('home.mainGoal.badge')}
             </span>
           </div>
 
           <div className="mt-3.5 flex items-baseline justify-between gap-3">
-            <span className="num text-[22px] font-medium tracking-[-.03em]">
+            <span className="num t-metric">
               {formatVndScale(current)} / {formatVndScale(target)}
             </span>
-            <span className="num font-mono text-[11px] text-ink3">{percent}%</span>
+            <span className="num font-mono t-caption-sm text-ink3">{percent}%</span>
           </div>
 
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--hair)' }}>
-            <div
-              className="seg h-full rounded-full"
-              style={{ width: `${Math.min(Math.max(percent, 0), 100)}%`, background: 'var(--accent)' }}
-            />
-          </div>
+          <Progress value={percent} className="mt-3 h-6 text-action" />
         </div>
 
         <dl className="space-y-4 lg:pt-1">
@@ -110,9 +106,9 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline gap-4">
-      <dt className="flex-1 text-[14px] text-ink2">{label}</dt>
+      <dt className="flex-1 t-body-sm text-ink2">{label}</dt>
       <dd
-        className={`num text-[14px] ${strong ? 'font-medium' : ''} ${muted ? 'text-ink3' : ''}`}
+        className={`num t-body-sm ${strong ? 'font-medium' : ''} ${muted ? 'text-ink3' : ''}`}
       >
         {value}
       </dd>

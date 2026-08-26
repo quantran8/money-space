@@ -21,8 +21,8 @@ export function useSettingsPage() {
   const queryClient = useQueryClient()
   const { household, activeHouseholdId, isLoading } = useMembers()
   const updateConfig = useMutation({
-    mutationFn: (currency: Settings['currency']) =>
-      updateHouseholdConfig(activeHouseholdId!, currency),
+    mutationFn: (payload: { currency: Settings['currency']; name: string }) =>
+      updateHouseholdConfig(activeHouseholdId!, payload),
   })
   const settingsSchema = useMemo(() => buildSettingsSchema(t), [t])
 
@@ -71,6 +71,7 @@ export function useSettingsPage() {
     if (!activeHouseholdId) return
     const previousCurrency = getDisplayCurrency()
     const previousLanguage: Settings['language'] = i18n.resolvedLanguage === 'en' ? 'en' : 'vi'
+    const previousName = household?.name ?? values.householdName
 
     // Optimistic UX: reflect the choice and notify immediately. The server
     // request continues in the background; failures restore the prior state.
@@ -80,7 +81,10 @@ export function useSettingsPage() {
     notify.success(t('settings.header.saved'))
 
     try {
-      await updateConfig.mutateAsync(values.currency)
+      await updateConfig.mutateAsync({
+        currency: values.currency,
+        name: values.householdName.trim(),
+      })
       // Outside the await deliberately. These were awaited INSIDE the try, so a
       // failed refetch ran the catch below and rolled the UI back to the old
       // currency — telling the user the save failed when it had succeeded. The
@@ -98,6 +102,7 @@ export function useSettingsPage() {
         ...values,
         currency: previousCurrency,
         language: previousLanguage,
+        householdName: previousName,
       })
       notify.error('Không thể lưu cài đặt.')
     }

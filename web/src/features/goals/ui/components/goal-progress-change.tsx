@@ -40,7 +40,7 @@ export function GoalProgressChange({ goalId }: { goalId: string }) {
       })
 
   return (
-    <p className="mt-3 text-[13px] leading-relaxed text-ink2">
+    <p className="mt-3 t-body-sm leading-relaxed text-ink2">
       {t('goals.detail.change.line', {
         since,
         previous: formatAmount(change.previousAmount),

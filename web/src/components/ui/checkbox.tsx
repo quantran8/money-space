@@ -17,7 +17,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'
         type="checkbox"
         data-slot="checkbox"
         className={cn(
-          'size-4 shrink-0 rounded-control accent-accent outline-none transition focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+          'size-4 shrink-0 rounded-control accent-accent outline-none transition focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
           className,
         )}
         {...props}

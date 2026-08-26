@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-import { cn } from '@money-space/core/shared/lib/utils'
 
 type SubSectionProps = {
   /** Group label, e.g. "Thanh khoản" / "Tổng tài sản". */
@@ -12,20 +11,21 @@ type SubSectionProps = {
 }
 
 /**
- * A meaning group inside a large section (design.md §9.9, §11.1).
+ * A meaning group inside a card (v5 02-components §4, 03-patterns §6).
  *
- * Renders a soft-tinted nested block with a muted label, then the caller's
- * metric cells. This is the "sub-section" tier of Section → Sub-section →
- * Metric — the label explains the group; individual MetricCells stay terse.
+ * Section → sub-section → metric survives as a HIERARCHY, but v5 removed the
+ * tinted block that used to carry it: three nested surfaces is exactly the
+ * pattern §2.2 rules out. The group is now a label plus spacing, which is what
+ * §6 means by hierarchy from type and alignment rather than from containers.
  */
 export function SubSection({ title, aside, children, className }: SubSectionProps) {
   return (
-    <div className={cn('sunk p-4', className)}>
+    <div className={className}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] text-ink2">{title}</p>
+        <p className="t-caption font-medium tracking-[0.02em] text-ink3">{title}</p>
         {aside}
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-3">{children}</div>
     </div>
   )
 }

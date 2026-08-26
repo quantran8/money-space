@@ -17,7 +17,23 @@ export type RecordStatus =
  * of shares of real assets, so its history is the assets' own — there is no
  * class of event that would ever land in such a tab.
  */
-export type RecordTab = 'all' | 'source' | 'debt'
+/**
+ * What the timeline's "Loại" filter can narrow to.
+ *
+ * `source` / `debt` split the ledger by WHICH BOOK a change touched; the rest
+ * split it by what the change WAS. Both live here because the two surfaces ask
+ * different questions of the same list — the mobile timeline groups by book,
+ * the web timeline by kind — and a record can legitimately match one of each.
+ */
+export type RecordTab =
+  | 'all'
+  | 'source'
+  | 'debt'
+  | 'income'
+  | 'expense'
+  | 'adjustment'
+  | 'asset'
+  | 'payment'
 export type RecordDirection = 'inflow' | 'outflow' | 'neutral'
 export type QuickAction =
   | 'upcoming'
@@ -274,6 +290,37 @@ export function isAttentionRecord(record: FinancialRecordItem) {
     record.status === 'pending_confirmation' ||
     record.status === 'postponed'
   )
+}
+
+/**
+ * Whether a record belongs in the given tab.
+ *
+ * The `asset` bucket covers a SALE as well as a purchase: a sale is an asset
+ * row, and a filter named after assets that silently hides half of them is a
+ * trap rather than a narrowing.
+ */
+export function matchesRecordTab(record: FinancialRecordItem, tab: RecordTab): boolean {
+  if (tab === 'all') return true
+
+  const isDebt = Boolean(record.debtId) || record.eventType === 'debt_update'
+  switch (tab) {
+    case 'source':
+      return !isDebt && Boolean(record.fromAssetId || record.toAssetId)
+    case 'debt':
+      return isDebt
+    case 'income':
+      return record.eventType === 'income'
+    case 'expense':
+      return record.eventType === 'expense'
+    case 'adjustment':
+      return record.eventType === 'adjustment'
+    case 'asset':
+      return record.eventType === 'asset_purchase' || record.eventType === 'asset_sale'
+    case 'payment':
+      return record.eventType === 'payment_paid'
+    default:
+      return true
+  }
 }
 
 export function getDirectionFromEventType(eventType: RecordType): RecordDirection {

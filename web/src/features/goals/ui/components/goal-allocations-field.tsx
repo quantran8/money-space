@@ -37,7 +37,7 @@ function emptyAllocation(option: AllocationAssetOption): GoalAllocationDraft {
 
 function MoneyInput({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
-    <div className="flex h-12 items-center gap-2 rounded-[10px] border border-transparent bg-panel px-3.5 transition-colors focus-within:border-accent">
+    <div className="flex h-12 items-center gap-2 rounded-[10px] border border-transparent bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]">
       <input
         type="text"
         inputMode="numeric"
@@ -47,7 +47,7 @@ function MoneyInput({ value, onChange }: { value: string; onChange: (value: stri
         onChange={(event) => onChange(sanitizeIntegerInput(event.target.value))}
         className={cn(fieldInput, 'num font-medium')}
       />
-      <span className="shrink-0 font-mono text-[12px] text-ink3">đ</span>
+      <span className="shrink-0 font-mono t-caption text-ink3">đ</span>
     </div>
   )
 }
@@ -90,21 +90,21 @@ export function GoalAllocationsField({
       {error ? (
         <div
           role="alert"
-          className="mb-4 rounded-[12px] bg-[var(--alert-soft,#fff3ef)] px-4 py-3 text-[12px] leading-5 text-alert"
+          className="mb-4 rounded-[12px] bg-[var(--alert-soft,#fff3ef)] px-4 py-3 t-caption leading-5 text-alert"
         >
           {error}
         </div>
       ) : null}
       {missingWallet ? (
-        <div className="mb-4 rounded-[12px] bg-panel px-4 py-3 text-[12px] leading-5 text-ink2">
+        <div className="mb-4 rounded-[12px] bg-card px-4 py-3 t-caption leading-5 text-ink2">
           {t('goals.form.walletMissingNotice')}
         </div>
       ) : null}
       <div className="space-y-4">
         {value.length === 0 ? (
-          <div className="rounded-[14px] bg-panel px-4 py-6 text-center">
-            <p className="text-[13px] font-medium">{t('goals.builder.noSources')}</p>
-            <p className="mt-1 text-[12px] text-ink3">{t('goals.builder.chooseSource')}</p>
+          <div className="rounded-[14px] bg-card px-4 py-6 text-center">
+            <p className="t-body-sm font-medium">{t('goals.builder.noSources')}</p>
+            <p className="mt-1 t-caption text-ink3">{t('goals.builder.chooseSource')}</p>
           </div>
         ) : null}
 
@@ -115,9 +115,9 @@ export function GoalAllocationsField({
           const kind = row.role === 'contribution' ? 'fixed' : row.kind
 
           return (
-            <article key={row.assetId} className="rounded-[14px] bg-sunk p-4">
+            <article key={row.assetId} className="rounded-[14px] bg-wash p-4">
               <div className="flex items-start gap-3">
-                <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-panel text-ink2">
+                <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-card text-ink2">
                   {wallet ? (
                     <WalletCards className="size-4" strokeWidth={1.75} />
                   ) : (
@@ -128,10 +128,10 @@ export function GoalAllocationsField({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="truncate text-[13px] font-medium">
+                      <h3 className="truncate t-subtitle">
                         {asset?.name ?? row.assetId}
                       </h3>
-                      <p className="num mt-1 text-[11px] text-ink3">
+                      <p className="num mt-1 t-caption-sm text-ink3">
                         {t('goals.allocations.assetHolds', {
                           value: formatAmount(asset?.balance ?? 0),
                         })}
@@ -141,7 +141,7 @@ export function GoalAllocationsField({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="size-9 shrink-0 text-ink3 hover:bg-panel hover:text-alert"
+                      className="s-tap size-9 shrink-0 text-ink3 hover:bg-card hover:text-alert"
                       aria-label={t('goals.allocations.remove')}
                       onClick={() => onChange(value.filter((_, rowIndex) => rowIndex !== index))}
                     >
@@ -151,7 +151,7 @@ export function GoalAllocationsField({
 
                   {wallet ? (
                     <div className="mt-4">
-                      <p className="mb-2 text-[12px] text-ink2">
+                      <p className="mb-2 t-caption text-ink2">
                         {t('goals.builder.useAssetFor')}
                       </p>
                       <div className="grid gap-2 sm:grid-cols-2">
@@ -178,16 +178,16 @@ export function GoalAllocationsField({
                               className={cn(
                                 'rounded-[12px] border p-3 text-left transition-colors',
                                 active
-                                  ? 'border-accent bg-panel'
-                                  : 'border-transparent bg-[var(--app)] hover:bg-panel',
+                                  ? 'border-action bg-card'
+                                  : 'border-transparent bg-[var(--app)] hover:bg-card',
                               )}
                             >
-                              <span className="block text-[12px] font-medium">
+                              <span className="block t-caption font-medium">
                                 {role === 'contribution'
                                   ? t('goals.builder.contributeMonthly')
                                   : t('goals.builder.countCurrent')}
                               </span>
-                              <span className="mt-1 block text-[11px] leading-4 text-ink3">
+                              <span className="mt-1 block t-caption-sm leading-4 text-ink3">
                                 {role === 'contribution'
                                   ? t('goals.builder.futureCashFlow')
                                   : t('goals.builder.accumulatedValue')}
@@ -198,7 +198,7 @@ export function GoalAllocationsField({
                       </div>
                     </div>
                   ) : (
-                    <p className="mt-4 rounded-[10px] bg-panel px-3 py-2.5 text-[11px] leading-4 text-ink2">
+                    <p className="mt-4 rounded-[10px] bg-card px-3 py-2.5 t-caption-sm leading-4 text-ink2">
                       {t('goals.builder.marketHoldingOnly')}
                     </p>
                   )}
@@ -207,7 +207,7 @@ export function GoalAllocationsField({
                     <>
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         <div>
-                          <p className="mb-2 text-[12px] text-ink2">
+                          <p className="mb-2 t-caption text-ink2">
                             {t('goals.builder.monthlyShort')}
                           </p>
                           <MoneyInput
@@ -216,7 +216,7 @@ export function GoalAllocationsField({
                           />
                         </div>
                         <div>
-                          <p className="mb-2 text-[12px] text-ink2">
+                          <p className="mb-2 t-caption text-ink2">
                             {t('goals.builder.alreadySetAside')}
                           </p>
                           <MoneyInput value={row.amount} onChange={(amount) => update(index, { amount })} />
@@ -225,27 +225,27 @@ export function GoalAllocationsField({
 
                       {contested ? (
                         <div className="mt-4 rounded-[11px] bg-[var(--attention-soft,#fbf4e6)] p-3.5">
-                          <p className="text-[12px] font-medium text-attention">
+                          <p className="t-caption font-medium text-attention">
                             {t('goals.builder.sharedWallet')}
                           </p>
-                          <p className="mt-1 text-[11px] leading-4 text-attention">
+                          <p className="mt-1 t-caption-sm leading-4 text-attention">
                             {t('goals.builder.samePriorityWith', {
                               goals: (walletGoalNames?.get(row.assetId) ?? []).join(', '),
                             })}
                           </p>
                           <div className="mt-3 flex items-center gap-3">
-                            <label className="flex-1 text-[11px] leading-4 text-attention">
+                            <label className="flex-1 t-caption-sm leading-4 text-attention">
                               {t('goals.allocations.shareLabel')}
                             </label>
-                            <div className="flex h-12 w-24 items-center rounded-[10px] border border-transparent bg-panel px-3 focus-within:border-accent">
+                            <div className="flex h-12 w-24 items-center rounded-[10px] border border-transparent bg-card px-3 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]">
                               <input
                                 type="text"
                                 inputMode="numeric"
                                 value={row.sharePercent}
                                 onChange={(event) => update(index, { sharePercent: sanitizeIntegerInput(event.target.value).slice(0, 3) })}
-                                className="num min-w-0 flex-1 bg-transparent text-right text-[16px] font-medium outline-none"
+                                className="num min-w-0 flex-1 bg-transparent text-right t-body font-medium outline-none"
                               />
-                              <span className="ml-1 font-mono text-[12px] text-ink3">%</span>
+                              <span className="ml-1 font-mono t-caption text-ink3">%</span>
                             </div>
                           </div>
                         </div>
@@ -262,7 +262,7 @@ export function GoalAllocationsField({
                         ]}
                       />
                       <div className="mt-3">
-                        <p className="mb-2 text-[12px] text-ink2">
+                        <p className="mb-2 t-caption text-ink2">
                           {kind === 'fixed'
                             ? t('goals.builder.countTowardGoal')
                             : t('goals.builder.assetValuePercent')}
@@ -270,7 +270,7 @@ export function GoalAllocationsField({
                         {kind === 'fixed' ? (
                           <MoneyInput value={row.amount} onChange={(amount) => update(index, { amount })} />
                         ) : (
-                          <div className={cn(fieldShell, 'h-12 bg-panel')}>
+                          <div className={cn(fieldShell, 'h-12 bg-card')}>
                             <input
                               type="text"
                               inputMode="numeric"
@@ -278,11 +278,11 @@ export function GoalAllocationsField({
                               onChange={(event) => update(index, { percent: sanitizeIntegerInput(event.target.value).slice(0, 3) })}
                               className={cn(fieldInput, 'num font-medium')}
                             />
-                            <span className="font-mono text-[12px] text-ink3">%</span>
+                            <span className="font-mono t-caption text-ink3">%</span>
                           </div>
                         )}
                         {!wallet ? (
-                          <p className="mt-2 text-[11px] leading-4 text-ink3">
+                          <p className="mt-2 t-caption-sm leading-4 text-ink3">
                             {t('goals.allocations.holdingNote')}
                           </p>
                         ) : null}
@@ -295,9 +295,9 @@ export function GoalAllocationsField({
           )
         })}
 
-        <div className="rounded-[14px] bg-panel p-4">
-          <h3 className="text-[14px] font-medium">{t('goals.builder.addSource')}</h3>
-          <p className="mt-1 text-[12px] text-ink3">
+        <div className="rounded-[14px] bg-card p-4">
+          <h3 className="t-subtitle">{t('goals.builder.addSource')}</h3>
+          <p className="mt-1 t-caption text-ink3">
             {available.length > 0
               ? t('goals.builder.availableSources', { count: available.length })
               : t('goals.builder.allSourcesUsed')}
@@ -308,17 +308,17 @@ export function GoalAllocationsField({
                 key={option.value}
                 type="button"
                 onClick={() => onChange([...value, emptyAllocation(option)])}
-                className="flex min-h-[58px] items-center justify-between gap-3 rounded-[11px] bg-sunk px-3.5 py-3 text-left transition-colors hover:bg-[var(--app)]"
+                className="flex min-h-[58px] items-center justify-between gap-3 rounded-[11px] bg-wash px-3.5 py-3 text-left transition-colors hover:bg-[var(--app)]"
               >
                 <span className="min-w-0">
-                  <span className="block truncate text-[12px] font-medium">{option.name}</span>
-                  <span className="num mt-1 block text-[11px] text-ink3">{formatAmount(option.balance)}</span>
+                  <span className="block truncate t-caption font-medium">{option.name}</span>
+                  <span className="num mt-1 block t-caption-sm text-ink3">{formatAmount(option.balance)}</span>
                 </span>
-                <Plus className="size-4 shrink-0 text-accent" strokeWidth={1.75} />
+                <Plus className="size-4 shrink-0 text-action" strokeWidth={1.75} />
               </button>
             ))}
             {available.length === 0 ? (
-              <p className="py-2 text-[12px] text-ink3 sm:col-span-2">
+              <p className="py-2 t-caption text-ink3 sm:col-span-2">
                 {t('goals.builder.noMoreSources')}
               </p>
             ) : null}

@@ -79,7 +79,7 @@ export function CompleteCashflowDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm gap-4">
         <DialogHeader>
-          <DialogTitle className="text-xl">
+          <DialogTitle className="t-subhead">
             {t('upcoming.complete.title')}
           </DialogTitle>
           <DialogDescription>
@@ -116,7 +116,7 @@ export function CompleteCashflowDialog({
         ) : (
           // Nothing can settle this. Say why rather than showing an empty
           // dropdown the household would read as a bug.
-          <p className="rounded-[10px] bg-attention-tint px-4 py-3 text-[13px] leading-5 text-ink2">
+          <p className="rounded-[10px] bg-attention-tint px-4 py-3 t-body-sm leading-5 text-ink2">
             {t('upcoming.complete.noWallet')}
           </p>
         )}

@@ -9,11 +9,11 @@ export function GentleReminderCard() {
     <Card>
       <div className="flex items-start gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-tint">
-          <Info className="size-5 text-accent" strokeWidth={1.8} />
+          <Info className="size-5 text-action" strokeWidth={1.8} />
         </div>
         <div>
-          <h3 className="font-semibold">{t('goals.gentle.title')}</h3>
-          <p className="mt-2 text-sm leading-6 text-ink2">
+          <h3 className="t-subtitle">{t('goals.gentle.title')}</h3>
+          <p className="mt-2 t-body-sm leading-6 text-ink2">
             {t('goals.gentle.description')}
           </p>
         </div>

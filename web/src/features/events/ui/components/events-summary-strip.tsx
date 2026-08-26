@@ -1,80 +1,98 @@
+import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { Label, Panel, PanelHeader } from '@/components/ui/panel'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 import type { PeriodSummary } from '@money-space/core/features/events/model/events-form'
 import { formatVndScale } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type EventsSummaryStripProps = {
   summary: PeriodSummary
-  /** `YYYY-MM` — the period the figures describe, echoed as the panel title. */
-  month: string
-}
-
-function monthLabel(monthKey: string, locale: string) {
-  const [year, month] = monthKey.split('-').map(Number)
-  if (locale === 'vi-VN') return `Tháng ${month}`
-  return new Date(year, month - 1, 1).toLocaleDateString(locale, { month: 'long' })
 }
 
 /**
  * What this month came to, above the timeline that lists it row by row.
  *
+ * Net leads and is the only figure at `t-figure`: in and out are inputs to the
+ * question, net IS the question ("did this month add up"). The month itself is
+ * named once, by the scope control under the page title, so this header does
+ * not repeat it.
+ *
  * Only records that actually happened are counted — an unpaid or postponed row
  * is money that has not moved, and folding it in here would report a month that
- * has not finished happening. That is why the count says "đã xảy ra" and not
- * simply how many rows are below.
+ * has not finished happening.
  */
-export function EventsSummaryStrip({ summary, month }: EventsSummaryStripProps) {
-  const { t, i18n } = useTranslation()
-  const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
+export function EventsSummaryStrip({ summary }: EventsSummaryStripProps) {
+  const { t } = useTranslation()
+  const isShort = summary.netChange < 0
+
+  const metrics = [
+    {
+      icon: ArrowLeftRight,
+      iconTone: 'text-data-primary',
+      label: t('events.summary.net'),
+      value: `${isShort ? '−' : '+'}${formatVndScale(Math.abs(summary.netChange))}`,
+      // Colour marks what needs a look (§5.2), so only a month that ended
+      // short is tinted. A positive net is the expected case and stays ink —
+      // a static metric never wears the action colour (§4).
+      valueClassName: isShort ? 'text-alert-ink' : undefined,
+      lead: true,
+    },
+    {
+      icon: ArrowDownLeft,
+      iconTone: 'text-protect',
+      label: t('events.summary.moneyIn'),
+      value: `+${formatVndScale(summary.totalIncome)}`,
+      valueClassName: undefined,
+      lead: false,
+    },
+    {
+      icon: ArrowUpRight,
+      iconTone: 'text-ink2',
+      label: t('events.summary.moneyOut'),
+      value: `−${formatVndScale(summary.totalOutcome)}`,
+      valueClassName: undefined,
+      lead: false,
+    },
+  ]
 
   return (
     <Panel>
-      <PanelHeader
-        title={<span className="capitalize">{monthLabel(month, locale)}</span>}
-        meta={t('events.summary.recordedCount', { count: summary.recordedCount })}
-      />
-      <div className="mt-7 grid gap-5 sm:grid-cols-3 sm:gap-0">
-        <Metric
-          label={t('events.summary.received')}
-          value={`+${formatVndScale(summary.totalIncome)}`}
-          className="sm:pr-7"
-          valueClassName="text-accent"
-        />
-        <Metric
-          label={t('events.summary.spent')}
-          value={`−${formatVndScale(summary.totalOutcome)}`}
-          className="sm:border-l sm:border-hair sm:px-7"
-        />
-        {/* The one figure that answers "did this month add up or not", so it
-            carries the sign and takes its colour from the answer. */}
-        <Metric
-          label={t('events.summary.net')}
-          value={`${summary.netChange < 0 ? '−' : '+'}${formatVndScale(Math.abs(summary.netChange))}`}
-          className="sm:border-l sm:border-hair sm:pl-7"
-          valueClassName={summary.netChange < 0 ? 'text-alert' : 'text-accent'}
-        />
+      <PanelHeader title={t('events.summary.title')} />
+
+      {/*
+        Label row and figure row are shared across the columns via `subgrid`, so
+        the three figures sit on one baseline even though net is a step taller.
+        Three independent blocks would step the smaller two up by that
+        difference and the row stops reading as one comparison. Below `md` the
+        columns stack and net drops back to `t-metric`.
+      */}
+      <div className="s-head-body grid gap-x-12 gap-y-5 md:grid-cols-[1.2fr_1fr_1fr] md:grid-rows-[auto_1fr] md:gap-y-2">
+        {metrics.map((metric) => (
+          <div key={metric.label} className="grid gap-y-2 md:row-span-2 md:grid-rows-subgrid">
+            <MetricLabel icon={metric.icon} tone={metric.iconTone} label={metric.label} />
+            <p
+              className={cn(
+                'money-number self-end',
+                metric.lead ? 't-metric lg:t-figure' : 't-metric',
+                metric.valueClassName,
+              )}
+            >
+              {metric.value}
+            </p>
+          </div>
+        ))}
       </div>
     </Panel>
   )
 }
 
-function Metric({
-  label,
-  value,
-  className,
-  valueClassName,
-}: {
-  label: string
-  value: string
-  className?: string
-  valueClassName?: string
-}) {
+function MetricLabel({ icon: Icon, tone, label }: { icon: LucideIcon; tone: string; label: string }) {
   return (
-    <div className={className}>
-      <Label>{label}</Label>
-      <p className={cn('money-number mt-2 text-[30px]', valueClassName)}>{value}</p>
-    </div>
+    <p className="flex items-center gap-2 t-body-sm text-ink2">
+      <Icon className={cn('size-[18px] shrink-0', tone)} strokeWidth={1.75} aria-hidden />
+      <span>{label}</span>
+    </p>
   )
 }

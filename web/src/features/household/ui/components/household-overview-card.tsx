@@ -1,7 +1,7 @@
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { Panel } from '@/components/ui/panel'
+import { Panel, PanelHeader } from '@/components/ui/panel'
 import {
   Select,
   SelectContent,
@@ -9,98 +9,117 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useFreshness } from '@money-space/core/features/freshness/hooks/use-freshness'
 import type { Settings } from '@money-space/core/features/settings/model/settings-form'
-import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 
 type HouseholdOverviewCardProps = {
   form: UseFormReturn<Settings>
 }
 
-/** Saving lives beside the page title — see `HouseholdPage`. */
+/**
+ * The space itself: what it is called, and the two choices that apply to
+ * everything inside it. Saving lives beside the page title — see `HouseholdPage`.
+ *
+ * The name is not a heading with a field under it — it IS the field. Showing it
+ * twice made the panel restate one fact in two places and needed a label to
+ * tell them apart; one control at heading size says the same thing once.
+ *
+ * It also does not wear the standard field chrome. §22.3 asks an input to
+ * separate itself from the panel it sits on, and every other field in the app
+ * obeys that — but a heading in a box reads as a form row, which is the one
+ * thing this is not. The affordance moves to the states instead: a wash band on
+ * hover, and the full field treatment on focus, so while it is being edited it
+ * looks exactly like every other input.
+ *
+ * `-mx-3` on the wrapper is what keeps the title FLUSH with the panel's other
+ * content while its hover band bleeds 12px past it — padding alone would indent
+ * the title from the heading above it.
+ *
+ * Written as a plain `<input>` rather than the `Input` primitive because that
+ * one hard-codes `t-body-sm`, and `cn` is twMerge — which does not know the
+ * custom `t-*` classes, so both steps would survive into the DOM and CSS source
+ * order would silently decide the size (the bug `button.tsx` documents).
+ */
 export function HouseholdOverviewCard({ form }: HouseholdOverviewCardProps) {
   const { t } = useTranslation()
-  const { activeHousehold } = useActiveHousehold()
-  const { freshness, isLoading } = useFreshness()
-  const { control } = form
-  const allFresh = freshness ? !freshness.needsAttention : false
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = form
 
   return (
     <Panel>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_1fr] lg:gap-x-14">
-        <div>
-          {isLoading ? (
-            <Skeleton className="h-5 w-40" />
-          ) : (
-            <div className="flex items-center gap-2 text-[13px]">
-              <span className={allFresh ? 'size-1.5 rounded-full bg-accent' : 'size-1.5 rounded-full bg-attention'} />
-              {allFresh
-                ? t('freshness.upToDate.title')
-                : t('freshness.needsCheck.title')}
-            </div>
-          )}
+      <PanelHeader title={t('settings.household.spaceTitle')} />
 
-          <p className="label mt-7">{t('household.merged.householdName')}</p>
-          <p className="mt-2 text-[30px] font-medium tracking-[-.03em]">
-            {activeHousehold?.name ?? t('shell.householdName')}
-          </p>
-        </div>
+      <div className="s-head-body -mx-3">
+        <input
+          id="settings-name"
+          aria-label={t('settings.household.name')}
+          aria-invalid={Boolean(errors.householdName)}
+          className="w-full rounded-control border border-transparent bg-transparent px-3 py-1.5 t-title text-ink outline-none transition-[background-color,border-color,box-shadow] duration-150 placeholder:text-ink3 hover:bg-wash focus-visible:border-data-primary focus-visible:bg-card focus-visible:shadow-[0_0_0_3px_rgba(115,164,215,0.16)] aria-[invalid=true]:border-alert"
+          {...register('householdName')}
+        />
+        {errors.householdName?.message ? (
+          <p className="mt-2 px-3 t-caption text-alert">{errors.householdName.message}</p>
+        ) : null}
+      </div>
 
-        <div>
-          <div className="flex items-baseline justify-between gap-4">
-            <h2 className="section-title text-[16px]">{t('household.merged.generalSettings')}</h2>
-            <span className="font-mono text-[11px] text-ink3">
-              {form.getValues('currency')} · {form.getValues('language').toUpperCase()}
-            </span>
-          </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <SettingSelect label={t('settings.household.currency')}>
-              <Controller
-                control={control}
-                name="currency"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="mt-2 h-auto bg-transparent p-0 text-[13px] focus-visible:outline-none">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="VND">{t('options.currency.VND')}</SelectItem>
-                      <SelectItem value="USD">{t('options.currency.USD')}</SelectItem>
-                      <SelectItem value="EUR">{t('options.currency.EUR')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </SettingSelect>
-            <SettingSelect label={t('settings.household.language')}>
-              <Controller
-                control={control}
-                name="language"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="mt-2 h-auto bg-transparent p-0 text-[13px] focus-visible:outline-none">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="vi">{t('options.language.vi')}</SelectItem>
-                      <SelectItem value="en">{t('options.language.en')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </SettingSelect>
-          </div>
-        </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <Field label={t('settings.household.currency')} htmlFor="settings-currency">
+          <Controller
+            control={control}
+            name="currency"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="settings-currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="VND">{t('options.currency.VND')}</SelectItem>
+                  <SelectItem value="USD">{t('options.currency.USD')}</SelectItem>
+                  <SelectItem value="EUR">{t('options.currency.EUR')}</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </Field>
+
+        <Field label={t('settings.household.language')} htmlFor="settings-language">
+          <Controller
+            control={control}
+            name="language"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="settings-language">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="vi">{t('options.language.vi')}</SelectItem>
+                  <SelectItem value="en">{t('options.language.en')}</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </Field>
       </div>
     </Panel>
   )
 }
 
-function SettingSelect({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string
+  htmlFor: string
+  children: React.ReactNode
+}) {
   return (
-    <div className="sunk px-4 py-3.5">
-      <p className="label">{label}</p>
+    <div>
+      <label htmlFor={htmlFor} className="mb-2 block t-caption font-medium text-ink2">
+        {label}
+      </label>
       {children}
     </div>
   )

@@ -10,14 +10,14 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * neutral `secondary` fill is the default.
  */
 const badgeVariants = cva(
-  'inline-flex w-fit shrink-0 items-center rounded-full px-3 py-1 text-xs font-medium transition-colors',
+  'inline-flex w-fit shrink-0 items-center rounded-full px-3 py-1 t-caption font-medium transition-colors',
   {
     variants: {
       variant: {
-        default: 'bg-accent text-white',
-        secondary: 'bg-sunk text-ink2',
+        default: 'bg-action text-action-inverse',
+        secondary: 'bg-wash text-ink2',
         destructive: 'bg-alert text-white',
-        outline: 'bg-sunk text-ink',
+        outline: 'bg-wash text-ink',
       },
     },
     defaultVariants: {

@@ -66,7 +66,7 @@ const SheetContent = React.forwardRef<
       ref={ref}
       data-slot="sheet-content"
       className={cn(
-        'fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col gap-6 overflow-y-auto rounded-t-panel bg-panel p-6 pb-8 text-ink shadow-[0_-16px_50px_rgba(0,0,0,0.18)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom data-[state=closed]:duration-200 data-[state=open]:duration-300',
+        'fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col gap-6 overflow-y-auto rounded-t-panel bg-card p-6 pb-8 text-ink shadow-[0_-16px_50px_rgba(0,0,0,0.18)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom data-[state=closed]:duration-200 data-[state=open]:duration-300',
         className,
       )}
       {...props}
@@ -74,7 +74,7 @@ const SheetContent = React.forwardRef<
       <div className="mx-auto -mt-2 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-committed" />
       {children}
       <SheetPrimitive.Close
-        className="absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-sunk hover:opacity-100"
+        className="absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-wash hover:opacity-100"
         aria-label="Close"
       >
         <X className="size-4" />
@@ -111,7 +111,7 @@ const SheetTitle = React.forwardRef<
   <SheetPrimitive.Title
     ref={ref}
     data-slot="sheet-title"
-    className={cn('page-title text-[19px]', className)}
+    className={cn('t-page-tracking t-subhead', className)}
     {...props}
   />
 ))
@@ -124,7 +124,7 @@ const SheetDescription = React.forwardRef<
   <SheetPrimitive.Description
     ref={ref}
     data-slot="sheet-description"
-    className={cn('text-[13px] leading-relaxed text-ink2', className)}
+    className={cn('t-body-sm leading-relaxed text-ink2', className)}
     {...props}
   />
 ))

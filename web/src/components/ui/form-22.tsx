@@ -14,11 +14,13 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * display surfaces around it, and the two rules that matter most are the ones
  * easiest to get wrong:
  *
- *  - §22.3 — an input MUST carry a `--sunk` fill. The display system drops
- *    borders (§2.2), but a borderless field on a panel is indistinguishable
- *    from static text. Focus then INVERTS the surface: the fill lightens to
- *    `--panel` and an accent stroke appears. This is the only place in the
- *    product a border is used for purely visual purposes.
+ *  - §22.3 — an input MUST separate itself from the panel it sits on. This kit
+ *    does it with a WHITE `--card` fill plus a 1px `--committed` stroke rather
+ *    than a recessed fill: on an already-white card a wash box read as a second
+ *    surface level. Focus turns the stroke `--data-primary` plus a 3px tinted
+ *    ring — the same signal the Input primitive draws, not the v4 ink stroke,
+ *    which at this radius read as a disabled slab. This is the only place in
+ *    the product a border is used for purely visual purposes.
  *  - §22.4 — field labels are 13px sentence-case `--ink2`. NOT `.label`
  *    (mono uppercase): that is a sparse accessory of the display surfaces, and
  *    a column of seven of them turns a form into a form-builder.
@@ -33,29 +35,30 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * The sunk control box. Exported because a few controls (Select, DatePicker)
  * are wrapped rather than composed, and need the same shell.
  *
- * 46px is the §22.3 standard height; `--sunk` fill, transparent border that
- * turns accent on focus so the box never reflows.
+ * 46px is the §22.3 standard height; white fill, `--committed` border that
+ * turns `--data-primary` on focus so the box never reflows — the ring is a
+ * box-shadow for the same reason.
  */
 export const fieldShell =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 
 /** Secondary/optional fields sit at 40px (§22.3). */
 export const fieldShellSm =
-  'flex h-10 w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
+  'flex h-10 w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 
 /**
  * 16px is not a style choice — anything smaller makes iOS Safari zoom the
  * viewport on focus (§22.3).
  */
 export const fieldInput =
-  'h-full min-w-0 w-full bg-transparent text-[16px] leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3'
+  'h-full min-w-0 w-full bg-transparent t-body leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3'
 
 /**
  * Class for a shadcn `SelectTrigger` / `DatePicker` placed inside {@link Field}.
- * Strips the control's own chrome so the sunk shell is the only surface.
+ * Strips the control's own chrome so the field shell is the only surface.
  */
 export const fieldControlReset =
-  'h-full w-full rounded-none border-0 bg-transparent p-0 text-[16px] font-normal text-ink shadow-none hover:bg-transparent focus:ring-0 focus-visible:ring-0 data-[placeholder]:text-ink3'
+  'h-full w-full rounded-none border-0 bg-transparent p-0 t-body text-ink shadow-none hover:bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:shadow-none data-[placeholder]:text-ink3'
 
 /**
  * There is deliberately NO `help` prop. §22.0 lists "mỗi trường có một dòng
@@ -75,12 +78,12 @@ export function Field({ label, htmlFor, error, children, className }: FieldProps
     <div className={className}>
       <label
         htmlFor={htmlFor}
-        className="mb-[7px] block text-[13px] font-normal leading-[1.4] text-ink2"
+        className="mb-2 block t-body-sm leading-[1.4] text-ink2"
       >
         {label}
       </label>
       {children}
-      {error ? <p className="mt-1.5 text-[12px] leading-[1.5] text-alert">{error}</p> : null}
+      {error ? <p className="mt-1.5 t-caption leading-[1.5] text-alert">{error}</p> : null}
     </div>
   )
 }
@@ -117,7 +120,7 @@ export function TextareaField({
         id={id}
         rows={rows}
         className={cn(
-          'w-full resize-y rounded-[10px] border border-transparent bg-sunk px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-accent focus:bg-panel',
+          'w-full resize-y rounded-[10px] border border-committed bg-card px-3.5 py-3 t-body leading-6 text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3 focus:border-data-primary focus:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
           error && 'border-alert',
         )}
         {...props}
@@ -180,7 +183,7 @@ export function MoneyField({
           onBlur={onBlur}
           className={cn(fieldInput, 'num font-medium')}
         />
-        <span className="shrink-0 font-mono text-[12px] text-ink3">{suffix}</span>
+        <span className="shrink-0 font-mono t-caption text-ink3">{suffix}</span>
       </div>
     </Field>
   )
@@ -215,7 +218,7 @@ export function DecimalField({
           className={cn(fieldInput, 'num font-medium')}
         />
         {suffix ? (
-          <span className="shrink-0 whitespace-nowrap text-[12px] text-ink3">{suffix}</span>
+          <span className="shrink-0 whitespace-nowrap t-caption text-ink3">{suffix}</span>
         ) : null}
       </div>
     </Field>
@@ -239,7 +242,7 @@ export function Segmented<T extends string>({
   return (
     <div
       role="radiogroup"
-      className={cn('flex gap-1 rounded-[10px] bg-sunk p-1', className)}
+      className={cn('flex gap-1 rounded-[10px] bg-wash p-1', className)}
     >
       {options.map((option) => {
         const active = option.value === value
@@ -251,8 +254,8 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              'flex-1 rounded-[7px] px-3 py-2 text-[13px] transition-colors',
-              active ? 'bg-panel font-medium text-ink shadow-sm' : 'text-ink2 hover:text-ink',
+              'flex-1 rounded-[7px] px-3 py-2 t-body-sm transition-colors',
+              active ? 'bg-card font-medium text-ink shadow-sm' : 'text-ink2 hover:text-ink',
             )}
           >
             {option.label}
@@ -287,7 +290,7 @@ export function Consequence({
     <div
       aria-live="polite"
       className={cn(
-        'rounded-[10px] bg-accent-soft px-4 py-3 text-[13px] leading-[1.6] text-ink2',
+        'rounded-[10px] bg-accent-soft px-4 py-3 t-body-sm leading-[1.6] text-ink2',
         className,
       )}
     >
@@ -321,7 +324,7 @@ export function Disclosure({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="text-[13px] text-accent transition-opacity hover:opacity-70"
+        className="t-body-sm text-action transition-opacity hover:opacity-70"
       >
         {label}
       </button>

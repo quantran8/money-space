@@ -66,31 +66,31 @@ export function DebtListItem({
             event.stopPropagation()
             onViewDetail(debt.id)
           }}
-          className="truncate rounded-control text-left text-[13px] font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="truncate rounded-control text-left t-body-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-action"
         >
           {debt.name}
         </button>
       </TableCell>
-      <TableCell className="text-[12px]">
+      <TableCell className="t-caption">
         {debt.lenderName || t('debts.demo.unknownLender')}
       </TableCell>
-      <TableCell className="num text-right text-[14px] font-medium">
+      <TableCell className="num text-right t-body-sm font-medium">
         {formatVndCell(debt.outstandingAmountValue)}
       </TableCell>
-      <TableCell className="text-[12px]">
+      <TableCell className="t-caption">
         {nextPayment ? (
           formatDate(nextPayment.expectedDate)
         ) : (
           <span className="text-attention">{t('debts.demo.unconfirmed')}</span>
         )}
       </TableCell>
-      <TableCell className="num text-right text-[12px]">
+      <TableCell className="num text-right t-caption">
         {debt.interestSummary ?? '—'}
       </TableCell>
-      <TableCell className="text-[12px]">
+      <TableCell className="t-caption">
         {ownerName ?? t('debts.demo.householdOwner')}
       </TableCell>
-      <TableCell className="text-[12px] text-ink2">
+      <TableCell className="t-caption text-ink2">
         {debt.expectedFinalDueDate ? formatDate(debt.expectedFinalDueDate) : t('debts.demo.unknown')}
       </TableCell>
       <TableCell className="w-14 text-right">
@@ -99,7 +99,7 @@ export function DebtListItem({
         <div onClick={(event) => event.stopPropagation()}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="ghost" className="size-8" aria-label={t('common.actions')}>
+              <Button size="icon" variant="ghost" className="s-tap size-8" aria-label={t('common.actions')}>
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>

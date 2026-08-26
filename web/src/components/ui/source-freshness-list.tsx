@@ -78,7 +78,7 @@ export function SourceFreshnessList({
   return (
     <Sunk className={cn('mt-6', className)}>
       <div className="flex items-center justify-between gap-3 px-4 py-3.5">
-        <p className="text-[13px] leading-5 text-ink2">{summary}</p>
+        <p className="t-body-sm leading-5 text-ink2">{summary}</p>
 
         <span className="flex shrink-0 items-center gap-3">
           {action}
@@ -90,7 +90,7 @@ export function SourceFreshnessList({
             type="button"
             onClick={() => setIsOpen((open) => !open)}
             aria-expanded={isOpen}
-            className="text-[13px] font-medium text-accent"
+            className="t-body font-medium text-action"
           >
             {isOpen ? labels.hide : labels.show}
           </button>
@@ -119,7 +119,7 @@ export function SourceFreshnessList({
             className="overflow-hidden"
           >
             <div className="px-4 pb-4">
-              <Table className="text-[13px]">
+              <Table className="t-body-sm">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead scope="col" className="label-vi h-auto px-0 pb-2.5 font-normal">
@@ -141,7 +141,7 @@ export function SourceFreshnessList({
                     // This table sits INSIDE a sunk block, so its hover band goes
                     // lighter (`--panel`) rather than the darker `--sunk` a table
                     // on a panel uses — same band, one surface up.
-                    <TableRow key={row.id} className="hover:bg-panel">
+                    <TableRow key={row.id} className="hover:bg-card">
                       {/* A row header, not a column header: `TableHead` carries
                           `.label`, whose mono face must never touch the accented
                           Vietnamese of a source name (§10.1). The primitive has
@@ -154,7 +154,7 @@ export function SourceFreshnessList({
                       </th>
                       <TableCell
                         className={cn(
-                          'px-0 py-2.5 pr-4 font-mono text-[11px]',
+                          'px-0 py-2.5 pr-4 font-mono t-caption-sm',
                           row.isStale ? 'font-medium text-attention' : 'text-ink2',
                           // Only the last cell of a row carries the right radius.
                           !formatValue && 'rounded-r-[8px] text-right',
@@ -173,7 +173,7 @@ export function SourceFreshnessList({
               </Table>
 
               {footnote ? (
-                <p className="mt-3.5 text-[12px] leading-5 text-ink3">{footnote}</p>
+                <p className="mt-3.5 t-caption leading-5 text-ink3">{footnote}</p>
               ) : null}
             </div>
           </motion.div>

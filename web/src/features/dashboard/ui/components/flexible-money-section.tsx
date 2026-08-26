@@ -39,18 +39,18 @@ export function FlexibleMoneySection({
 
   return (
     <Card>
-      <p className="text-sm text-ink2">
+      <p className="t-body-sm text-ink2">
         {t('home.flexible.title')}
       </p>
       <p
         className={cn(
-          'money-number mt-3 text-4xl font-semibold sm:text-5xl',
+          'money-number mt-3 t-figure font-medium sm:t-hero',
           isNegative && 'text-alert',
         )}
       >
         {canProject ? formatVndShort(amount) : '—'}
       </p>
-      <p className="mt-3 text-sm leading-6 text-ink2">
+      <p className="mt-3 t-body-sm leading-6 text-ink2">
         {!canProject
           ? t('home.picture.noSource')
           : isNegative

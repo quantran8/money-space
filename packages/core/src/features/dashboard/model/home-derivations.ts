@@ -737,3 +737,79 @@ export function buildMoneyLocationMap(
     hiddenCount: Math.max(ordered.length - MAX_BARS, 0),
   }
 }
+
+// --- §12.4 who holds what ----------------------------------------------------
+
+export type HolderSource = {
+  id: string
+  name: string
+  value: number
+}
+
+export type HolderGroup = {
+  /** Member id, or `shared` for sources nobody is named on. */
+  key: string
+  name: string
+  value: number
+  sources: HolderSource[]
+}
+
+/**
+ * The same money as `buildMoneyLocationMap`, grouped by WHO IS RESPONSIBLE for
+ * it (§0.2, §16.4).
+ *
+ * This is a second reading of one set of sources, not a second set: the bars
+ * answer "where does the money sit", this answers "who is looking after it".
+ * Both are drawn from the same active assets and sum to the same total, which
+ * is what lets the two blocks sit in one section without disagreeing.
+ *
+ * It is deliberately NOT an attribution of spending. The product never says who
+ * spent what — `holderMemberId` is who is responsible for a source, and that is
+ * the only person-shaped fact Home is allowed to state.
+ *
+ * Sources with nobody named collapse into one shared group rather than being
+ * dropped or attributed to a default member: a joint account genuinely belongs
+ * to the household, and inventing an owner for it would be a claim the data
+ * does not make. `sharedLabel` is the caller's, because copy is i18n's job.
+ *
+ * Groups rank by value and each group's own sources rank inside it, so the
+ * block reads largest-first at both levels — the same ordering rule the bars
+ * use, so the eye does not have to switch conventions mid-section.
+ */
+export function buildHolderGroups(
+  assets: Asset[],
+  holderNameById: Map<string, string> | undefined,
+  sharedLabel: string,
+): HolderGroup[] {
+  const active = assets.filter(
+    (asset) => (!asset.status || asset.status === 'active') && (asset.currentValue ?? 0) > 0,
+  )
+
+  const byHolder = new Map<string, HolderGroup>()
+
+  for (const asset of active) {
+    // A holder id we cannot resolve to a name is treated as unnamed rather than
+    // rendered as a raw id — an id is not a person to the household.
+    const resolved = asset.holderMemberId
+      ? holderNameById?.get(asset.holderMemberId)
+      : undefined
+    const key = resolved ? asset.holderMemberId! : 'shared'
+    const name = resolved ?? sharedLabel
+
+    const group = byHolder.get(key) ?? { key, name, value: 0, sources: [] }
+    group.value += asset.currentValue ?? 0
+    group.sources.push({
+      id: asset.id,
+      name: asset.name,
+      value: asset.currentValue ?? 0,
+    })
+    byHolder.set(key, group)
+  }
+
+  return [...byHolder.values()]
+    .map((group) => ({
+      ...group,
+      sources: [...group.sources].sort((a, b) => b.value - a.value),
+    }))
+    .sort((a, b) => b.value - a.value)
+}

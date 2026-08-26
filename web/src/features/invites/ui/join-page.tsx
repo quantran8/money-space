@@ -33,9 +33,9 @@ export function JoinPage() {
   const problem = isMissingToken ? t('invites.join.malformed') : loadError
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-app p-4 text-ink md:p-6">
+    <main className="flex min-h-screen items-center justify-center bg-canvas p-4 text-ink md:p-6">
       <div className="panel w-full max-w-md p-6 sm:p-8">
-        <p className="text-sm font-medium text-ink2">{t('invites.join.eyebrow')}</p>
+        <p className="t-body-sm font-medium text-ink2">{t('invites.join.eyebrow')}</p>
 
         {/*
           Signing up in order to follow an invite link joins on arrival, so this
@@ -46,12 +46,12 @@ export function JoinPage() {
         */}
         {isAutoJoining && !problem ? (
           <>
-            <h1 className="mt-2 text-[26px] font-semibold tracking-[-0.035em]">
+            <h1 className="mt-2 t-metric tracking-[-0.035em]">
               {preview
                 ? t('invites.join.autoJoiningNamed', { name: preview.householdName })
                 : t('invites.join.autoJoining')}
             </h1>
-            <p className="mt-2 text-[15px] leading-6 text-ink2">
+            <p className="mt-2 t-body-sm leading-6 text-ink2">
               {t('invites.join.autoJoiningHint')}
             </p>
           </>
@@ -62,24 +62,24 @@ export function JoinPage() {
           </div>
         ) : problem ? (
           <>
-            <h1 className="mt-2 text-[26px] font-semibold tracking-[-0.035em]">
+            <h1 className="mt-2 t-metric tracking-[-0.035em]">
               {t('invites.join.unavailableTitle')}
             </h1>
-            <p className="mt-2 text-[15px] leading-6 text-ink2">{problem}</p>
+            <p className="mt-2 t-body-sm leading-6 text-ink2">{problem}</p>
           </>
         ) : preview ? (
           <>
-            <h1 className="mt-2 text-[26px] font-semibold tracking-[-0.035em]">
+            <h1 className="mt-2 t-metric tracking-[-0.035em]">
               {t('invites.join.title', { name: preview.householdName })}
             </h1>
-            <p className="mt-2 text-[15px] leading-6 text-ink2">
+            <p className="mt-2 t-body-sm leading-6 text-ink2">
               {preview.invitedByName
                 ? t('invites.join.invitedBy', { name: preview.invitedByName })
                 : t('invites.join.invitedByUnknown')}
             </p>
 
             <div className="sunk mt-6 px-4 py-3.5">
-              <p className="text-[12px] leading-5 text-ink2">
+              <p className="t-caption leading-5 text-ink2">
                 {preview.acceptable
                   ? t('invites.join.equalMembers')
                   : t(`invites.join.status.${preview.status}`)}

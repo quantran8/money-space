@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { MetricCell } from '@/components/ui/metric-cell'
 import { SubSection } from '@/components/ui/sub-section'
 import { AssumptionsNote } from '@/features/forecast/ui/components/assumptions-note'
 import { SpendImpactBar } from '@/features/cashflow/ui/components/spend-impact-bar'
@@ -12,15 +13,17 @@ import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
- * The result blocks, in the **mandated order** (§26D):
- *   Upcoming Safety → Goal consequence → Assumptions.
+ * The result, ANSWER-FIRST.
  *
- * §26D used to mandate five. Two went with the protected reserve: "Reserve
- * impact" had nothing left to report, and "Flexible before/after" was showing
- * `lowestProjectedBalance` under a second name — the same two numbers as the
- * block above it. So the first block absorbed what survived: the delta sentence
- * and the "obligations not covered" line, which is about coverage, not the
- * reserve, and would otherwise have been deleted along with its container.
+ * The blocks used to open with a before → after row: two figures the same size,
+ * which made the reader do the subtraction before they could learn anything.
+ * The one number they asked for — where the balance bottoms out if they spend
+ * this — now leads at `t-hero`, with the date it happens directly beneath it and
+ * the change from today set alongside as the secondary figure. Everything after
+ * that qualifies the headline rather than competing with it.
+ *
+ * The order is still §26D's: Upcoming Safety → Goal consequence → Assumptions.
+ * What changed is the WEIGHT inside the first block, not the sequence.
  *
  * Every block reports CONSEQUENCE. None of them says whether to buy — no
  * "bạn nên / không nên mua", no recommendation, no verdict. `resultType` only
@@ -30,25 +33,80 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
   const { t } = useTranslation()
   const { before, after, delta } = result
 
+  /**
+   * The spend is the same figure on both sides of the question, so it is read
+   * off the input rather than differenced out of two balances — a subtraction
+   * that would drift the moment the engine's rounding did.
+   */
+  const spend = result.input.amount
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {/* 1 — Upcoming Safety. NEVER labelled a spending allowance. */}
-      <SubSection title={t('whatif.blocks.upcomingSafety')}>
-        <Row
-          label={t('whatif.lowestBalance')}
-          before={formatVndShort(before.lowestProjectedBalance)}
-          after={formatVndShort(after.lowestProjectedBalance)}
-          // Negative is never hidden — it is the answer.
-          afterClassName={RESULT_TYPE_CLASS[result.resultType]}
-        />
-        <p className="mt-2 text-xs text-ink2">
-          {t('whatif.lowestBalanceOn', { date: after.lowestProjectedBalanceDate })}
-        </p>
-        <p className="mt-2 text-xs text-ink2">
-          {t('whatif.flexibleDelta', {
-            amount: formatVndShort(Math.abs(delta.lowestProjectedBalance)),
-          })}
-        </p>
+      <section>
+        <div className="flex items-start justify-between gap-6">
+          <div className="min-w-0">
+            <p className="t-body-sm text-ink2">{t('whatif.lowestBalance')}</p>
+            {/* Negative is never hidden — it is the answer. */}
+            <p
+              className={cn(
+                'money-number mt-1 whitespace-nowrap t-hero',
+                RESULT_TYPE_CLASS[result.resultType],
+              )}
+            >
+              {formatVndShort(after.lowestProjectedBalance)}
+            </p>
+            <p className="mt-2 t-caption leading-5 text-ink3">
+              {t('whatif.lowestBalanceOn', {
+                date: after.lowestProjectedBalanceDate,
+              })}
+            </p>
+          </div>
+
+          {/*
+            The comparison the before → after row used to carry, kept as ONE
+            figure. "Where it was" is only ever read as a distance from where it
+            lands, so the distance is what gets stated.
+          */}
+          <div className="shrink-0 text-right">
+            <p className="t-caption text-ink3">{t('whatif.delta.label')}</p>
+            <p className="money-number mt-1 whitespace-nowrap t-subhead">
+              {formatVndShort(delta.lowestProjectedBalance)}
+            </p>
+            <p className="mt-1 t-caption leading-5 text-ink3">
+              {t('whatif.delta.from', {
+                amount: formatVndShort(before.lowestProjectedBalance),
+              })}
+            </p>
+          </div>
+        </div>
+
+        {/*
+          Three facts that qualify the headline, at equal weight because none of
+          them outranks the others (02-components §4 — metric cells at the same
+          level share a treatment).
+        */}
+        <div className="mt-5 grid grid-cols-1 divide-y divide-divider border-y border-divider sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <MetricCell
+            className="py-4 sm:pr-4"
+            label={t('whatif.metrics.spend')}
+            value={formatVndShort(spend)}
+            hint={t('whatif.metrics.spendHint', { date: result.input.plannedDate })}
+          />
+          <MetricCell
+            className="py-4 sm:px-4"
+            label={t('whatif.metrics.atRisk')}
+            value={String(result.newlyAtRisk.length)}
+            hint={t('whatif.metrics.atRiskHint')}
+          />
+          <MetricCell
+            className="py-4 sm:pl-4"
+            label={t('whatif.metrics.flexible')}
+            value={formatVndShort(after.flexibleMoneyToday)}
+            hint={t('whatif.metrics.flexibleHint')}
+          />
+        </div>
+
         {/* WHICH items stop being payable, not just that something does.
             "Some fixed items would not be fully covered" is enough to worry
             someone and not enough to act on: they cannot move a bill or top up
@@ -56,33 +114,45 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
             spend actually breaks are listed — one already going unpaid is not
             this purchase's doing. */}
         {result.newlyAtRisk.length > 0 ? (
-          <div className="mt-2">
-            <p className="text-sm text-attention">
-              {t('whatif.blocks.atRisk')}
-            </p>
-            <ul className="mt-1 space-y-0.5">
+          <div className="mt-5">
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="t-body-sm font-medium">{t('whatif.blocks.atRisk')}</p>
+              <p className="t-caption text-ink3">
+                {t('whatif.blocks.atRiskCount', {
+                  count: result.newlyAtRisk.length,
+                })}
+              </p>
+            </div>
+            <ul className="mt-1">
               {result.newlyAtRisk.map((item) => (
                 <li
                   key={item.occurrenceKey}
-                  className="text-xs leading-5 text-ink2"
+                  className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-baseline gap-3 py-2"
                 >
-                  {t('whatif.blocks.atRiskRow', {
-                    date: item.date,
-                    name: item.name,
-                    amount: formatVndShort(item.shortfall),
-                  })}
+                  <span className="money-number t-caption text-ink2">{item.date}</span>
+                  <span className="truncate t-body-sm">{item.name}</span>
+                  <span className="money-number t-caption text-ink2">
+                    {formatVndShort(item.shortfall)}
+                  </span>
                 </li>
               ))}
             </ul>
+            <p className="mt-1 flex items-center gap-2 t-caption leading-5 text-ink2">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 rounded-full bg-attention"
+              />
+              {t('whatif.blocks.atRiskNote')}
+            </p>
           </div>
         ) : !after.obligationsCovered ? (
           // Something is short, but this spend did not cause it — say so
           // without attaching a list that would misattribute the blame.
-          <p className="mt-2 text-sm text-attention">
+          <p className="mt-5 t-body-sm text-attention">
             {t('whatif.obligations.notCovered')}
           </p>
         ) : null}
-      </SubSection>
+      </section>
 
       {/* 2 — What the goals give up: money AND time, per goal.
           Measured across every flexible wallet — what-if names no single one,
@@ -94,7 +164,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
               giving way, so it gets its own line rather than being folded into
               the per-goal list. */}
           {result.goalImpact.uncovered > 0 ? (
-            <p className="mb-2 text-sm text-alert">
+            <p className="mb-2 t-body-sm text-alert">
               {t('whatif.blocks.uncovered', {
                 amount: formatVndShort(result.goalImpact.uncovered),
               })}
@@ -116,7 +186,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           <ul className="space-y-1.5">
             {result.goalImpact.goals.map((goal) => (
               <li key={goal.goalId}>
-                <p className="text-sm">
+                <p className="t-body-sm">
                   {t('whatif.blocks.goalCostRow', {
                     name: goal.goalName ?? '—',
                     amount: formatVndShort(goal.reduction),
@@ -125,7 +195,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
                 {/* The time cost is the half that decides anything: "giảm 3tr"
                     says what leaves, "chậm 2 tháng" says what it costs. */}
                 {goal.delayMonths !== null && goal.delayMonths > 0 ? (
-                  <p className="text-xs leading-5 text-ink2">
+                  <p className="t-caption leading-5 text-ink2">
                     {goal.delayMonths >= 1
                       ? t('whatif.blocks.goalDelayRow', {
                           name: goal.goalName ?? '—',
@@ -149,14 +219,14 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
       {after.goal ? (
         <SubSection title={t('whatif.blocks.goal')}>
           {delta.goalDelayMonths !== null && delta.goalDelayMonths !== 0 ? (
-            <p className="text-sm">
+            <p className="t-body-sm">
               {t('whatif.goal.delay', { count: Math.abs(delta.goalDelayMonths) })}
             </p>
           ) : (
-            <p className="text-sm">{t('whatif.goal.noChange')}</p>
+            <p className="t-body-sm">{t('whatif.goal.noChange')}</p>
           )}
           {after.goal.projectedCompletionDate ? (
-            <p className="mt-2 text-xs text-ink2">
+            <p className="mt-2 t-caption text-ink2">
               {t('whatif.goal.projectedDate', {
                 date: after.goal.projectedCompletionDate,
               })}
@@ -197,31 +267,5 @@ function whatIfAssumptions(
 ): CalculationAssumption[] {
   return assumptions.filter(
     (assumption) => !FORECAST_WIDE_ASSUMPTIONS.has(assumption.code),
-  )
-}
-
-function Row({
-  label,
-  before,
-  after,
-  afterClassName,
-}: {
-  label: string
-  before: string
-  after: string
-  afterClassName?: string
-}) {
-  const { t } = useTranslation()
-  return (
-    <div className="flex items-baseline justify-between gap-3">
-      <p className="text-sm text-ink2">{label}</p>
-      <p className="money-number text-sm font-semibold">
-        <span className="text-ink2">{before}</span>
-        <span className="mx-2 text-ink2">
-          {t('whatif.arrow')}
-        </span>
-        <span className={cn(afterClassName)}>{after}</span>
-      </p>
-    </div>
   )
 }

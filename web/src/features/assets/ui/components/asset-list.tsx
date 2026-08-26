@@ -92,30 +92,30 @@ export function AssetList({
                     event.stopPropagation()
                     onOpen?.(asset.id)
                   }}
-                  className="min-w-0 max-w-full rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="min-w-0 max-w-full rounded-control text-left outline-none focus-visible:ring-2 focus-visible:ring-action"
                 >
-                  <span className="block truncate text-[13px] font-medium">{asset.name}</span>
-                  <span className="mt-1 block truncate text-[11px] text-ink3">
+                  <span className="block truncate t-body-sm font-medium">{asset.name}</span>
+                  <span className="mt-1 block truncate t-caption-sm text-ink3">
                     {t(`options.assetType.${asset.type}`)}
                   </span>
                 </button>
               </TableCell>
 
-              <TableCell className="text-[12px] text-ink2">
+              <TableCell className="t-caption text-ink2">
                 {(asset.holderMemberId ? memberNameById.get(asset.holderMemberId) : undefined) ??
                   t('assets.demo.householdOwner')}
               </TableCell>
-              <TableCell className="text-[12px]">
+              <TableCell className="t-caption">
                 {t(`options.liquidity.${asset.liquidity}`)}
               </TableCell>
               <TableCell
-                className={cn('text-[12px]', freshness.stale ? 'text-attention' : 'text-ink2')}
+                className={cn('t-caption', freshness.stale ? 'text-attention' : 'text-ink2')}
               >
                 {freshness.label}
               </TableCell>
               <TableCell
                 className={cn(
-                  'num text-right text-[14px] font-medium',
+                  'num text-right t-body-sm font-medium',
                   isSold && 'text-ink3 line-through',
                 )}
               >
@@ -131,7 +131,7 @@ export function AssetList({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="size-8"
+                        className="s-tap size-8"
                         aria-label={t('common.actions')}
                       >
                         <MoreVertical className="size-4" />

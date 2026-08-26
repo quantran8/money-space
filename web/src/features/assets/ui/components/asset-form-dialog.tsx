@@ -146,7 +146,7 @@ export function AssetFormDialog({
     <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent className="grid max-h-[88dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[520px]">
         <ResponsiveDialogHeader className="px-5 pb-5 pr-16 pt-5 text-left sm:px-8 sm:pr-16 sm:pt-7">
-          <ResponsiveDialogTitle className="text-[19px] font-medium tracking-[-0.015em]">
+          <ResponsiveDialogTitle className="t-subhead font-medium tracking-[-0.015em]">
             {isEditing ? t('assets.form.updateTitle') : t('assets.form.createTitle')}
           </ResponsiveDialogTitle>
           {/* §16.2 — a subtitle here would be mood, not meaning. */}
@@ -307,7 +307,7 @@ export function AssetFormDialog({
               <button
                 type="button"
                 onClick={onRemove}
-                className="text-[13px] text-alert transition-opacity hover:opacity-70 sm:mr-auto"
+                className="t-body-sm text-alert transition-opacity hover:opacity-70 sm:mr-auto"
               >
                 {t('assets.form.remove')}
               </button>
@@ -316,13 +316,13 @@ export function AssetFormDialog({
               <Button
                 type="button"
                 variant="secondary"
-                className="h-10 px-4 text-[13px]"
+                className="px-4"
                 onClick={() => handleOpenChange(false)}
               >
                 {t('common.cancel')}
               </Button>
               {/* §22.10 — never disabled on validity; errors explain the reason. */}
-              <Button type="submit" className="h-10 px-5 text-[13px]" disabled={isSubmitting}>
+              <Button type="submit" className="px-5" disabled={isSubmitting}>
                 {isSubmitting
                   ? t('assets.form.saving')
                   : isEditing
@@ -450,7 +450,7 @@ function ToggleRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <label htmlFor={id} className="text-[13px] leading-[1.4] text-ink2">
+      <label htmlFor={id} className="t-body-sm leading-[1.4] text-ink2">
         {label}
       </label>
       <Controller
@@ -473,7 +473,7 @@ function EffectBlock({ children }: { children: React.ReactNode }) {
   return (
     <p
       aria-live="polite"
-      className="num rounded-[10px] bg-accent-soft px-4 py-3 text-[13px] font-medium leading-[1.6] text-ink2"
+      className="num rounded-[10px] bg-accent-soft px-4 py-3 t-body-sm font-medium leading-[1.6] text-ink2"
     >
       {children}
     </p>
@@ -717,7 +717,7 @@ function MarketFields({
                 // text field — a combobox that can only answer "not found"
                 // would be worse than letting the user type the code.
                 <input
-                  className="h-full w-full min-w-0 bg-transparent text-[16px] uppercase leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
+                  className="h-full w-full min-w-0 bg-transparent t-body uppercase leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
                   placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
                   autoCapitalize="characters"
                   autoCorrect="off"
@@ -820,7 +820,7 @@ function MarketQuoteHint({
 
   if (isLoading) {
     return (
-      <p className="text-[13px] text-ink3" aria-live="polite">
+      <p className="t-body-sm text-ink3" aria-live="polite">
         {t('assets.form.market.quoteLoading')}
       </p>
     )
@@ -828,7 +828,7 @@ function MarketQuoteHint({
 
   if (isUnavailable || !quote) {
     return (
-      <p className="text-[13px] text-ink3" aria-live="polite">
+      <p className="t-body-sm text-ink3" aria-live="polite">
         {t('assets.form.market.quoteUnavailable')}
       </p>
     )
@@ -836,11 +836,11 @@ function MarketQuoteHint({
 
   return (
     <div
-      className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]"
+      className="flex flex-wrap items-center gap-x-2 gap-y-1 t-body-sm"
       aria-live="polite"
     >
       <span className="text-ink3">{t('assets.form.market.quoteLabel')}</span>
-      <span className="font-semibold text-ink">
+      <span className="font-medium text-ink">
         {formatMoney(quote.price, quote.quoteCurrency as DisplayCurrency)} /{' '}
         {quote.unit}
       </span>

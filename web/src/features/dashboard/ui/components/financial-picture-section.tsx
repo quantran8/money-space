@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
-import { MoneyCompositionBar } from '@/components/ui/money-composition-bar'
-import { Label, Panel, PanelSplit } from '@/components/ui/panel'
+import { MoneyCompositionRing } from '@/components/ui/money-composition-ring'
+import { Label, Panel } from '@/components/ui/panel'
 import { SourceFreshnessList } from '@/components/ui/source-freshness-list'
 import { buildCoverage, buildMoneyComposition } from '@money-space/core/features/dashboard/model/home-derivations'
 import type { DataFreshnessResult } from '@money-space/core/features/freshness/model/freshness.types'
@@ -92,19 +92,24 @@ export function FinancialPictureSection({
   }
 
   return (
-    <Panel>
-      <h2 className="section-title text-[16px]">{t('home.picture.title')}</h2>
+    <Panel className="lg:p-7">
+      <h2 className="t-title">{t('home.picture.title')}</h2>
 
-      <PanelSplit>
-        <div>
+      {/* The hero and the ring are ONE answer read two ways, so they sit on a
+          single optical line rather than in the generic answer/detail split:
+          the figure states the amount, the ring states what share of the
+          household's money that is. `items-center` is what keeps the ring from
+          floating above a hero that has grown a second line. */}
+      <div className="mt-7 grid items-center gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(420px,.8fr)] xl:gap-12">
+        <div className="min-w-0">
           <Label>{t('home.picture.flexibleLabel')}</Label>
 
           {/* Never dimmed when data is stale — this is still the best figure
               the household has (§2.15). */}
-          <div className="mt-3 flex flex-wrap items-end gap-2">
+          <div className="mt-2 flex flex-wrap items-end gap-2">
             <span
               className={cn(
-                'num text-[52px] leading-[.9] font-medium tracking-[-.04em] sm:text-[64px]',
+                'num t-display tracking-[-.045em]',
                 isNegative && 'text-alert',
               )}
             >
@@ -113,7 +118,7 @@ export function FinancialPictureSection({
             {hero.unit ? (
               <span
                 className={cn(
-                  'pb-1 text-[22px] font-medium sm:text-[28px]',
+                  'pb-2 t-metric',
                   isNegative && 'text-alert',
                 )}
               >
@@ -122,7 +127,7 @@ export function FinancialPictureSection({
             ) : null}
           </div>
 
-          <p className="mt-3 text-[13px] leading-5 text-ink2">
+          <p className="mt-4 t-body-sm leading-5 text-ink2">
             {canProject
               ? t('home.picture.totals', {
                   cash: formatVndScale(composition.totalLiquid),
@@ -131,17 +136,16 @@ export function FinancialPictureSection({
           </p>
         </div>
 
-        <div>
-          <MoneyCompositionBar
-            segments={composition.segments}
-            formatAmount={formatVndScale}
-            ariaLabel={t('home.picture.composition.aria', {
-              committed: formatVndScale(composition.segments[0].amount),
-              flexible: formatVndScale(composition.segments[1].amount),
-            })}
-          />
-        </div>
-      </PanelSplit>
+        <MoneyCompositionRing
+          segments={composition.segments}
+          formatAmount={formatVndScale}
+          centerLabel={t('home.picture.composition.ringCenter')}
+          ariaLabel={t('home.picture.composition.aria', {
+            committed: formatVndScale(composition.segments[0].amount),
+            flexible: formatVndScale(composition.segments[1].amount),
+          })}
+        />
+      </div>
 
       {/* Full section width, BELOW the split: these sources feed both columns —
           the hero and the composition bar alike — so scoping the block to the
@@ -156,6 +160,17 @@ export function FinancialPictureSection({
           // is weighted on its own (§10.5).
           summary={
             <>
+              {/* Status as a dot before the words: green when every source is
+                  inside the household's own threshold, amber when one is past
+                  it. It repeats what the amber age below already says, which is
+                  the one repetition worth having — the dot is findable at a
+                  glance, the age is not (§5.2, §25). */}
+              <span
+                className={cn(
+                  'mr-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full align-middle',
+                  coverage.hasStale ? 'bg-attention' : 'bg-positive',
+                )}
+              />
               <span className="font-medium text-ink">
                 {t('home.coverage.sourceCount', { count: coverage.total })}
               </span>
@@ -189,7 +204,7 @@ export function FinancialPictureSection({
               <button
                 type="button"
                 onClick={onQuickUpdate}
-                className="text-[13px] font-medium text-accent"
+                className="t-body font-medium text-action"
               >
                 {t('home.coverage.action')}
               </button>

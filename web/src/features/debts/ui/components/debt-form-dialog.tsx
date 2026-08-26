@@ -75,11 +75,11 @@ function formatVnd(value: number | string) {
 }
 
 const controlClass =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-transparent bg-sunk px-3.5 transition-colors focus-within:border-accent focus-within:bg-panel'
+  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 const inputClass =
-  'h-full min-w-0 w-full bg-transparent text-[16px] leading-none text-ink outline-none placeholder:text-ink3'
+  'h-full min-w-0 w-full bg-transparent t-body leading-none text-ink outline-none placeholder:text-ink3'
 const selectClass =
-  'h-full rounded-none bg-transparent p-0 text-[16px] font-normal text-ink data-[placeholder]:text-ink3'
+  'h-full rounded-none border-0 bg-transparent p-0 t-body text-ink shadow-none focus-visible:shadow-none data-[placeholder]:text-ink3'
 
 type DebtFieldProps = {
   label: string
@@ -96,8 +96,8 @@ function DebtField({ label, htmlFor, error, optional, hint, action, children }: 
   const { t } = useTranslation()
   return (
     <div>
-      <div className="mb-[7px] flex min-h-[18px] items-center justify-between gap-3">
-        <label htmlFor={htmlFor} className="text-[13px] font-normal leading-[1.4] text-ink2">
+      <div className="mb-2 flex min-h-[18px] items-center justify-between gap-3">
+        <label htmlFor={htmlFor} className="t-body-sm leading-[1.4] text-ink2">
           {label}
           {optional ? <span className="text-ink3"> · {t('debts.form.optional')}</span> : null}
         </label>
@@ -105,9 +105,9 @@ function DebtField({ label, htmlFor, error, optional, hint, action, children }: 
       </div>
       {children}
       {error ? (
-        <p className="mt-1.5 text-[12px] leading-[1.45] text-alert">{error}</p>
+        <p className="mt-1.5 t-caption text-alert">{error}</p>
       ) : hint ? (
-        <p className="mt-1.5 text-[12px] leading-[1.45] text-ink3">{hint}</p>
+        <p className="mt-1.5 t-caption text-ink3">{hint}</p>
       ) : null}
     </div>
   )
@@ -132,13 +132,13 @@ function MoneyControl({
     <div className={cn(controlClass, error && 'border-alert')}>
       <EventMoneyInput
         id={id}
-        className="h-full text-[16px] font-medium tracking-normal sm:text-[16px]"
+        className="h-full t-body font-medium tracking-normal"
         placeholder={placeholder}
         value={value}
         onChange={onChange}
         onBlur={onBlur}
       />
-      <span className="shrink-0 font-mono text-[12px] text-ink3">đ</span>
+      <span className="shrink-0 font-mono t-caption text-ink3">đ</span>
     </div>
   )
 }
@@ -321,7 +321,7 @@ export function DebtFormDialog({
     <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent className="grid max-h-[92dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[900px]">
         <ResponsiveDialogHeader className="px-5 pb-4 pt-5 pr-16 text-left sm:px-8 sm:pt-7 sm:pr-16">
-          <ResponsiveDialogTitle className="text-[19px] font-medium tracking-[-0.015em]">
+          <ResponsiveDialogTitle className="t-subhead font-medium tracking-[-0.015em]">
             {editingId ? t('debts.form.editTitle') : t('debts.form.createTitle')}
           </ResponsiveDialogTitle>
           <ResponsiveDialogDescription className="sr-only">
@@ -335,14 +335,14 @@ export function DebtFormDialog({
                 type="button"
                 onClick={() => void requestStep(item.step)}
                 className={cn(
-                  'flex min-h-11 items-center gap-2 rounded-control px-2 text-left text-[13px] text-ink3',
+                  'flex min-h-11 items-center gap-2 rounded-control px-2 text-left t-body-sm text-ink3',
                   step === item.step && 'font-medium text-ink',
                 )}
               >
                 <span
                   className={cn(
                     'size-[7px] shrink-0 rounded-full bg-[#D2D6DA]',
-                    step === item.step && 'bg-accent',
+                    step === item.step && 'bg-action',
                   )}
                 />
                 <span>{item.step}. {t(`debts.form.steps.${item.key}`)}</span>
@@ -355,7 +355,7 @@ export function DebtFormDialog({
           <div className="min-h-0 overflow-y-auto px-5 pb-5 sm:px-8">
             {step === 1 ? (
               <div className="space-y-5">
-                <h2 className="text-[16px] font-medium">{t('debts.form.sections.debt')}</h2>
+                <h2 className="t-title">{t('debts.form.sections.debt')}</h2>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <DebtField label={t('debts.form.fields.name')} htmlFor="debt-name" error={errors.name?.message}>
@@ -375,7 +375,7 @@ export function DebtFormDialog({
                     label={t('debts.form.fields.originalAmount')}
                     htmlFor="debt-original"
                     error={errors.originalAmount?.message}
-                    action={<button type="button" onClick={pasteAmountFromClipboard} className="text-[12px] font-medium text-accent">{t('debts.form.pasteAmount')}</button>}
+                    action={<button type="button" onClick={pasteAmountFromClipboard} className="t-caption font-medium text-action">{t('debts.form.pasteAmount')}</button>}
                   >
                     <Controller control={control} name="originalAmount" render={({ field }) => (
                       <MoneyControl id="debt-original" value={field.value} error={errors.originalAmount?.message} onChange={updateOriginalAmount} onBlur={field.onBlur} />
@@ -422,21 +422,21 @@ export function DebtFormDialog({
                   <DebtField label={t('debts.form.fields.borrowedAt')} error={errors.borrowedAt?.message}>
                     <div className={cn(controlClass, errors.borrowedAt && 'border-alert')}>
                       <Controller control={control} name="borrowedAt" render={({ field }) => (
-                        <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.borrowedAt)} className="h-full rounded-none bg-transparent p-0 font-mono text-[16px] font-normal hover:bg-transparent [&_svg]:hidden" />
+                        <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.borrowedAt)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                       )} />
                     </div>
                   </DebtField>
                 </div>
 
-                <div className="rounded-[10px] bg-sunk p-4">
+                <div className="rounded-[10px] bg-wash p-4">
                   <div className="flex items-center justify-between gap-4">
-                    <p className="text-[13px] font-medium">{t('debts.form.fields.received')}</p>
+                    <p className="t-body-sm font-medium">{t('debts.form.fields.received')}</p>
                     <Switch checked={Boolean(receivedToAssetId)} onCheckedChange={toggleReceiveEvent} />
                   </div>
                   {receivedToAssetId ? (
                     <div className="mt-4">
                       <DebtField label={t('debts.form.fields.receivedDestination')}>
-                        <div className={cn(controlClass, 'bg-panel')}>
+                        <div className={cn(controlClass, 'bg-card')}>
                           <Controller control={control} name="receivedToAssetId" render={({ field }) => (
                             <Select value={field.value} onValueChange={field.onChange}>
                               <SelectTrigger className={selectClass}><SelectValue placeholder={t('debts.form.fields.receivedPlaceholder')} /></SelectTrigger>
@@ -453,7 +453,7 @@ export function DebtFormDialog({
 
             {step === 2 ? (
               <div className="space-y-5">
-                <h2 className="text-[16px] font-medium">{t('debts.form.sections.schedule')}</h2>
+                <h2 className="t-title">{t('debts.form.sections.schedule')}</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <DebtField label={t('debts.form.fields.frequency')}>
                     <div className={controlClass}>
@@ -474,10 +474,10 @@ export function DebtFormDialog({
                     <>
                       <div className={cn(controlClass, errors.firstPaymentDate && 'border-alert')}>
                         <Controller control={control} name="firstPaymentDate" render={({ field }) => (
-                          <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.firstPaymentDate)} className="h-full rounded-none bg-transparent p-0 font-mono text-[16px] font-normal hover:bg-transparent [&_svg]:hidden" />
+                          <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.firstPaymentDate)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                         )} />
                       </div>
-                      <p className="mt-1.5 text-[12px] leading-5 text-ink3">
+                      <p className="mt-1.5 t-caption leading-5 text-ink3">
                         {t('debts.form.fields.firstPaymentDateHelp')}
                       </p>
                     </>
@@ -503,7 +503,7 @@ export function DebtFormDialog({
                   <DebtField label={t('debts.form.fields.finalDueDate')} error={errors.expectedFinalDueDate?.message}>
                     <div className={cn(controlClass, errors.expectedFinalDueDate && 'border-alert')}>
                       <Controller control={control} name="expectedFinalDueDate" render={({ field }) => (
-                        <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.expectedFinalDueDate)} className="h-full rounded-none bg-transparent p-0 font-mono text-[16px] font-normal hover:bg-transparent [&_svg]:hidden" />
+                        <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.expectedFinalDueDate)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                       )} />
                     </div>
                   </DebtField>
@@ -530,14 +530,14 @@ export function DebtFormDialog({
                   {DUE_DATE_PRESETS.map((preset) => {
                     const active = Boolean(dueAnchor) && expectedFinalDueDate === addMonthsIso(dueAnchor, preset.months)
                     return (
-                      <button key={preset.months} type="button" disabled={!dueAnchor} onClick={() => applyDuePreset(preset.months)} className={cn('rounded-full bg-sunk px-3 py-1.5 text-[12px] font-medium text-ink2 transition disabled:opacity-40', active && 'bg-accent text-white')}>
+                      <button key={preset.months} type="button" disabled={!dueAnchor} onClick={() => applyDuePreset(preset.months)} className={cn('rounded-full bg-wash px-3 py-1.5 t-caption font-medium text-ink2 transition disabled:opacity-40', active && 'bg-action text-white')}>
                         {t(`debts.form.presets.${preset.key}`)}
                       </button>
                     )
                   })}
                 </div>
 
-                <div className="rounded-[10px] bg-accent-soft px-4 py-3.5 text-[13px] leading-5 text-ink2">
+                <div className="rounded-[10px] bg-accent-soft px-4 py-3.5 t-body-sm leading-5 text-ink2">
                   {repaymentEstimate ? (
                     <div className="flex items-center justify-between gap-4">
                       <p>
@@ -555,7 +555,7 @@ export function DebtFormDialog({
                       <button type="button" onClick={() => {
                         setValue('fixedPaymentAmount', String(repaymentEstimate.perPayment), { shouldValidate: true })
                         setValue('fixedPaymentTouched', false, { shouldDirty: true })
-                      }} className="shrink-0 text-[13px] font-medium text-accent">{t('debts.form.schedule.use')}</button>
+                      }} className="shrink-0 t-body-sm font-medium text-action">{t('debts.form.schedule.use')}</button>
                     </div>
                   ) : (
                     <p>{t('debts.form.schedule.empty')}</p>
@@ -566,17 +566,17 @@ export function DebtFormDialog({
 
             {step === 3 ? (
               <div className="space-y-5">
-                <h2 className="text-[16px] font-medium">{t('debts.form.sections.interest')}</h2>
+                <h2 className="t-title">{t('debts.form.sections.interest')}</h2>
 
                 {isFixedScheduleLender(selectedLenderType) ? (
-                  <p className="rounded-[10px] bg-attention-tint px-4 py-3 text-[13px] leading-5 text-ink2">
+                  <p className="rounded-[10px] bg-attention-tint px-4 py-3 t-body-sm leading-5 text-ink2">
                     {t('debts.form.bankRequirement')}
                   </p>
                 ) : null}
 
-                <div className="rounded-[10px] bg-sunk p-4">
+                <div className="rounded-[10px] bg-wash p-4">
                   <div className="flex items-center justify-between gap-4">
-                    <p className="text-[13px] font-medium">{t('debts.form.fields.hasInterest')}</p>
+                    <p className="t-body-sm font-medium">{t('debts.form.fields.hasInterest')}</p>
                     <Controller control={control} name="hasInterest" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />
                   </div>
 
@@ -588,9 +588,9 @@ export function DebtFormDialog({
                         <Controller control={control} name="interestCalc" render={({ field }) => (
                           <div className="grid gap-2 sm:grid-cols-2">
                             {CALC_OPTIONS.map((option) => (
-                              <button key={option.value} type="button" aria-pressed={field.value === option.value} onClick={() => field.onChange(option.value)} className={cn('min-h-[58px] rounded-[10px] border border-transparent bg-panel px-3.5 py-2.5 text-left text-ink2', field.value === option.value && 'border-accent text-ink')}>
-                                <span className="block text-[13px] font-medium">{t(`debts.form.calc.${option.labelKey}`)}</span>
-                                <span className="mt-1 block text-[12px] leading-4 text-ink3">{t(`debts.form.calc.${option.hintKey}`)}</span>
+                              <button key={option.value} type="button" aria-pressed={field.value === option.value} onClick={() => field.onChange(option.value)} className={cn('min-h-[58px] rounded-[10px] border border-transparent bg-card px-3.5 py-2.5 text-left text-ink2', field.value === option.value && 'border-action text-ink')}>
+                                <span className="block t-body-sm font-medium">{t(`debts.form.calc.${option.labelKey}`)}</span>
+                                <span className="mt-1 block t-caption leading-4 text-ink3">{t(`debts.form.calc.${option.hintKey}`)}</span>
                               </button>
                             ))}
                           </div>
@@ -601,16 +601,16 @@ export function DebtFormDialog({
                 </div>
 
                 <DebtField label={t('debts.form.fields.note')} htmlFor="debt-note" optional>
-                  <textarea id="debt-note" rows={3} className="min-h-[92px] w-full resize-y rounded-[10px] border border-transparent bg-sunk px-3.5 py-[11px] text-[16px] leading-6 text-ink outline-none transition-colors placeholder:text-ink3 focus:border-accent focus:bg-panel" placeholder={t('debts.form.fields.notePlaceholder')} {...register('note')} />
+                  <textarea id="debt-note" rows={3} className="min-h-[92px] w-full resize-y rounded-[10px] border border-committed bg-card px-3.5 py-3 t-body leading-6 text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3 focus:border-data-primary focus:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]" placeholder={t('debts.form.fields.notePlaceholder')} {...register('note')} />
                 </DebtField>
               </div>
             ) : null}
 
             {step === 4 ? (
               <div className="space-y-5">
-                <h2 className="text-[16px] font-medium">{t(editingId ? 'debts.form.sections.reviewEdit' : 'debts.form.sections.reviewCreate')}</h2>
-                <div className="rounded-[10px] bg-sunk p-4">
-                  <dl className="space-y-3 text-[13px]">
+                <h2 className="t-title">{t(editingId ? 'debts.form.sections.reviewEdit' : 'debts.form.sections.reviewCreate')}</h2>
+                <div className="rounded-[10px] bg-wash p-4">
+                  <dl className="space-y-3 t-body-sm">
                     <SummaryRow label={t('debts.form.fields.name')} value={name || '—'} />
                     <SummaryRow label={t('debts.form.fields.lender')} value={lenderName || '—'} />
                     <SummaryRow label={t('debts.form.fields.outstanding')} value={formatVnd(outstandingAmount)} numeric />
@@ -625,7 +625,7 @@ export function DebtFormDialog({
                     <SummaryRow label={t('debts.form.fields.receivedDestination')} value={receivedAssetName || t('debts.form.review.notRecorded')} />
                   </dl>
                 </div>
-                <div className="rounded-[10px] bg-accent-soft px-4 py-3.5 text-[13px] leading-5 text-ink2">
+                <div className="rounded-[10px] bg-accent-soft px-4 py-3.5 t-body-sm leading-5 text-ink2">
                   {t('debts.form.review.notice')}
                 </div>
               </div>
@@ -635,19 +635,19 @@ export function DebtFormDialog({
           <ResponsiveDialogFooter className="shrink-0 flex-row items-center justify-between px-5 pb-5 pt-3 sm:px-8 sm:pb-7">
             <div>
               {step > 1 ? (
-                <Button type="button" variant="ghost" className="h-11 px-4 text-[13px]" onClick={() => goToStep((step - 1) as Step)}>
+                <Button type="button" variant="ghost" className="h-11 px-4" onClick={() => goToStep((step - 1) as Step)}>
                   ← {t('debts.form.actions.back')}
                 </Button>
               ) : null}
             </div>
             <div className="flex items-center gap-2.5">
-              <Button type="button" variant="ghost" className="h-11 px-4 text-[13px]" onClick={() => handleOpenChange(false)}>{t('common.cancel')}</Button>
+              <Button type="button" variant="ghost" className="h-11 px-4" onClick={() => handleOpenChange(false)}>{t('common.cancel')}</Button>
               {step < 4 ? (
-                <Button type="button" className="h-11 px-5 text-[13px]" onClick={() => void requestStep((step + 1) as Step)}>
+                <Button type="button" className="h-11 px-5" onClick={() => void requestStep((step + 1) as Step)}>
                   {t(step === 3 ? 'debts.form.actions.review' : 'debts.form.actions.continue')}
                 </Button>
               ) : (
-                <Button type="submit" className="h-11 px-5 text-[13px]" disabled={!isValid || isSavingDebt}>
+                <Button type="submit" className="h-11 px-5" disabled={!isValid || isSavingDebt}>
                   {isSavingDebt
                     ? t('debts.form.actions.saving')
                     : editingId
@@ -691,23 +691,23 @@ function InterestPeriods({
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
-        <p className="text-[13px] text-ink2">{t('debts.form.fields.interestPeriods')}</p>
-        <button type="button" onClick={onAppend} className="inline-flex items-center gap-1 text-[13px] font-medium text-accent">
+        <p className="t-body-sm text-ink2">{t('debts.form.fields.interestPeriods')}</p>
+        <button type="button" onClick={onAppend} className="inline-flex items-center gap-1 t-body-sm font-medium text-action">
           <Plus className="size-4" /> {t('debts.form.interestPeriods.add')}
         </button>
       </div>
       <div className="mt-3 space-y-3">
         {fields.map((item, index) => (
-          <div key={item.id} className="grid gap-3 rounded-[10px] bg-panel p-3 sm:grid-cols-[1fr_150px_auto]">
+          <div key={item.id} className="grid gap-3 rounded-[10px] bg-card p-3 sm:grid-cols-[1fr_150px_auto]">
             <DebtField label={t('debts.form.fields.annualRate')}>
               <div className={controlClass}>
                 <input inputMode="decimal" placeholder="8,2" className={cn(inputClass, 'num font-medium')} {...register(`interestPeriods.${index}.ratePct` as const)} />
-                <span className="shrink-0 font-mono text-[12px] text-ink3">%</span>
+                <span className="shrink-0 font-mono t-caption text-ink3">%</span>
               </div>
             </DebtField>
             <DebtField label={t('debts.form.fields.duration')}>
               {index === fields.length - 1 ? (
-                <div className={cn(controlClass, 'text-[14px] text-ink2')}>
+                <div className={cn(controlClass, 't-body-sm text-ink2')}>
                   {lastStageMonths != null
                     ? t('debts.form.interestPeriods.months', { count: lastStageMonths })
                     : t('debts.form.interestPeriods.unknownMonths')}
@@ -715,22 +715,22 @@ function InterestPeriods({
               ) : (
                 <div className={controlClass}>
                   <input inputMode="numeric" placeholder="12" className={cn(inputClass, 'num font-medium')} {...register(`interestPeriods.${index}.months` as const)} />
-                  <span className="shrink-0 font-mono text-[12px] text-ink3">
+                  <span className="shrink-0 font-mono t-caption text-ink3">
                     {t('debts.form.interestPeriods.monthUnit')}
                   </span>
                 </div>
               )}
             </DebtField>
             {fields.length > 1 ? (
-              <button type="button" onClick={() => onRemove(index)} className="mt-[25px] grid size-11 place-items-center rounded-control text-alert" aria-label={t('debts.form.interestPeriods.remove')}>
+              <button type="button" onClick={() => onRemove(index)} className="mt-6 grid size-11 place-items-center rounded-control text-alert" aria-label={t('debts.form.interestPeriods.remove')}>
                 <X className="size-4" />
               </button>
             ) : <span />}
           </div>
         ))}
       </div>
-      {error ? <p className="mt-1.5 text-[12px] leading-[1.45] text-alert">{error}</p> : null}
-      <p className="mt-2 text-[12px] leading-5 text-ink3">{t('debts.form.interestPeriods.remainingHint')}</p>
+      {error ? <p className="mt-1.5 t-caption text-alert">{error}</p> : null}
+      <p className="mt-2 t-caption leading-5 text-ink3">{t('debts.form.interestPeriods.remainingHint')}</p>
     </div>
   )
 }
