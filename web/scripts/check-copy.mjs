@@ -2,7 +2,7 @@
 /**
  * Guards the product's voice.
  *
- * Money Space is a shared financial picture for a couple, not a surveillance or
+ * Oursight is a shared financial picture for a couple, not a surveillance or
  * budgeting tool. The v3.1 spec (08-brand-copy-wireframes.md §3, design.md
  * §16.3/§17) bans a specific vocabulary because it reframes the product as
  * control, judgement, or blame — the exact failure mode that would make a

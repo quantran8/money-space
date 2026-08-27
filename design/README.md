@@ -1,17 +1,17 @@
-# Money Space Design System v5.0
+# Oursight Design System v5.0
 
 Airy, cool, flat financial workspace. Lấy visual grammar từ Clerio nhưng giữ
-information architecture và product semantics riêng của Money Space.
+information architecture và product semantics riêng của Oursight.
 
 ## Files
 
-| File | Nội dung |
-|---|---|
-| [01-foundations.md](01-foundations.md) | Surface, colour, typography, money format, spacing, radius, accessibility |
-| [02-components.md](02-components.md) | 21 component: hero card, card, KPI, button, field, row, table, chart, coverage, empty state, modal |
-| [03-patterns-and-states.md](03-patterns-and-states.md) | Composition, state matrix, density, responsive |
-| [04-product-recipes.md](04-product-recipes.md) | Recipe riêng của Money Space — Home IA, forecast, goal, privacy, app shell |
-| [05-changes-from-v4.md](05-changes-from-v4.md) | Những gì đổi so với v4.2 và vì sao |
+| File                                                   | Nội dung                                                                                           |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| [01-foundations.md](01-foundations.md)                 | Surface, colour, typography, money format, spacing, radius, accessibility                          |
+| [02-components.md](02-components.md)                   | 21 component: hero card, card, KPI, button, field, row, table, chart, coverage, empty state, modal |
+| [03-patterns-and-states.md](03-patterns-and-states.md) | Composition, state matrix, density, responsive                                                     |
+| [04-product-recipes.md](04-product-recipes.md)         | Recipe riêng của Oursight — Home IA, forecast, goal, privacy, app shell                            |
+| [05-changes-from-v4.md](05-changes-from-v4.md)         | Những gì đổi so với v4.2 và vì sao                                                                 |
 
 ## Ba điều quyết định nhất
 

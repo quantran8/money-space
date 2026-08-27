@@ -2,7 +2,7 @@
   "name": "money-space-frontend",
   "private": true,
   "version": "0.0.0",
-  "description": "Money Space frontend — web (Vite) and mobile (Expo) sharing @money-space/core.",
+  "description": "Oursight frontend — web (Vite) and mobile (Expo) sharing @money-space/core.",
   "packageManager": "pnpm@10.33.4",
   "engines": {
     "node": ">=22"

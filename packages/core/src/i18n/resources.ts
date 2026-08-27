@@ -283,7 +283,7 @@ export const resources = {
             empty: 'Chưa có hoạt động nào gần đây.',
           },
         },
-        footerNote: 'Các số liệu phản ánh toàn bộ dữ liệu đã ghi nhận trong Money Space.',
+        footerNote: 'Các số liệu phản ánh toàn bộ dữ liệu đã ghi nhận trong Oursight.',
       },
       activity: {
         header: {
@@ -2720,7 +2720,7 @@ export const resources = {
       auth: {
         or: 'hoặc',
         brand: {
-          appName: 'Money Space',
+          appName: 'Oursight',
           eyebrow: 'Không gian tài chính chung',
           // Two lines by design — the break is part of the layout, so it is
           // authored here rather than left to wrapping.
@@ -2802,7 +2802,7 @@ export const resources = {
         },
       },
       onboarding: {
-        appName: 'Money Space',
+        appName: 'Oursight',
         /**
          * Onboarding is one question with two answers. The nine-step wizard's
          * copy (`wizard`, `steps`, `sidebar`, `invite`) went with the screens.
@@ -3160,7 +3160,7 @@ export const resources = {
             empty: 'No recent activity yet.',
           },
         },
-        footerNote: 'These figures reflect everything your household has recorded in Money Space.',
+        footerNote: 'These figures reflect everything your household has recorded in Oursight.',
       },
       assets: {
         header: {
@@ -5467,7 +5467,7 @@ export const resources = {
       auth: {
         or: 'or',
         brand: {
-          appName: 'Money Space',
+          appName: 'Oursight',
           eyebrow: 'A shared space for your finances',
           titleLine1: 'Shared finances,',
           titleLine2: 'clear in one place.',
@@ -5546,7 +5546,7 @@ export const resources = {
         },
       },
       onboarding: {
-        appName: 'Money Space',
+        appName: 'Oursight',
         /**
          * Onboarding is one question with two answers. The nine-step wizard's
          * copy (`wizard`, `steps`, `sidebar`, `invite`) went with the screens.

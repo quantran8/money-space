@@ -1,6 +1,6 @@
-# Money Space — App-wide UI, Component & Copy Principles
+# Oursight — App-wide UI, Component & Copy Principles
 
-> App-wide guideline for Money Space.  
+> App-wide guideline for Oursight.  
 > This document has **two layers**:
 >
 > 1. **Canonical Design System Rules** — source of truth from Foundations + Components v5.
@@ -14,7 +14,7 @@
 
 ## 1. Design character
 
-Money Space is an:
+Oursight is an:
 
 > **airy, cool, flat financial workspace**
 
@@ -1104,7 +1104,7 @@ This makes the distinction between:
 
 # 45. Tone
 
-Money Space copy should be:
+Oursight copy should be:
 
 - short,
 - factual,
@@ -1330,7 +1330,7 @@ Avoid:
 
 # 61. North star
 
-> **Money Space is a calm financial workspace built from clear answers, not a dashboard full of widgets.**
+> **Oursight is a calm financial workspace built from clear answers, not a dashboard full of widgets.**
 
 The system should make financial information:
 

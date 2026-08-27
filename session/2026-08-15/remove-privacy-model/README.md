@@ -6,7 +6,7 @@
 
 ## What the task is
 
-Money Space is a shared source of truth for two people. The disclosure model
+Oursight is a shared source of truth for two people. The disclosure model
 contradicted that: either partner could hide records from the shared picture, so
 the "shared" numbers were wrong for both. The owner settled a new mental model:
 
@@ -66,7 +66,7 @@ FinancialNature + privacy_owner; drop PermissionLevel; drop HouseholdRole),
 
 - **`summary_only` is presentation, not access.** Both partners can flip any
   record to `detail` in one edit, so server redaction would be theatre. It folds
-  for *everyone including its owner* — that symmetry is what makes it
+  for _everyone including its owner_ — that symmetry is what makes it
   trustworthy without a permission system. Copy is written to survive this:
   never "người kia không thấy".
 - **Liquidity stays visible on folded rows.** §2.15 requires every calculated

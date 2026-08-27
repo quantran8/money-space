@@ -1,4 +1,4 @@
-# Money Space — mobile
+# Oursight — mobile
 
 The React Native / Expo client. Same backend and same business logic as the web
 app; only the UI is written twice.

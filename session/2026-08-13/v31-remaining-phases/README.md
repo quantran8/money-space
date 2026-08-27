@@ -1,4 +1,4 @@
-# Money Space v3.1 — remaining phases (5–11)
+# Oursight v3.1 — remaining phases (5–11)
 
 **Status: backend complete and green. Frontend phases 0–11 complete
 (2026-08-13) — but never run against a live database; see the migration note
@@ -11,20 +11,20 @@ Spec: `money-space/family-finance-v3.1/` — `design.md` there is canonical.
 
 ## Where things stand
 
-| Phase | Work | State |
-|---|---|---|
-| 0 | FE `CLAUDE.md` rewrite, dead-code deletion, query keys, whatif store, `options.*` i18n, copy lint. BE `clock.ts`, `shared-calculation.ts` | ✅ |
-| 1 | BE migrations 1–5, 7–13; goal `current_amount` stored + money-event mirror | ✅ |
-| 2 | BE `cashflow_events` rename + module; `payments` deleted; auto-snapshot hooks retired | ✅ |
-| 3 | BE forecast core: forecast / flexible money / financial state / what-if / goal projection | ✅ |
-| 4 | BE protected-reserves, attention, invites, `POST /snapshots`, freshness, goal projection routes | ✅ |
-| 5 | FE `features/cashflow/` slice; `features/payments/` deleted; consumers re-pointed via compat shim | ✅ |
-| 6 | FE forecast slice + `/upcoming` | ✅ |
-| 7 | FE reserves + what-if slices, `WhatIfSheet` in `AppShell` | ✅ |
-| 8 | FE goal projection; `deadline` → `targetDate` | ✅ |
-| 9 | FE Home rework — 7 sections in the mandated order | ✅ |
-| 10 | FE household slice, `/settings` trim, nav 5+3, mobile bottom nav | ✅ |
-| 11 | FE asset classification fields + onboarding wizard | ✅ |
+| Phase | Work                                                                                                                                      | State |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| 0     | FE `CLAUDE.md` rewrite, dead-code deletion, query keys, whatif store, `options.*` i18n, copy lint. BE `clock.ts`, `shared-calculation.ts` | ✅    |
+| 1     | BE migrations 1–5, 7–13; goal `current_amount` stored + money-event mirror                                                                | ✅    |
+| 2     | BE `cashflow_events` rename + module; `payments` deleted; auto-snapshot hooks retired                                                     | ✅    |
+| 3     | BE forecast core: forecast / flexible money / financial state / what-if / goal projection                                                 | ✅    |
+| 4     | BE protected-reserves, attention, invites, `POST /snapshots`, freshness, goal projection routes                                           | ✅    |
+| 5     | FE `features/cashflow/` slice; `features/payments/` deleted; consumers re-pointed via compat shim                                         | ✅    |
+| 6     | FE forecast slice + `/upcoming`                                                                                                           | ✅    |
+| 7     | FE reserves + what-if slices, `WhatIfSheet` in `AppShell`                                                                                 | ✅    |
+| 8     | FE goal projection; `deadline` → `targetDate`                                                                                             | ✅    |
+| 9     | FE Home rework — 7 sections in the mandated order                                                                                         | ✅    |
+| 10    | FE household slice, `/settings` trim, nav 5+3, mobile bottom nav                                                                          | ✅    |
+| 11    | FE asset classification fields + onboarding wizard                                                                                        | ✅    |
 
 **Backend gate as of 2026-08-13:** `prisma validate` clean · `nest build` clean ·
 **248 unit + 4 e2e passing** · zero index-mirroring drift.
@@ -252,7 +252,7 @@ render the same fields.
 ### Known: `npm run lint` was ALREADY red before this work
 
 6 pre-existing eslint errors, confirmed by stashing. **`npm run build` is the
-reliable per-phase gate.** The copy check is ordered *before* eslint so the
+reliable per-phase gate.** The copy check is ordered _before_ eslint so the
 pre-existing failures can't skip it.
 
 ---

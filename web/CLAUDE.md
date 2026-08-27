@@ -23,7 +23,7 @@ mobile app's strings as well.
 
 ## What this is
 
-Money Space (package name `family-finance-app`) is a Vietnamese-first finance web app for **couples aged 25–37**. React 19 + Vite + TypeScript, Tailwind v4, shadcn/ui (new-york style), react-router-dom v7, TanStack Query, react-hook-form + zod, zustand, recharts, i18next.
+Oursight (package name `family-finance-app`) is a Vietnamese-first finance web app for **couples aged 25–37**. React 19 + Vite + TypeScript, Tailwind v4, shadcn/ui (new-york style), react-router-dom v7, TanStack Query, react-hook-form + zod, zustand, recharts, i18next.
 
 The product thesis is **Financial Clarity → Financial Foresight → Financial Decision**: clarity drives adoption, foresight drives retention, and decision support is what people pay for. It is explicitly **not** an expense tracker, not a budgeting app, and not a tool for monitoring a partner.
 
@@ -90,8 +90,8 @@ Two domain rules worth knowing up front:
 
 Non-negotiable, and enforced by `pnpm lint`. The product must never read as control, surveillance, judgement, or a verdict.
 
-- **Never** say a user should or should not buy something. What-if shows *consequence*, never a recommendation.
-- **Never** frame anything as monitoring a partner. Ask who is *responsible for* a source of money, never who spent it.
+- **Never** say a user should or should not buy something. What-if shows _consequence_, never a recommendation.
+- **Never** frame anything as monitoring a partner. Ask who is _responsible for_ a source of money, never who spent it.
 - **Never** call flexible money a spending allowance.
 - Banned vocabulary is listed in [scripts/check-copy.mjs](scripts/check-copy.mjs); the rationale is in [family-finance-v3.1/08-brand-copy-wireframes.md](../family-finance-v3.1/08-brand-copy-wireframes.md) §3 and `design.md` §16.
 - Every calculated number must be explainable — surface the assumptions behind it ("Theo dữ liệu hiện có").
@@ -110,4 +110,4 @@ The product spec lives in [family-finance-v3.1/](../family-finance-v3.1/) and is
 - `Backend-Tables-Relationships-Money-Space-MVP-v3.1.md` — the full backend schema
 - `design.md` — the design system
 
-Documents at the repo root (`# Product Spec v1.md`, `# Backend Tables & Relationships — Money.md`, `Money Space — Apple-like Design System v2.md`, `design.md`) are **superseded v1/v2 history** — do not treat them as current.
+Documents at the repo root (`# Product Spec v1.md`, `# Backend Tables & Relationships — Money.md`, `Oursight — Apple-like Design System v2.md`, `design.md`) are **superseded v1/v2 history** — do not treat them as current.

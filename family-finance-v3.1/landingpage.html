@@ -1,0 +1,1774 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Oursight — Landing V8</title>
+
+<!-- Same tab icon as the app (web/index.html): the mark has alpha, so it sits
+     on a light or dark tab strip without a plate behind it. -->
+<link rel="icon" type="image/png" href="logo.png"/>
+<link rel="apple-touch-icon" href="logo.png"/>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --page-a:#C2D7EE;
+  --page-b:#ACC6E3;
+  --canvas:#EDF3F8;
+  --card:#FFFFFF;
+  --wash:#E3ECF2;
+  --hero:#B7D8F3;
+  --hero-deep:#73A4D7;
+  --ink:#0F1011;
+  --ink2:#596268;
+  --ink3:#6B767C;
+  --data:#73A4D7;
+  --data-ink:#3F6D9C;
+  --positive:#8FCDA4;
+  --positive-ink:#4E855F;
+  --attention:#8A6410;
+  --attention-fill:#E1BE68;
+  --alert:#A8341F;
+  --alert-fill:#E8A39A;
+  --alert-tint:rgba(232,163,154,.3);
+  --committed:#D8E0E4;
+  --protect:#AFC0C7;
+  --model:#EEF6F1;
+  --divider:#EEF1F2;
+  --action:#0F1011;
+
+  /* Marketing surface — intentionally crisper than the in-app canvas */
+  --marketing-bg:#FAFBFC;
+  --marketing-soft:#F3F7FA;
+  --marketing-body:#4F595F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Urbanist,ui-sans-serif,system-ui,sans-serif;
+  background:var(--marketing-bg);
+  color:var(--ink);
+  font-weight:300;
+}
+.num{
+  font-variant-numeric:tabular-nums lining-nums;
+  font-feature-settings:"tnum" 1;
+}
+.t-display{font-size:72px;font-weight:500;line-height:1.02;letter-spacing:-.035em}
+.t-hero{font-size:56px;font-weight:400;line-height:1.05;letter-spacing:-.04em}
+.t-figure{font-size:40px;font-weight:400;line-height:1.1;letter-spacing:-.035em}
+.t-metric{font-size:28px;font-weight:400;line-height:1.15;letter-spacing:-.03em}
+.t-title{font-size:24px;font-weight:500;line-height:1.3;letter-spacing:-.02em}
+.t-subtitle{font-size:20px;font-weight:500;line-height:1.35;letter-spacing:-.01em}
+.t-subhead{font-size:20px;font-weight:400;line-height:1.3}
+.t-body{font-size:16px;font-weight:300;line-height:1.5}
+.t-body-sm{font-size:14px;font-weight:300;line-height:1.5}
+.t-caption{font-size:12px;font-weight:300;line-height:1.45}
+.t-caption-sm{font-size:11px;font-weight:300;line-height:1.4}
+.med{font-weight:500}
+.ink2{color:var(--ink2)}
+.ink3{color:var(--ink3)}
+.marketing-copy{color:var(--marketing-body)}
+
+.app-card{
+  background:var(--card);
+  border-radius:22px;
+  padding:24px;
+}
+.rule{height:1px;background:var(--divider)}
+
+/* App index.css: .goal-progress — ticks, not a solid bar. The filled half is
+   painted over the unfilled one and clipped to --progress. */
+.goal-progress{
+  position:relative;
+  height:24px;
+  overflow:hidden;
+}
+.goal-progress:before,
+.goal-progress:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:repeating-linear-gradient(
+    to right,
+    var(--committed) 0 2px,
+    transparent 2px 6px
+  );
+}
+.goal-progress:after{
+  right:auto;
+  width:var(--progress);
+  background-image:repeating-linear-gradient(
+    to right,
+    var(--data) 0 2px,
+    transparent 2px 6px
+  );
+}
+.goal-progress[data-behind="true"]:after{
+  background-image:repeating-linear-gradient(
+    to right,
+    var(--attention-fill) 0 2px,
+    transparent 2px 6px
+  );
+}
+
+/* App index.css: .label / .label-vi — the small metadata slot above a figure. */
+.label{
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:.04em;
+  color:var(--ink3);
+}
+.mono{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+}
+
+/* App index.css: .rail-item — 44px pill, ink2 by default, action fill when current. */
+.rail-item{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  color:var(--ink2);
+}
+.rail-item[aria-current]{
+  background:var(--action);
+  color:#fff;
+}
+
+/* App index.css: .shell-backdrop + .glass + .glass-edge — the rail is chrome,
+   tinted by the hero hue behind it rather than frosted white. */
+.shell-backdrop{
+  background:
+    radial-gradient(38% 48% at 1% 3%,rgba(155,189,226,.9) 0%,rgba(155,189,226,0) 70%),
+    radial-gradient(30% 40% at 9% 58%,rgba(181,205,232,.75) 0%,rgba(181,205,232,0) 72%),
+    radial-gradient(34% 42% at 0% 100%,rgba(172,198,227,.8) 0%,rgba(172,198,227,0) 68%),
+    var(--canvas);
+}
+.glass{
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(233,241,248,.58));
+  backdrop-filter:blur(18px) saturate(1.2);
+}
+.glass-edge{
+  box-shadow:
+    inset -1px 0 0 rgba(255,255,255,.7),
+    12px 0 40px rgba(20,34,43,.05);
+}
+
+/* The app mark (web/src/components/ui/app-logo.tsx). The PNG is a square tile
+   that already has its own rounded corner and pale ground, so it only gets
+   sizing and clipping — putting it on a coloured box shows the tile's ground
+   as a seam. */
+.app-logo{
+  display:block;
+  flex:none;
+  object-fit:cover;
+  user-select:none;
+}
+
+.icon-rail{
+  width:20px;
+  height:20px;
+  stroke-width:1.75;
+}
+.icon-inline{
+  width:18px;
+  height:18px;
+  stroke-width:1.75;
+}
+.icon-small{
+  width:15px;
+  height:15px;
+  stroke-width:1.75;
+}
+.reveal{
+  opacity:0;
+  transform:translateY(18px);
+  transition:.7s ease;
+}
+.reveal.on{
+  opacity:1;
+  transform:none;
+}
+
+.product-stage{
+  background:linear-gradient(180deg,var(--page-a),var(--page-b));
+  border-radius:34px;
+  padding:26px;
+}
+/* App shell: 72px glass rail + canvas content, exactly as app-shell.tsx. */
+.app-shell{
+  border-radius:27px;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:72px 1fr;
+}
+
+/**
+ * The scene is a CROP, not a full render.
+ *
+ * The content keeps the app's real section order — Bức tranh → Dòng tiền 30
+ * ngày tới → Chi tiêu | Mục tiêu → Tiền đang ở đâu — but the stage only shows
+ * what one screen holds. The overflow is cut by a fade rather than a hard edge,
+ * so it reads as a screenshot of a page that continues, not as a card that got
+ * chopped. `--crop` is the visible height.
+ */
+.app-viewport{
+  position:relative;
+  /* Two full cards — Bức tranh and Dòng tiền — then the fade. Enough to show
+     the page continues without letting the shell outgrow a laptop screen. */
+  height:var(--crop,880px);
+  overflow:hidden;
+}
+.app-viewport:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:132px;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(237,243,248,0) 0%,rgba(237,243,248,.86) 62%,var(--canvas) 100%);
+}
+.chart-wrap{
+  position:relative;
+  width:100%;
+  height:58px;
+}
+.chart-wrap-lg{
+  position:relative;
+  width:100%;
+  height:86px;
+}
+/* The 30-day delta chart is section CONTENT in the app, not a footnote: 190px. */
+.chart-delta{
+  position:relative;
+  width:100%;
+  height:190px;
+}
+
+/* The event rail in "Điều gì sẽ xảy ra": a thread with a node per event. */
+.rail-list{
+  position:relative;
+  margin-top:12px;
+  padding-left:20px;
+  list-style:none;
+}
+.rail-thread{
+  position:absolute;
+  top:8px;
+  bottom:16px;
+  left:5px;
+  width:1px;
+  background:var(--divider);
+}
+.rail-node{
+  position:absolute;
+  top:5px;
+  left:-20px;
+  width:11px;
+  height:11px;
+  border-radius:999px;
+  border:3px solid var(--card);
+}
+
+@media(max-width:1180px){
+  /* The app collapses these at `xl` / `lg`, in the same order: answer first. */
+  .picture-grid,
+  .cashflow-grid,
+  .location-grid{grid-template-columns:1fr!important;gap:32px!important}
+}
+@media(max-width:900px){
+  .desktop-grid{grid-template-columns:1fr!important}
+  .app-shell{grid-template-columns:1fr}
+  .app-rail{display:none!important}
+  .hero-title{font-size:60px!important}
+  .dashboard-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:760px){
+  /* The header nav grew to five destinations; below this it cannot sit on one
+     line beside the logo and the CTA, so it drops out. The in-page anchors are
+     still reachable by scrolling. */
+  .site-nav{display:none!important}
+
+  /* Every fixed two-column pairing inside a card collapses. Written as a
+     blanket rule because these grids are inline styles on many cards, and each
+     one is answer-then-detail — the same order stacking gives for free.
+
+     `.keep-cols` opts a grid OUT: a legend row is label | percent | amount, and
+     stacking those three turns one line into three and overflows the card. */
+  .app-card [style*="grid-template-columns"]:not(.keep-cols){
+    grid-template-columns:1fr!important;
+  }
+  /* The composition legend keeps its shape but gives the label column the slack. */
+  .app-card .keep-cols{
+    grid-template-columns:minmax(0,1fr) auto auto!important;
+    gap:12px!important;
+  }
+  .app-card .keep-cols > :last-child{
+    min-width:0!important;
+  }
+  /* A flex row of ring + legend must wrap rather than push past the card. */
+  .app-card [style*="display:flex"][style*="gap:24px"]{
+    flex-wrap:wrap;
+  }
+  .app-card [style*="border-left"]{
+    border-left:0!important;
+    padding-left:0!important;
+  }
+}
+@media(max-width:640px){
+  /* Stacked, the first card alone is taller than the desktop crop. Cut after it
+     plus a glimpse of the next, so the fade still says "there is more". */
+  .app-viewport{--crop:1180px}
+  .hero-title{font-size:48px!important}
+  .product-stage{padding:10px;border-radius:24px}
+  .app-shell{border-radius:18px}
+  .app-card{padding:20px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+
+<body>
+
+<header style="position:fixed;inset:0 0 auto;z-index:50;">
+  <div style="max-width:1280px;margin:16px auto 0;padding:0 24px;display:flex;justify-content:space-between;align-items:center;">
+    <a href="#" style="display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.9);padding:10px 16px;border-radius:999px;text-decoration:none;color:var(--ink);backdrop-filter:blur(14px)">
+      <img src="logo.png" alt="" aria-hidden="true" draggable="false" class="app-logo" style="width:30px;height:30px;border-radius:9px">
+      <span class="med">Oursight</span>
+    </a>
+
+    <nav class="site-nav" style="display:flex;gap:22px;align-items:center;background:rgba(255,255,255,.72);padding:11px 18px;border-radius:999px;backdrop-filter:blur(14px)">
+      <a href="#dashboard" class="t-body-sm" style="text-decoration:none;color:var(--ink2)">Tổng quan</a>
+      <a href="#forecast" class="t-body-sm" style="text-decoration:none;color:var(--ink2)">30 ngày tới</a>
+      <a href="#location" class="t-body-sm" style="text-decoration:none;color:var(--ink2)">Tiền ở đâu</a>
+      <a href="#networth" class="t-body-sm" style="text-decoration:none;color:var(--ink2)">Tài sản &amp; nợ</a>
+      <a href="#goals" class="t-body-sm" style="text-decoration:none;color:var(--ink2)">Mục tiêu</a>
+    </nav>
+
+    <a href="#cta" style="background:var(--ink);color:white;padding:13px 21px;border-radius:999px;text-decoration:none;font-size:14px;font-weight:500">Bắt đầu</a>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO: typography first -->
+<section style="padding:164px 28px 78px;text-align:center">
+  <div style="max-width:1040px;margin:auto">
+    <div class="t-caption med" style="color:var(--marketing-body);text-transform:uppercase;letter-spacing:.14em">
+      Không gian tài chính chung cho hai người
+    </div>
+
+    <h1 class="hero-title" style="font-size:96px;font-weight:500;line-height:.92;letter-spacing:-.05em;margin:22px 0 0">
+      Hai người.<br>
+      <span>Một bức tranh.</span>
+    </h1>
+
+    <p class="t-body marketing-copy" style="font-size:19px;max-width:620px;margin:30px auto 0">
+      Cùng nhìn rõ tiền hôm nay, những gì sắp tới và các mục tiêu lớn đang tiến triển thế nào.
+    </p>
+
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:32px">
+      <a href="#dashboard" style="display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:white;padding:15px 25px;border-radius:999px;text-decoration:none;font-size:15px;font-weight:500">
+        Bắt đầu ngay
+        <i data-lucide="arrow-right" class="icon-inline"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD OVERVIEW HERO SCENE
+     Mirrors web/src/features/dashboard/ui/dashboard-page.tsx section for
+     section: Bức tranh hôm nay → Dòng tiền 30 ngày tới → (Chi tiêu tháng này |
+     Mục tiêu) → Tiền đang ở đâu. Cards sit DIRECTLY on --canvas, 12px apart. -->
+<section id="dashboard" style="padding:18px 28px 132px">
+  <div style="max-width:1280px;margin:auto">
+    <div class="reveal product-stage">
+
+      <div class="app-shell shell-backdrop">
+        <!-- Rail — app-shell.tsx NAV_ITEMS, in order, plus the what-if CTA. -->
+        <aside class="app-rail glass glass-edge" style="padding:20px 0;display:flex;flex-direction:column;align-items:center">
+          <img src="logo.png" alt="" aria-hidden="true" draggable="false" class="app-logo" style="width:36px;height:36px;border-radius:11px">
+
+          <nav style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:6px">
+            <span class="rail-item" aria-current="page" title="Tổng quan"><i data-lucide="house" class="icon-rail"></i></span>
+            <span class="rail-item" title="Sắp tới"><i data-lucide="calendar-clock" class="icon-rail"></i></span>
+            <span class="rail-item" title="Tài sản &amp; Nợ"><i data-lucide="wallet" class="icon-rail"></i></span>
+            <span class="rail-item" title="Mục tiêu"><i data-lucide="target" class="icon-rail"></i></span>
+            <span class="rail-item" title="Sự kiện tài chính"><i data-lucide="chart-no-axes-gantt" class="icon-rail"></i></span>
+            <span class="rail-item" title="Cài đặt"><i data-lucide="settings" class="icon-rail"></i></span>
+          </nav>
+
+          <div style="flex:1"></div>
+
+          <!-- The rail foot: what-if on the action fill, then sign-out. -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+            <span style="width:44px;height:44px;border-radius:999px;background:var(--action);color:#fff;display:grid;place-items:center" title="Thử một khoản chi">
+              <i data-lucide="calculator" class="icon-rail"></i>
+            </span>
+            <span class="rail-item" title="Đăng xuất"><i data-lucide="log-out" class="icon-rail"></i></span>
+          </div>
+        </aside>
+
+        <!-- Content area keeps --canvas as its ground; cards sit on it directly.
+             The viewport crops it to one screen's worth: the sections below the
+             fold stay in the markup (the order IS the app's), they are simply
+             cut by the fade the way a real screenshot would be. -->
+        <div class="app-viewport" style="background:var(--canvas);min-width:0">
+        <div style="padding:28px;display:grid;gap:12px">
+
+          <!-- §12.1 Bức tranh hôm nay -->
+          <article class="app-card" style="padding:28px">
+            <h2 class="t-title">Bức tranh hôm nay</h2>
+
+            <div class="picture-grid" style="margin-top:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr);gap:48px;align-items:center">
+              <div style="min-width:0">
+                <p class="label">Sau các khoản đã có nhiệm vụ</p>
+
+                <!-- Hero at t-display with the unit set separately and smaller. -->
+                <div style="margin-top:8px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px">
+                  <span class="num t-display" style="letter-spacing:-.045em">96,0</span>
+                  <span class="t-metric" style="padding-bottom:8px">tr</span>
+                </div>
+
+                <p class="t-body-sm ink2" style="margin-top:16px;line-height:1.25">
+                  trên tổng 240,0 tr có thể dùng ngay
+                </p>
+              </div>
+
+              <!-- MoneyCompositionRing: 72% hole, gapped and round-capped arcs,
+                   flexible share stated in the centre. -->
+              <div style="display:grid;grid-template-columns:170px minmax(0,1fr);gap:32px;align-items:center">
+                <div style="position:relative;width:170px;height:170px">
+                  <canvas id="compositionRing"></canvas>
+                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+                    <span class="num t-figure" style="line-height:1;letter-spacing:-.04em">40%</span>
+                    <span class="t-caption ink3" style="margin-top:4px">linh hoạt</span>
+                  </div>
+                </div>
+
+                <dl style="margin:0;min-width:0">
+                  <div class="keep-cols" style="display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--divider)">
+                    <dt style="display:flex;gap:10px;align-items:center;min-width:0" class="t-body-sm ink2">
+                      <span style="width:8px;height:8px;border-radius:999px;background:var(--committed);flex:none"></span>
+                      <span>Đã có nhiệm vụ</span>
+                    </dt>
+                    <span class="num t-caption ink3">60%</span>
+                    <dd class="num t-body-sm" style="margin:0;min-width:76px;text-align:right">144,0 tr</dd>
+                  </div>
+                  <div class="keep-cols" style="display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:14px 0">
+                    <dt style="display:flex;gap:10px;align-items:center;min-width:0" class="t-body-sm med">
+                      <span style="width:8px;height:8px;border-radius:999px;background:var(--data);flex:none"></span>
+                      <span>Linh hoạt</span>
+                    </dt>
+                    <span class="num t-caption ink3">40%</span>
+                    <dd class="num t-body-sm med" style="margin:0;min-width:76px;text-align:right">96,0 tr</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+
+            <!-- SourceFreshnessList: the collapsed summary line — how many
+                 sources the hero is made of, and how old the oldest one is. -->
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+              <p class="t-body-sm" style="margin:0">
+                <span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:var(--positive);vertical-align:middle;margin-right:8px"></span>
+                <span class="med">5 nguồn</span>
+                <span class="ink3" style="margin:0 6px">·</span>
+                <span class="ink2">cũ nhất</span>
+                <span class="med">hôm nay</span>
+              </p>
+              <span class="t-body-sm med" style="color:var(--action)">Hiện chi tiết</span>
+            </div>
+          </article>
+
+          <!-- §12.2 Dòng tiền 30 ngày tới -->
+          <article class="app-card" style="padding:28px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+              <h2 class="t-title">Dòng tiền 30 ngày tới</h2>
+              <span class="t-body med" style="color:var(--action);flex:none">Xem timeline</span>
+            </div>
+
+            <div class="cashflow-grid" style="margin-top:24px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:48px">
+
+              <div style="min-width:0">
+                <!-- The low point leads at hero scale, with the two horizon
+                     totals beside it: the figure says whether the month works,
+                     the totals say what drives it. -->
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:24px;align-items:end">
+                  <div style="min-width:0">
+                    <p class="label">Thấp nhất dự kiến</p>
+                    <p class="num t-hero" style="margin-top:8px;line-height:1.02;letter-spacing:-.045em">82,0 tr</p>
+                    <p class="t-body-sm ink2" style="margin-top:12px;display:flex;align-items:flex-start;gap:6px;line-height:1.25">
+                      <i data-lucide="calendar-clock" class="icon-small ink3" style="margin-top:3px;flex:none"></i>
+                      <span>Vào 12/09, thấp hơn hôm nay <span class="num med" style="color:var(--ink)">14,0 tr</span>.</span>
+                    </p>
+                  </div>
+
+                  <!-- HorizonTotals: in versus out, each with its item count. -->
+                  <div style="display:grid;gap:20px">
+                    <div style="display:flex;align-items:flex-start;gap:12px;min-width:0">
+                      <i data-lucide="arrow-down-left" class="icon-small" style="margin-top:2px;flex:none;color:var(--positive-ink)"></i>
+                      <div style="min-width:0">
+                        <p class="t-caption ink3" style="margin:0">Vào</p>
+                        <p class="num t-metric" style="margin:2px 0 0;line-height:1.15;color:var(--positive-ink)">+42,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                        <p class="t-caption ink2" style="margin:4px 0 0">2 khoản đã biết</p>
+                      </div>
+                    </div>
+                    <div style="display:flex;align-items:flex-start;gap:12px;min-width:0">
+                      <i data-lucide="arrow-up-right" class="icon-small" style="margin-top:2px;flex:none;color:var(--alert)"></i>
+                      <div style="min-width:0">
+                        <p class="t-caption ink3" style="margin:0">Ra</p>
+                        <p class="num t-metric" style="margin:2px 0 0;line-height:1.15;color:var(--alert)">−56,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                        <p class="t-caption ink2" style="margin:4px 0 0">4 khoản đã biết</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CashflowDeltaChart: change since today, stepped, zero
+                     baseline, amber dot on the low point. -->
+                <div style="margin-top:28px">
+                  <p class="label">Thay đổi so với hôm nay · tr</p>
+                  <div class="chart-delta" style="margin-top:12px">
+                    <canvas id="dashboardForecast"></canvas>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;margin-top:2px">
+                    <span class="mono t-caption-sm ink3">28/08</span>
+                    <span class="mono t-caption-sm ink3">12/09</span>
+                    <span class="mono t-caption-sm ink3">26/09</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- The event rail — a thread, not a table. Each node carries
+                   direction, and "còn lại" sits under the amount. -->
+              <div>
+                <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0">
+                  <i data-lucide="milestone" class="icon-small" style="flex:none;color:var(--data)"></i>
+                  Điều gì sẽ xảy ra
+                </h3>
+
+                <ol class="rail-list">
+                  <span class="rail-thread"></span>
+
+                  <li style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
+                    <span class="rail-node" style="background:var(--positive)"></span>
+                    <div style="min-width:0">
+                      <p class="mono t-caption-sm ink3" style="margin:0">31/08</p>
+                      <p class="t-body-sm med" style="margin:2px 0 0">Lương tháng 8</p>
+                    </div>
+                    <div style="flex:none;padding-top:16px;text-align:right">
+                      <p class="num t-body-sm med" style="margin:0;color:var(--positive-ink)">+32,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                      <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 128,0 tr</p>
+                    </div>
+                  </li>
+
+                  <li style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
+                    <span class="rail-node" style="background:var(--data)"></span>
+                    <div style="min-width:0">
+                      <p class="mono t-caption-sm ink3" style="margin:0">05/09</p>
+                      <p class="t-body-sm med" style="margin:2px 0 0">Trả góp nhà</p>
+                    </div>
+                    <div style="flex:none;padding-top:16px;text-align:right">
+                      <p class="num t-body-sm med" style="margin:0;color:var(--alert)">−18,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                      <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 110,0 tr</p>
+                    </div>
+                  </li>
+
+                  <li style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
+                    <span class="rail-node" style="background:var(--data)"></span>
+                    <div style="min-width:0">
+                      <p class="mono t-caption-sm ink3" style="margin:0">12/09</p>
+                      <p class="t-body-sm med" style="margin:2px 0 0">Bảo hiểm nhân thọ</p>
+                      <p class="t-caption" style="margin:2px 0 0;color:var(--attention)">cần xác nhận</p>
+                    </div>
+                    <div style="flex:none;padding-top:16px;text-align:right">
+                      <p class="num t-body-sm med" style="margin:0;color:var(--alert)">−28,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                      <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 82,0 tr</p>
+                    </div>
+                  </li>
+
+                  <li style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px">
+                    <span class="rail-node" style="background:var(--positive)"></span>
+                    <div style="min-width:0">
+                      <p class="mono t-caption-sm ink3" style="margin:0">20/09</p>
+                      <p class="t-body-sm med" style="margin:2px 0 0">Thu nhập thêm</p>
+                    </div>
+                    <div style="flex:none;padding-top:16px;text-align:right">
+                      <p class="num t-body-sm med" style="margin:0;color:var(--positive-ink)">+10,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                      <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 92,0 tr</p>
+                    </div>
+                  </li>
+                </ol>
+
+                <p class="t-body med" style="margin:16px 0 0;color:var(--action)">2 khoản nữa · xem timeline</p>
+              </div>
+            </div>
+          </article>
+
+          <!-- Chi tiêu tháng này | Mục tiêu — one row, per dashboard-page.tsx. -->
+          <div class="dashboard-grid" style="display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:12px;align-items:stretch">
+
+            <!-- Chi tiêu tháng này -->
+            <article class="app-card" style="padding:24px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+                <h2 class="t-title">Chi tiêu tháng này</h2>
+                <span class="t-caption ink3" style="flex:none">đến 27/08</span>
+              </div>
+
+              <div style="margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:32px">
+                <div style="display:flex;align-items:flex-start;gap:16px">
+                  <span style="margin-top:4px;width:40px;height:40px;border-radius:999px;background:rgba(143,205,164,.15);display:grid;place-items:center;flex:none">
+                    <i data-lucide="arrow-down-left" class="icon-inline" style="color:var(--positive-ink)"></i>
+                  </span>
+                  <div style="min-width:0">
+                    <p class="t-body-sm med" style="margin:0">Tổng thu</p>
+                    <p class="num t-figure" style="margin:4px 0 0;line-height:1.06;color:var(--positive-ink)">38,0 tr</p>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:16px">
+                  <span style="margin-top:4px;width:40px;height:40px;border-radius:999px;background:rgba(232,163,154,.15);display:grid;place-items:center;flex:none">
+                    <i data-lucide="arrow-up-right" class="icon-inline" style="color:var(--alert)"></i>
+                  </span>
+                  <div style="min-width:0">
+                    <p class="t-body-sm med" style="margin:0">Tổng chi</p>
+                    <p class="num t-figure" style="margin:4px 0 0;line-height:1.06;color:var(--alert)">−21,6 tr</p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top:32px">
+                <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0">
+                  <i data-lucide="history" class="icon-small ink2" style="flex:none"></i>
+                  Giao dịch gần đây
+                </h3>
+
+                <ul style="margin:8px 0 0;padding:0;list-style:none">
+                  <li style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0">
+                    <span class="num mono t-caption-sm ink3" style="width:40px;flex:none">24/08</span>
+                    <div style="min-width:0">
+                      <p class="t-body-sm med" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Chợ và siêu thị</p>
+                      <p class="t-caption ink2" style="margin:0">Sinh hoạt</p>
+                    </div>
+                    <span class="num t-body-sm med" style="flex:none;color:var(--alert)">−2,4 <span class="mono t-caption-sm ink3">tr</span></span>
+                  </li>
+                  <li style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--divider)">
+                    <span class="num mono t-caption-sm ink3" style="width:40px;flex:none">21/08</span>
+                    <div style="min-width:0">
+                      <p class="t-body-sm med" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Thưởng dự án</p>
+                      <p class="t-caption ink2" style="margin:0">Thu nhập khác</p>
+                    </div>
+                    <span class="num t-body-sm med" style="flex:none;color:var(--positive-ink)">+6,0 <span class="mono t-caption-sm ink3">tr</span></span>
+                  </li>
+                  <li style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--divider)">
+                    <span class="num mono t-caption-sm ink3" style="width:40px;flex:none">18/08</span>
+                    <div style="min-width:0">
+                      <p class="t-body-sm med" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Học phí con</p>
+                      <p class="t-caption ink2" style="margin:0">Giáo dục</p>
+                    </div>
+                    <span class="num t-body-sm med" style="flex:none;color:var(--alert)">−5,2 <span class="mono t-caption-sm ink3">tr</span></span>
+                  </li>
+                </ul>
+
+                <p class="t-body med" style="margin:12px 0 0;color:var(--action)">Xem tất cả giao dịch</p>
+              </div>
+            </article>
+
+            <!-- Mục tiêu — every goal against the pace it needs, never a ring. -->
+            <article class="app-card" style="padding:24px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+                <h2 class="t-title">Mục tiêu</h2>
+                <span class="t-body med" style="color:var(--action);flex:none">Xem tất cả · 3</span>
+              </div>
+
+              <div style="margin-top:24px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px">
+                <span class="num t-figure" style="line-height:1;letter-spacing:-.03em">144,0 tr</span>
+                <span class="t-body-sm ink2">Đã dành cho mục tiêu</span>
+              </div>
+
+              <div style="margin-top:20px">
+                <div style="padding:16px 12px">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px">
+                    <span style="display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;flex:none;color:var(--attention)" title="Ưu tiên cao">
+                      <i data-lucide="chess-queen" class="icon-small"></i>
+                    </span>
+                    <p class="t-body-sm med" style="margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Mua nhà</p>
+                    <span class="t-caption-sm med" style="flex:none;border-radius:999px;background:#EEF1F2;padding:2px 8px;color:var(--action)">chính</span>
+                    <span class="t-caption med ink2" style="margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px">
+                      <span style="width:6px;height:6px;border-radius:999px;background:var(--positive)"></span>
+                      Đúng nhịp
+                    </span>
+                  </div>
+                  <div class="goal-progress" style="margin-top:8px;--progress:30%">
+                    <span style="position:absolute;top:0;bottom:0;left:28%;z-index:10;width:2px;border-radius:999px;background:var(--ink)"></span>
+                  </div>
+                  <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+                    <p class="num t-caption ink2" style="margin:0"><span class="med" style="color:var(--ink)">480,0 tr</span> / 1,6 tỷ</p>
+                    <span class="mono t-caption-sm ink3">30%</span>
+                  </div>
+                </div>
+
+                <div style="padding:16px 12px;border-top:1px solid var(--divider)">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px">
+                    <span style="display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;flex:none;color:var(--ink3)" title="Ưu tiên vừa">
+                      <i data-lucide="star" class="icon-small"></i>
+                    </span>
+                    <p class="t-body-sm med" style="margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Quỹ dự phòng</p>
+                    <span class="t-caption med ink2" style="margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px">
+                      <span style="width:6px;height:6px;border-radius:999px;background:var(--attention-fill)"></span>
+                      Chậm hơn mốc
+                    </span>
+                  </div>
+                  <div class="goal-progress" data-behind="true" style="margin-top:8px;--progress:52%">
+                    <span style="position:absolute;top:0;bottom:0;left:70%;z-index:10;width:2px;border-radius:999px;background:var(--ink)"></span>
+                  </div>
+                  <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+                    <p class="num t-caption ink2" style="margin:0"><span class="med" style="color:var(--ink)">78,0 tr</span> / 150,0 tr</p>
+                    <span class="mono t-caption-sm" style="color:var(--attention)">52%</span>
+                  </div>
+                </div>
+
+                <div style="padding:16px 12px;border-top:1px solid var(--divider)">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px">
+                    <p class="t-body-sm med" style="margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Du lịch gia đình</p>
+                    <span class="t-caption med ink2" style="margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px">
+                      <span style="width:6px;height:6px;border-radius:999px;background:var(--positive)"></span>
+                      Đúng nhịp
+                    </span>
+                  </div>
+                  <div class="goal-progress" style="margin-top:8px;--progress:64%">
+                    <span style="position:absolute;top:0;bottom:0;left:60%;z-index:10;width:2px;border-radius:999px;background:var(--ink)"></span>
+                  </div>
+                  <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+                    <p class="num t-caption ink2" style="margin:0"><span class="med" style="color:var(--ink)">38,4 tr</span> / 60,0 tr</p>
+                    <span class="mono t-caption-sm ink3">64%</span>
+                  </div>
+                </div>
+              </div>
+
+              <p class="t-caption ink3" style="margin:20px 0 0;display:flex;align-items:center;gap:8px">
+                <span style="display:inline-block;width:2px;height:12px;border-radius:999px;background:var(--ink);flex:none"></span>
+                Mốc cần đạt hôm nay để về đúng hạn
+              </p>
+            </article>
+          </div>
+
+          <!-- §12.4 Tiền đang ở đâu — full width and last: a ranked bar chart
+               plus the same money read by who is responsible for it. -->
+          <article class="app-card" style="padding:28px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+              <h2 class="t-title">Tiền đang ở đâu</h2>
+              <span class="t-caption ink3" style="flex:none">5 nguồn</span>
+            </div>
+
+            <div style="margin-top:20px;display:flex;align-items:flex-start;gap:16px">
+              <span style="margin-top:4px;width:40px;height:40px;border-radius:999px;background:rgba(115,164,215,.15);display:grid;place-items:center;flex:none;color:var(--data-ink)">
+                <i data-lucide="landmark" class="icon-inline"></i>
+              </span>
+              <div style="min-width:0">
+                <p class="label">Tổng giá trị</p>
+                <p class="num t-hero" style="margin:4px 0 0;line-height:1.05;letter-spacing:-.04em;color:var(--data-ink)">240,0 tr</p>
+              </div>
+            </div>
+
+            <div class="location-grid" style="margin-top:28px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.6fr);gap:48px;align-items:start">
+
+              <div style="min-width:0">
+                <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0 0 12px">
+                  <i data-lucide="chart-no-axes-column-increasing" class="icon-small" style="flex:none;color:var(--data)"></i>
+                  Phân bổ theo nguồn
+                </h3>
+                <!-- Ranked horizontal bars on a real x-axis: the scale is what
+                     turns an ordering into a comparison. -->
+                <div style="position:relative;width:100%;height:339px">
+                  <canvas id="sourceBars"></canvas>
+                </div>
+              </div>
+
+              <!-- Ai đang nắm tài sản — balances only, never spend attribution. -->
+              <div>
+                <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0 0 16px">
+                  <i data-lucide="users" class="icon-small" style="flex:none;color:var(--data)"></i>
+                  Ai đang nắm tài sản
+                </h3>
+
+                <div>
+                  <div style="padding:4px 0">
+                    <div style="display:flex;align-items:center;gap:12px;padding:14px 0">
+                      <span style="width:36px;height:36px;border-radius:999px;background:rgba(115,164,215,.1);color:var(--data-ink);display:grid;place-items:center;flex:none">
+                        <i data-lucide="users-round" class="icon-small"></i>
+                      </span>
+                      <span style="display:flex;min-width:0;flex:1;align-items:baseline;gap:8px">
+                        <span class="t-body-sm med" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Cả nhà</span>
+                        <span class="t-caption ink2" style="flex:none">2 nguồn</span>
+                      </span>
+                      <span class="num t-subhead med" style="flex:none;color:var(--data-ink)">150,0 tr</span>
+                      <i data-lucide="chevron-down" class="icon-small ink2" style="flex:none;transform:rotate(180deg)"></i>
+                    </div>
+                    <div style="padding:0 0 12px 48px">
+                      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center;padding:8px 0">
+                        <p class="t-body-sm" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Vietcombank</p>
+                        <span class="num t-body-sm med">92,0 tr</span>
+                      </div>
+                      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center;padding:8px 0">
+                        <p class="t-body-sm" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Techcombank</p>
+                        <span class="num t-body-sm med">58,0 tr</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="padding:4px 0;border-top:1px solid var(--divider)">
+                    <div style="display:flex;align-items:center;gap:12px;padding:14px 0">
+                      <span style="width:36px;height:36px;border-radius:999px;background:rgba(143,205,164,.15);color:var(--positive-ink);display:grid;place-items:center;flex:none">
+                        <i data-lucide="user-round" class="icon-small"></i>
+                      </span>
+                      <span style="display:flex;min-width:0;flex:1;align-items:baseline;gap:8px">
+                        <span class="t-body-sm med" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Minh</span>
+                        <span class="t-caption ink2" style="flex:none">2 nguồn</span>
+                      </span>
+                      <span class="num t-subhead med" style="flex:none;color:var(--positive-ink)">62,0 tr</span>
+                      <i data-lucide="chevron-down" class="icon-small ink2" style="flex:none"></i>
+                    </div>
+                  </div>
+
+                  <div style="padding:4px 0;border-top:1px solid var(--divider)">
+                    <div style="display:flex;align-items:center;gap:12px;padding:14px 0">
+                      <span style="width:36px;height:36px;border-radius:999px;background:rgba(225,190,104,.1);color:var(--attention);display:grid;place-items:center;flex:none">
+                        <i data-lucide="user-round" class="icon-small"></i>
+                      </span>
+                      <span style="display:flex;min-width:0;flex:1;align-items:baseline;gap:8px">
+                        <span class="t-body-sm med" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lan</span>
+                        <span class="t-caption ink2" style="flex:none">1 nguồn</span>
+                      </span>
+                      <span class="num t-subhead med" style="flex:none;color:var(--attention)">28,0 tr</span>
+                      <i data-lucide="chevron-down" class="icon-small ink2" style="flex:none"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Flexible Money -->
+<section style="padding:122px 28px;border-top:1px solid #EEF1F2;background:#FFFFFF">
+  <div class="reveal desktop-grid" style="max-width:1160px;margin:auto;display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);gap:72px;align-items:center">
+    <div>
+      <div class="t-caption med" style="color:var(--marketing-body);text-transform:uppercase;letter-spacing:.14em">Flexible Money</div>
+      <h2 style="font-size:60px;font-weight:500;line-height:1.02;letter-spacing:-.04em;margin:14px 0 0">
+        Số dư không phải<br><span>số có thể dùng.</span>
+      </h2>
+      <p class="t-body marketing-copy" style="max-width:430px;margin-top:22px">
+        Một phần tiền đã có nhiệm vụ. Oursight cho hai người thấy phần thực sự còn linh hoạt.
+      </p>
+    </div>
+
+    <div class="app-card" style="display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);gap:38px;align-items:center">
+      <div>
+        <div class="t-body-sm ink2">Sau các khoản đã có nhiệm vụ</div>
+        <div class="num t-hero" style="margin-top:6px">96,0 tr</div>
+        <div class="t-caption ink3" style="margin-top:8px">Tính từ 5 nguồn · tất cả đều mới</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:24px">
+        <div style="position:relative;width:132px;height:132px;border-radius:999px;flex:0 0 auto;background:conic-gradient(from -90deg,var(--committed) 0deg 216deg,var(--data) 216deg 360deg)">
+          <div style="position:absolute;inset:21px;border-radius:999px;background:white"></div>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <span class="num t-metric" style="line-height:1;letter-spacing:-.04em">40%</span>
+            <span class="t-caption ink3" style="margin-top:5px">linh hoạt</span>
+          </div>
+        </div>
+
+        <div style="flex:1;min-width:0">
+          <div class="keep-cols" style="display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--divider)">
+            <div style="display:flex;gap:10px;align-items:center">
+              <span style="width:8px;height:8px;border-radius:999px;background:var(--committed)"></span>
+              <span class="t-body-sm ink2">Đã có nhiệm vụ</span>
+            </div>
+            <span class="num t-caption ink3">60%</span>
+            <span class="num t-body-sm" style="min-width:76px;text-align:right">144,0 tr</span>
+          </div>
+
+          <div class="keep-cols" style="display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:14px 0">
+            <div style="display:flex;gap:10px;align-items:center">
+              <span style="width:8px;height:8px;border-radius:999px;background:var(--data)"></span>
+              <span class="t-body-sm med">Linh hoạt</span>
+            </div>
+            <span class="num t-caption ink3">40%</span>
+            <span class="num t-body-sm med" style="min-width:76px;text-align:right">96,0 tr</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Forecast -->
+<section id="forecast" style="padding:122px 28px;border-top:1px solid #E7EDF1;background:var(--marketing-soft)">
+  <div class="reveal" style="max-width:1160px;margin:auto">
+
+    <div class="desktop-grid" style="display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:72px;align-items:end">
+      <div>
+        <div class="t-caption med" style="color:var(--marketing-body);text-transform:uppercase;letter-spacing:.14em">30 ngày tới</div>
+        <h2 style="font-size:60px;font-weight:500;line-height:1.02;letter-spacing:-.04em;margin:14px 0 0">
+          Biết dòng tiền<br><span>sẽ đi qua đâu.</span>
+        </h2>
+      </div>
+      <p class="t-body marketing-copy" style="max-width:460px;margin:0 0 8px">
+        Lương về rồi lại đi, và giữa tháng luôn có một lúc mỏng nhất. Oursight nói trước lúc đó rơi vào ngày nào và còn lại bao nhiêu, để không ai phải nín thở chờ.
+      </p>
+    </div>
+
+    <!-- Same structure as the app's UpcomingSection: low point + horizon totals
+         on the left over the delta chart, the event rail on the right. -->
+    <div class="app-card" style="margin-top:44px;padding:28px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+        <div class="t-title">Dòng tiền 30 ngày tới</div>
+        <span class="t-body med" style="color:var(--action);flex:none">Xem timeline</span>
+      </div>
+
+      <div class="cashflow-grid" style="margin-top:24px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:48px">
+
+        <div style="min-width:0">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:24px;align-items:end">
+            <div style="min-width:0">
+              <p class="label">Thấp nhất dự kiến</p>
+              <p class="num t-hero" style="margin-top:8px;line-height:1.02;letter-spacing:-.045em">82,0 tr</p>
+              <p class="t-body-sm ink2" style="margin-top:12px;display:flex;align-items:flex-start;gap:6px;line-height:1.25">
+                <i data-lucide="calendar-clock" class="icon-small ink3" style="margin-top:3px;flex:none"></i>
+                <span>Vào 12/09, thấp hơn hôm nay <span class="num med" style="color:var(--ink)">14,0 tr</span>.</span>
+              </p>
+            </div>
+
+            <div style="display:grid;gap:20px">
+              <div style="display:flex;align-items:flex-start;gap:12px;min-width:0">
+                <i data-lucide="arrow-down-left" class="icon-small" style="margin-top:2px;flex:none;color:var(--positive-ink)"></i>
+                <div style="min-width:0">
+                  <p class="t-caption ink3" style="margin:0">Vào</p>
+                  <p class="num t-metric" style="margin:2px 0 0;line-height:1.15;color:var(--positive-ink)">+42,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                  <p class="t-caption ink2" style="margin:4px 0 0">2 khoản đã biết</p>
+                </div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:12px;min-width:0">
+                <i data-lucide="arrow-up-right" class="icon-small" style="margin-top:2px;flex:none;color:var(--alert)"></i>
+                <div style="min-width:0">
+                  <p class="t-caption ink3" style="margin:0">Ra</p>
+                  <p class="num t-metric" style="margin:2px 0 0;line-height:1.15;color:var(--alert)">−56,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                  <p class="t-caption ink2" style="margin:4px 0 0">4 khoản đã biết</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:28px">
+            <p class="label">Thay đổi so với hôm nay · tr</p>
+            <div class="chart-delta" style="margin-top:12px">
+              <canvas id="featureForecast"></canvas>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:2px">
+              <span class="mono t-caption-sm ink3">28/08</span>
+              <span class="mono t-caption-sm ink3">12/09</span>
+              <span class="mono t-caption-sm ink3">26/09</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0">
+            <i data-lucide="milestone" class="icon-small" style="flex:none;color:var(--data)"></i>
+            Điều gì sẽ xảy ra
+          </h3>
+
+          <ol class="rail-list">
+            <span class="rail-thread"></span>
+
+            <li style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
+              <span class="rail-node" style="background:var(--positive)"></span>
+              <div style="min-width:0">
+                <p class="mono t-caption-sm ink3" style="margin:0">31/08</p>
+                <p class="t-body-sm med" style="margin:2px 0 0">Lương tháng 8</p>
+              </div>
+              <div style="flex:none;padding-top:16px;text-align:right">
+                <p class="num t-body-sm med" style="margin:0;color:var(--positive-ink)">+32,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 128,0 tr</p>
+              </div>
+            </li>
+
+            <li style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
+              <span class="rail-node" style="background:var(--data)"></span>
+              <div style="min-width:0">
+                <p class="mono t-caption-sm ink3" style="margin:0">05/09</p>
+                <p class="t-body-sm med" style="margin:2px 0 0">Trả góp nhà</p>
+              </div>
+              <div style="flex:none;padding-top:16px;text-align:right">
+                <p class="num t-body-sm med" style="margin:0;color:var(--alert)">−18,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 110,0 tr</p>
+              </div>
+            </li>
+
+            <li style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
+              <span class="rail-node" style="background:var(--data)"></span>
+              <div style="min-width:0">
+                <p class="mono t-caption-sm ink3" style="margin:0">12/09</p>
+                <p class="t-body-sm med" style="margin:2px 0 0">Bảo hiểm nhân thọ</p>
+                <p class="t-caption" style="margin:2px 0 0;color:var(--attention)">cần xác nhận</p>
+              </div>
+              <div style="flex:none;padding-top:16px;text-align:right">
+                <p class="num t-body-sm med" style="margin:0;color:var(--alert)">−28,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 82,0 tr</p>
+              </div>
+            </li>
+
+            <li style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px">
+              <span class="rail-node" style="background:var(--positive)"></span>
+              <div style="min-width:0">
+                <p class="mono t-caption-sm ink3" style="margin:0">20/09</p>
+                <p class="t-body-sm med" style="margin:2px 0 0">Thu nhập thêm</p>
+              </div>
+              <div style="flex:none;padding-top:16px;text-align:right">
+                <p class="num t-body-sm med" style="margin:0;color:var(--positive-ink)">+10,0 <span class="mono t-caption-sm ink3">tr</span></p>
+                <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 92,0 tr</p>
+              </div>
+            </li>
+          </ol>
+
+          <p class="t-body med" style="margin:16px 0 0;color:var(--action)">2 khoản nữa · xem timeline</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Tiền đã đi qua — the month that HAPPENED.
+     "Chi tiêu tháng này" and "Money history" were two sections making one
+     point: what already moved. Merged, the totals are the answer and the log
+     below is the evidence — the same relationship the app's SpendingSection has
+     between its two figures and its recent rows. The log also carries value
+     updates, which is what the history section added on its own. -->
+<section id="history" style="padding:122px 28px;border-top:1px solid #E7EDF1;background:var(--marketing-soft)">
+  <div class="reveal desktop-grid" style="max-width:1160px;margin:auto;display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:72px;align-items:center">
+
+    <div>
+      <div class="t-caption med" style="color:var(--marketing-body);text-transform:uppercase;letter-spacing:.14em">Tiền đã đi qua</div>
+      <h2 style="font-size:60px;font-weight:500;line-height:1.02;letter-spacing:-.04em;margin:14px 0 0">
+        Tiền đi đâu,<br><span>giờ có câu trả lời.</span>
+      </h2>
+      <p class="t-body marketing-copy" style="max-width:430px;margin-top:22px">
+        Tiền ra vào cả tháng, không ai nhớ hết được. Oursight ghi lại những gì đã thực sự diễn ra — không bắt ai phải khai báo từng ly cà phê.
+      </p>
+    </div>
+
+    <div class="app-card">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+        <div class="t-title">Chi tiêu tháng này</div>
+        <span class="t-caption ink3" style="flex:none">đến 27/08</span>
+      </div>
+
+      <div style="margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <span style="margin-top:4px;width:40px;height:40px;border-radius:999px;background:rgba(143,205,164,.15);display:grid;place-items:center;flex:none">
+            <i data-lucide="arrow-down-left" class="icon-inline" style="color:var(--positive-ink)"></i>
+          </span>
+          <div style="min-width:0">
+            <p class="t-body-sm med" style="margin:0">Tổng thu</p>
+            <p class="num t-figure" style="margin:4px 0 0;line-height:1.06;color:var(--positive-ink)">38,0 tr</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <span style="margin-top:4px;width:40px;height:40px;border-radius:999px;background:rgba(232,163,154,.15);display:grid;place-items:center;flex:none">
+            <i data-lucide="arrow-up-right" class="icon-inline" style="color:var(--alert)"></i>
+          </span>
+          <div style="min-width:0">
+            <p class="t-body-sm med" style="margin:0">Tổng chi</p>
+            <p class="num t-figure" style="margin:4px 0 0;line-height:1.06;color:var(--alert)">−21,6 tr</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- The evidence under the answer. A value update is not a transaction,
+           so it carries no +/− tone — it states the before and after instead. -->
+      <div style="margin-top:32px">
+        <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0">
+          <i data-lucide="history" class="icon-small ink2" style="flex:none"></i>
+          Đã diễn ra
+        </h3>
+
+        <ul style="margin:8px 0 0;padding:0;list-style:none">
+          <li style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0">
+            <span class="num mono t-caption-sm ink3" style="width:40px;flex:none">27/08</span>
+            <div style="min-width:0">
+              <p class="t-body-sm med" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lương tháng 8</p>
+              <p class="t-caption ink2" style="margin:0">Thu nhập</p>
+            </div>
+            <span class="num t-body-sm med" style="flex:none;color:var(--positive-ink)">+32,0 <span class="mono t-caption-sm ink3">tr</span></span>
+          </li>
+          <li style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--divider)">
+            <span class="num mono t-caption-sm ink3" style="width:40px;flex:none">24/08</span>
+            <div style="min-width:0">
+              <p class="t-body-sm med" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Chợ và siêu thị</p>
+              <p class="t-caption ink2" style="margin:0">Sinh hoạt</p>
+            </div>
+            <span class="num t-body-sm med" style="flex:none;color:var(--alert)">−2,4 <span class="mono t-caption-sm ink3">tr</span></span>
+          </li>
+          <li style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--divider)">
+            <span class="num mono t-caption-sm ink3" style="width:40px;flex:none">21/08</span>
+            <div style="min-width:0">
+              <p class="t-body-sm med" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Đóng góp mục tiêu mua nhà</p>
+              <p class="t-caption ink2" style="margin:0">Mục tiêu chung</p>
+            </div>
+            <span class="num t-body-sm med" style="flex:none;color:var(--alert)">−20,0 <span class="mono t-caption-sm ink3">tr</span></span>
+          </li>
+          <li style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--divider)">
+            <span class="num mono t-caption-sm ink3" style="width:40px;flex:none">18/08</span>
+            <div style="min-width:0">
+              <p class="t-body-sm med" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Cập nhật giá trị căn nhà</p>
+              <p class="t-caption ink2" style="margin:0">Tài sản</p>
+            </div>
+            <span class="num t-body-sm ink2" style="flex:none">1,58 → 1,60 <span class="mono t-caption-sm ink3">tỷ</span></span>
+          </li>
+        </ul>
+
+        <p class="t-body med" style="margin:12px 0 0;color:var(--action)">Xem tất cả</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tiền đang ở đâu (§12.4) — ranked bars plus the same money read by who is
+     RESPONSIBLE for it. Never an attribution of spending. -->
+<section id="location" style="padding:122px 28px;border-top:1px solid #EEF1F2;background:#FFFFFF">
+  <div class="reveal" style="max-width:1160px;margin:auto">
+
+    <div class="desktop-grid" style="display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:72px;align-items:end">
+      <div>
+        <div class="t-caption med" style="color:var(--marketing-body);text-transform:uppercase;letter-spacing:.14em">Tiền đang ở đâu</div>
+        <h2 style="font-size:60px;font-weight:500;line-height:1.02;letter-spacing:-.04em;margin:14px 0 0">
+          Tiền nằm ở đâu,<br><span>cả hai đều biết.</span>
+        </h2>
+      </div>
+      <p class="t-body marketing-copy" style="max-width:460px;margin:0 0 8px">
+        Tiền của gia đình nằm rải ở nhiều nơi, và thường chỉ một người nhớ hết. Oursight gom lại một chỗ để cả hai cùng thấy, và cùng biết ai đang giữ khoản nào.
+      </p>
+    </div>
+
+    <div class="app-card" style="margin-top:44px;padding:28px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+        <div class="t-title">Tiền đang ở đâu</div>
+        <span class="t-caption ink3" style="flex:none">5 nguồn</span>
+      </div>
+
+      <div style="margin-top:20px;display:flex;align-items:flex-start;gap:16px">
+        <span style="margin-top:4px;width:40px;height:40px;border-radius:999px;background:rgba(115,164,215,.15);display:grid;place-items:center;flex:none;color:var(--data-ink)">
+          <i data-lucide="landmark" class="icon-inline"></i>
+        </span>
+        <div style="min-width:0">
+          <p class="label">Tổng giá trị</p>
+          <p class="num t-hero" style="margin:4px 0 0;line-height:1.05;letter-spacing:-.04em;color:var(--data-ink)">240,0 tr</p>
+        </div>
+      </div>
+
+      <div class="location-grid" style="margin-top:28px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.6fr);gap:48px;align-items:start">
+
+        <div style="min-width:0">
+          <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0 0 12px">
+            <i data-lucide="chart-no-axes-column-increasing" class="icon-small" style="flex:none;color:var(--data)"></i>
+            Phân bổ theo nguồn
+          </h3>
+          <div style="position:relative;width:100%;height:339px">
+            <canvas id="featureSourceBars"></canvas>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0 0 16px">
+            <i data-lucide="users" class="icon-small" style="flex:none;color:var(--data)"></i>
+            Ai đang nắm tài sản
+          </h3>
+
+          <div>
+            <div style="padding:4px 0">
+              <div style="display:flex;align-items:center;gap:12px;padding:14px 0">
+                <span style="width:36px;height:36px;border-radius:999px;background:rgba(115,164,215,.1);color:var(--data-ink);display:grid;place-items:center;flex:none">
+                  <i data-lucide="users-round" class="icon-small"></i>
+                </span>
+                <span style="display:flex;min-width:0;flex:1;align-items:baseline;gap:8px">
+                  <span class="t-body-sm med" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Cả nhà</span>
+                  <span class="t-caption ink2" style="flex:none">2 nguồn</span>
+                </span>
+                <span class="num t-subhead med" style="flex:none;color:var(--data-ink)">150,0 tr</span>
+                <i data-lucide="chevron-down" class="icon-small ink2" style="flex:none;transform:rotate(180deg)"></i>
+              </div>
+              <div style="padding:0 0 12px 48px">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center;padding:8px 0">
+                  <p class="t-body-sm" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Vietcombank</p>
+                  <span class="num t-body-sm med">92,0 tr</span>
+                </div>
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center;padding:8px 0">
+                  <p class="t-body-sm" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Techcombank</p>
+                  <span class="num t-body-sm med">58,0 tr</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:4px 0;border-top:1px solid var(--divider)">
+              <div style="display:flex;align-items:center;gap:12px;padding:14px 0">
+                <span style="width:36px;height:36px;border-radius:999px;background:rgba(143,205,164,.15);color:var(--positive-ink);display:grid;place-items:center;flex:none">
+                  <i data-lucide="user-round" class="icon-small"></i>
+                </span>
+                <span style="display:flex;min-width:0;flex:1;align-items:baseline;gap:8px">
+                  <span class="t-body-sm med" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Minh</span>
+                  <span class="t-caption ink2" style="flex:none">2 nguồn</span>
+                </span>
+                <span class="num t-subhead med" style="flex:none;color:var(--positive-ink)">62,0 tr</span>
+                <i data-lucide="chevron-down" class="icon-small ink2" style="flex:none"></i>
+              </div>
+            </div>
+
+            <div style="padding:4px 0;border-top:1px solid var(--divider)">
+              <div style="display:flex;align-items:center;gap:12px;padding:14px 0">
+                <span style="width:36px;height:36px;border-radius:999px;background:rgba(225,190,104,.1);color:var(--attention);display:grid;place-items:center;flex:none">
+                  <i data-lucide="user-round" class="icon-small"></i>
+                </span>
+                <span style="display:flex;min-width:0;flex:1;align-items:baseline;gap:8px">
+                  <span class="t-body-sm med" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lan</span>
+                  <span class="t-caption ink2" style="flex:none">1 nguồn</span>
+                </span>
+                <span class="num t-subhead med" style="flex:none;color:var(--attention)">28,0 tr</span>
+                <i data-lucide="chevron-down" class="icon-small ink2" style="flex:none"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Assets + Debt — restored. The nav links to #networth. -->
+<section id="networth" style="padding:122px 28px;border-top:1px solid #E7EDF1;background:var(--marketing-soft)">
+  <div class="reveal desktop-grid" style="max-width:1160px;margin:auto;display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);gap:72px;align-items:center">
+
+    <div>
+      <div class="t-caption med" style="color:var(--marketing-body);text-transform:uppercase;letter-spacing:.14em">Tài sản &amp; nợ</div>
+      <h2 style="font-size:60px;font-weight:500;line-height:1.02;letter-spacing:-.04em;margin:14px 0 0">
+        Biết mình có gì.<br><span>Và còn đang nợ gì.</span>
+      </h2>
+      <p class="t-body marketing-copy" style="max-width:430px;margin-top:22px">
+        Không chỉ nhìn tiền mặt. Oursight gom tài sản và dư nợ về cùng một bức tranh để cả hai biết gia đình thực sự đang ở đâu.
+      </p>
+    </div>
+
+    <div class="app-card">
+      <div style="display:flex;align-items:baseline;gap:12px">
+        <div class="t-body med" style="flex:1">Giá trị ròng</div>
+        <div class="t-caption ink3">Tài sản − nợ</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:38px;align-items:start;margin-top:22px">
+        <div>
+          <div class="t-body-sm ink2">Giá trị ròng hiện tại</div>
+          <div class="num t-hero" style="margin-top:6px">1,84 tỷ</div>
+
+          <div style="margin-top:24px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:8px;height:8px;border-radius:999px;background:var(--data)"></span>
+              <span class="t-body-sm ink2" style="flex:1">Tổng tài sản</span>
+              <span class="num t-body-sm med">2,26 tỷ</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:8px;height:8px;border-radius:999px;background:var(--committed)"></span>
+              <span class="t-body-sm ink2" style="flex:1">Tổng dư nợ</span>
+              <span class="num t-body-sm med">420 tr</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-left:1px solid var(--divider);padding-left:28px">
+          <div class="t-caption med ink3">Tài sản</div>
+
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 0">
+            <i data-lucide="house" class="icon-inline ink3"></i>
+            <div class="t-body-sm" style="flex:1">Nhà</div>
+            <div class="num t-body-sm">1,60 tỷ</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 0">
+            <i data-lucide="piggy-bank" class="icon-inline ink3"></i>
+            <div class="t-body-sm" style="flex:1">Tiết kiệm</div>
+            <div class="num t-body-sm">420 tr</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 0">
+            <i data-lucide="chart-no-axes-combined" class="icon-inline ink3"></i>
+            <div class="t-body-sm" style="flex:1">Đầu tư</div>
+            <div class="num t-body-sm">240 tr</div>
+          </div>
+
+          <div class="rule" style="margin:5px 0 7px"></div>
+          <div class="t-caption med ink3" style="margin-top:10px">Nợ</div>
+
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 0">
+            <i data-lucide="landmark" class="icon-inline ink3"></i>
+            <div class="t-body-sm" style="flex:1">Vay mua nhà</div>
+            <div class="num t-body-sm">380 tr</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 0">
+            <i data-lucide="credit-card" class="icon-inline ink3"></i>
+            <div class="t-body-sm" style="flex:1">Thẻ tín dụng</div>
+            <div class="num t-body-sm">40 tr</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Goal -->
+<section id="goals" style="padding:122px 28px;border-top:1px solid #EEF1F2;background:#FFFFFF">
+  <div class="reveal desktop-grid" style="max-width:1160px;margin:auto;display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:72px;align-items:center">
+
+    <div>
+      <div class="t-caption med" style="color:var(--marketing-body);text-transform:uppercase;letter-spacing:.14em">Mục tiêu chung</div>
+      <h2 style="font-size:60px;font-weight:500;line-height:1.02;letter-spacing:-.04em;margin:14px 0 0">
+        Biết mình đang<br><span>đi tới đâu.</span>
+      </h2>
+      <p class="t-body marketing-copy" style="max-width:420px;margin-top:22px">
+        Góp đều mỗi tháng vẫn khó biết mình có kịp hay không. Oursight cho thấy hôm nay đang sớm hay muộn so với ngày mong muốn, trước khi mọi thứ thành muộn thật.
+      </p>
+    </div>
+
+    <!-- Same track as the app's GoalsSection: ticks rather than a solid bar, and
+         a full-height pace marker at the milestone the goal needs today. -->
+    <div class="app-card">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+        <div class="t-title">Mục tiêu</div>
+        <span class="t-body med" style="color:var(--action);flex:none">Xem tất cả · 3</span>
+      </div>
+
+      <div style="margin-top:24px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px">
+        <span class="num t-figure" style="line-height:1;letter-spacing:-.03em">144,0 tr</span>
+        <span class="t-body-sm ink2">Đã dành cho mục tiêu</span>
+      </div>
+
+      <div style="margin-top:20px">
+        <div style="padding:16px 12px">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px">
+            <span style="display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;flex:none;color:var(--attention)" title="Ưu tiên cao">
+              <i data-lucide="chess-queen" class="icon-small"></i>
+            </span>
+            <p class="t-body-sm med" style="margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ngôi nhà đầu tiên</p>
+            <span class="t-caption-sm med" style="flex:none;border-radius:999px;background:#EEF1F2;padding:2px 8px;color:var(--action)">chính</span>
+            <span class="t-caption med ink2" style="margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px">
+              <span style="width:6px;height:6px;border-radius:999px;background:var(--positive)"></span>
+              Đúng nhịp
+            </span>
+          </div>
+          <div class="goal-progress" style="margin-top:8px;--progress:30%">
+            <span style="position:absolute;top:0;bottom:0;left:28%;z-index:10;width:2px;border-radius:999px;background:var(--ink)"></span>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <p class="num t-caption ink2" style="margin:0"><span class="med" style="color:var(--ink)">480,0 tr</span> / 1,6 tỷ</p>
+            <span class="mono t-caption-sm ink3">30%</span>
+          </div>
+        </div>
+
+        <div style="padding:16px 12px;border-top:1px solid var(--divider)">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px">
+            <span style="display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;flex:none;color:var(--ink3)" title="Ưu tiên vừa">
+              <i data-lucide="star" class="icon-small"></i>
+            </span>
+            <p class="t-body-sm med" style="margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Quỹ dự phòng</p>
+            <span class="t-caption med ink2" style="margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px">
+              <span style="width:6px;height:6px;border-radius:999px;background:var(--attention-fill)"></span>
+              Chậm hơn mốc
+            </span>
+          </div>
+          <div class="goal-progress" data-behind="true" style="margin-top:8px;--progress:52%">
+            <span style="position:absolute;top:0;bottom:0;left:70%;z-index:10;width:2px;border-radius:999px;background:var(--ink)"></span>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <p class="num t-caption ink2" style="margin:0"><span class="med" style="color:var(--ink)">78,0 tr</span> / 150,0 tr</p>
+            <span class="mono t-caption-sm" style="color:var(--attention)">52%</span>
+          </div>
+        </div>
+
+        <div style="padding:16px 12px;border-top:1px solid var(--divider)">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px">
+            <p class="t-body-sm med" style="margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Du lịch gia đình</p>
+            <span class="t-caption med ink2" style="margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px">
+              <span style="width:6px;height:6px;border-radius:999px;background:var(--positive)"></span>
+              Đúng nhịp
+            </span>
+          </div>
+          <div class="goal-progress" style="margin-top:8px;--progress:64%">
+            <span style="position:absolute;top:0;bottom:0;left:60%;z-index:10;width:2px;border-radius:999px;background:var(--ink)"></span>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <p class="num t-caption ink2" style="margin:0"><span class="med" style="color:var(--ink)">38,4 tr</span> / 60,0 tr</p>
+            <span class="mono t-caption-sm ink3">64%</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="t-caption ink3" style="margin:20px 0 0;display:flex;align-items:center;gap:8px">
+        <span style="display:inline-block;width:2px;height:12px;border-radius:999px;background:var(--ink);flex:none"></span>
+        Mốc cần đạt hôm nay để về đúng hạn
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- What if -->
+<section style="background:var(--ink);color:white;padding:122px 28px">
+  <div class="reveal desktop-grid" style="max-width:1160px;margin:auto;display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr);gap:72px;align-items:center">
+    <div>
+      <div class="t-caption med" style="color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.14em">What-if</div>
+      <h2 style="font-size:62px;font-weight:500;line-height:1;letter-spacing:-.04em;margin:14px 0 0">
+        “Chi 36 triệu<br>thì sao?”
+      </h2>
+      <p class="t-body" style="color:rgba(255,255,255,.6);max-width:420px;margin-top:22px">
+        Thấy consequence trước khi dùng tiền thật.
+      </p>
+    </div>
+
+    <div class="app-card" style="color:var(--ink)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <i data-lucide="plane" class="icon-inline ink3"></i>
+        <div class="t-body med" style="flex:1">Chuyến đi Nhật</div>
+        <div class="num t-body med">36,0 tr</div>
+      </div>
+
+      <div class="rule" style="margin:18px 0 20px"></div>
+
+      <div style="background:var(--model);padding:20px 22px">
+        <div class="t-caption med ink3" style="text-transform:uppercase;letter-spacing:.1em">
+          Nếu thực hiện
+        </div>
+
+        <div style="margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0">
+          <div style="padding-right:28px">
+            <div class="t-caption ink3">Linh hoạt</div>
+            <div style="display:flex;align-items:baseline;gap:10px;margin-top:7px">
+              <span class="num t-body ink3">96,0</span>
+              <i data-lucide="arrow-right" class="icon-small ink3"></i>
+              <span class="num t-metric">60,0 tr</span>
+            </div>
+          </div>
+
+          <div style="padding-left:28px;border-left:1px solid var(--divider)">
+            <div class="t-caption ink3">Mục tiêu mua nhà</div>
+            <div style="display:flex;align-items:baseline;gap:10px;margin-top:7px">
+              <span class="t-body ink3">09/2029</span>
+              <i data-lucide="arrow-right" class="icon-small ink3"></i>
+              <span class="t-metric">11/2029</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rule" style="margin:20px 0 14px"></div>
+
+        <div style="display:flex;justify-content:space-between;gap:16px">
+          <span class="t-body-sm ink2">Goal impact</span>
+          <span class="t-body-sm med">Chậm khoảng 2 tháng</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" style="padding:110px 28px 54px;text-align:center;background:var(--marketing-bg)">
+  <div class="reveal" style="max-width:1160px;margin:auto;background:var(--hero);border-radius:34px;padding:86px 40px">
+    <h2 style="font-size:72px;font-weight:500;line-height:.99;letter-spacing:-.045em;margin:0;color:#FFFFFF">
+      Cùng nhìn rõ tiền hôm nay.<br>
+      <span style="color:#FFFFFF">Cùng quyết định cho ngày mai.</span>
+    </h2>
+
+    <a href="#" style="display:inline-flex;align-items:center;gap:8px;margin-top:34px;background:var(--ink);color:white;padding:15px 28px;border-radius:999px;text-decoration:none;font-size:15px;font-weight:500">
+      Bắt đầu với Oursight
+      <i data-lucide="arrow-right" class="icon-inline"></i>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer style="max-width:1160px;margin:auto;padding:0 28px 30px;display:flex;justify-content:space-between;color:var(--ink3);font-size:12px">
+  <span>© 2026 Oursight</span>
+  <span>Shared financial space for two.</span>
+</footer>
+
+<script>
+(function(){
+  lucide.createIcons();
+
+
+
+  const INK   = '#0F1011';
+  const INK2  = '#596268';
+  const INK3  = '#6B767C';
+  const DATA_C = '#73A4D7';
+  const COMMITTED = '#D8E0E4';
+  const ATTENTION = '#E1BE68';
+  const GRID  = '#EEF1F2';
+  const CARD  = '#FFFFFF';
+
+  /**
+   * MoneyCompositionRing — a ratio gauge, not a pie: 72% hole, a 2° gap on each
+   * side and rounded caps, so each share reads as its own token. Committed is
+   * the neutral grey; flexible carries the data colour, never the action one.
+   */
+  (function compositionRing(){
+    const el = document.getElementById('compositionRing');
+    if(!el) return;
+
+    new Chart(el,{
+      type:'doughnut',
+      data:{
+        labels:['Đã có nhiệm vụ','Linh hoạt'],
+        datasets:[{
+          data:[60,40],
+          backgroundColor:[COMMITTED,DATA_C],
+          borderWidth:0,
+          borderRadius:6,
+          spacing:6
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:false,
+        cutout:'72%',
+        rotation:0,
+        plugins:{legend:{display:false},tooltip:{enabled:false}},
+        layout:{padding:0}
+      }
+    });
+  })();
+
+  /**
+   * CashflowDeltaChart — thirty days drawn as CHANGE SINCE TODAY.
+   *
+   * The baseline is a true zero (today), so a dip cannot be exaggerated by an
+   * auto-scaled balance axis. The curve is smoothed — the app does the same
+   * (`type="monotone"` in upcoming-section.tsx): at 30 points in this height
+   * the step risers read as noise, and the question here is how deep the dip
+   * goes and roughly when. The low point is the only dot, in amber.
+   */
+  function deltaChart(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+
+    // Millions of change against today — the axis label declares the unit.
+    const DELTA = [
+      0,0,0,0,32,32,32,32,32,14,
+      14,14,14,14,-14,-14,-14,-14,-14,-4,
+      -4,-4,-4,-4,-4,-4,-4,-4,-4,-4
+    ];
+    const lowIndex = DELTA.indexOf(Math.min(...DELTA));
+
+    new Chart(el,{
+      type:'line',
+      data:{
+        labels:DELTA.map((_,i)=>i),
+        datasets:[{
+          data:DELTA,
+          borderColor:INK2,
+          borderWidth:1.5,
+          borderCapStyle:'round',
+          borderJoinStyle:'round',
+          // Smoothed, per the app. `cubicInterpolationMode:'monotone'` is
+          // Chart.js's equivalent of recharts' monotone: it never overshoots,
+          // so the curve cannot dip below the low point or invent a trough.
+          cubicInterpolationMode:'monotone',
+          tension:0.4,
+          fill:false,
+          // Only the low point carries a dot.
+          pointRadius:DELTA.map((_,i)=>i===lowIndex?3.5:0),
+          pointBackgroundColor:ATTENTION,
+          pointBorderWidth:0,
+          pointHoverRadius:0
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:false,
+        normalized:true,
+        plugins:{
+          legend:{display:false},
+          tooltip:{enabled:false}
+        },
+        scales:{
+          x:{display:false,grid:{display:false},border:{display:false}},
+          y:{
+            display:false,
+            grid:{display:false},
+            border:{display:false},
+            suggestedMin:-22,
+            suggestedMax:40
+          }
+        },
+        layout:{padding:{top:6,right:4,bottom:0,left:4}}
+      },
+      plugins:[{
+        // The zero rule, drawn under the line.
+        id:'zeroBaseline',
+        beforeDatasetsDraw(chart){
+          const {ctx,chartArea,scales} = chart;
+          const y = scales.y.getPixelForValue(0);
+          ctx.save();
+          ctx.strokeStyle = GRID;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left,y);
+          ctx.lineTo(chartArea.right,y);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }]
+    });
+  }
+
+  // Drawn twice: in the cropped scene, and in the "30 ngày tới" feature, which
+  // now mirrors the app's UpcomingSection rather than showing a sparkline.
+  deltaChart('dashboardForecast');
+  deltaChart('featureForecast');
+
+  /**
+   * MoneySourcesSection bars — ranked horizontal bars stepping down a
+   * MONOCHROME ramp by rank, on a real x-axis.
+   *
+   * The fill is weight, not hue: the largest source carries the full data tone
+   * and each one below it recedes a step, so concentration is visible before a
+   * single figure is read. The vertical rules are what turn the ordering into a
+   * scale.
+   */
+  function sourceBars(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+
+    // The app's RANK_FILL: --data-primary mixed toward --card by rank.
+    const mix = (pct)=>{
+      const d = [0x73,0xa4,0xd7], c = [0xff,0xff,0xff];
+      const p = pct/100;
+      return 'rgb(' + d.map((v,i)=>Math.round(v*p + c[i]*(1-p))).join(',') + ')';
+    };
+    const RANK_FILL = [DATA_C, mix(72), mix(48), mix(28), mix(14)];
+
+    const ROWS = [
+      {name:'Vietcombank',   value:92},
+      {name:'Tiết kiệm',     value:90},
+      {name:'Techcombank',   value:58},
+      {name:'Ví tiền mặt',   value:12},
+      {name:'Momo',          value:6}
+    ];
+
+    new Chart(el,{
+      type:'bar',
+      data:{
+        labels:ROWS.map(r=>r.name),
+        datasets:[{
+          data:ROWS.map(r=>r.value),
+          backgroundColor:ROWS.map((_,i)=>RANK_FILL[Math.min(i,RANK_FILL.length-1)]),
+          borderWidth:0,
+          borderRadius:6,
+          borderSkipped:false,
+          barThickness:22,
+          // A source too small to draw still gets a visible stub.
+          minBarLength:3
+        }]
+      },
+      options:{
+        indexAxis:'y',
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{enabled:false}
+        },
+        scales:{
+          x:{
+            beginAtZero:true,
+            grid:{color:GRID,drawTicks:false},
+            border:{display:false},
+            ticks:{
+              color:INK3,
+              font:{size:11,family:'Urbanist'},
+              padding:8,
+              callback:(v)=>v + ' tr'
+            }
+          },
+          y:{
+            grid:{display:false},
+            border:{display:false},
+            ticks:{
+              color:INK,
+              font:{size:13,weight:'500',family:'Urbanist'},
+              crossAlign:'far',
+              padding:8
+            }
+          }
+        },
+        layout:{padding:{right:76}}
+      },
+      plugins:[{
+        // The amount at the end of each bar, in metadata weight.
+        id:'barValueLabels',
+        afterDatasetsDraw(chart){
+          const {ctx} = chart;
+          const meta = chart.getDatasetMeta(0);
+          ctx.save();
+          ctx.fillStyle = INK2;
+          ctx.font = '500 12px Urbanist, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          meta.data.forEach((bar,i)=>{
+            ctx.fillText(ROWS[i].value.toFixed(1).replace('.',',') + ' tr', bar.x + 10, bar.y);
+          });
+          ctx.restore();
+        }
+      }]
+    });
+  }
+
+  // Drawn twice: in the cropped scene, and in the "Tiền đang ở đâu" feature.
+  sourceBars('sourceBars');
+  sourceBars('featureSourceBars');
+
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting) entry.target.classList.add('on');
+    });
+  },{threshold:.08});
+
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+})();
+</script>
+
+</body>
+</html>

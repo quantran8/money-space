@@ -1,8 +1,8 @@
-# Backend Tables & Relationships — Money Space MVP v3.1
+# Backend Tables & Relationships — Oursight MVP v3.1
 
 ## 1. Tổng quan
 
-Money Space là app **shared financial clarity + foresight + decision support** cho couple/household.
+Oursight là app **shared financial clarity + foresight + decision support** cho couple/household.
 
 Sản phẩm không đi theo hướng app ghi thu chi từng giao dịch nhỏ. Trung tâm của sản phẩm là:
 
@@ -285,7 +285,6 @@ debt_interest_periods
 Ghi chú: các điều khoản trả nợ (payment_frequency, fixed_payment_amount, minimum_payment_amount, interest_type, interest_calculation) đã được gộp thẳng vào bảng `debts`, không tách riêng bảng `debt_terms`.
 
 `cashflow_events` và `money_events` cũng nên có `debt_id` để nối kỳ trả nợ và các sự kiện liên quan về đúng khoản vay gốc.
-
 
 ## 2.9. Đổi `upcoming_payments` thành `cashflow_events`
 
@@ -3527,7 +3526,7 @@ Có thể dùng enum/text trước. Khi có usage thật rồi mới normalize t
 
 # 36. Final recommended schema
 
-Bản nên build cho Money Space v3.1:
+Bản nên build cho Oursight v3.1:
 
 ```txt
 profiles
