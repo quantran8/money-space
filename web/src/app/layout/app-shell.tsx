@@ -18,6 +18,7 @@ import { WhatIfSheet } from '@/features/whatif/ui/whatif-sheet'
 
 import type { ComponentType } from 'react'
 
+import { AppLogo } from '@/components/ui/app-logo'
 import { pageTransition, pageVariants } from '@/components/ui/motion'
 import { useLogout } from '@money-space/core/features/auth/hooks/use-logout'
 import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
@@ -150,12 +151,8 @@ export function AppShell() {
     // bar can't push the bottom nav out of reach.
     <div className="shell-backdrop flex h-dvh overflow-hidden">
       <aside className="glass glass-edge hidden w-[72px] shrink-0 flex-col items-center py-5 lg:flex">
-        <span
-          className="flex size-9 items-center justify-center rounded-pill bg-action t-body-sm font-medium text-action-inverse"
-          aria-label="Money Space"
-          title="Money Space"
-        >
-          M
+        <span className="flex" aria-label="Money Space" title="Money Space" role="img">
+          <AppLogo className="size-9 rounded-[11px]" />
         </span>
 
         <nav className="mt-6 flex flex-col items-center gap-1.5">
@@ -176,9 +173,7 @@ export function AppShell() {
             drawer alone used to hold has moved — sign-out to /household,
             what-if to the bar's floating button. */}
         <header className="flex items-center gap-3 px-5 py-3 lg:hidden">
-          <span className="flex size-7 items-center justify-center rounded-pill bg-action t-caption font-medium text-action-inverse">
-            M
-          </span>
+          <AppLogo className="size-7 rounded-[9px]" />
           <p className="t-body-sm font-medium">Money Space</p>
         </header>
 
