@@ -737,7 +737,6 @@ function MarketFields({
         quote={quote}
         isLoading={isLoading}
         isUnavailable={isUnavailable}
-        onUsePrice={canPrefill ? prefillPurchasePrice : undefined}
         t={t}
       />
 
@@ -793,8 +792,8 @@ function MarketFields({
  * something just bought. It stays visible afterwards because the two are not
  * the same number: this is what the instrument is worth *now*, while
  * `purchasePrice` is the cost basis — what the household actually paid, which
- * may be years old. So an already-filled field is never overwritten, and the
- * "use this price" action lets the user opt back into today's figure.
+ * may be years old. So an already-filled field is never overwritten: once the
+ * user has typed a cost basis, today's figure is shown beside it, never onto it.
  *
  * Renders nothing until a symbol is chosen, and says so plainly when the
  * instrument cannot be priced — the form still submits, valued from whatever
@@ -805,15 +804,12 @@ function MarketQuoteHint({
   quote,
   isLoading,
   isUnavailable,
-  onUsePrice,
   t,
 }: {
   symbol: string
   quote: MarketQuote | null
   isLoading: boolean
   isUnavailable: boolean
-  /** Absent when the quote's currency differs from the form's (VND). */
-  onUsePrice?: (price: number) => void
   t: Translate
 }) {
   if (!symbol.trim()) return null
@@ -843,18 +839,6 @@ function MarketQuoteHint({
       <span className="font-medium text-ink">
         {formatMoney(quote.price, quote.quoteCurrency as DisplayCurrency)} /{' '}
         {quote.unit}
-      </span>
-      {onUsePrice ? (
-        <button
-          type="button"
-          onClick={() => onUsePrice(quote.price)}
-          className="text-[hsl(var(--primary))] underline underline-offset-2"
-        >
-          {t('assets.form.market.quoteUse')}
-        </button>
-      ) : null}
-      <span className="basis-full text-ink3">
-        {t('assets.form.market.quoteSource', { source: quote.source })}
       </span>
     </div>
   )

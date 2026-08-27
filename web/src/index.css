@@ -120,6 +120,25 @@
     --action: #0f1011;
     --action-inverse: #ffffff;
     --data-primary: #73a4d7;
+
+    /**
+     * Liquidity ramp — the ordinal scale for the asset-composition chart.
+     *
+     * One hue, three monotone lightness steps: the reader takes the ordering
+     * (usable now → long term) off lightness, which is the only channel that
+     * survives greyscale and CVD. Saturated azure rather than v5's stepped
+     * `--accent`, because `--accent` IS `--action` (near-black), so that ramp
+     * measured below the chroma floor — three greys where the design intends
+     * one quantity split three ways.
+     *
+     * Literal hex, not a `color-mix` off `--accent`: the ramp has to hold its
+     * lightness spacing on both the card and the sunk surface, and mixing
+     * toward a surface re-derives the steps differently on each. Validated
+     * monotone with the light end clearing 2:1 on card and wash alike.
+     */
+    --liquidity-1: #0954c4;
+    --liquidity-2: #3486ea;
+    --liquidity-3: #7cb6f3;
     --positive: #8fcda4;
     --model: #eef6f1;
 
@@ -206,6 +225,11 @@
     --alert: #a8391f;
     --committed: #dcd3c4;
     --protect: #b5aa98;
+
+    /* Liquidity ramp, deepened a touch for Archive's ivory ground. */
+    --liquidity-1: #08479f;
+    --liquidity-2: #2a6fc4;
+    --liquidity-3: #6ea3dc;
 
     --accent-tint: rgba(140, 47, 57, 0.1);
     --attention-tint: rgba(154, 106, 22, 0.12);

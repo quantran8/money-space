@@ -465,8 +465,6 @@ export const resources = {
             quoteLabel: 'Giá thị trường',
             quoteLoading: 'Đang lấy giá thị trường...',
             quoteUnavailable: 'Chưa có giá thị trường cho mã này',
-            quoteUse: 'Dùng làm giá mua',
-            quoteSource: 'Theo dữ liệu từ {{source}}',
             gold: {
               symbol: 'Loại vàng / bạc',
               symbolPlaceholder: 'Chọn loại vàng, bạc',
@@ -3296,8 +3294,6 @@ export const resources = {
             quoteLabel: 'Market price',
             quoteLoading: 'Fetching the market price...',
             quoteUnavailable: 'No market price for this symbol yet',
-            quoteUse: 'Use as purchase price',
-            quoteSource: 'Based on data from {{source}}',
             gold: {
               symbol: 'Gold / silver kind',
               symbolPlaceholder: 'Choose a gold or silver product',
