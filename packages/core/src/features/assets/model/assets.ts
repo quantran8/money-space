@@ -1,5 +1,5 @@
 /**
- * Asset domain logic for the Money Space MVP.
+ * Asset domain logic for the Oursight MVP.
  *
  * Type ⇒ valuation-mode / liquidity lookup tables and the current-value
  * computation. Types live in `assets.types.ts`; mock prices and seed data

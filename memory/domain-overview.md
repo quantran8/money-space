@@ -1,8 +1,8 @@
 # Domain overview
 
-## What Money Space is
+## What Oursight is
 
-A Vietnamese-first **family/couple finance dashboard** — explicitly **not** a transaction-tracking / expense-logging app. The core question it answers is *"Tài chính gia đình có ổn không?"* (Is our household OK?).
+A Vietnamese-first **family/couple finance dashboard** — explicitly **not** a transaction-tracking / expense-logging app. The core question it answers is _"Tài chính gia đình có ổn không?"_ (Is our household OK?).
 
 - Central concept is a periodic **financial snapshot** (weekly/monthly), not per-transaction ledgering.
 - Calm, non-judgmental tone: use "khoản cần chú ý / cần trao đổi", never "cảnh báo / vượt chi / đáng ngờ".
@@ -31,6 +31,7 @@ A Vietnamese-first **family/couple finance dashboard** — explicitly **not** a 
 ## Hardcoded "now" (demo state)
 
 Partly migrated off the seed/demo clock. As of 2026-08-23:
+
 - **`TODAY` (events) is the real clock** — `packages/core/.../events-form.ts` calls
   `todayIsoDate()`. It is no longer the `'2026-07-08'` seed.
 - **`AS_OF` (assets) is still hardcoded** — `'2026-07-06'` in

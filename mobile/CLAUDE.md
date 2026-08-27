@@ -1,4 +1,4 @@
-# CLAUDE.md — Money Space mobile
+# CLAUDE.md — Oursight mobile
 
 Guidance for Claude Code when working in `mobile/`.
 
@@ -15,7 +15,7 @@ There is no test runner, matching the web app. `tsc` is the gate.
 
 ## What this is
 
-The React Native / Expo client for Money Space, a Vietnamese-first finance app
+The React Native / Expo client for Oursight, a Vietnamese-first finance app
 for couples. It talks to the same NestJS backend as the web app and shares all
 non-UI logic with it through `@money-space/core`.
 
@@ -40,13 +40,13 @@ adapters (`src/shared/`), and the theme (`src/theme/`).
 Core is platform-agnostic and receives its environment by injection, wired in
 [src/shared/bootstrap.ts](src/shared/bootstrap.ts):
 
-| Core needs | Mobile provides |
-|---|---|
-| `configureEnv` | `EXPO_PUBLIC_API_BASE_URL` |
-| `configureStorage` | SecureStore ([native-storage.ts](src/shared/native-storage.ts)) |
+| Core needs            | Mobile provides                                                       |
+| --------------------- | --------------------------------------------------------------------- |
+| `configureEnv`        | `EXPO_PUBLIC_API_BASE_URL`                                            |
+| `configureStorage`    | SecureStore ([native-storage.ts](src/shared/native-storage.ts))       |
 | `configureNavigation` | Expo Router ([native-navigation.ts](src/shared/native-navigation.ts)) |
-| `configureNotifier` | [toast.tsx](src/shared/toast.tsx), installed by `ToastProvider` |
-| `configureAuthBridge` | core's own, called from bootstrap |
+| `configureNotifier`   | [toast.tsx](src/shared/toast.tsx), installed by `ToastProvider`       |
+| `configureAuthBridge` | core's own, called from bootstrap                                     |
 
 Core's hooks import `useNavigate` / `useLocation` / `useSearchParam` from
 `@money-space/core/shared/navigation` — never from `expo-router` directly, or
@@ -77,7 +77,13 @@ usually has no household, and that gate would send them to create one.
 Build from [src/components/ui](src/components/ui) — import from the barrel:
 
 ```ts
-import { Screen, Sections, Panel, MetricCell, GroupedRow } from '@/components/ui'
+import {
+  Screen,
+  Sections,
+  Panel,
+  MetricCell,
+  GroupedRow,
+} from "@/components/ui";
 ```
 
 If a primitive is missing, add it to the kit rather than hand-rolling markup in
@@ -129,7 +135,7 @@ Invariants that outrank any visual concern:
    show.
 2. **Never render `0đ` when the truth is "no data yet".**
 3. **Voice**: no judgement, no monitoring a partner, never "you should / should
-   not buy". What-if shows *consequence*, never a verdict.
+   not buy". What-if shows _consequence_, never a verdict.
 4. Asset valuation mode is always derived from `type` — never user-picked.
 5. Every derived number must be explainable ("Theo dữ liệu hiện có").
 

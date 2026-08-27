@@ -151,7 +151,7 @@ export function AppShell() {
     // bar can't push the bottom nav out of reach.
     <div className="shell-backdrop flex h-dvh overflow-hidden">
       <aside className="glass glass-edge hidden w-[72px] shrink-0 flex-col items-center py-5 lg:flex">
-        <span className="flex" aria-label="Money Space" title="Money Space" role="img">
+        <span className="flex" aria-label="Oursight" title="Oursight" role="img">
           <AppLogo className="size-9 rounded-[11px]" />
         </span>
 
@@ -174,7 +174,7 @@ export function AppShell() {
             what-if to the bar's floating button. */}
         <header className="flex items-center gap-3 px-5 py-3 lg:hidden">
           <AppLogo className="size-7 rounded-[9px]" />
-          <p className="t-body-sm font-medium">Money Space</p>
+          <p className="t-body-sm font-medium">Oursight</p>
         </header>
 
         <motion.div

@@ -1,10 +1,10 @@
-# 04 — Money Space Product Recipes
+# 04 — Oursight Product Recipes
 
-> v5.0 — recipe riêng của Money Space trên visual system mới. Không copy các recipe này sang product khác như visual foundation chung.
+> v5.0 — recipe riêng của Oursight trên visual system mới. Không copy các recipe này sang product khác như visual foundation chung.
 
 ## 1. Product thesis
 
-Money Space giúp household trả lời:
+Oursight giúp household trả lời:
 
 ```txt
 Tài chính gia đình hiện thế nào?
@@ -555,7 +555,7 @@ nếu chúng chỉ là metadata/breakdown của các answer ở trên.
 
 ---
 
-## 17. Visual QA checklist riêng cho Money Space
+## 17. Visual QA checklist riêng cho Oursight
 
 ```txt
 1. Flexible Money có còn là primary financial answer không?

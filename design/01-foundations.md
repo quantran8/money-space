@@ -1,10 +1,10 @@
 # 01 — Foundations
 
-> v5.0 — visual direction mới: airy, cool, flat financial workspace. Lấy cảm hứng từ visual grammar của Clerio nhưng giữ information architecture và product semantics riêng của Money Space.
+> v5.0 — visual direction mới: airy, cool, flat financial workspace. Lấy cảm hứng từ visual grammar của Clerio nhưng giữ information architecture và product semantics riêng của Oursight.
 
 ## 1. Visual register
 
-Money Space là một **shared financial workspace cho household**, không phải BI dashboard, expense tracker hay wellness app.
+Oursight là một **shared financial workspace cho household**, không phải BI dashboard, expense tracker hay wellness app.
 
 ```txt
 Calm, airy, có trọng lượng
@@ -44,35 +44,35 @@ nhiều màu theo category
 ```css
 :root {
   /* environment */
-  --canvas: #EDF3F8;
-  --card: #FFFFFF;
-  --wash: #E3ECF2;
+  --canvas: #edf3f8;
+  --card: #ffffff;
+  --wash: #e3ecf2;
 
   /* hero card — the only surface using --hero */
-  --hero: #B5CDE8;
-  --hero-deep: #ACC6E3;
+  --hero: #b5cde8;
+  --hero-deep: #acc6e3;
 
   /* text */
-  --ink: #0F1011;
+  --ink: #0f1011;
   --ink2: #596268;
-  --ink3: #6B767C;
+  --ink3: #6b767c;
 
   /* action */
-  --action: #0F1011;
-  --action-inverse: #FFFFFF;
+  --action: #0f1011;
+  --action-inverse: #ffffff;
 
   /* data / state */
-  --data-primary: #73A4D7;
-  --positive: #8FCDA4;
-  --attention: #8A6410;
-  --alert: #A8341F;
+  --data-primary: #73a4d7;
+  --positive: #8fcda4;
+  --attention: #8a6410;
+  --alert: #a8341f;
 
-  --committed: #D8E0E4;
-  --protect: #AFC0C7;
-  --model: #EEF6F1;
+  --committed: #d8e0e4;
+  --protect: #afc0c7;
+  --model: #eef6f1;
 
   /* relation */
-  --divider: #EEF1F2;
+  --divider: #eef1f2;
 
   /* geometry */
   --radius-hero: 28px;

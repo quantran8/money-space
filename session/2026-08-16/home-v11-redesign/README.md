@@ -6,7 +6,7 @@
 
 ## What the task is
 
-Rebuild Home to the "Money Space — Tổng quan v11" mockup the user supplied, and
+Rebuild Home to the "Oursight — Tổng quan v11" mockup the user supplied, and
 use **recharts** for the parts that are charts (previously hand-rolled SVG).
 
 The mockup is four sections — Bức tranh hôm nay · Ba mươi ngày tới · Mục tiêu ·
@@ -66,7 +66,7 @@ did not touch (`use-events-page.ts`, `use-assets-page.ts`, `use-asset-sale.ts`,
   a balance holds flat and moves on the day something is paid. Chart only shows
   at ≥ 6 events.
 - **The goal milestone uses only declared figures**: `target − (planned monthly ×
-  months until target date)`. No contribution or no target date → no milestone.
+months until target date)`. No contribution or no target date → no milestone.
   `behind` (amber) needs a gap of more than 10 points, so ordinary drift is not
   coloured.
 - **Coverage narrowed to cash sources.** The hero is flexible money, which never
@@ -87,7 +87,7 @@ did not touch (`use-events-page.ts`, `use-assets-page.ts`, `use-asset-sale.ts`,
 - Port the section order, the delta-chart definition, the goal milestone formula
   and the cash-only coverage rule — these are domain rules, not web styling.
 - The bar chart and the recharts line are web-specific implementations; mobile
-  should reproduce the *encoding* (bar length = value, cash rows before
+  should reproduce the _encoding_ (bar length = value, cash rows before
   long-term; delta vs today with a zero baseline), not the library.
 - `home.mainGoal.*`, `home.assets.*`, `home.debts.*` and `home.activity.*` keys
   are still in `resources.ts` and still used by the components left on disk; do

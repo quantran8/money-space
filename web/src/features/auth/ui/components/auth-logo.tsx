@@ -6,7 +6,7 @@ import { AppLogo } from '@/components/ui/app-logo'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
- * The Money Space wordmark. Shared by the brand panel and the mobile header so
+ * The Oursight wordmark. Shared by the brand panel and the mobile header so
  * the mark itself is authored once; only the surface it sits on differs.
  */
 export function AuthLogo({

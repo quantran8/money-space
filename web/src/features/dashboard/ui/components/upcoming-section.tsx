@@ -415,12 +415,22 @@ function TimelineRailRow({
 /**
  * Thirty days of cash flow, drawn as CHANGE SINCE TODAY (§12.2).
  *
- * Two properties make the shape honest. The baseline is a true zero — today —
- * so the line cannot exaggerate a dip the way an auto-scaled balance axis does,
- * and the reading does not depend on how much money the household happens to
- * hold. And the interpolation is `stepAfter`, because a balance does not drift
- * between events: it holds flat and then moves on the day something is paid.
- * A smoothed curve would draw money leaving the account on days nothing happens.
+ * The baseline is a true zero — today — so the line cannot exaggerate a dip the
+ * way an auto-scaled balance axis does, and the reading does not depend on how
+ * much money the household happens to hold.
+ *
+ * The interpolation is `monotone`. It was `stepAfter`, on the argument that a
+ * balance holds flat and then moves on the day something is paid, so a curve
+ * would draw money leaving the account on days nothing happens. That is true of
+ * the mechanism and it is not what this chart is for: at 30 points in 190px the
+ * risers read as noise, and the question the household brings here is how deep
+ * the dip goes and roughly when — not which calendar day each step lands on.
+ * The event rail beside it already answers that, date by date, exactly.
+ *
+ * `monotone` rather than a plain spline because it never overshoots: the curve
+ * cannot dip below the lowest point or rise above the highest, so the low-point
+ * dot stays the visual minimum and the shape cannot invent a trough that no
+ * event produced.
  */
 function CashflowDeltaChart({
   points,
@@ -497,7 +507,7 @@ function CashflowDeltaChart({
           />
 
           <Line
-            type="stepAfter"
+            type="monotone"
             dataKey="value"
             stroke="var(--ink2)"
             strokeWidth={1.5}

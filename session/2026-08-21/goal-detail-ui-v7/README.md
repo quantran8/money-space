@@ -6,7 +6,7 @@
 
 ## What the task is
 
-Update the goal detail screen to match a supplied HTML mockup ("Money Space — Goal
+Update the goal detail screen to match a supplied HTML mockup ("Oursight — Goal
 detail v7"). The mockup keeps the existing section order and every existing data
 source; what it changes is how each section presents what it already has.
 

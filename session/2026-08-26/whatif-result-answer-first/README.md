@@ -6,7 +6,7 @@
 
 ## What the task is
 
-Rebuild the what-if result UI to match a supplied HTML demo ("Money Space —
+Rebuild the what-if result UI to match a supplied HTML demo ("Oursight —
 What-if visual first"). The demo is answer-first: one hero figure, the change
 from today beside it, a three-metric row, then the affected items — and the
 result takes over the dialog rather than sitting under the form.

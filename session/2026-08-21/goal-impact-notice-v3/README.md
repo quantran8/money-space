@@ -7,7 +7,7 @@
 ## What the task is
 
 Update the goal-impact notice inside the cashflow event form to match a supplied
-mockup ("Money Space — Visual impact v3"). The mockup reframes the block: the bar now
+mockup ("Oursight — Visual impact v3"). The mockup reframes the block: the bar now
 shows the SPEND divided across where the money comes from, and only the consequences
 that actually moved get a before → after row.
 

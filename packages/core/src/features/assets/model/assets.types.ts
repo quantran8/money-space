@@ -1,5 +1,5 @@
 /**
- * Asset domain types for the Money Space MVP.
+ * Asset domain types for the Oursight MVP.
  *
  * Mirrors the backend spec (see "Backend Tables & Relationships"):
  * every asset has a `type`, an auto-derived `valuation_mode`, and a
