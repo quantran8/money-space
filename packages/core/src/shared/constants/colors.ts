@@ -7,47 +7,49 @@ import type { AssetLiquidity } from '#/features/assets/model/assets.types'
 /**
  * One fill per liquidity bucket, in `liquidityOrder`.
  *
- * v4.0 encodes liquidity by WEIGHT, not by hue — exactly as the money
- * composition bar does (§5.4). The v3.x palette gave each bucket its own
- * saturated colour (green / blue / orange), which broke two rules at once:
- * amber is reserved entirely for `attention` (§5.4), and spending a third of
- * the screen's colour budget on a neutral breakdown leaves nothing to signal
- * with (§5.2 — "colour is only for things the user must act on").
+ * Liquidity is encoded by WEIGHT within one hue, never by three competing hues
+ * — the v3.x palette gave each bucket its own saturated colour (green / blue /
+ * orange), which broke two rules at once: amber is reserved entirely for
+ * `attention` (§5.4), and spending a third of the screen's colour budget on a
+ * neutral breakdown leaves nothing to signal with (§5.2).
  *
- * So the ramp runs light → saturated in the direction of usefulness today:
- * long-term holdings recede, money usable now carries the accent.
+ * v4.0 stepped the near-black `--accent` instead, which held the rule but cost
+ * the encoding: three steps of a colourless token read as three greys. Both
+ * this and `liquidityRampColors` now share the azure ramp below, so the two
+ * composition donuts on the assets page can never drift apart.
  *
  * These are `var()` references, so they follow the active palette (Ledger or
  * Archive) instead of pinning literal hex the way the v3.x table did.
  */
 export const liquidityColors: Record<AssetLiquidity, string> = {
-  usable_now: 'var(--accent)', // spendable today — read this first
-  not_immediately_usable: 'var(--protect)', // reserve; neutral, never amber
-  long_term: 'var(--committed)', // long hold — palest
+  usable_now: 'var(--liquidity-1)', // spendable today — read this first
+  not_immediately_usable: 'var(--liquidity-2)', // reserve; neutral, never amber
+  long_term: 'var(--liquidity-3)', // long hold — palest
 }
 
 /**
- * Alternate liquidity palette: one hue, three weights.
+ * The liquidity ramp: one hue, three monotone lightness steps.
  *
  * `liquidityColors` encodes the ramp with three separate tokens (accent /
  * protect / committed), which are close in weight but not actually the same
  * hue — as rounded donut segments with air between them, the buckets read as
  * three unrelated greys rather than as one quantity split three ways.
  *
- * This set spends a single token and steps it down instead, which is the same
- * move the money-sources rank bars make: weight, not hue (§5.4). The eye reads
- * the ordering off saturation, so "usable now" carries the full accent and
- * long-term holdings recede toward the card.
+ * The earlier fix stepped `--accent` down with `color-mix`, but on this palette
+ * `--accent` IS `--action` (near-black #0f1011), so every step measured below
+ * the chroma floor — a hue that reads as grey has stopped doing encoding work.
+ * The ramp now spends a saturated azure instead, defined per palette in
+ * index.css so Ledger and Archive each get steps tuned to their own ground.
  *
- * `color-mix` toward `--card` rather than an alpha channel: this chart is used
- * on both the panel and the sunk surface, and a translucent fill would take a
- * different tone on each. Mixing toward the card keeps the ramp identical on
- * both, and keeps it following the active palette (Ledger or Archive).
+ * Liquidity is ORDINAL — the buckets have a fixed order — so lightness, not
+ * hue, carries the ordering: it is the one channel that survives greyscale,
+ * colour-blindness and a photocopier. "Usable now" takes the deepest step and
+ * long-term holdings recede toward the surface.
  */
 export const liquidityRampColors: Record<AssetLiquidity, string> = {
-  usable_now: 'var(--accent)',
-  not_immediately_usable: 'color-mix(in srgb, var(--accent) 55%, var(--card))',
-  long_term: 'color-mix(in srgb, var(--accent) 25%, var(--card))',
+  usable_now: 'var(--liquidity-1)',
+  not_immediately_usable: 'var(--liquidity-2)',
+  long_term: 'var(--liquidity-3)',
 }
 
 /**
