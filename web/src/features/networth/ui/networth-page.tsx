@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useAssetDeleteImpact } from '@money-space/core/features/assets/hooks/use-asset-delete-impact'
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
+import { AssetQuantityDialog } from '@/features/assets/ui/components/asset-quantity-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
 import { AssetsListSection } from '@/features/assets/ui/components/assets-list-section'
 import { AssetsSummaryStrip } from '@/features/assets/ui/components/assets-summary-strip'
@@ -77,6 +78,9 @@ export function NetWorthPage() {
     handleFormOpenChange,
     openSale,
     sale,
+    quantity,
+    openBuyMore,
+    openAdjustQuantity,
     deleteId,
     setDeleteId,
     deletingAsset,
@@ -184,10 +188,25 @@ export function NetWorthPage() {
         mode={mode}
         walletOptions={walletOptions}
         isEditing={isEditing}
+        onBuyMore={openBuyMore}
+        onAdjustQuantity={openAdjustQuantity}
         editingAsset={editingAsset}
         isSubmitting={isSubmitting}
         onSubmit={submit}
         onRemove={editingAsset ? () => setDeleteId(editingAsset.id) : undefined}
+      />
+
+      <AssetQuantityDialog
+        mode={quantity.mode}
+        onOpenChange={quantity.handleOpenChange}
+        asset={quantity.asset}
+        currentQuantity={quantity.currentQuantity}
+        walletOptions={quantity.walletOptions}
+        purchaseForm={quantity.purchaseForm}
+        adjustmentForm={quantity.adjustmentForm}
+        isSubmitting={quantity.isSubmitting}
+        onSubmitPurchase={quantity.submitPurchase}
+        onSubmitAdjustment={quantity.submitAdjustment}
       />
 
       <AssetSaleDialog

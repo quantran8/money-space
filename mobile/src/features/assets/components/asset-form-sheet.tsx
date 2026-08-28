@@ -66,6 +66,8 @@ export function AssetFormSheet({
   mode,
   walletOptions,
   isEditing,
+  onBuyMore,
+  onAdjustQuantity,
   isSubmitting,
   onSubmit,
   editingAsset,
@@ -78,6 +80,10 @@ export function AssetFormSheet({
   mode: ValuationMode
   walletOptions: WalletOption[]
   isEditing: boolean
+  /** Open the "buy more" flow — editing a holding routes here, not to a text box. */
+  onBuyMore?: () => void
+  /** Open the "correct this quantity" flow. */
+  onAdjustQuantity?: () => void
   isSubmitting: boolean
   onSubmit: () => void
   /** The stored record behind an edit — drives the §22.8 change sentence. */
@@ -191,6 +197,9 @@ export function AssetFormSheet({
             errors={errors}
             type={selectedType}
             setValue={setValue}
+            isEditing={isEditing}
+            onBuyMore={onBuyMore}
+            onAdjustQuantity={onAdjustQuantity}
             t={t}
           />
         ) : null}
@@ -496,12 +505,18 @@ function MarketFields({
   errors,
   type,
   setValue,
+  isEditing,
+  onBuyMore,
+  onAdjustQuantity,
   t,
 }: {
   control: Control
   errors: Errors
   type: AssetType
   setValue: UseFormSetValue<AssetForm>
+  isEditing: boolean
+  onBuyMore?: () => void
+  onAdjustQuantity?: () => void
   t: Translate
 }) {
   const fieldPrefix = `assets.form.market.${type}`
@@ -584,25 +599,52 @@ function MarketFields({
         t={t}
       />
 
-      <Controller
-        control={control}
-        name="quantity"
-        render={({ field }) => {
-          const wholeOnly = isWholeQuantityType(type)
-          return (
-            <DecimalInput
-              label={t(`${fieldPrefix}.quantity`)}
-              value={field.value}
-              // A share is indivisible: the decimal part is dropped as it is
-              // typed rather than accepted and rejected later.
-              onChange={wholeOnly ? (raw) => field.onChange(raw.split(',')[0]) : field.onChange}
-              placeholder="0"
-              suffix={wholeOnly ? t(`${fieldPrefix}.quantitySuffix`) : undefined}
-              error={errors.quantity?.message}
+      {/* Editing routes to the act — buy, sell, or correct — rather than letting
+          the holding be overwritten. Typing over it moved no money and left no
+          event when more was bought, and recorded a corrected typo as the PRICE
+          having moved. Mirrors the web form. */}
+      {isEditing ? (
+        <View className="gap-3 rounded-2xl bg-wash px-4 py-3">
+          <View className="flex-row items-baseline justify-between">
+            <Text className="text-ink2">{t(`${fieldPrefix}.quantity`)}</Text>
+            <Controller
+              control={control}
+              name="quantity"
+              render={({ field }) => (
+                <Text className="font-medium text-foreground">{field.value || '0'}</Text>
+              )}
             />
-          )
-        }}
-      />
+          </View>
+          <View className="flex-row gap-2">
+            <Button variant="secondary" onPress={onBuyMore}>
+              {t('assets.purchase.title')}
+            </Button>
+            <Button variant="secondary" onPress={onAdjustQuantity}>
+              {t('assets.quantityAdjustment.title')}
+            </Button>
+          </View>
+        </View>
+      ) : (
+        <Controller
+          control={control}
+          name="quantity"
+          render={({ field }) => {
+            const wholeOnly = isWholeQuantityType(type)
+            return (
+              <DecimalInput
+                label={t(`${fieldPrefix}.quantity`)}
+                value={field.value}
+                // A share is indivisible: the decimal part is dropped as it is
+                // typed rather than accepted and rejected later.
+                onChange={wholeOnly ? (raw) => field.onChange(raw.split(',')[0]) : field.onChange}
+                placeholder="0"
+                suffix={wholeOnly ? t(`${fieldPrefix}.quantitySuffix`) : undefined}
+                error={errors.quantity?.message}
+              />
+            )
+          }}
+        />
+      )}
 
       {type === 'gold' ? (
         <Controller

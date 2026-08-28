@@ -7,6 +7,7 @@ import {
   Landmark,
   ReceiptText,
   RefreshCw,
+  Scale,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -33,6 +34,8 @@ export const EVENT_TYPE_ICONS: Record<EventTypeKey, LucideIcon> = {
   asset_purchase: Gem,
   asset_sale: Gem,
   asset_update: RefreshCw,
+  // Scales, not arrows: a corrected holding is a re-weighing, not money moving.
+  asset_quantity_adjustment: Scale,
   payment_paid: ReceiptText,
   debt_update: Landmark,
   adjustment: RefreshCw,

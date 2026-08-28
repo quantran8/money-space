@@ -75,6 +75,10 @@ type AssetFormDialogProps = {
   mode: ValuationMode
   walletOptions: WalletOption[]
   isEditing: boolean
+  /** Open the "buy more" flow — editing a holding routes here instead of a text box. */
+  onBuyMore?: () => void
+  /** Open the "correct this quantity" flow. */
+  onAdjustQuantity?: () => void
   isSubmitting: boolean
   onSubmit: () => void
   /** The stored asset being edited — drives the §22.8 change sentence. */
@@ -91,6 +95,8 @@ export function AssetFormDialog({
   mode,
   walletOptions,
   isEditing,
+  onBuyMore,
+  onAdjustQuantity,
   isSubmitting,
   onSubmit,
   editingAsset,
@@ -226,6 +232,9 @@ export function AssetFormDialog({
                 errors={errors}
                 type={selectedType}
                 setValue={setValue}
+                isEditing={isEditing}
+                onBuyMore={onBuyMore}
+                onAdjustQuantity={onAdjustQuantity}
                 t={t}
               />
             ) : null}
@@ -624,12 +633,18 @@ function MarketFields({
   errors,
   type,
   setValue,
+  isEditing,
+  onBuyMore,
+  onAdjustQuantity,
   t,
 }: {
   control: Control
   errors: Errors
   type: AssetType
   setValue: UseFormSetValue<AssetForm>
+  isEditing: boolean
+  onBuyMore?: () => void
+  onAdjustQuantity?: () => void
   t: Translate
 }) {
   const fieldPrefix = `assets.form.market.${type}`
@@ -740,29 +755,60 @@ function MarketFields({
         t={t}
       />
 
-      <Controller
-        control={control}
-        name="quantity"
-        render={({ field }) => {
-          const wholeOnly = isWholeQuantityType(type)
-          return (
-            <DecimalField
-              id="asset-quantity"
-              label={t(`${fieldPrefix}.quantity`)}
-              value={field.value}
-              // A share is indivisible: the decimal part is dropped as it is
-              // typed rather than accepted and rejected later. A legacy
-              // fractional holding still shows as stored until it is edited,
-              // and the schema explains why it cannot be saved.
-              onChange={wholeOnly ? (raw) => field.onChange(raw.split(',')[0]) : field.onChange}
-              onBlur={field.onBlur}
-              placeholder="0"
-              suffix={wholeOnly ? t(`${fieldPrefix}.quantitySuffix`) : undefined}
-              error={errors.quantity?.message}
+      {/* On CREATE the holding is just a number being declared, so it is typed
+          here. On EDIT it is the result of everything that has happened to the
+          position, and overwriting it silently was the bug: buying more moved no
+          money and left no event, while a corrected typo was recorded as the
+          PRICE having moved. Editing routes to the act instead — buy, sell, or
+          correct — each of which writes what actually happened. */}
+      {isEditing ? (
+        <div className="space-y-3 rounded-[18px] bg-wash px-5 py-4">
+          <div className="flex items-baseline justify-between">
+            <span className="t-body-sm text-ink2">{t(`${fieldPrefix}.quantity`)}</span>
+            <Controller
+              control={control}
+              name="quantity"
+              render={({ field }) => (
+                <span className="money-number t-subhead font-medium text-foreground">
+                  {field.value || '0'}
+                </span>
+              )}
             />
-          )
-        }}
-      />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={onBuyMore}>
+              {t('assets.purchase.title')}
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={onAdjustQuantity}>
+              {t('assets.quantityAdjustment.title')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Controller
+          control={control}
+          name="quantity"
+          render={({ field }) => {
+            const wholeOnly = isWholeQuantityType(type)
+            return (
+              <DecimalField
+                id="asset-quantity"
+                label={t(`${fieldPrefix}.quantity`)}
+                value={field.value}
+                // A share is indivisible: the decimal part is dropped as it is
+                // typed rather than accepted and rejected later. A legacy
+                // fractional holding still shows as stored until it is edited,
+                // and the schema explains why it cannot be saved.
+                onChange={wholeOnly ? (raw) => field.onChange(raw.split(',')[0]) : field.onChange}
+                onBlur={field.onBlur}
+                placeholder="0"
+                suffix={wholeOnly ? t(`${fieldPrefix}.quantitySuffix`) : undefined}
+                error={errors.quantity?.message}
+              />
+            )
+          }}
+        />
+      )}
 
       {type === 'gold' ? <GoldUnitField control={control} errors={errors} t={t} /> : null}
 

@@ -40,7 +40,25 @@ export type AssetValuePoint = {
  * perspective: money flowing *out* of this asset is negative, money flowing
  * *in* is positive.
  */
+/**
+ * Two event types store a SIGNED delta in `amount` rather than a magnitude plus
+ * a direction: a revaluation (`asset_update`) and a corrected holding
+ * (`asset_quantity_adjustment`). Both link their asset through `toAssetId`, so
+ * deriving the sign from which side the asset sits on — the rule every event
+ * that MOVES money follows — flips a decrease into an increase. Correcting 10
+ * chỉ down to 1 chỉ was reported as "+1,36 tỷ".
+ */
+const SIGNED_AMOUNT_EVENT_TYPES: ReadonlySet<string> = new Set([
+  'asset_update',
+  'asset_quantity_adjustment',
+])
+
 function amountForAsset(event: MoneyEventItem, assetId: string): number {
+  // The stored sign IS the answer for these — it already says which way the
+  // value went, and `Math.abs` would throw that away.
+  if (SIGNED_AMOUNT_EVENT_TYPES.has(event.type)) {
+    return event.toAssetId === assetId ? event.amount : 0
+  }
   const magnitude = Math.abs(event.amount)
   if (event.toAssetId === assetId) return magnitude
   if (event.fromAssetId === assetId) return -magnitude

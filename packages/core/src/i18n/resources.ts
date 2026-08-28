@@ -328,6 +328,36 @@ export const resources = {
         },
       },
       assets: {
+        purchase: {
+          title: 'Mua thêm',
+          description:
+            'Ghi nhận số lượng mua thêm vào {{name}}. Ví thanh toán sẽ bị trừ và giá vốn được tính lại bình quân.',
+          quantity: 'Số lượng mua thêm',
+          quantityPositive: 'Số lượng phải lớn hơn 0.',
+          unitPrice: 'Giá mua mỗi đơn vị',
+          fundingAsset: 'Trả từ ví',
+          fundingAssetNone: 'Không trả từ ví (được tặng, thưởng)',
+          currentHolding: 'Đang giữ: {{quantity}}',
+          submit: 'Ghi nhận mua thêm',
+          success: 'Đã ghi nhận mua thêm.',
+          error: 'Không thể ghi nhận mua thêm.',
+        },
+        quantityAdjustment: {
+          title: 'Điều chỉnh số lượng',
+          description:
+            'Dùng khi số lượng đã nhập bị sai — không phải mua bán. Lịch sử cũ được giữ nguyên, hệ thống ghi thêm một bản ghi điều chỉnh.',
+          quantity: 'Số lượng đúng',
+          quantityNonNegative: 'Số lượng không được âm.',
+          unchanged: 'Số lượng chưa thay đổi.',
+          reason: 'Lý do (không bắt buộc)',
+          reasonPlaceholder: 'Ví dụ: nhập nhầm 10 thay vì 1',
+          currentHolding: 'Đang ghi nhận: {{quantity}}',
+          notAPurchase:
+            'Nếu bạn vừa mua thêm hoặc bán bớt, hãy dùng “Mua thêm” / “Bán bớt” để dòng tiền được ghi đúng.',
+          submit: 'Lưu điều chỉnh',
+          success: 'Đã điều chỉnh số lượng.',
+          error: 'Không thể điều chỉnh số lượng.',
+        },
         header: {
           eyebrow: 'Tài sản và nguồn tiền',
           title: 'Tiền của gia đình đang nằm ở đâu',
@@ -2680,6 +2710,7 @@ export const resources = {
           asset_purchase: 'Mua tài sản',
           asset_sale: 'Bán tài sản',
           asset_update: 'Định giá lại',
+          asset_quantity_adjustment: 'Điều chỉnh số lượng',
           payment_paid: 'Đã thanh toán',
           debt_update: 'Cập nhật khoản nợ',
           adjustment: 'Điều chỉnh',
@@ -3163,6 +3194,36 @@ export const resources = {
         footerNote: 'These figures reflect everything your household has recorded in Oursight.',
       },
       assets: {
+        purchase: {
+          title: 'Buy more',
+          description:
+            'Record more units bought into {{name}}. The paying wallet is debited and the cost basis is re-averaged.',
+          quantity: 'Quantity added',
+          quantityPositive: 'Quantity must be greater than 0.',
+          unitPrice: 'Price per unit',
+          fundingAsset: 'Paid from',
+          fundingAssetNone: 'Not paid from a wallet (gift, dividend)',
+          currentHolding: 'Currently held: {{quantity}}',
+          submit: 'Record purchase',
+          success: 'Purchase recorded.',
+          error: 'Could not record the purchase.',
+        },
+        quantityAdjustment: {
+          title: 'Adjust quantity',
+          description:
+            'For a holding that was entered wrong — not a purchase or a sale. Past history is left as it stands; a new adjustment record is added.',
+          quantity: 'Correct quantity',
+          quantityNonNegative: 'Quantity cannot be negative.',
+          unchanged: 'The quantity has not changed.',
+          reason: 'Reason (optional)',
+          reasonPlaceholder: 'e.g. entered 10 instead of 1',
+          currentHolding: 'Currently recorded: {{quantity}}',
+          notAPurchase:
+            'If you bought more or sold some, use “Buy more” / “Sell” so the money movement is recorded properly.',
+          submit: 'Save adjustment',
+          success: 'Quantity adjusted.',
+          error: 'Could not adjust the quantity.',
+        },
         header: {
           eyebrow: 'Assets and cash sources',
           title: 'Where your household money is sitting',
@@ -5427,6 +5488,7 @@ export const resources = {
           asset_purchase: 'Asset purchase',
           asset_sale: 'Asset sale',
           asset_update: 'Revaluation',
+          asset_quantity_adjustment: 'Quantity adjustment',
           payment_paid: 'Payment made',
           debt_update: 'Debt update',
           adjustment: 'Adjustment',

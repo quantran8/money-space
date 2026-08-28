@@ -36,6 +36,7 @@ import {
   SummaryStrip,
 } from '@/components/ui'
 import { AssetFormSheet } from '@/features/assets/components/asset-form-sheet'
+import { AssetQuantitySheet } from '@/features/assets/components/asset-quantity-sheet'
 import { AssetGoalUsage } from '@/features/assets/components/asset-goal-usage'
 import { AssetPriceUpdateSheet } from '@/features/assets/components/asset-price-update-sheet'
 import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
@@ -83,6 +84,10 @@ export default function AssetDetailScreen() {
     handleFormOpenChange,
     openSale,
     sale,
+    // Aliased: `quantity` is already the P&L holding lower in this file.
+    quantity: quantityFlow,
+    openBuyMore,
+    openAdjustQuantity,
   } = useAssetsPage()
 
   const filteredHistory = useMemo(() => {
@@ -482,9 +487,24 @@ export default function AssetDetailScreen() {
         mode={mode}
         walletOptions={walletOptions}
         isEditing={isEditing}
+        onBuyMore={openBuyMore}
+        onAdjustQuantity={openAdjustQuantity}
         editingAsset={editingAsset}
         isSubmitting={isSubmitting}
         onSubmit={submit}
+      />
+
+      <AssetQuantitySheet
+        mode={quantityFlow.mode}
+        onClose={quantityFlow.close}
+        asset={quantityFlow.asset}
+        currentQuantity={quantityFlow.currentQuantity}
+        walletOptions={quantityFlow.walletOptions}
+        purchaseForm={quantityFlow.purchaseForm}
+        adjustmentForm={quantityFlow.adjustmentForm}
+        isSubmitting={quantityFlow.isSubmitting}
+        onSubmitPurchase={quantityFlow.submitPurchase}
+        onSubmitAdjustment={quantityFlow.submitAdjustment}
       />
 
       <AssetSaleSheet

@@ -18,6 +18,7 @@ import { useAssetDetail, type AssetEventEntry } from '@money-space/core/features
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import { canUpdatePriceManually } from '@money-space/core/features/assets/model/assets'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
+import { AssetQuantityDialog } from '@/features/assets/ui/components/asset-quantity-dialog'
 import { AssetGoalUsageSection } from '@/features/assets/ui/components/asset-goal-usage-section'
 import { AssetPriceUpdateDialog } from '@/features/assets/ui/components/asset-price-update-dialog'
 import { AssetValueChart } from '@/features/assets/ui/components/asset-value-chart'
@@ -193,6 +194,10 @@ export function AssetDetailPage() {
     formOpen,
     openEdit,
     handleFormOpenChange,
+    // Aliased: `quantity` is already the P&L holding lower in this file.
+    quantity: quantityFlow,
+    openBuyMore,
+    openAdjustQuantity,
   } = useAssetsPage()
 
   const filteredHistory = useMemo(() => {
@@ -730,9 +735,23 @@ export function AssetDetailPage() {
         mode={mode}
         walletOptions={walletOptions}
         isEditing={isEditing}
+        onBuyMore={openBuyMore}
+        onAdjustQuantity={openAdjustQuantity}
         editingAsset={editingAsset}
         isSubmitting={isSubmitting}
         onSubmit={submit}
+      />
+      <AssetQuantityDialog
+        mode={quantityFlow.mode}
+        onOpenChange={quantityFlow.handleOpenChange}
+        asset={quantityFlow.asset}
+        currentQuantity={quantityFlow.currentQuantity}
+        walletOptions={quantityFlow.walletOptions}
+        purchaseForm={quantityFlow.purchaseForm}
+        adjustmentForm={quantityFlow.adjustmentForm}
+        isSubmitting={quantityFlow.isSubmitting}
+        onSubmitPurchase={quantityFlow.submitPurchase}
+        onSubmitAdjustment={quantityFlow.submitAdjustment}
       />
       {canUpdatePrice ? (
         <AssetPriceUpdateDialog

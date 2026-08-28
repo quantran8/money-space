@@ -6,6 +6,7 @@ import { notify } from '#/shared/notify'
 
 import { useAssets } from '#/features/assets/hooks/use-assets'
 import { useAssetSale } from '#/features/assets/hooks/use-asset-sale'
+import { useAssetQuantity } from '#/features/assets/hooks/use-asset-quantity'
 import {
   buildAssetSchema,
   canBePurchased,
@@ -31,6 +32,10 @@ export function useAssetsPage() {
   const { assets, snapshots, summary, asOf, isLoading, createAsset, updateAsset, deleteAsset } =
     useAssets()
   const sale = useAssetSale()
+  // The two non-sale ways a holding moves. They live beside `sale` because the
+  // three together are the complete set of things that may change a quantity —
+  // the asset form no longer does.
+  const quantity = useAssetQuantity()
 
   function openSale(assetId: string) {
     const asset = assets.find((item) => item.id === assetId)
@@ -242,6 +247,14 @@ export function useAssetsPage() {
     // sale
     openSale,
     sale,
+    // quantity: buy more / correct the holding
+    quantity,
+    openBuyMore: () => {
+      if (editingAsset) quantity.openPurchase(editingAsset)
+    },
+    openAdjustQuantity: () => {
+      if (editingAsset) quantity.openAdjustment(editingAsset)
+    },
     // delete
     deleteId,
     setDeleteId,
