@@ -123,50 +123,7 @@ body{
   );
 }
 
-/* App index.css: .label / .label-vi — the small metadata slot above a figure. */
-.label{
-  font-size:12px;
-  font-weight:500;
-  letter-spacing:.04em;
-  color:var(--ink3);
-}
-.mono{
-  font-family:"IBM Plex Mono",ui-monospace,monospace;
-}
 
-/* App index.css: .rail-item — 44px pill, ink2 by default, action fill when current. */
-.rail-item{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:44px;
-  height:44px;
-  border-radius:999px;
-  color:var(--ink2);
-}
-.rail-item[aria-current]{
-  background:var(--action);
-  color:#fff;
-}
-
-/* App index.css: .shell-backdrop + .glass + .glass-edge — the rail is chrome,
-   tinted by the hero hue behind it rather than frosted white. */
-.shell-backdrop{
-  background:
-    radial-gradient(38% 48% at 1% 3%,rgba(155,189,226,.9) 0%,rgba(155,189,226,0) 70%),
-    radial-gradient(30% 40% at 9% 58%,rgba(181,205,232,.75) 0%,rgba(181,205,232,0) 72%),
-    radial-gradient(34% 42% at 0% 100%,rgba(172,198,227,.8) 0%,rgba(172,198,227,0) 68%),
-    var(--canvas);
-}
-.glass{
-  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(233,241,248,.58));
-  backdrop-filter:blur(18px) saturate(1.2);
-}
-.glass-edge{
-  box-shadow:
-    inset -1px 0 0 rgba(255,255,255,.7),
-    12px 0 40px rgba(20,34,43,.05);
-}
 
 /* The app mark (web/src/components/ui/app-logo.tsx). The PNG is a square tile
    that already has its own rounded corner and pale ground, so it only gets
@@ -204,17 +161,12 @@ body{
   transform:none;
 }
 
+/* The capture already includes the app shell's blue ground and its rounded
+   corner, so the stage adds no frame of its own — a second gradient behind it
+   read as a double border. */
 .product-stage{
-  background:linear-gradient(180deg,var(--page-a),var(--page-b));
   border-radius:34px;
-  padding:26px;
-}
-/* App shell: 72px glass rail + canvas content, exactly as app-shell.tsx. */
-.app-shell{
-  border-radius:27px;
   overflow:hidden;
-  display:grid;
-  grid-template-columns:72px 1fr;
 }
 
 /**
@@ -227,10 +179,6 @@ body{
  * ends on the card boundary. No fade: with nothing below it, a fade would be
  * promising more than the scene holds.
  */
-.app-viewport{
-  position:relative;
-  overflow:hidden;
-}
 .chart-wrap{
   position:relative;
   width:100%;
@@ -285,8 +233,6 @@ body{
   .bento{grid-template-columns:repeat(2,minmax(0,1fr))}
   .bento-card{grid-column:span 1!important}
   .desktop-grid{grid-template-columns:1fr!important}
-  .app-shell{grid-template-columns:1fr}
-  .app-rail{display:none!important}
   .hero-title{font-size:60px!important}
 }
 @media(max-width:760px){
@@ -450,14 +396,8 @@ body{
      text column narrower than the screen. */
   .marketing-copy{max-width:none!important}
 
-  /* Product preview. No shell, no rail, no stage chrome — the cards sit on the
-     page the way they sit in the app, and the reader scrolls them. */
+  /* Product preview. The screenshot runs edge to edge with no stage chrome. */
   .product-stage{padding:0;border-radius:0;background:none;box-shadow:none}
-  /* .shell-backdrop paints its tint via `background`, so overriding background
-     on .app-shell is enough to drop it — no pseudo-elements involved. */
-  .app-shell.shell-backdrop{border-radius:0;background:none;box-shadow:none;border:0}
-  .app-viewport{background:transparent!important}
-  .app-viewport > div{padding:0!important;gap:14px!important}
   .app-card{padding:18px!important;border-radius:18px}
   /* The scene section carried desktop breathing room above the stage. */
   #dashboard{padding-left:18px!important;padding-right:18px!important}
@@ -632,234 +572,18 @@ body{
 <section id="dashboard" style="padding:18px 28px 132px">
   <div style="max-width:1280px;margin:auto">
     <div class="reveal product-stage">
-
-      <div class="app-shell shell-backdrop">
-        <!-- Rail — app-shell.tsx NAV_ITEMS, in order, plus the what-if CTA. -->
-        <aside class="app-rail glass glass-edge" style="padding:20px 0;display:flex;flex-direction:column;align-items:center">
-          <img src="logo.png" alt="" aria-hidden="true" draggable="false" class="app-logo" style="width:36px;height:36px;border-radius:11px">
-
-          <nav style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:6px">
-            <span class="rail-item" aria-current="page" title="Tổng quan"><i data-lucide="house" class="icon-rail"></i></span>
-            <span class="rail-item" title="Sắp tới"><i data-lucide="calendar-clock" class="icon-rail"></i></span>
-            <span class="rail-item" title="Tài sản &amp; Nợ"><i data-lucide="wallet" class="icon-rail"></i></span>
-            <span class="rail-item" title="Mục tiêu"><i data-lucide="target" class="icon-rail"></i></span>
-            <span class="rail-item" title="Sự kiện tài chính"><i data-lucide="chart-no-axes-gantt" class="icon-rail"></i></span>
-            <span class="rail-item" title="Cài đặt"><i data-lucide="settings" class="icon-rail"></i></span>
-          </nav>
-
-          <div style="flex:1"></div>
-
-          <!-- The rail foot: what-if on the action fill, then sign-out. -->
-          <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-            <span style="width:44px;height:44px;border-radius:999px;background:var(--action);color:#fff;display:grid;place-items:center" title="Thử một khoản chi">
-              <i data-lucide="calculator" class="icon-rail"></i>
-            </span>
-            <span class="rail-item" title="Đăng xuất"><i data-lucide="log-out" class="icon-rail"></i></span>
-          </div>
-        </aside>
-
-        <!-- Content area keeps --canvas as its ground; cards sit on it directly.
-             Only two cards: today's safe-to-spend, and the month's low point.
-             The rest of the app's dashboard is deliberately not here. -->
-        <div class="app-viewport" style="background:var(--canvas);min-width:0">
-        <div style="padding:28px;display:grid;gap:12px">
-
-          <!-- §12.1 Bức tranh hôm nay -->
-          <article class="app-card" style="padding:28px">
-            <h2 class="t-title">Bức tranh hôm nay</h2>
-
-            <div class="picture-grid" style="margin-top:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr);gap:48px;align-items:center">
-              <div style="min-width:0">
-                <p class="label">Sau các khoản đã có nhiệm vụ</p>
-
-                <!-- Hero at t-display with the unit set separately and smaller. -->
-                <div style="margin-top:8px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px">
-                  <span class="num t-display" style="letter-spacing:-.045em">96,0</span>
-                  <span class="t-metric" style="padding-bottom:8px">tr</span>
-                </div>
-
-                <p class="t-body-sm ink2" style="margin-top:16px;line-height:1.25">
-                  trên tổng 240,0 tr có thể dùng ngay
-                </p>
-              </div>
-
-              <!-- MoneyCompositionRing: 72% hole, gapped and round-capped arcs,
-                   flexible share stated in the centre. -->
-              <div style="display:grid;grid-template-columns:170px minmax(0,1fr);gap:32px;align-items:center">
-                <div style="position:relative;width:170px;height:170px">
-                  <canvas id="compositionRing" class="chart-in"></canvas>
-                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-                    <span class="num t-figure" style="line-height:1;letter-spacing:-.04em">40%</span>
-                    <span class="t-caption ink3" style="margin-top:4px">linh hoạt</span>
-                  </div>
-                </div>
-
-                <dl style="margin:0;min-width:0">
-                  <div class="keep-cols" style="display:grid;grid-template-columns:auto auto 1fr;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--divider)">
-                    <dt style="display:flex;gap:10px;align-items:center;white-space:nowrap" class="t-body-sm ink2">
-                      <span style="display:block;width:8px;height:8px;border-radius:999px;background:var(--committed);flex:none"></span>
-                      <span>Đã có nhiệm vụ</span>
-                    </dt>
-                    <span class="num t-caption ink3">60%</span>
-                    <dd class="num t-body-sm" style="margin:0;justify-self:end;text-align:right">144,0 tr</dd>
-                  </div>
-                  <div class="keep-cols" style="display:grid;grid-template-columns:auto auto 1fr;gap:16px;align-items:center;padding:14px 0">
-                    <dt style="display:flex;gap:10px;align-items:center;white-space:nowrap" class="t-body-sm med">
-                      <span style="display:block;width:8px;height:8px;border-radius:999px;background:var(--data);flex:none"></span>
-                      <span>Linh hoạt</span>
-                    </dt>
-                    <span class="num t-caption ink3">40%</span>
-                    <dd class="num t-body-sm med" style="margin:0;justify-self:end;text-align:right">96,0 tr</dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
-
-            <!-- SourceFreshnessList: the collapsed summary line — how many
-                 sources the hero is made of, and how old the oldest one is. -->
-            <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
-              <p class="t-body-sm" style="margin:0">
-                <span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:var(--positive);vertical-align:middle;margin-right:8px"></span>
-                <span class="med">5 nguồn</span>
-                <span class="ink3" style="margin:0 6px">·</span>
-                <span class="ink2">cũ nhất</span>
-                <span class="med">hôm nay</span>
-              </p>
-              <span class="t-body-sm med" style="color:var(--action)">Hiện chi tiết</span>
-            </div>
-          </article>
-
-          <!-- §12.2 Dòng tiền 30 ngày tới -->
-          <article class="app-card" style="padding:28px">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
-              <h2 class="t-title">Dòng tiền 30 ngày tới</h2>
-              <span class="t-body med" style="color:var(--action);flex:none">Xem timeline</span>
-            </div>
-
-            <div class="cashflow-grid" style="margin-top:24px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:48px">
-
-              <div style="min-width:0">
-                <!-- The low point leads at hero scale, with the two horizon
-                     totals beside it: the figure says whether the month works,
-                     the totals say what drives it. -->
-                <div style="display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:24px;align-items:end">
-                  <div style="min-width:0">
-                    <p class="label">Thấp nhất dự kiến</p>
-                    <p class="num t-hero" style="margin-top:8px;line-height:1.02;letter-spacing:-.045em">82,0 tr</p>
-                    <p class="t-body-sm ink2" style="margin-top:12px;display:flex;align-items:flex-start;gap:6px;line-height:1.25">
-                      <i data-lucide="calendar-clock" class="icon-small ink3" style="margin-top:3px;flex:none"></i>
-                      <span>Vào 12/09, thấp hơn hôm nay <span class="num med" style="color:var(--ink)">14,0 tr</span>.</span>
-                    </p>
-                  </div>
-
-                  <!-- HorizonTotals: in versus out, each with its item count. -->
-                  <div style="display:grid;gap:20px">
-                    <div style="display:flex;align-items:flex-start;gap:12px;min-width:0">
-                      <i data-lucide="arrow-down-left" class="icon-small" style="margin-top:2px;flex:none;color:var(--positive-ink)"></i>
-                      <div style="min-width:0">
-                        <p class="t-caption ink3" style="margin:0">Vào</p>
-                        <p class="num t-metric" style="margin:2px 0 0;line-height:1.15;color:var(--positive-ink)">+42,0 <span class="mono t-caption-sm ink3">tr</span></p>
-                        <p class="t-caption ink2" style="margin:4px 0 0">2 khoản đã biết</p>
-                      </div>
-                    </div>
-                    <div style="display:flex;align-items:flex-start;gap:12px;min-width:0">
-                      <i data-lucide="arrow-up-right" class="icon-small" style="margin-top:2px;flex:none;color:var(--alert)"></i>
-                      <div style="min-width:0">
-                        <p class="t-caption ink3" style="margin:0">Ra</p>
-                        <p class="num t-metric" style="margin:2px 0 0;line-height:1.15;color:var(--alert)">−56,0 <span class="mono t-caption-sm ink3">tr</span></p>
-                        <p class="t-caption ink2" style="margin:4px 0 0">4 khoản đã biết</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- CashflowDeltaChart: change since today, stepped, zero
-                     baseline, amber dot on the low point. -->
-                <div style="margin-top:28px">
-                  <p class="label">Thay đổi so với hôm nay · tr</p>
-                  <div class="chart-delta" style="margin-top:12px">
-                    <canvas id="dashboardForecast" class="chart-in"></canvas>
-                  </div>
-                  <!-- Positioned on the chart's day scale, not spaced evenly:
-                       12/09 is day 15 of 29, so it sits at 51.7%. -->
-                  <div style="position:relative;height:16px;margin-top:2px">
-                    <span class="mono t-caption-sm ink3" style="position:absolute;left:0">28/08</span>
-                    <span class="mono t-caption-sm ink3" style="position:absolute;left:51.72%;transform:translateX(-50%)">12/09</span>
-                    <span class="mono t-caption-sm ink3" style="position:absolute;right:0">26/09</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- The event rail — a thread, not a table. Each node carries
-                   direction, and "còn lại" sits under the amount. -->
-              <div>
-                <h3 class="t-subtitle" style="display:flex;align-items:center;gap:8px;margin:0">
-                  <i data-lucide="milestone" class="icon-small" style="flex:none;color:var(--data)"></i>
-                  Điều gì sẽ xảy ra
-                </h3>
-
-                <ol class="rail-list" data-stagger>
-                  <span class="rail-thread"></span>
-
-                  <li class="rise" style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
-                    <span class="rail-node" style="background:var(--positive)"></span>
-                    <div style="min-width:0">
-                      <p class="mono t-caption-sm ink3" style="margin:0">31/08</p>
-                      <p class="t-body-sm med" style="margin:2px 0 0">Lương tháng 8</p>
-                    </div>
-                    <div style="flex:none;padding-top:16px;text-align:right">
-                      <p class="num t-body-sm med" style="margin:0;color:var(--positive-ink)">+32,0 <span class="mono t-caption-sm ink3">tr</span></p>
-                      <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 128,0 tr</p>
-                    </div>
-                  </li>
-
-                  <li class="rise" style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
-                    <span class="rail-node" style="background:var(--data)"></span>
-                    <div style="min-width:0">
-                      <p class="mono t-caption-sm ink3" style="margin:0">05/09</p>
-                      <p class="t-body-sm med" style="margin:2px 0 0">Trả góp nhà</p>
-                    </div>
-                    <div style="flex:none;padding-top:16px;text-align:right">
-                      <p class="num t-body-sm med" style="margin:0;color:var(--alert)">−18,0 <span class="mono t-caption-sm ink3">tr</span></p>
-                      <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 110,0 tr</p>
-                    </div>
-                  </li>
-
-                  <li class="rise" style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding-bottom:24px">
-                    <span class="rail-node" style="background:var(--data)"></span>
-                    <div style="min-width:0">
-                      <p class="mono t-caption-sm ink3" style="margin:0">12/09</p>
-                      <p class="t-body-sm med" style="margin:2px 0 0">Bảo hiểm nhân thọ</p>
-                      <p class="t-caption" style="margin:2px 0 0;color:var(--attention)">cần xác nhận</p>
-                    </div>
-                    <div style="flex:none;padding-top:16px;text-align:right">
-                      <p class="num t-body-sm med" style="margin:0;color:var(--alert)">−28,0 <span class="mono t-caption-sm ink3">tr</span></p>
-                      <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 82,0 tr</p>
-                    </div>
-                  </li>
-
-                  <li class="rise" style="position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px">
-                    <span class="rail-node" style="background:var(--positive)"></span>
-                    <div style="min-width:0">
-                      <p class="mono t-caption-sm ink3" style="margin:0">20/09</p>
-                      <p class="t-body-sm med" style="margin:2px 0 0">Thu nhập thêm</p>
-                    </div>
-                    <div style="flex:none;padding-top:16px;text-align:right">
-                      <p class="num t-body-sm med" style="margin:0;color:var(--positive-ink)">+10,0 <span class="mono t-caption-sm ink3">tr</span></p>
-                      <p class="num t-caption-sm ink3" style="margin:4px 0 0;white-space:nowrap">còn 92,0 tr</p>
-                    </div>
-                  </li>
-                </ol>
-
-                <p class="t-body med" style="margin:16px 0 0;color:var(--action)">2 khoản nữa · xem timeline</p>
-              </div>
-            </div>
-          </article>
-
-
-        </div>
-        </div>
-      </div>
+      <!-- A capture of the real app rather than a rebuild of it. The scene was
+           previously reconstructed in markup — the shell, the rail, both cards
+           and two live Chart.js canvases — which meant every app change had to
+           be mirrored here by hand to stay honest. A screenshot cannot drift.
+           Sized from the file's own 1280x1006 so the box reserves the right
+           space before the image decodes and the section does not jump. -->
+      <img
+        src="pagecap-screenshot.png"
+        width="1280" height="1006"
+        alt="Màn hình Oursight: thẻ Bức tranh hôm nay với 96,0 tr linh hoạt trên tổng 240,0 tr, và thẻ Dòng tiền 30 ngày tới với đáy 82,0 tr vào 12/09."
+        style="display:block;width:100%;height:auto;border-radius:22px"
+        decoding="async">
     </div>
   </div>
 </section>
@@ -1411,10 +1135,8 @@ body{
     });
   }
 
-  // Both rings are the same component — the hero scene and the Flexible Money
-  // section — so they render through the same Chart.js config rather than one
-  // of them being drawn by hand.
-  compositionRing('compositionRing');
+  // Only the Flexible Money section draws a ring now; the hero scene's copy of
+  // it is part of the screenshot.
   whenVisible('flexibleRing', ()=>compositionRing('flexibleRing'));
 
   // A vertical gradient whose colour changes at the zero pixel: surplus reads
@@ -1542,8 +1264,8 @@ body{
     });
   }
 
-  // Twice: the hero scene's forecast card, and the "30 ngày tới" feature.
-  deltaChart('dashboardForecast');
+  // Only the "30 ngày tới" feature now; the hero scene's forecast is part of
+  // the screenshot.
   whenVisible('featureForecast', ()=>deltaChart('featureForecast'));
 
   /**
