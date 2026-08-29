@@ -42,6 +42,16 @@ export function useAssetsPage() {
     if (asset) sale.openSale(asset)
   }
 
+  /**
+   * Buy more of a holding, addressed by id — the row menu and the detail page
+   * both have an id, not the record. `openBuyMore` below stays for the edit
+   * dialog, which already holds the asset it is editing.
+   */
+  function openPurchase(assetId: string) {
+    const asset = assets.find((item) => item.id === assetId)
+    if (asset) quantity.openPurchase(asset)
+  }
+
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -247,6 +257,8 @@ export function useAssetsPage() {
     // sale
     openSale,
     sale,
+    // buy more, addressed by id
+    openPurchase,
     // quantity: buy more / correct the holding
     quantity,
     openBuyMore: () => {

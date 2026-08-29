@@ -17,7 +17,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
 const STATE_TONE: Record<FinancialState, string> = {
   on_track: 'text-action',
   watch: 'text-[hsl(var(--foreground))]',
-  tight: 'text-attention',
+  tight: 'text-attention-ink',
   incomplete: 'text-ink2',
 }
 

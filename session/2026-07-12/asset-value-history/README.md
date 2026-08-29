@@ -30,7 +30,7 @@ Sync the frontend to a backend change to the asset value-history model:
   `MoneyEventItem['type']`.
 - `src/features/events/api/events.repository.ts` — added `asset_update` to
   `EventPayload['type']`.
-- `src/features/events/model/events.ts` — added `asset_update: 'Định giá lại'` to
+- `src/features/events/model/events.ts` — added `asset_update: 'Cập nhật giá trị'` to
   `eventTypeLabels` (a `Record<MoneyEventItem['type'], string>` — required by the
   union change).
 - `src/features/events/model/events-form.ts` — `toMoneyEventSeed` maps an
@@ -67,7 +67,7 @@ Port these to the mobile repo to match:
 - Rename the value-history table type/reference to `asset_value_history` and add
   `money_event_id` to the row type.
 - Add `asset_update` to the mobile money-event type union + any exhaustive label
-  maps, with a "Định giá lại" / "Revaluation" label. Keep it out of the
+  maps, with a "Cập nhật giá trị" / "Revaluation" label. Keep it out of the
   create-event form's selectable types (system-generated only).
 - If mobile shows a value-over-time chart, it reads the same unchanged
   `value-history` endpoint shape — no data-shape change needed.

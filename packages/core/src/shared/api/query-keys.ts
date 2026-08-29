@@ -97,6 +97,22 @@ export const queryKeys = {
     ['households', householdId, 'events', month ?? 'all'] as const,
   eventsSummary: (householdId: string, month?: string) =>
     ['households', householdId, 'events', 'summary', month ?? 'current'] as const,
+  /**
+   * What deleting one event would do to its wallets.
+   *
+   * Under the `events` prefix so any event write refetches it — the answer is a
+   * replay of the wallet's whole ledger, so a sibling event changing is exactly
+   * as significant as this one changing.
+   */
+  eventDeleteImpact: (householdId: string, eventId: string) =>
+    ['households', householdId, 'events', 'delete-impact', eventId] as const,
+  /**
+   * Which events sit on a negative wallet balance. Under the `events` prefix so
+   * any event write refetches it — a sibling event changing re-bases the whole
+   * wallet, so it is exactly as significant as this one changing.
+   */
+  eventOverdrafts: (householdId: string) =>
+    ['households', householdId, 'events', 'overdrafts'] as const,
   eventCategories: (householdId: string) =>
     ['households', householdId, 'event-categories'] as const,
   dashboard: (householdId: string) => ['households', householdId, 'dashboard'] as const,

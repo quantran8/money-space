@@ -80,7 +80,7 @@ export function GoalScheduledOutflowsSection({
             <h2 className="t-title">
               {t('goals.scheduledOutflows.heading')}
             </h2>
-            <span className="rounded-full bg-attention-soft px-2 py-0.5 t-caption-sm font-medium text-attention">
+            <span className="rounded-full bg-attention-soft px-2 py-0.5 t-caption-sm font-medium text-attention-ink">
               {t('goals.scheduledOutflows.count', { count: impact.events.length })}
             </span>
           </div>
@@ -91,7 +91,7 @@ export function GoalScheduledOutflowsSection({
             <span className="font-mono t-caption-sm text-ink3">{dayMonth(lead.expectedDate)}</span>
             <span className="font-medium">{lead.assetName}</span>
             <span className="text-ink3">·</span>
-            <span className="num font-medium text-alert">
+            <span className="num font-medium text-alert-ink">
               −{formatAmount(impact.outflowAmount)}
             </span>
             <span className="text-ink3">·</span>
@@ -139,8 +139,8 @@ export function GoalScheduledOutflowsSection({
 
             <div className="rounded-control bg-attention-soft p-4">
               <div className="flex items-baseline justify-between gap-4">
-                <p className="label-vi text-attention">{t('goals.scheduledOutflows.afterLabel')}</p>
-                <span className="num t-caption-sm font-medium text-attention">
+                <p className="label-vi text-attention-ink">{t('goals.scheduledOutflows.afterLabel')}</p>
+                <span className="num t-caption-sm font-medium text-attention-ink">
                   −{formatAmount(impact.outflowAmount)}
                 </span>
               </div>

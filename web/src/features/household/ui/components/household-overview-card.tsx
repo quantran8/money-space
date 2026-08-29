@@ -56,11 +56,11 @@ export function HouseholdOverviewCard({ form }: HouseholdOverviewCardProps) {
           id="settings-name"
           aria-label={t('settings.household.name')}
           aria-invalid={Boolean(errors.householdName)}
-          className="w-full rounded-control border border-transparent bg-transparent px-3 py-1.5 t-title text-ink outline-none transition-[background-color,border-color,box-shadow] duration-150 placeholder:text-ink3 hover:bg-canvas focus-visible:border-data-primary focus-visible:bg-card focus-visible:shadow-[0_0_0_3px_rgba(115,164,215,0.16)] aria-[invalid=true]:border-alert"
+          className="w-full rounded-control border border-transparent bg-transparent px-3 py-1.5 t-title text-ink outline-none transition-[background-color,border-color,box-shadow] duration-150 placeholder:text-ink3 hover:bg-canvas focus-visible:border-data-primary focus-visible:bg-card focus-visible:shadow-[0_0_0_3px_rgba(115,164,215,0.16)] aria-[invalid=true]:border-alert-ink"
           {...register('householdName')}
         />
         {errors.householdName?.message ? (
-          <p className="mt-2 px-3 t-caption text-alert">{errors.householdName.message}</p>
+          <p className="mt-2 px-3 t-caption text-alert-ink">{errors.householdName.message}</p>
         ) : null}
       </div>
 

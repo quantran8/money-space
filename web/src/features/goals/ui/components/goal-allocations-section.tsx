@@ -291,7 +291,7 @@ function SourceRow({
         <div className="truncate t-body-sm">{name}</div>
         <div className="mt-0.5 truncate t-caption-sm text-ink3">{note}</div>
         {warning ? (
-          <div className="mt-1 flex items-center gap-1.5 t-caption-sm text-attention">
+          <div className="mt-1 flex items-center gap-1.5 t-caption-sm text-attention-ink">
             <span className="size-1.5 shrink-0 rounded-full bg-attention" />
             {warning}
           </div>
@@ -323,7 +323,7 @@ function SourceRow({
             <DropdownMenuItem onSelect={onEdit}>
               <Pencil className="size-4" /> {t('common.edit')}
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-alert focus:text-alert" onSelect={onRemove}>
+            <DropdownMenuItem className="text-alert-ink focus:text-alert-ink" onSelect={onRemove}>
               <Trash2 className="size-4" /> {t('goals.allocations.remove')}
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -9,7 +9,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useAssetDeleteImpact } from '@money-space/core/features/assets/hooks/use-asset-delete-impact'
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
-import { AssetQuantityDialog } from '@/features/assets/ui/components/asset-quantity-dialog'
+import { AssetPurchaseDialog } from '@/features/assets/ui/components/asset-purchase-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
 import { AssetsListSection } from '@/features/assets/ui/components/assets-list-section'
 import { AssetsSummaryStrip } from '@/features/assets/ui/components/assets-summary-strip'
@@ -78,9 +78,8 @@ export function NetWorthPage() {
     handleFormOpenChange,
     openSale,
     sale,
+    openPurchase,
     quantity,
-    openBuyMore,
-    openAdjustQuantity,
     deleteId,
     setDeleteId,
     deletingAsset,
@@ -154,6 +153,7 @@ export function NetWorthPage() {
           onOpen={(assetId) => navigate(`/assets/${assetId}`)}
           onEdit={openEdit}
           onSell={openSale}
+          onBuyMore={openPurchase}
           onDelete={setDeleteId}
         />
       ) : (
@@ -188,25 +188,21 @@ export function NetWorthPage() {
         mode={mode}
         walletOptions={walletOptions}
         isEditing={isEditing}
-        onBuyMore={openBuyMore}
-        onAdjustQuantity={openAdjustQuantity}
         editingAsset={editingAsset}
         isSubmitting={isSubmitting}
         onSubmit={submit}
         onRemove={editingAsset ? () => setDeleteId(editingAsset.id) : undefined}
       />
 
-      <AssetQuantityDialog
-        mode={quantity.mode}
+      <AssetPurchaseDialog
+        open={quantity.mode === 'purchase'}
         onOpenChange={quantity.handleOpenChange}
         asset={quantity.asset}
         currentQuantity={quantity.currentQuantity}
         walletOptions={quantity.walletOptions}
-        purchaseForm={quantity.purchaseForm}
-        adjustmentForm={quantity.adjustmentForm}
+        form={quantity.purchaseForm}
         isSubmitting={quantity.isSubmitting}
-        onSubmitPurchase={quantity.submitPurchase}
-        onSubmitAdjustment={quantity.submitAdjustment}
+        onSubmit={quantity.submitPurchase}
       />
 
       <AssetSaleDialog

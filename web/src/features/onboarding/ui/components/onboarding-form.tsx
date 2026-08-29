@@ -58,7 +58,7 @@ export function OnboardingForm({ form, isCreating, onSubmit }: OnboardingFormPro
           {...register('name')}
         />
         {errors.name?.message ? (
-          <p className="mt-2 t-caption font-medium text-alert">{errors.name.message}</p>
+          <p className="mt-2 t-caption font-medium text-alert-ink">{errors.name.message}</p>
         ) : null}
 
         <button

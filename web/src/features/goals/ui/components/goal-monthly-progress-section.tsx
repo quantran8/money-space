@@ -394,7 +394,7 @@ function MonthRow({ month, hasPace }: { month: GoalMonthProgress; hasPace: boole
           'num text-right font-medium',
           // A negative month means more went out of the backing assets than came
           // in — the signal, shown as it is.
-          (month.delta ?? 0) < 0 && 'text-attention',
+          (month.delta ?? 0) < 0 && 'text-attention-ink',
         )}
       >
         {month.delta === null ? '—' : formatAmount(month.delta)}
@@ -404,7 +404,7 @@ function MonthRow({ month, hasPace }: { month: GoalMonthProgress; hasPace: boole
           <TableCell className="num text-right text-ink2">
             {month.planned === null ? '—' : formatAmount(month.planned)}
           </TableCell>
-          <TableCell className={cn('num text-right', short ? 'text-attention' : 'text-ink2')}>
+          <TableCell className={cn('num text-right', short ? 'text-attention-ink' : 'text-ink2')}>
             {month.gap === null
               ? '—'
               : short

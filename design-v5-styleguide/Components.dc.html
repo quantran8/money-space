@@ -28,17 +28,17 @@
     .t-caption    { font-size: 12px; font-weight: 300; line-height: 1.45; }
     .t-caption-sm { font-size: 11px; font-weight: 300; line-height: 1.4; }
     .ink2 { color: #596268; }
-    .ink3 { color: #879398; }
+    .ink3 { color: #6B767C; }
     /* Emphasis INSIDE a step — allowed, and what a name in a dense row uses. */
     .med  { font-weight: 500; }
     .card { background: #FFFFFF; border-radius: 22px; padding: 24px; }
-    .src { font-size: 12px; font-weight: 300; color: #879398; }
+    .src { font-size: 12px; font-weight: 300; color: #6B767C; }
     .rule { font-size: 14px; font-weight: 300; color: #596268; }
     .sec { font-size: 16px; font-weight: 500; }
     /* lucide renders into [data-lucide]; size and tone come from CSS so the
        markup only has to name the icon. */
-    .icon-empty { width: 28px; height: 28px; color: #879398; stroke-width: 1.75; }
-    .icon-inline { width: 22px; height: 22px; color: #879398; stroke-width: 1.75; }
+    .icon-empty { width: 28px; height: 28px; color: #6B767C; stroke-width: 1.75; }
+    .icon-inline { width: 22px; height: 22px; color: #6B767C; stroke-width: 1.75; }
   </style>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </helmet>
@@ -106,7 +106,7 @@
       <div class="sec">SubSection → labelled group</div>
       <div class="src">sub-section.tsx — was a soft-tinted nested sunk block.</div>
       <div class="card" style="display: flex; flex-direction: column; gap: 14px;">
-        <div class="t-caption med" style="color: #879398;">Thanh khoản</div>
+        <div class="t-caption med" style="color: #6B767C;">Thanh khoản</div>
         <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
           <div style="display: flex; flex-direction: column; gap: 2px;">
             <div style="font-size: 14px; color: #596268;">Tiền mặt</div>
@@ -145,7 +145,7 @@
       <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
         <div class="t-body-sm" style="color: #596268;">Sau các khoản đã có nhiệm vụ</div>
         <div class="num t-figure" style="line-height: 1.1; letter-spacing: -0.035em;">48,2 tr</div>
-        <div class="t-caption" style="color: #879398;">Tính từ 5 nguồn · tất cả đều mới</div>
+        <div class="t-caption" style="color: #6B767C;">Tính từ 5 nguồn · tất cả đều mới</div>
       </div>
       <div class="rule">One metric that answers a section-level question. Never a card per number just to fill a grid, and never a static metric in the action colour.</div>
     </div>
@@ -178,7 +178,7 @@
           <div class="t-body-sm med" style="background: #0F1011; color: #FFFFFF; border-radius: 999px; padding: 13px 22px;">Lưu thay đổi</div>
           <div class="t-body-sm med" style="background: #E3ECF2; color: #0F1011; border-radius: 14px; padding: 13px 20px;">Huỷ</div>
           <div class="t-body-sm med" style="color: #0F1011; padding: 13px 8px;">Xem ảnh hưởng</div>
-          <div class="t-body-sm med" style="background: #E8A39A; color: #FFFFFF; border-radius: 999px; padding: 13px 22px;">Xoá</div>
+          <div class="t-body-sm med" style="background: #E8A39A; color: #0F1011; border-radius: 999px; padding: 13px 22px;">Xoá</div>
         </div>
         <div class="src">default · secondary (sunk fill) · ghost · destructive</div>
       </div>
@@ -191,15 +191,15 @@
       <div class="card" style="display: flex; flex-direction: column; gap: 14px;">
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <div class="t-caption med" style="color: #596268;">Số tiền · Rest</div>
-          <div style="background: #FFFFFF; border-radius: 14px; padding: 12px 14px; border: 1px solid #D8E0E4;"><span class="num" style="font-size: 16px; color: #879398;">2.400.000</span></div>
+          <div style="background: #FFFFFF; border-radius: 14px; padding: 12px 14px; border: 1px solid #D8E0E4;"><span class="num" style="font-size: 16px; color: #6B767C;">2.400.000</span></div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <div class="t-caption med" style="color: #596268;">Số tiền · Focus</div>
           <div style="background: #FFFFFF; border-radius: 14px; padding: 12px 14px; border: 1px solid #73A4D7; box-shadow: 0 0 0 3px rgba(115, 164, 215, .16);"><span class="num" style="font-size: 16px;">2.400.000</span></div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div class="t-caption med" style="color: #596268;">Số tiền · Disabled</div>
-          <div style="background: #F7F9FA; border-radius: 14px; padding: 12px 14px; border: 1px solid #EEF1F2;"><span class="num" style="font-size: 16px; color: #879398;">2.400.000</span></div>
+          <div class="t-caption med" style="color: #596268;">Số tiền · Disabled — field-disabled</div>
+          <div style="background: #F7F9FA; border-radius: 14px; padding: 12px 14px; border: 1px solid #EEF1F2;"><span class="num" style="font-size: 16px; color: #6B767C;">2.400.000</span></div>
         </div>
       </div>
       <div class="rule">The field is white + a 1px <span class="num">#D8E0E4</span> border — inside a white card, a wash-filled control read as a second surface level rather than as a field. There is still no hover state, and focus moves from a 2px ink outline to a blue border plus a soft ring: at radius 14 the ink outline read as a disabled slab. Disabled is now the only variant with a fill. The global <span class="num">input:focus-visible</span> ink outline opts out via <span class="num">[data-slot='input']</span> so the two rings never stack.</div>
@@ -210,7 +210,7 @@
       <div class="src">status-chip.tsx — 6px dot + text, 4 tones. Never a filled pill, never icon-only.</div>
       <div class="card" style="display: flex; flex-direction: column; gap: 12px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="width: 6px; height: 6px; border-radius: 999px; background: #879398;"></div>
+          <div style="width: 6px; height: 6px; border-radius: 999px; background: #6B767C;"></div>
           <span style="font-size: 14px; color: #596268;">đã đồng bộ</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
@@ -260,14 +260,14 @@
         <div style="display: flex; align-items: center; gap: 16px; padding: 12px;">
           <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
             <div class="t-body">Vietcombank</div>
-            <div class="t-caption" style="color: #879398;">Quân · cập nhật hôm nay</div>
+            <div class="t-caption" style="color: #6B767C;">Quân · cập nhật hôm nay</div>
           </div>
           <div class="num t-body">32,4 tr</div>
         </div>
         <div style="display: flex; align-items: center; gap: 16px; padding: 12px; background: #E3ECF2; border-radius: 14px;">
           <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
             <div class="t-body">Tiền mặt</div>
-            <div class="t-caption" style="color: #879398;">Linh · chưa xác nhận</div>
+            <div class="t-caption" style="color: #6B767C;">Linh · chưa xác nhận</div>
           </div>
           <div class="num t-body">6,8 tr</div>
         </div>
@@ -281,15 +281,15 @@
       <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
         <div style="display: flex; align-items: baseline; gap: 12px;">
           <div class="t-body med" style="flex-grow: 1;">30 ngày tới</div>
-          <div class="t-caption" style="color: #879398;">5 khoản</div>
+          <div class="t-caption" style="color: #6B767C;">5 khoản</div>
         </div>
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr>
-              <th class="t-caption med" style="text-align: left; color: #879398; padding-bottom: 10px;">Ngày</th>
-              <th class="t-caption med" style="text-align: left; color: #879398; padding-bottom: 10px;">Khoản</th>
-              <th class="t-caption med" style="text-align: right; color: #879398; padding-bottom: 10px;">Số tiền</th>
-              <th class="t-caption med" style="text-align: right; color: #879398; padding-bottom: 10px;">Còn lại</th>
+              <th class="t-caption med" style="text-align: left; color: #6B767C; padding-bottom: 10px;">Ngày</th>
+              <th class="t-caption med" style="text-align: left; color: #6B767C; padding-bottom: 10px;">Khoản</th>
+              <th class="t-caption med" style="text-align: right; color: #6B767C; padding-bottom: 10px;">Số tiền</th>
+              <th class="t-caption med" style="text-align: right; color: #6B767C; padding-bottom: 10px;">Còn lại</th>
             </tr>
           </thead>
           <tbody>
@@ -351,7 +351,7 @@
           <div style="position: absolute; inset: 21px; border-radius: 999px; background: #FFFFFF;"></div>
           <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <span class="num t-metric" style="line-height: 1; letter-spacing: -0.04em;">73%</span>
-            <span style="margin-top: 5px; font-size: 12px; color: #879398;">linh hoạt</span>
+            <span style="margin-top: 5px; font-size: 12px; color: #6B767C;">linh hoạt</span>
           </div>
         </div>
         <div style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0;">
@@ -360,7 +360,7 @@
               <div style="width: 8px; height: 8px; border-radius: 999px; background: #D8E0E4;"></div>
               <span class="t-body-sm ink2">Đã có nhiệm vụ</span>
             </div>
-            <span class="num" style="font-size: 12px; color: #879398;">27%</span>
+            <span class="num" style="font-size: 12px; color: #6B767C;">27%</span>
             <span class="num t-body-sm" style="min-width: 76px; text-align: right;">18,2 tr</span>
           </div>
           <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding: 14px 0;">
@@ -368,7 +368,7 @@
               <div style="width: 8px; height: 8px; border-radius: 999px; background: #73A4D7;"></div>
               <span class="t-body-sm med">Linh hoạt</span>
             </div>
-            <span class="num" style="font-size: 12px; color: #879398;">73%</span>
+            <span class="num" style="font-size: 12px; color: #6B767C;">73%</span>
             <span class="num t-body-sm med" style="min-width: 76px; text-align: right;">48,2 tr</span>
           </div>
         </div>
@@ -382,7 +382,7 @@
       <div style="background: #FFFFFF; border-radius: 22px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
         <div class="t-body-sm" style="color: #596268;">Thấp nhất dự kiến</div>
         <div class="num t-figure" style="line-height: 1.1; letter-spacing: -0.035em;">48,0 tr</div>
-        <div class="t-caption" style="color: #879398;">05/09 · sau tiền nhà</div>
+        <div class="t-caption" style="color: #6B767C;">05/09 · sau tiền nhà</div>
         <div style="display: flex; align-items: flex-end; gap: 2px; height: 44px; margin-top: 12px;">
           <div style="width: 2px; height: 44px; border-radius: 1px; background: #73A4D7;"></div>
           <div style="width: 2px; height: 44px; border-radius: 1px; background: #73A4D7;"></div>
@@ -416,8 +416,8 @@
           <div style="width: 2px; height: 4px; border-radius: 1px; background: #73A4D7;"></div>
         </div>
         <div style="display: flex; justify-content: space-between; margin-top: 6px;">
-          <span class="num t-caption" style="color: #879398;">28/08</span>
-          <span class="num t-caption" style="color: #879398;">26/09</span>
+          <span class="num t-caption" style="color: #6B767C;">28/08</span>
+          <span class="num t-caption" style="color: #6B767C;">26/09</span>
         </div>
       </div>
       <div class="rule">The chart sits directly in the card — no chart card, no border, no rounded container. It renders only when a running balance genuinely derives; the low point carries attention colour, everything else is data blue.</div>

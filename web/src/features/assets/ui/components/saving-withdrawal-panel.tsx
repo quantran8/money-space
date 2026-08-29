@@ -28,7 +28,7 @@ type SavingWithdrawalPanelProps = {
 function Money({ value, tone }: { value: number; tone?: 'muted' | 'orange' }) {
   const cls =
     tone === 'orange'
-      ? 'text-attention'
+      ? 'text-attention-ink'
       : tone === 'muted'
         ? 'text-ink2'
         : 'text-foreground'
@@ -152,7 +152,7 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
         <span className="text-ink2">
           {t('assets.detail.withdrawal.difference')}
         </span>
-        <span className="money-number font-medium text-attention">
+        <span className="money-number font-medium text-attention-ink">
           -{formatVndShort(Math.abs(difference))}
         </span>
       </div>

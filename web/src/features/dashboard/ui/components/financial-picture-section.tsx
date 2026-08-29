@@ -110,7 +110,7 @@ export function FinancialPictureSection({
             <span
               className={cn(
                 'num t-display tracking-[-.045em]',
-                isNegative && 'text-alert',
+                isNegative && 'text-alert-ink',
               )}
             >
               {hero.amount}
@@ -119,7 +119,7 @@ export function FinancialPictureSection({
               <span
                 className={cn(
                   'pb-2 t-metric',
-                  isNegative && 'text-alert',
+                  isNegative && 'text-alert-ink',
                 )}
               >
                 {hero.unit}
@@ -183,7 +183,7 @@ export function FinancialPictureSection({
                   <span
                     className={cn(
                       'font-medium',
-                      coverage.hasStale ? 'text-attention' : 'text-ink',
+                      coverage.hasStale ? 'text-attention-ink' : 'text-ink',
                     )}
                   >
                     {formatAge(coverage.oldestDays)}

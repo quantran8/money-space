@@ -43,8 +43,16 @@ export function SpendingSection({
   const { t } = useTranslation()
 
   // Two zeroes would state that nothing moved this month, which is a different
-  // claim from not knowing (§23).
-  if (!summary) return null
+  // claim from not knowing (§23) — so the card keeps its place and says which
+  // of the two it is, rather than disappearing or rendering 0 đ.
+  if (!summary) {
+    return (
+      <Panel className="h-full">
+        <PanelHeader title={t('home.spending.title')} />
+        <p className="mt-6 t-body-sm text-ink2">{t('home.spending.unavailable')}</p>
+      </Panel>
+    )
+  }
 
   return (
     <Panel className="h-full">

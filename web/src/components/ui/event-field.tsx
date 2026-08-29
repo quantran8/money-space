@@ -48,7 +48,7 @@ export function EventField({ label, htmlFor, error, children, className, trailin
         )}
       </div>
       {error ? (
-        <p className="mt-2 px-1 t-body-sm font-medium text-alert">{error}</p>
+        <p className="mt-2 px-1 t-body-sm font-medium text-alert-ink">{error}</p>
       ) : null}
     </div>
   )

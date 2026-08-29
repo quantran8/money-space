@@ -105,7 +105,7 @@ function DebtField({ label, htmlFor, error, optional, hint, action, children }: 
       </div>
       {children}
       {error ? (
-        <p className="mt-1.5 t-caption text-alert">{error}</p>
+        <p className="mt-1.5 t-caption text-alert-ink">{error}</p>
       ) : hint ? (
         <p className="mt-1.5 t-caption text-ink3">{hint}</p>
       ) : null}
@@ -129,7 +129,7 @@ function MoneyControl({
   onBlur?: () => void
 }) {
   return (
-    <div className={cn(controlClass, error && 'border-alert')}>
+    <div className={cn(controlClass, error && 'border-alert-ink')}>
       <EventMoneyInput
         id={id}
         className="h-full t-body font-medium tracking-normal"
@@ -359,12 +359,12 @@ export function DebtFormDialog({
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <DebtField label={t('debts.form.fields.name')} htmlFor="debt-name" error={errors.name?.message}>
-                    <div className={cn(controlClass, errors.name && 'border-alert')}>
+                    <div className={cn(controlClass, errors.name && 'border-alert-ink')}>
                       <input id="debt-name" className={inputClass} placeholder={t('debts.form.fields.namePlaceholder')} {...register('name')} />
                     </div>
                   </DebtField>
                   <DebtField label={t('debts.form.fields.lender')} htmlFor="debt-lender" error={errors.lenderName?.message}>
-                    <div className={cn(controlClass, errors.lenderName && 'border-alert')}>
+                    <div className={cn(controlClass, errors.lenderName && 'border-alert-ink')}>
                       <input id="debt-lender" className={inputClass} placeholder={t('debts.form.fields.lenderPlaceholder')} {...register('lenderName')} />
                     </div>
                   </DebtField>
@@ -420,7 +420,7 @@ export function DebtFormDialog({
                     </div>
                   </DebtField>
                   <DebtField label={t('debts.form.fields.borrowedAt')} error={errors.borrowedAt?.message}>
-                    <div className={cn(controlClass, errors.borrowedAt && 'border-alert')}>
+                    <div className={cn(controlClass, errors.borrowedAt && 'border-alert-ink')}>
                       <Controller control={control} name="borrowedAt" render={({ field }) => (
                         <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.borrowedAt)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                       )} />
@@ -472,7 +472,7 @@ export function DebtFormDialog({
                   </DebtField>
                   <DebtField label={t('debts.form.fields.firstPaymentDate')} error={errors.firstPaymentDate?.message}>
                     <>
-                      <div className={cn(controlClass, errors.firstPaymentDate && 'border-alert')}>
+                      <div className={cn(controlClass, errors.firstPaymentDate && 'border-alert-ink')}>
                         <Controller control={control} name="firstPaymentDate" render={({ field }) => (
                           <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.firstPaymentDate)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                         )} />
@@ -501,7 +501,7 @@ export function DebtFormDialog({
                     )} />
                   </DebtField>
                   <DebtField label={t('debts.form.fields.finalDueDate')} error={errors.expectedFinalDueDate?.message}>
-                    <div className={cn(controlClass, errors.expectedFinalDueDate && 'border-alert')}>
+                    <div className={cn(controlClass, errors.expectedFinalDueDate && 'border-alert-ink')}>
                       <Controller control={control} name="expectedFinalDueDate" render={({ field }) => (
                         <DatePicker value={field.value} onChange={field.onChange} aria-invalid={Boolean(errors.expectedFinalDueDate)} className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden" />
                       )} />
@@ -722,14 +722,14 @@ function InterestPeriods({
               )}
             </DebtField>
             {fields.length > 1 ? (
-              <button type="button" onClick={() => onRemove(index)} className="mt-6 grid size-11 place-items-center rounded-control text-alert" aria-label={t('debts.form.interestPeriods.remove')}>
+              <button type="button" onClick={() => onRemove(index)} className="mt-6 grid size-11 place-items-center rounded-control text-alert-ink" aria-label={t('debts.form.interestPeriods.remove')}>
                 <X className="size-4" />
               </button>
             ) : <span />}
           </div>
         ))}
       </div>
-      {error ? <p className="mt-1.5 t-caption text-alert">{error}</p> : null}
+      {error ? <p className="mt-1.5 t-caption text-alert-ink">{error}</p> : null}
       <p className="mt-2 t-caption leading-5 text-ink3">{t('debts.form.interestPeriods.remainingHint')}</p>
     </div>
   )

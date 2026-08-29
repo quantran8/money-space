@@ -120,7 +120,7 @@ export function ActualRecordForm({
 
       {showsCategory ? (
         <Field label={t('events.form.whatFor')} error={errors.category?.message}>
-          <div className={cn(fieldShell, errors.category && 'border-alert')}>
+          <div className={cn(fieldShell, errors.category && 'border-alert-ink')}>
             <Controller
               control={control}
               name="category"
@@ -145,7 +145,7 @@ export function ActualRecordForm({
 
       {showsFrom ? (
         <Field label={fromLabel} error={errors.fromAssetId?.message}>
-          <div className={cn(fieldShell, errors.fromAssetId && 'border-alert')}>
+          <div className={cn(fieldShell, errors.fromAssetId && 'border-alert-ink')}>
             <Controller
               control={control}
               name="fromAssetId"
@@ -173,7 +173,7 @@ export function ActualRecordForm({
           label={quickAction === 'transfer' ? t('events.form.transferTo') : t('events.form.receiveInto')}
           error={errors.toAssetId?.message}
         >
-          <div className={cn(fieldShell, errors.toAssetId && 'border-alert')}>
+          <div className={cn(fieldShell, errors.toAssetId && 'border-alert-ink')}>
             <Controller
               control={control}
               name="toAssetId"
@@ -219,7 +219,7 @@ export function ActualRecordForm({
               label={t('events.form.shortDate')}
               error={errors.eventDate?.message}
             >
-              <div className={cn(fieldShell, errors.eventDate && 'border-alert')}>
+              <div className={cn(fieldShell, errors.eventDate && 'border-alert-ink')}>
                 <Controller
                   control={control}
                   name="eventDate"

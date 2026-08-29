@@ -65,24 +65,44 @@ export function useAssetQuantity() {
     mode: 'onChange',
   })
 
+  // `balance` rides along so the choice of paying wallet can be made from what
+  // each one holds, rather than by trial and error on save.
   const walletOptions = useMemo(
     () =>
       assets
         .filter((item) => item.type === 'cash' || item.type === 'bank_account')
-        .map((item) => ({ value: item.id, label: item.name })),
+        .map((item) => ({
+          value: item.id,
+          label: item.name,
+          balance: item.currentValue ?? item.manualValue ?? 0,
+        })),
     [assets],
   )
 
-  // Seed on open: the purchase form starts at the last known unit price, the
-  // adjustment form at the holding being corrected — the number the user is
-  // about to change, so they can see what they are changing it from.
+  // Seed on open: the purchase form starts at today's price, the adjustment
+  // form at the holding being corrected — the number the user is about to
+  // change, so they can see what they are changing it from.
   useEffect(() => {
     if (mode === 'purchase') {
-      const lastPrice =
-        asset?.marketPosition?.lastPrice ?? asset?.marketPosition?.purchasePrice
+      const position = asset?.marketPosition
+      // Today's market price first: a purchase is being recorded NOW, so the
+      // live figure is the better default. `marketPrice` rides along on the
+      // assets response, but only in the instrument's own currency — a USD
+      // figure must never seed a đồng field, so it is used only when it is VND.
+      // The stored price (then the cost basis) is the fallback.
+      //
+      // Seeded HERE rather than in the dialog: this reset runs in a parent
+      // effect, and React flushes child effects first, so anything the dialog
+      // wrote would be overwritten by this a moment later.
+      const marketPrice =
+        position?.marketPrice !== undefined &&
+        (position.marketPriceCurrency ?? position.quoteCurrency) === 'VND'
+          ? position.marketPrice
+          : undefined
+      const seedPrice = marketPrice ?? position?.lastPrice ?? position?.purchasePrice
       purchaseForm.reset({
         ...defaultAssetPurchaseValues,
-        unitPrice: lastPrice !== undefined ? String(Math.round(lastPrice)) : '',
+        unitPrice: seedPrice !== undefined ? String(Math.round(seedPrice)) : '',
         fundingAssetId: walletOptions[0]?.value ?? '',
       })
     }

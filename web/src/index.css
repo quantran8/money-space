@@ -22,6 +22,7 @@
   --color-canvas: var(--canvas);
   --color-card: var(--card);
   --color-wash: var(--wash);
+  --color-field-disabled: var(--field-disabled);
   --color-hero: var(--hero);
   --color-hero-deep: var(--hero-deep);
   --color-action: var(--action);
@@ -106,6 +107,10 @@
     --canvas: #edf3f8;
     --card: #ffffff;
     --wash: #e3ecf2;
+    /* A disabled control's fill, per Components.dc. Deliberately NOT --wash:
+       wash is the surface of a control you can still use, so a disabled field
+       wearing it reads as active. Near-white and neutral instead. */
+    --field-disabled: #f7f9fa;
     --hero: #b5cde8;
     --hero-deep: #acc6e3;
     --divider: #eef1f2;
@@ -169,12 +174,15 @@
     --hair: var(--divider);
     --accent: var(--action);
     --accent-soft: #eef1f2;
-    --attention: #8a6410;
+    /* Fill tones, per Foundations.dc. These are what a dot, a bar or a
+       destructive fill wears; anything that has to be READ takes the
+       `*-ink` counterpart below. */
+    --attention: #e1be68;
     /* The amber counterpart to `--accent-soft`. Opaque, unlike
        `--attention-tint`, so a block filled with it can sit on either the panel
        or the sunk surface and read the same. */
     --attention-soft: #f6eddc;
-    --alert: #a8341f;
+    --alert: #e8a39a;
     --committed: #d8e0e4;
     --protect: #afc0c7;
 
@@ -213,6 +221,8 @@
     --app: #f1ece2;
     --panel: #fdfbf7;
     --sunk: #f7f3eb;
+    /* Archive's ivory counterpart to Ledger's #f7f9fa. */
+    --field-disabled: #fbf8f2;
     --ink: #1e1913;
     --ink2: #5c5348;
     --ink3: #8e8375;
@@ -220,9 +230,10 @@
     --scrim: rgba(30, 25, 19, 0.34);
     --accent: #8c2f39;
     --accent-soft: #f4e8e8;
-    --attention: #9a6a16;
+    /* Fill tones in Archive's warm register — same role split as Ledger. */
+    --attention: #dcb974;
     --attention-soft: #f3e8d3;
-    --alert: #a8391f;
+    --alert: #dfa093;
     --committed: #dcd3c4;
     --protect: #b5aa98;
 

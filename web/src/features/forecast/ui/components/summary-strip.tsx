@@ -97,7 +97,7 @@ export function SummaryStrip({
           above describe a shorter period than the label. Said plainly rather
           than left for the reader to infer from a date (§23, §48). */}
       {summary.truncated ? (
-        <p className="mt-5 t-caption text-attention">
+        <p className="mt-5 t-caption text-attention-ink">
           {t('upcoming.summary.truncated', {
             date: formatDayMonth(summary.coveredEnd),
           })}

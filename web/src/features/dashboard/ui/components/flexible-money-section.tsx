@@ -45,7 +45,7 @@ export function FlexibleMoneySection({
       <p
         className={cn(
           'money-number mt-3 t-figure font-medium sm:t-hero',
-          isNegative && 'text-alert',
+          isNegative && 'text-alert-ink',
         )}
       >
         {canProject ? formatVndShort(amount) : '—'}

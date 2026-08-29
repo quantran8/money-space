@@ -107,7 +107,7 @@ export function MemberRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              className="text-alert focus:text-alert"
+              className="text-alert-ink focus:text-alert-ink"
               onSelect={() => onRemove(member.id)}
             >
               {exit === 'leave' ? <LogOut className="size-4" /> : <Trash2 className="size-4" />}

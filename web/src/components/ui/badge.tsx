@@ -16,7 +16,7 @@ const badgeVariants = cva(
       variant: {
         default: 'bg-action text-action-inverse',
         secondary: 'bg-wash text-ink2',
-        destructive: 'bg-alert text-white',
+        destructive: 'bg-alert text-ink',
         outline: 'bg-wash text-ink',
       },
     },

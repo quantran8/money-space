@@ -18,6 +18,13 @@ import { cn } from '@money-space/core/shared/lib/utils'
 
 type RecordCardProps = {
   record: FinancialRecordItem
+  /**
+   * The wallet balance at this event, when it is negative. Editing a back-dated
+   * event replays the wallet from its opening balance, so a correction upstream
+   * can leave this row sitting on money the wallet never had (see
+   * wallet-replay-on-edit). Absent means the balance here is fine.
+   */
+  overdraftBalance?: number
   onEditEvent: (id: string) => void
   onDuplicateEvent: (id: string) => void
   onToggleEventAttention: (id: string) => void
@@ -26,6 +33,7 @@ type RecordCardProps = {
 
 export function RecordCard({
   record,
+  overdraftBalance,
   onEditEvent,
   onDuplicateEvent,
   onToggleEventAttention,
@@ -40,6 +48,14 @@ export function RecordCard({
   const initial = actor.trim().charAt(0).toLocaleUpperCase() || 'M'
   const relatedName = record.fromAssetName || record.toAssetName
   const needsAttention = record.isAttentionNeeded || record.status === 'overdue'
+  // `attention`, not `alert`: the row needs a second look, it is not destructive.
+  // The magnitude reads on its own — the label already says the balance is short.
+  const overdraftHint =
+    overdraftBalance === undefined
+      ? null
+      : t('events.history.overdraftBadgeHint', {
+          amount: formatVndShort(Math.abs(overdraftBalance)),
+        })
   const TypeIcon = EVENT_TYPE_ICONS[record.eventType ?? 'other']
   const actorLabel = t('events.history.actor', { name: actor })
 
@@ -81,6 +97,14 @@ export function RecordCard({
 
       {/* The amount and the row's one action, right. */}
       <div className="flex shrink-0 items-center gap-2">
+        {overdraftHint ? (
+          <span
+            className="shrink-0 rounded-control bg-attention px-2 py-0.5 t-caption-sm font-medium text-attention-ink"
+            title={overdraftHint}
+          >
+            {t('events.history.overdraftBadge')}
+          </span>
+        ) : null}
         <p className="num min-w-[88px] whitespace-nowrap text-right t-body-sm font-medium">
           {amount}
         </p>
@@ -95,7 +119,7 @@ export function RecordCard({
             {record.canEdit !== false ? <DropdownMenuItem onSelect={() => onEditEvent(record.id)}>{t('common.edit')}</DropdownMenuItem> : null}
             <DropdownMenuItem onSelect={() => onDuplicateEvent(record.id)}>{t('events.redesign.actions.duplicate')}</DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onToggleEventAttention(record.id)}>{t('events.redesign.actions.attention')}</DropdownMenuItem>
-            <DropdownMenuItem className="text-alert focus:text-alert" onSelect={() => onDeleteEvent(record.id)}>{t('common.delete')}</DropdownMenuItem>
+            <DropdownMenuItem className="text-alert-ink focus:text-alert-ink" onSelect={() => onDeleteEvent(record.id)}>{t('common.delete')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

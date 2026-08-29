@@ -1,4 +1,4 @@
-import { ChevronLeft, Pencil, RefreshCw, Timeline } from 'lucide-react'
+import { ChevronLeft, Pencil, Plus, RefreshCw, Timeline } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -18,7 +18,7 @@ import { useAssetDetail, type AssetEventEntry } from '@money-space/core/features
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import { canUpdatePriceManually } from '@money-space/core/features/assets/model/assets'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
-import { AssetQuantityDialog } from '@/features/assets/ui/components/asset-quantity-dialog'
+import { AssetPurchaseDialog } from '@/features/assets/ui/components/asset-purchase-dialog'
 import { AssetGoalUsageSection } from '@/features/assets/ui/components/asset-goal-usage-section'
 import { AssetPriceUpdateDialog } from '@/features/assets/ui/components/asset-price-update-dialog'
 import { AssetValueChart } from '@/features/assets/ui/components/asset-value-chart'
@@ -194,10 +194,9 @@ export function AssetDetailPage() {
     formOpen,
     openEdit,
     handleFormOpenChange,
+    openPurchase,
     // Aliased: `quantity` is already the P&L holding lower in this file.
     quantity: quantityFlow,
-    openBuyMore,
-    openAdjustQuantity,
   } = useAssetsPage()
 
   const filteredHistory = useMemo(() => {
@@ -308,6 +307,7 @@ export function AssetDetailPage() {
   const isAutoPriced = asset.valuationMode !== 'manual'
   const isSold = asset.status === 'sold'
   const canUpdatePrice = !isSold && canUpdatePriceManually(asset.type)
+  const canBuyMore = !isSold && !!asset.marketPosition
   const position = asset.marketPosition
   const quantity = position?.quantity ?? 0
   const currentUnitPrice = quantity > 0 ? currentValue / quantity : 0
@@ -395,8 +395,19 @@ export function AssetDetailPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            {/* Buying more re-averages a cost basis, so it needs a position to
+                average into — a balance asset has none. */}
+            {canBuyMore ? (
+              <Button onClick={() => openPurchase(asset.id)}>
+                <Plus className="size-[17px]" strokeWidth={1.75} />
+                {t('assets.purchase.title')}
+              </Button>
+            ) : null}
             {canUpdatePrice ? (
-              <Button onClick={handlePrimaryUpdate}>
+              <Button
+                variant={canBuyMore ? 'secondary' : 'default'}
+                onClick={handlePrimaryUpdate}
+              >
                 <RefreshCw className="size-[17px]" strokeWidth={1.75} />
                 {t('assets.priceUpdate.action')}
               </Button>
@@ -726,6 +737,17 @@ export function AssetDetailPage() {
         </Panel>
       </div>
 
+      <AssetPurchaseDialog
+        open={quantityFlow.mode === 'purchase'}
+        onOpenChange={quantityFlow.handleOpenChange}
+        asset={quantityFlow.asset}
+        currentQuantity={quantityFlow.currentQuantity}
+        walletOptions={quantityFlow.walletOptions}
+        form={quantityFlow.purchaseForm}
+        isSubmitting={quantityFlow.isSubmitting}
+        onSubmit={quantityFlow.submitPurchase}
+      />
+
       <AssetFormDialog
         key={formOpen ? (isEditing ? 'edit-open' : 'create-open') : 'closed'}
         open={formOpen}
@@ -735,23 +757,9 @@ export function AssetDetailPage() {
         mode={mode}
         walletOptions={walletOptions}
         isEditing={isEditing}
-        onBuyMore={openBuyMore}
-        onAdjustQuantity={openAdjustQuantity}
         editingAsset={editingAsset}
         isSubmitting={isSubmitting}
         onSubmit={submit}
-      />
-      <AssetQuantityDialog
-        mode={quantityFlow.mode}
-        onOpenChange={quantityFlow.handleOpenChange}
-        asset={quantityFlow.asset}
-        currentQuantity={quantityFlow.currentQuantity}
-        walletOptions={quantityFlow.walletOptions}
-        purchaseForm={quantityFlow.purchaseForm}
-        adjustmentForm={quantityFlow.adjustmentForm}
-        isSubmitting={quantityFlow.isSubmitting}
-        onSubmitPurchase={quantityFlow.submitPurchase}
-        onSubmitAdjustment={quantityFlow.submitAdjustment}
       />
       {canUpdatePrice ? (
         <AssetPriceUpdateDialog

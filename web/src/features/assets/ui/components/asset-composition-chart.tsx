@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 
 import { liquidityOrder, type AssetLiquidity } from '@money-space/core/features/assets/model/assets'
 import { liquidityColors } from '@money-space/core/shared/constants/colors'
@@ -61,6 +61,11 @@ export function AssetCompositionChart({
 
   return (
     <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+      {/* No tooltip: the legend beside the ring already states every label,
+          amount and share, so a hover card can only repeat it — and inside a
+          176px ring it lands on top of the centre total, which is what made
+          the two sets of figures overlap. The v5 ring (02-components §15)
+          carries no tooltip for the same reason. */}
       <div className="relative mx-auto h-44 w-44 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           {/* Zeroed: PieChart's default 5px margin on every side would shrink
@@ -89,28 +94,6 @@ export function AssetCompositionChart({
                 <Cell key={slice.liquidity} fill={slice.color} />
               ))}
             </Pie>
-            <Tooltip
-              cursor={false}
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null
-                const slice = payload[0].payload as Slice
-                const share = Math.round((slice.value / total) * 100)
-                return (
-                  <div className="rounded-[14px] border border-border bg-card px-3 py-2 t-body-sm shadow-md">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="size-2.5 rounded-full"
-                        style={{ backgroundColor: slice.color }}
-                      />
-                      <span className="font-medium text-foreground">{slice.label}</span>
-                    </div>
-                    <p className="money-number mt-1 text-foreground">
-                      {formatVndShort(slice.value)} · {share}%
-                    </p>
-                  </div>
-                )
-              }}
-            />
           </PieChart>
         </ResponsiveContainer>
         {/* Hero total in the donut hole */}

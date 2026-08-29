@@ -35,16 +35,17 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * The sunk control box. Exported because a few controls (Select, DatePicker)
  * are wrapped rather than composed, and need the same shell.
  *
- * 46px is the §22.3 standard height; white fill, `--committed` border that
- * turns `--data-primary` on focus so the box never reflows — the ring is a
- * box-shadow for the same reason.
+ * Same recipe as the `Input` primitive, so a wrapped control and a bare one are
+ * the same object: h-11, `--radius-control`, white fill, `--committed` border
+ * that turns `--data-primary` on focus. The ring is a box-shadow so the box
+ * never reflows. Geometry per Components.dc, "Input / FormField".
  */
 export const fieldShell =
-  'flex h-[46px] w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
+  'flex h-11 w-full items-center gap-2 rounded-control border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 
-/** Secondary/optional fields sit at 40px (§22.3). */
+/** Secondary/optional fields sit one step shorter; same border and radius. */
 export const fieldShellSm =
-  'flex h-10 w-full items-center gap-2 rounded-[10px] border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
+  'flex h-10 w-full items-center gap-2 rounded-control border border-committed bg-card px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]'
 
 /**
  * 16px is not a style choice — anything smaller makes iOS Safari zoom the
@@ -83,7 +84,7 @@ export function Field({ label, htmlFor, error, children, className }: FieldProps
         {label}
       </label>
       {children}
-      {error ? <p className="mt-1.5 t-caption leading-[1.5] text-alert">{error}</p> : null}
+      {error ? <p className="mt-1.5 t-caption leading-[1.5] text-alert-ink">{error}</p> : null}
     </div>
   )
 }
@@ -98,7 +99,7 @@ export function TextField({
 }: { label: string; error?: string; className?: string } & React.ComponentProps<'input'>) {
   return (
     <Field label={label} htmlFor={id} error={error} className={className}>
-      <div className={cn(fieldShell, error && 'border-alert')}>
+      <div className={cn(fieldShell, error && 'border-alert-ink')}>
         <input id={id} className={fieldInput} {...props} />
       </div>
     </Field>
@@ -120,8 +121,8 @@ export function TextareaField({
         id={id}
         rows={rows}
         className={cn(
-          'w-full resize-y rounded-[10px] border border-committed bg-card px-3.5 py-3 t-body leading-6 text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3 focus:border-data-primary focus:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
-          error && 'border-alert',
+          'w-full resize-y rounded-control border border-committed bg-card px-3.5 py-3 t-body leading-6 text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3 focus:border-data-primary focus:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
+          error && 'border-alert-ink',
         )}
         {...props}
       />
@@ -154,6 +155,11 @@ type MoneyFieldProps = {
   className?: string
   /** Suffix rendered inside the box. Defaults to the đồng sign. */
   suffix?: string
+  /**
+   * A value the form derives rather than accepts — "sell all" fixes the
+   * quantity, so the box states it and stops taking input.
+   */
+  disabled?: boolean
 }
 
 export function MoneyField({
@@ -166,10 +172,17 @@ export function MoneyField({
   placeholder = '0',
   className,
   suffix = 'đ',
+  disabled,
 }: MoneyFieldProps) {
   return (
     <Field label={label} htmlFor={id} error={error} className={className}>
-      <div className={cn(fieldShell, error && 'border-alert')}>
+      <div
+        className={cn(
+          fieldShell,
+          error && 'border-alert-ink',
+          disabled && 'border-divider bg-field-disabled',
+        )}
+      >
         <input
           id={id}
           type="text"
@@ -177,11 +190,12 @@ export function MoneyField({
           autoComplete="off"
           placeholder={placeholder}
           value={formatIntegerDisplay(value)}
+          disabled={disabled}
           onChange={(event: ChangeEvent<HTMLInputElement>) =>
             onChange(sanitizeIntegerInput(event.target.value))
           }
           onBlur={onBlur}
-          className={cn(fieldInput, 'num font-medium')}
+          className={cn(fieldInput, 'num font-medium', disabled && 'text-ink3')}
         />
         <span className="shrink-0 font-mono t-caption text-ink3">{suffix}</span>
       </div>
@@ -200,10 +214,17 @@ export function DecimalField({
   placeholder,
   suffix,
   className,
+  disabled,
 }: MoneyFieldProps) {
   return (
     <Field label={label} htmlFor={id} error={error} className={className}>
-      <div className={cn(fieldShell, error && 'border-alert')}>
+      <div
+        className={cn(
+          fieldShell,
+          error && 'border-alert-ink',
+          disabled && 'border-divider bg-field-disabled',
+        )}
+      >
         <input
           id={id}
           type="text"
@@ -211,11 +232,12 @@ export function DecimalField({
           autoComplete="off"
           placeholder={placeholder}
           value={value}
+          disabled={disabled}
           onChange={(event: ChangeEvent<HTMLInputElement>) =>
             onChange(sanitizeDecimalInput(event.target.value))
           }
           onBlur={onBlur}
-          className={cn(fieldInput, 'num font-medium')}
+          className={cn(fieldInput, 'num font-medium', disabled && 'text-ink3')}
         />
         {suffix ? (
           <span className="shrink-0 whitespace-nowrap t-caption text-ink3">{suffix}</span>

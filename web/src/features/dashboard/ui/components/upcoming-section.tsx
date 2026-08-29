@@ -44,8 +44,14 @@ const MIN_EVENTS_FOR_CHART = 6
  * whether the next month works. The table's `Còn lại` column carries the
  * running balance — that column is what turns a list of events into a sequence.
  */
-export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
+export function UpcomingSection({ forecast }: { forecast?: ForecastResult }) {
   const { t } = useTranslation()
+
+  // The card holds its place when the forecast could not be computed. It states
+  // the real answer — "chưa tính được" — rather than disappearing or faking a
+  // zero: a section that vanishes leaves the household unable to tell a quiet
+  // month from a failed call (§16, Components "dependency notice").
+  if (!forecast) return <UpcomingUnavailable />
 
   const { rows, totalCount } = buildTimelineRows(forecast)
   const { points, lowestIndex } = buildDeltaSeries(forecast)
@@ -107,7 +113,7 @@ export function UpcomingSection({ forecast }: { forecast: ForecastResult }) {
                   className={cn(
                     'mt-2 t-hero leading-[1.02] tracking-[-.045em]',
                     canProject && 'num',
-                    canProject && lowest < 0 && 'text-alert',
+                    canProject && lowest < 0 && 'text-alert-ink',
                   )}
                 >
                   {canProject ? formatVndScale(lowest) : t('home.upcoming.lowestUnavailable')}
@@ -381,7 +387,7 @@ function TimelineRailRow({
         <p className="font-mono t-caption-sm text-ink3">{formatDayMonth(row.date)}</p>
         <p className="mt-0.5 t-body-sm font-medium">{row.name}</p>
         {row.unconfirmed ? (
-          <p className="mt-0.5 t-caption text-attention">
+          <p className="mt-0.5 t-caption text-attention-ink">
             {t('home.upcoming.needsConfirm')}
           </p>
         ) : null}
@@ -539,4 +545,25 @@ function CashflowDeltaChart({
 function formatDayMonth(isoDate: string): string {
   const match = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
   return match ? `${match[3]}/${match[2]}` : isoDate
+}
+
+/**
+ * The section with nothing to project from — the forecast call did not answer.
+ *
+ * Keeps the header and states what is missing, per the Components page's
+ * dependency-notice rule: the notice keeps its real answer and never fakes a
+ * zero.
+ */
+function UpcomingUnavailable() {
+  const { t } = useTranslation()
+
+  return (
+    <Panel>
+      <PanelHeader title={t('home.cashflow.title')} />
+      <div className="mt-6">
+        <p className="t-body-sm text-ink2">{t('home.upcoming.lowestLabel')}</p>
+        <p className="mt-1 t-metric text-ink2">{t('home.upcoming.lowestUnavailable')}</p>
+      </div>
+    </Panel>
+  )
 }

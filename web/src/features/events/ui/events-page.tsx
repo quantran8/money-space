@@ -7,6 +7,11 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useEventsPage } from '@money-space/core/features/events/hooks/use-events-page'
+import {
+  useEventDeleteImpact,
+  useEventOverdrafts,
+} from '@money-space/core/features/events/hooks/use-event-wallet-impact'
+import { describeOverdraft } from '@money-space/core/features/events/model/wallet-overdraft'
 import { EventFormDialog } from '@/features/events/ui/components/event-form-dialog'
 import { EventsMonthScope } from '@/features/events/ui/components/events-month-scope'
 import { EventsSummaryStrip } from '@/features/events/ui/components/events-summary-strip'
@@ -14,7 +19,7 @@ import { EventsTimelineCard } from '@/features/events/ui/components/events-timel
 import type { QuickAction } from '@money-space/core/features/events/model/events-form'
 
 export function EventsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { asOf } = useAssets()
   const {
     sale,
@@ -59,6 +64,13 @@ export function EventsPage() {
     duplicateEvent,
     handleDeleteEvent,
   } = useEventsPage()
+  // What deleting this event would do to its wallets — read while the dialog is
+  // open so the confirmation can say a wallet would go negative. Advisory only:
+  // the delete never depends on it (see wallet-replay-on-edit).
+  const deleteImpact = useEventDeleteImpact(deleteEventId)
+  // Which rows sit on a negative wallet balance, so the list can mark them.
+  const { overdrafts } = useEventOverdrafts()
+  const overdraftNotice = describeOverdraft(deleteImpact.impact, t, i18n.resolvedLanguage)
 
   function handleSelectQuickAction(action: QuickAction) {
     setQuickAction(action)
@@ -88,6 +100,7 @@ export function EventsPage() {
           tab={tab}
           onTabChange={setTab}
           groupedRecords={groupedRecords}
+          overdrafts={overdrafts}
           memberOptions={memberOptions}
           selectedMonth={selectedMonth}
           selectedMember={selectedMember}
@@ -137,7 +150,15 @@ export function EventsPage() {
         open={deleteEventId !== null}
         onOpenChange={(open) => !open && setDeleteEventId(null)}
         title={t('common.confirmDelete.title')}
-        description={t('common.confirmDelete.description', { name: deletingEvent?.note ?? '' })}
+        description={[
+          t('common.confirmDelete.description', { name: deletingEvent?.note ?? '' }),
+          // Deleting a back-dated inflow re-bases every event after it on the
+          // same wallet, which can leave those events overdrawn. Allowed, but
+          // the household should hear it before saying yes.
+          overdraftNotice,
+        ]
+          .filter(Boolean)
+          .join('\n\n')}
         confirmDisabled={isDeleting}
         confirmLoadingLabel={t('events.history.deleting')}
         onConfirm={() => (deleteEventId ? handleDeleteEvent(deleteEventId) : undefined)}

@@ -26,7 +26,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * animates.
  *
  * The fill takes `currentColor`, so a caller retints the bar with any text
- * colour (`text-positive`, `text-attention`, …) without touching this file.
+ * colour (`text-positive`, `text-attention-ink`, …) without touching this file.
  */
 const TICK_WIDTH = 2
 const TICK_PITCH = 6

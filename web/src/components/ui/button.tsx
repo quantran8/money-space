@@ -28,7 +28,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-action text-action-inverse hover:bg-ink2',
-        destructive: 'bg-alert text-white hover:bg-alert/90',
+        destructive: 'bg-alert text-ink hover:bg-alert/90',
         outline: 'bg-wash text-ink hover:bg-committed',
         secondary: 'bg-wash text-ink hover:bg-committed',
         ghost: 'text-action hover:bg-canvas',

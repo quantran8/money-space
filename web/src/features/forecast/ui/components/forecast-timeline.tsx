@@ -335,7 +335,7 @@ function OccurrenceRow({
           {markers.map((marker) => (
             <span
               key={marker}
-              className="inline-flex shrink-0 items-center rounded-[6px] bg-attention-tint px-2 py-1 t-caption-sm font-medium text-attention"
+              className="inline-flex shrink-0 items-center rounded-[6px] bg-attention-tint px-2 py-1 t-caption-sm font-medium text-attention-ink"
             >
               {t(`upcoming.markers.${marker}`)}
             </span>
@@ -391,7 +391,7 @@ function OccurrenceRow({
               ) : null}
               {onDelete ? (
                 <DropdownMenuItem
-                  className="text-alert focus:text-alert"
+                  className="text-alert-ink focus:text-alert-ink"
                   onClick={() => onDelete(occurrence.sourceEventId)}
                 >
                   <Trash2 className="mr-2 size-4" />

@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { Label, Panel, PanelHeader } from '@/components/ui/panel'
-import type { OverdueSummary } from '@money-space/core/features/dashboard/model/home-derivations'
+import type { OverdueSummary } from '@money-space/core/features/forecast/model/forecast-overdue'
 import { formatVndCellSigned } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
- * Home section 1b — Khoản quá hạn, its own card directly under the hero.
+ * Khoản quá hạn — its own card, on Home directly under the hero and on the
+ * Upcoming page above the timeline.
  *
  * It used to live inside §12.2 as a collapsed strip under the event rail, on
  * the reasoning that an overdue item is the same sequence as an upcoming one.
@@ -31,12 +32,18 @@ export function OverdueSection({
   overdue,
   onComplete,
   pendingId,
+  showViewAll = true,
 }: {
   overdue: OverdueSummary
   /** Marks one occurrence resolved. The ONLY way an item leaves this list (§18). */
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
   /** The row currently being confirmed, so only ITS button shows a spinner. */
   pendingId?: string | null
+  /**
+   * Home links out to the full list; the Upcoming page IS that list, so it
+   * turns the link off rather than pointing the reader at the page they are on.
+   */
+  showViewAll?: boolean
 }) {
   const { t } = useTranslation()
 
@@ -47,13 +54,15 @@ export function OverdueSection({
       <PanelHeader
         title={t('home.upcoming.overdue.title')}
         action={
-          <Link
-            to="/upcoming"
-            className="inline-flex min-h-11 items-center gap-1 t-body font-medium text-action"
-          >
-            {t('home.upcoming.overdue.viewAll')}
-            <ArrowUpRight className="size-4 shrink-0" strokeWidth={1.8} aria-hidden />
-          </Link>
+          showViewAll ? (
+            <Link
+              to="/upcoming"
+              className="inline-flex min-h-11 items-center gap-1 t-body font-medium text-action"
+            >
+              {t('home.upcoming.overdue.viewAll')}
+              <ArrowUpRight className="size-4 shrink-0" strokeWidth={1.8} aria-hidden />
+            </Link>
+          ) : undefined
         }
       />
 

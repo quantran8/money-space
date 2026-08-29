@@ -15,7 +15,9 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * disabled slab.
  *
  * The invalid state keeps the outline form, in `--alert`: it carries state, not
- * decoration (§5.2). Disabled is the ONLY variant that gets a fill.
+ * decoration (§5.2). Disabled is the ONLY variant that gets a fill, and it is
+ * `--field-disabled`, not `--wash`: wash is the surface of a control you can
+ * still use.
  */
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
@@ -25,8 +27,8 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
       className={cn(
         'flex h-11 w-full rounded-control border border-committed bg-card px-4 py-2 t-body-sm text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3',
         'focus-visible:border-data-primary focus-visible:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
-        'disabled:cursor-not-allowed disabled:border-divider disabled:bg-wash disabled:text-ink3 disabled:opacity-100',
-        'aria-[invalid=true]:border-alert aria-[invalid=true]:shadow-[0_0_0_3px_var(--alert-tint)]',
+        'disabled:cursor-not-allowed disabled:border-divider disabled:bg-field-disabled disabled:text-ink3 disabled:opacity-100',
+        'aria-[invalid=true]:border-alert-ink aria-[invalid=true]:shadow-[0_0_0_3px_var(--alert-tint)]',
         className,
       )}
       {...props}

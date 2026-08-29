@@ -28,13 +28,13 @@ type EventsDataTableProps = {
 
 function getAmountTone(direction: MoneyEventItem['direction']) {
   if (direction === 'inflow') return 'text-action'
-  if (direction === 'outflow') return 'text-alert'
+  if (direction === 'outflow') return 'text-alert-ink'
   return 'text-action'
 }
 
 function getDirectionMark(direction: MoneyEventItem['direction']) {
   if (direction === 'inflow') return { glyph: '+', className: 'bg-accent-tint text-action' }
-  if (direction === 'outflow') return { glyph: '−', className: 'bg-alert-tint text-alert' }
+  if (direction === 'outflow') return { glyph: '−', className: 'bg-alert-tint text-alert-ink' }
   return { glyph: '↗', className: 'bg-accent-tint text-action' }
 }
 
@@ -141,7 +141,7 @@ export function EventsDataTable({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onDelete(event.id)}
-                          className="text-alert focus:text-alert"
+                          className="text-alert-ink focus:text-alert-ink"
                         >
                           <Trash2 />
                           {t('events.table.delete')}

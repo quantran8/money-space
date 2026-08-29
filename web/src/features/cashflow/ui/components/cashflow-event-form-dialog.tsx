@@ -57,7 +57,7 @@ function CashflowField({ label, htmlFor, error, children }: CashflowFieldProps) 
         {label}
       </label>
       {children}
-      {error ? <p className="mt-1.5 t-caption text-alert">{error}</p> : null}
+      {error ? <p className="mt-1.5 t-caption text-alert-ink">{error}</p> : null}
     </div>
   )
 }
@@ -136,7 +136,7 @@ export function CashflowEventFormDialog({
           <div
             className={cn(
               controlClass,
-              errors.settlementAssetId && 'border-alert',
+              errors.settlementAssetId && 'border-alert-ink',
             )}
           >
             <Controller
@@ -160,7 +160,7 @@ export function CashflowEventFormDialog({
           </div>
         </CashflowField>
         {settlementAssetMissing ? (
-          <p className="rounded-control bg-surface2 px-3 py-2.5 t-body-sm leading-5 text-alert">
+          <p className="rounded-control bg-surface2 px-3 py-2.5 t-body-sm leading-5 text-alert-ink">
             {t('upcoming.form.walletDeleted')}
           </p>
         ) : null}
@@ -233,7 +233,7 @@ export function CashflowEventFormDialog({
                 htmlFor="cashflow-amount"
                 error={errors.amount?.message}
               >
-                <div className={cn(controlClass, errors.amount && 'border-alert')}>
+                <div className={cn(controlClass, errors.amount && 'border-alert-ink')}>
                   <Controller
                     control={control}
                     name="amount"
@@ -257,7 +257,7 @@ export function CashflowEventFormDialog({
                 htmlFor="cashflow-name"
                 error={errors.name?.message}
               >
-                <div className={cn(controlClass, errors.name && 'border-alert')}>
+                <div className={cn(controlClass, errors.name && 'border-alert-ink')}>
                   <input
                     id="cashflow-name"
                     className={inputClass}
@@ -275,7 +275,7 @@ export function CashflowEventFormDialog({
                 label={t('upcoming.form.expectedDate')}
                 error={errors.expectedDate?.message}
               >
-                <div className={cn(controlClass, errors.expectedDate && 'border-alert')}>
+                <div className={cn(controlClass, errors.expectedDate && 'border-alert-ink')}>
                   <Controller
                     control={control}
                     name="expectedDate"
@@ -413,7 +413,7 @@ export function CashflowEventFormDialog({
                         rows={3}
                         className={cn(
                           'min-h-[88px] w-full resize-y rounded-[10px] border border-committed bg-card px-3.5 py-3 t-body leading-6 text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-ink3 focus:border-data-primary focus:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
-                          errors.note && 'border-alert',
+                          errors.note && 'border-alert-ink',
                         )}
                         placeholder={t('upcoming.form.notePlaceholder')}
                         {...register('note')}
