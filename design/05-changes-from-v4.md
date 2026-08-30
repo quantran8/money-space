@@ -53,18 +53,23 @@ surface.
 ## 5. Ink ramp đạt AA
 
 `--ink3` cũ `#879398` chỉ đạt **3.15:1** trên card trắng — fail AA cho metadata
-12px mà chính nó mang. Nâng lên `#6B767C` (4.66). `--attention` và `--alert`
-cũng tối đi để dùng được làm text:
+12px mà chính nó mang. Nâng lên `#6B767C` (4.66).
+
+`--attention` và `--alert` KHÔNG tối đi. Chúng giữ sắc nhạt gốc vì đó là vai
+trò của chúng — fill: một dot, một bar, một nền destructive. Tone tối đi vào
+một token riêng, để một class không mang hai nghĩa tuỳ chỗ dùng:
 
 ```txt
-ink        #0F1011   19.1
-ink2       #596268    6.2
-ink3       #6B767C    4.7
-attention  #8A6410    5.4
-alert      #A8341F    6.6
+fill                        ink (text-safe)
+attention  #E1BE68   1.8    attention-ink  #8C6817   5.1
+alert      #E8A39A   2.1    alert-ink      #A9544D   5.2
+positive   #8FCDA4   1.8    positive-ink   #4E855F   4.3
+data       #73A4D7   2.6    data-ink       #356FA8   5.3
 ```
 
-Sắc nhạt gốc (`#E1BE68`, `#E8A39A`) chỉ dùng làm fill, không làm text.
+Quy tắc: bất cứ gì phải **đọc** được — chữ, viền lỗi — lấy `*-ink`. Bất cứ gì
+chỉ là **mảng màu** — dot, bar, tick, nền nút — lấy tone fill. Chữ trên nền
+alert là `--ink`, không phải trắng (trắng trên `#E8A39A` chỉ 2.07:1).
 
 ## 6. Chữ trắng trong hero card: không
 

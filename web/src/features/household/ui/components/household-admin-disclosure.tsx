@@ -92,7 +92,7 @@ export function HouseholdAdminDisclosure({
                 variant="ghost"
                 size="sm"
                 disabled={!selectedMemberId}
-                className="bg-card text-alert hover:bg-alert-tint hover:text-alert"
+                className="bg-card text-alert-ink hover:bg-alert-tint hover:text-alert-ink"
                 onClick={() => selectedMemberId && onRemoveMember(selectedMemberId)}
               >
                 {t('common.remove')}
@@ -101,7 +101,7 @@ export function HouseholdAdminDisclosure({
           </AdminRow>
 
           <div className="pt-2">
-            <p className="label text-alert">{t('common.dangerZone')}</p>
+            <p className="label text-alert-ink">{t('common.dangerZone')}</p>
             <div className="mt-3">
               <AdminRow
                 title={t('settings.data.delete')}
@@ -111,7 +111,7 @@ export function HouseholdAdminDisclosure({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="shrink-0 bg-card text-alert hover:bg-alert-tint hover:text-alert"
+                  className="shrink-0 bg-card text-alert-ink hover:bg-alert-tint hover:text-alert-ink"
                   onClick={onDeleteHousehold}
                 >
                   {t('settings.data.deleteAction')}

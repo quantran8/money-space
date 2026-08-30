@@ -159,7 +159,7 @@ export function DebtsInsightsSection({ debts, events, payments, isLoading }: Deb
             <p className="t-caption text-muted-foreground">Hiện tại</p>
             <p className="money-number mt-1 t-metric font-medium">{formatVndShort(current)}</p>
           </div>
-          <p className={cn('t-body-sm font-medium', change <= 0 ? 'text-action' : 'text-alert')}>
+          <p className={cn('t-body-sm font-medium', change <= 0 ? 'text-action' : 'text-alert-ink')}>
             {change > 0 ? '+' : change < 0 ? '−' : ''}{formatVndShort(Math.abs(change))}
           </p>
         </div>

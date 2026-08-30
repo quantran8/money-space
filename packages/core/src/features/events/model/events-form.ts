@@ -348,10 +348,14 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
     status: 'recorded',
     attentionLevel: event.direction === 'outflow' ? 'important' : 'normal',
     isAttentionNeeded: event.direction === 'outflow' && event.amount <= -5_000_000,
-    // `asset_update` (a system-generated revaluation) isn't a form-creatable
-    // type; if such an event is ever opened in the form, represent it as the
+    // `asset_update` (a system-generated revaluation) and
+    // `asset_quantity_adjustment` (a corrected holding) aren't form-creatable
+    // types; if such an event is ever opened in the form, represent it as the
     // neutral `adjustment` bookkeeping type.
-    eventType: event.type === 'asset_update' ? 'adjustment' : event.type,
+    eventType:
+      event.type === 'asset_update' || event.type === 'asset_quantity_adjustment'
+        ? 'adjustment'
+        : event.type,
     direction: event.direction,
     category: event.category,
     // Prefer the explicit from/to on the event (a transfer sets both); fall back

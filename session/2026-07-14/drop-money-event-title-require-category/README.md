@@ -31,7 +31,7 @@ stands in for the old title as the event's descriptive label.
 - `src/modules/debts/debts.service.ts`,
   `src/modules/assets/assets.service.ts` + `repositories` — internal flows that
   auto-generated a title (`Vay: …`, `Vay thêm: …`, `Điều chỉnh dư nợ: …`,
-  `Định giá lại: …`) now fold that label into the `note`.
+  `Cập nhật giá trị: …`) now fold that label into the `note`.
 - `test/app.e2e-spec.ts` — mock event uses `note` instead of `title`.
 
 ### Frontend (`money-space-frontend`)

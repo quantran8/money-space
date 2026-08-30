@@ -235,7 +235,7 @@ export function DebtUpdateModeDialog({
           )}
 
           {mode === 'correction' ? (
-            <p className="rounded-[16px] bg-attention-tint px-4 py-3 t-body-sm leading-5 text-attention">
+            <p className="rounded-[16px] bg-attention-tint px-4 py-3 t-body-sm leading-5 text-attention-ink">
               Thay đổi này sẽ cập nhật lại lịch sử và số dư khoản nợ.
             </p>
           ) : null}

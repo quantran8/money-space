@@ -328,6 +328,54 @@ export const resources = {
         },
       },
       assets: {
+        // Shared by the buy and sell dialogs — the live quote reads the same in
+        // both, so the copy lives once.
+        marketPrice: {
+          label: 'Giá thị trường',
+          observedAt: 'Cập nhật {{time}} · {{date}}',
+          refresh: 'Lấy giá mới',
+          perUnit: 'mỗi {{unit}}',
+        },
+        purchase: {
+          title: 'Mua thêm',
+          description:
+            'Ghi nhận số lượng mua thêm vào {{name}}. Ví thanh toán sẽ bị trừ và giá vốn được tính lại bình quân.',
+          quantity: 'Số lượng mua thêm',
+          quantityPositive: 'Số lượng phải lớn hơn 0.',
+          unitPrice: 'Giá mua mỗi đơn vị',
+          fundingAsset: 'Trả từ ví',
+          fundingAssetNone: 'Không trả từ ví (được tặng, thưởng)',
+          currentHolding: 'Đang giữ: {{quantity}}',
+          dialogTitle: 'Mua thêm {{name}}',
+          marketPrice: 'Giá thị trường',
+          marketPriceAt: 'Cập nhật {{time}} · {{date}}',
+          refreshPrice: 'Lấy giá mới',
+          marketPricePerUnit: 'mỗi {{unit}}',
+          dialogSubtitle: '{{type}} · Đang có {{quantity}}',
+          total: 'Tổng tiền',
+          afterPurchase: 'Sau giao dịch',
+          estimatedCost: 'Giá vốn ước tính',
+          costBasisHint: 'Giá vốn được tính lại theo bình quân sau khi ghi nhận giao dịch.',
+          submit: 'Ghi nhận mua thêm',
+          success: 'Đã ghi nhận mua thêm.',
+          error: 'Không thể ghi nhận mua thêm.',
+        },
+        quantityAdjustment: {
+          title: 'Điều chỉnh số lượng',
+          description:
+            'Dùng khi số lượng đã nhập bị sai — không phải mua bán. Lịch sử cũ được giữ nguyên, hệ thống ghi thêm một bản ghi điều chỉnh.',
+          quantity: 'Số lượng đúng',
+          quantityNonNegative: 'Số lượng không được âm.',
+          unchanged: 'Số lượng chưa thay đổi.',
+          reason: 'Lý do (không bắt buộc)',
+          reasonPlaceholder: 'Ví dụ: nhập nhầm 10 thay vì 1',
+          currentHolding: 'Đang ghi nhận: {{quantity}}',
+          notAPurchase:
+            'Nếu bạn vừa mua thêm hoặc bán bớt, hãy dùng “Mua thêm” / “Bán bớt” để dòng tiền được ghi đúng.',
+          submit: 'Lưu điều chỉnh',
+          success: 'Đã điều chỉnh số lượng.',
+          error: 'Không thể điều chỉnh số lượng.',
+        },
         header: {
           eyebrow: 'Tài sản và nguồn tiền',
           title: 'Tiền của gia đình đang nằm ở đâu',
@@ -444,6 +492,7 @@ export const resources = {
           balance: 'Số dư',
           // Gia đình tự quyết khoản nào là tiền dùng được, không để loại tài sản quyết thay.
           countsAsFlexible: 'Tính vào tiền linh hoạt',
+          countsAsFlexibleHint: 'Giá trị nguồn này được tính vào số tiền có thể dùng.',
           valuePlaceholder: 'Ví dụ: 20.000.000',
           areaSqm: 'Diện tích',
           areaSqmPlaceholder: 'Ví dụ: 80',
@@ -538,7 +587,6 @@ export const resources = {
           // §22.8 — a sentence, never a before/after table.
           changeValue: 'Bạn đã đổi giá trị từ {{from}} thành {{to}}.',
           changeName: 'Bạn đã đổi tên từ “{{from}}” thành “{{to}}”.',
-          changeType: 'Bạn đã đổi loại từ {{from}} thành {{to}}.',
           changeFlexibleOn: 'Khoản này sẽ được tính vào tiền linh hoạt.',
           changeFlexibleOff: 'Khoản này sẽ không còn được tính vào tiền linh hoạt.',
           // §22.11 — the right verb, and the consequence stated in money.
@@ -555,6 +603,8 @@ export const resources = {
         sale: {
           action: 'Bán',
           title: 'Bán tài sản',
+          titleNamed: 'Bán {{name}}',
+          submitNamed: 'Bán {{name}}',
           editTitle: 'Sửa giao dịch bán',
           submitEdit: 'Lưu thay đổi',
           eyebrow: 'Ghi nhận một khoản bán tài sản',
@@ -576,6 +626,10 @@ export const resources = {
           receiveIntoPlaceholder: 'Chọn tài khoản nhận tiền',
           receiveIntoSame: 'Tài khoản nhận phải khác tài sản đang bán',
           receivedNet: 'Nhận vào tài khoản',
+          details: 'Chi tiết giao dịch',
+          expectedNet: 'Dự kiến nhận',
+          breakdownMarket: '{{quantity}} {{unit}} · {{price}}/{{unit}} · phí {{fee}}',
+          breakdownManual: 'Số tiền bán {{proceeds}} · phí {{fee}}',
           date: 'Ngày bán',
           note: 'Ghi chú',
           notePlaceholder: 'Ví dụ: Bán bớt để cân đối',
@@ -610,11 +664,36 @@ export const resources = {
             freeTitle: 'Còn tự do',
             freeNote: 'Có thể phân bổ',
             sharePercent: '{{percent}}% giá trị tài sản',
-            columns: {
-              goal: 'Mục tiêu',
-              counted: 'Đang tính',
-              monthly: 'Góp mỗi tháng',
-            },
+            // Một mục tiêu "đang tính" gồm hai phần khác hẳn nhau: tiền đã nằm
+            // sẵn trong tài sản, và phần tháng này sẽ góp thêm theo mức góp
+            // hàng tháng. Cộng lại mới ra con số lớn, nên phải tách ra nói rõ —
+            // nếu không, user thấy 100% mà không hiểu vì sao.
+            breakdownSetAside: 'Đã nằm sẵn',
+            breakdownPace: 'Dự góp tháng này',
+            breakdownNote:
+              'Số đang tính gồm tiền đã nằm sẵn trong tài sản cộng mức góp dự kiến của tháng này.',
+            // Bảng tách hai nửa của mỗi mục tiêu, để tổng 100% giải thích được.
+            goalColumn: 'Mục tiêu',
+            initial: 'Góp ban đầu',
+            thisMonth: 'Tháng này',
+            totalIntoGoal: 'Tổng vào mục tiêu',
+            totalRow: 'Tổng đã góp',
+            ofAsset: '{{percent}} tài sản',
+            paceOfDeclared: '{{drawn}} / {{declared}} tháng',
+            noteAfterMonth: '{{percent}} tài sản sau phần góp tháng này',
+            summaryTitle: 'Đã góp vào mục tiêu',
+            summarySub: '{{count}} mục tiêu · {{initial}} ban đầu + {{month}} tháng này',
+            compositionLabel: 'Tỷ trọng {{amount}} đã góp',
+            assetMeta: '{{value}} tài sản hiện tại',
+            // Ví âm tiền: con số trần trụi "-168,0 tr tài sản hiện tại" đọc như
+            // lỗi hiển thị. Nói rõ đây là số dư âm và vì sao mọi mục tiêu đang
+            // về 0, thay vì để user tự đoán.
+            assetOverdrawn: 'Ví đang âm {{value}}',
+            overdrawnNote:
+              'Số dư ví đang âm nên không có tiền nào đang được tính cho mục tiêu. Kiểm tra lại các giao dịch của ví này — có thể thiếu một khoản thu, hoặc một khoản chi bị ghi nhầm.',
+            freeAllContributed: '{{percent}} tài sản hiện tại đã góp vào mục tiêu',
+            contributedSide: 'Đã góp',
+            goalCount: '{{count}} mục tiêu',
           },
           updatedAt: 'Cập nhật gần nhất: {{value}}',
           overview: 'Tổng quan',
@@ -1527,6 +1606,8 @@ export const resources = {
           outcome: 'Tổng chi',
           recent: 'Giao dịch gần đây',
           viewAll: 'Xem tất cả giao dịch',
+          // Chưa đọc được số liệu — khác với "tháng này không có gì".
+          unavailable: 'Chưa đọc được số liệu tháng này.',
         },
         // §12.3 — every goal against the pace it needs, not one goal in detail.
         goals: {
@@ -2123,6 +2204,16 @@ export const resources = {
           title: 'Sự kiện tài chính',
           quickUpdate: 'Cập nhật nhanh',
           deleting: 'Đang xóa…',
+          // Sửa hoặc xoá một giao dịch cũ sẽ tính lại số dư ví từ ngày đó trở đi,
+          // nên các giao dịch sau nó có thể rơi vào tình trạng âm tiền. Việc này
+          // được phép — nói trước để cả nhà biết, không phải để chặn.
+          overdraftWarning:
+            'Sau thay đổi này, ví {{wallet}} sẽ âm {{amount}} kể từ ngày {{date}}. Số tiền đã chi đang nhiều hơn số tiền đã nhận — hãy kiểm tra lại các giao dịch của ví này.',
+          overdraftWarningMany:
+            'Sau thay đổi này, {{count}} ví sẽ bị âm tiền: {{wallets}}. Số tiền đã chi đang nhiều hơn số tiền đã nhận — hãy kiểm tra lại các giao dịch của những ví này.',
+          overdraftBadge: 'Âm tiền',
+          overdraftBadgeHint:
+            'Số dư ví tại thời điểm này đang âm {{amount}}. Có thể thiếu một khoản thu, hoặc một khoản chi bị ghi nhầm.',
           today: 'Hôm nay',
           householdActor: 'Cả nhà',
           empty: 'Chưa có cập nhật nào trong nhóm này.',
@@ -2680,6 +2771,7 @@ export const resources = {
           asset_purchase: 'Mua tài sản',
           asset_sale: 'Bán tài sản',
           asset_update: 'Định giá lại',
+          asset_quantity_adjustment: 'Điều chỉnh số lượng',
           payment_paid: 'Đã thanh toán',
           debt_update: 'Cập nhật khoản nợ',
           adjustment: 'Điều chỉnh',
@@ -3163,6 +3255,52 @@ export const resources = {
         footerNote: 'These figures reflect everything your household has recorded in Oursight.',
       },
       assets: {
+        marketPrice: {
+          label: 'Market price',
+          observedAt: 'Updated {{time}} · {{date}}',
+          refresh: 'Refresh price',
+          perUnit: 'per {{unit}}',
+        },
+        purchase: {
+          title: 'Buy more',
+          description:
+            'Record more units bought into {{name}}. The paying wallet is debited and the cost basis is re-averaged.',
+          quantity: 'Quantity added',
+          quantityPositive: 'Quantity must be greater than 0.',
+          unitPrice: 'Price per unit',
+          fundingAsset: 'Paid from',
+          fundingAssetNone: 'Not paid from a wallet (gift, dividend)',
+          currentHolding: 'Currently held: {{quantity}}',
+          dialogTitle: 'Buy more {{name}}',
+          marketPrice: 'Market price',
+          marketPriceAt: 'Updated {{time}} · {{date}}',
+          refreshPrice: 'Refresh price',
+          marketPricePerUnit: 'per {{unit}}',
+          dialogSubtitle: '{{type}} · Holding {{quantity}}',
+          total: 'Total',
+          afterPurchase: 'After this purchase',
+          estimatedCost: 'Estimated cost basis',
+          costBasisHint: 'The cost basis is re-averaged once the purchase is recorded.',
+          submit: 'Record purchase',
+          success: 'Purchase recorded.',
+          error: 'Could not record the purchase.',
+        },
+        quantityAdjustment: {
+          title: 'Adjust quantity',
+          description:
+            'For a holding that was entered wrong — not a purchase or a sale. Past history is left as it stands; a new adjustment record is added.',
+          quantity: 'Correct quantity',
+          quantityNonNegative: 'Quantity cannot be negative.',
+          unchanged: 'The quantity has not changed.',
+          reason: 'Reason (optional)',
+          reasonPlaceholder: 'e.g. entered 10 instead of 1',
+          currentHolding: 'Currently recorded: {{quantity}}',
+          notAPurchase:
+            'If you bought more or sold some, use “Buy more” / “Sell” so the money movement is recorded properly.',
+          submit: 'Save adjustment',
+          success: 'Quantity adjusted.',
+          error: 'Could not adjust the quantity.',
+        },
         header: {
           eyebrow: 'Assets and cash sources',
           title: 'Where your household money is sitting',
@@ -3273,6 +3411,7 @@ export const resources = {
           value: 'Estimated value',
           balance: 'Balance',
           countsAsFlexible: 'Counts towards flexible money',
+          countsAsFlexibleHint: 'This source\'s value counts towards the money you can spend.',
           valuePlaceholder: 'Example: 20.000.000',
           areaSqm: 'Area',
           areaSqmPlaceholder: 'Example: 80',
@@ -3365,7 +3504,6 @@ export const resources = {
           effectOther: "Adds {{amount}} to total assets. This one isn't usable right away.",
           changeValue: 'You changed the value from {{from}} to {{to}}.',
           changeName: 'You changed the name from "{{from}}" to "{{to}}".',
-          changeType: 'You changed the type from {{from}} to {{to}}.',
           changeFlexibleOn: 'This one will count towards flexible money.',
           changeFlexibleOff: 'This one will no longer count towards flexible money.',
           removeTitle: 'Remove this money source?',
@@ -3381,6 +3519,8 @@ export const resources = {
         sale: {
           action: 'Sell',
           title: 'Sell asset',
+          titleNamed: 'Sell {{name}}',
+          submitNamed: 'Sell {{name}}',
           editTitle: 'Edit sale',
           submitEdit: 'Save changes',
           eyebrow: 'Record an asset sale',
@@ -3402,6 +3542,10 @@ export const resources = {
           receiveIntoPlaceholder: 'Choose the receiving account',
           receiveIntoSame: 'The receiving account must differ from the asset being sold',
           receivedNet: 'Received into account',
+          details: 'Transaction details',
+          expectedNet: 'Expected to receive',
+          breakdownMarket: '{{quantity}} {{unit}} · {{price}}/{{unit}} · fee {{fee}}',
+          breakdownManual: 'Sale amount {{proceeds}} · fee {{fee}}',
           date: 'Sale date',
           note: 'Note',
           notePlaceholder: 'Example: Sold some to rebalance',
@@ -3435,6 +3579,28 @@ export const resources = {
             freeTitle: 'Still free',
             freeNote: 'Available to allocate',
             sharePercent: '{{percent}}% of the asset',
+            breakdownSetAside: 'Already set aside',
+            breakdownPace: "This month's contribution",
+            breakdownNote:
+              "What a goal is counted as holding is money already set aside plus this month's planned contribution.",
+            goalColumn: 'Goal',
+            initial: 'Already in',
+            thisMonth: 'This month',
+            totalIntoGoal: 'Total into goal',
+            totalRow: 'Total contributed',
+            ofAsset: '{{percent}} of the asset',
+            paceOfDeclared: '{{drawn}} / {{declared}} a month',
+            noteAfterMonth: "{{percent}} of the asset after this month's contribution",
+            summaryTitle: 'Contributed to goals',
+            summarySub: '{{count}} goals · {{initial}} already in + {{month}} this month',
+            compositionLabel: 'Split of the {{amount}} contributed',
+            assetMeta: '{{value}} current value',
+            assetOverdrawn: 'Wallet is {{value}} overdrawn',
+            overdrawnNote:
+              'This wallet is overdrawn, so no money is counted towards any goal. Check its events — an income may be missing, or an expense recorded in error.',
+            freeAllContributed: '{{percent}} of the current value is contributed to goals',
+            contributedSide: 'Contributed',
+            goalCount: '{{count}} goals',
             columns: {
               goal: 'GOAL',
               counted: 'COUNTED',
@@ -4295,6 +4461,7 @@ export const resources = {
           outcome: 'Money out',
           recent: 'Recent activity',
           viewAll: 'View all activity',
+          unavailable: "This month's figures are not available yet.",
         },
         goals: {
           title: 'Goals',
@@ -4878,6 +5045,13 @@ export const resources = {
           title: 'Money events',
           quickUpdate: 'Quick update',
           deleting: 'Deleting…',
+          overdraftWarning:
+            'After this change, the {{wallet}} wallet goes {{amount}} negative from {{date}}. Recorded spending exceeds recorded income — check this wallet\'s events.',
+          overdraftWarningMany:
+            'After this change, {{count}} wallets go negative: {{wallets}}. Recorded spending exceeds recorded income — check these wallets\' events.',
+          overdraftBadge: 'Overdrawn',
+          overdraftBadgeHint:
+            'This wallet\'s balance is {{amount}} negative at this point. An income event may be missing, or an expense recorded in error.',
           today: 'Today',
           householdActor: 'Household',
           empty: 'No updates in this group yet.',
@@ -5427,6 +5601,7 @@ export const resources = {
           asset_purchase: 'Asset purchase',
           asset_sale: 'Asset sale',
           asset_update: 'Revaluation',
+          asset_quantity_adjustment: 'Quantity adjustment',
           payment_paid: 'Payment made',
           debt_update: 'Debt update',
           adjustment: 'Adjustment',

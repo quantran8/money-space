@@ -36,6 +36,7 @@ type AssetsListSectionProps = {
   onOpen: (assetId: string) => void
   onEdit: (assetId: string) => void
   onSell: (assetId: string) => void
+  onBuyMore: (assetId: string) => void
   onDelete: (assetId: string) => void
 }
 
@@ -66,6 +67,7 @@ export function AssetsListSection({
   onOpen,
   onEdit,
   onSell,
+  onBuyMore,
   onDelete,
 }: AssetsListSectionProps) {
   const { t } = useTranslation()
@@ -224,6 +226,7 @@ export function AssetsListSection({
                             onOpen={onOpen}
                             onEdit={onEdit}
                             onSell={onSell}
+                            onBuyMore={onBuyMore}
                             onDelete={onDelete}
                           />
                         ))}
@@ -238,6 +241,7 @@ export function AssetsListSection({
                         onOpen={onOpen}
                         onEdit={onEdit}
                         onSell={onSell}
+                        onBuyMore={onBuyMore}
                         onDelete={onDelete}
                       />
                     ))}
@@ -258,6 +262,7 @@ function SourceRow({
   onOpen,
   onEdit,
   onSell,
+  onBuyMore,
   onDelete,
 }: {
   asset: Asset
@@ -266,6 +271,7 @@ function SourceRow({
   onOpen: (assetId: string) => void
   onEdit: (assetId: string) => void
   onSell: (assetId: string) => void
+  onBuyMore: (assetId: string) => void
   onDelete: (assetId: string) => void
 }) {
   const { t } = useTranslation()
@@ -280,6 +286,7 @@ function SourceRow({
       onOpen={onOpen}
       onEdit={onEdit}
       onSell={onSell}
+      onBuyMore={onBuyMore}
       onDelete={onDelete}
     />
   )

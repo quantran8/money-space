@@ -111,7 +111,7 @@ export function GoalImpactNotice({
           <p className="t-caption-sm text-ink3">{t('upcoming.complete.goalImpact.takenFrom')}</p>
           <p
             className={`mt-1 t-body-sm font-medium ${
-              reachesSetAside ? 'text-attention' : 'text-action'
+              reachesSetAside ? 'text-attention-ink' : 'text-action'
             }`}
           >
             {reachesSetAside
@@ -224,7 +224,7 @@ export function GoalImpactNotice({
       {/* A shortfall is a different fact from "your goal shrinks", so it gets
           its own line rather than being folded into anything above. */}
       {impact.exceedsWallet ? (
-        <p className="mt-2 t-caption leading-5 text-alert">
+        <p className="mt-2 t-caption leading-5 text-alert-ink">
           {t('upcoming.complete.goalImpact.exceedsWallet', {
             value: formatVndShort(impact.assetValue),
           })}
@@ -256,7 +256,7 @@ function ChangeRow({
           <span className="money-number t-metric">{after}</span>
         </div>
       </div>
-      {delta ? <span className="num mb-1 t-caption font-medium text-attention">{delta}</span> : null}
+      {delta ? <span className="num mb-1 t-caption font-medium text-attention-ink">{delta}</span> : null}
     </div>
   )
 }

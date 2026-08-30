@@ -21,6 +21,11 @@ export type MoneyEventItem = {
     // Revaluation: the user re-priced an asset directly. Neutral — moves no
     // wallet, excluded from income/expense. See asset-valuation.
     | 'asset_update'
+    // A holding that was corrected — not bought, not sold. Neutral for the same
+    // reasons as a revaluation, but kept apart from it: that one says the PRICE
+    // moved, this says the QUANTITY did. Reporting a re-count as a price move is
+    // what made correcting 10 chỉ to 1 chỉ look like a market loss.
+    | 'asset_quantity_adjustment'
     | 'payment_paid'
       | 'debt_update'
     | 'adjustment'

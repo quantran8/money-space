@@ -12,6 +12,7 @@ import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { Button, ConfirmDialog, Screen, Sections, Segmented } from '@/components/ui'
 import { AssetFormSheet } from '@/features/assets/components/asset-form-sheet'
+import { AssetQuantitySheet } from '@/features/assets/components/asset-quantity-sheet'
 import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
 import { AssetsListSection } from '@/features/assets/components/assets-list-section'
 import { AssetsSummary } from '@/features/assets/components/assets-summary'
@@ -63,6 +64,9 @@ export default function NetWorthScreen() {
     deletingAsset,
     isDeleting,
     handleDeleteAsset,
+    quantity,
+    openBuyMore,
+    openAdjustQuantity,
   } = useAssetsPage()
 
   // Fetched as soon as the delete dialog has a target, so the confirmation can
@@ -147,10 +151,25 @@ export default function NetWorthScreen() {
         mode={mode}
         walletOptions={walletOptions}
         isEditing={isEditing}
+        onBuyMore={openBuyMore}
+        onAdjustQuantity={openAdjustQuantity}
         editingAsset={editingAsset}
         isSubmitting={isSubmitting}
         onSubmit={submit}
         onRemove={editingAsset ? () => setDeleteId(editingAsset.id) : undefined}
+      />
+
+      <AssetQuantitySheet
+        mode={quantity.mode}
+        onClose={quantity.close}
+        asset={quantity.asset}
+        currentQuantity={quantity.currentQuantity}
+        walletOptions={quantity.walletOptions}
+        purchaseForm={quantity.purchaseForm}
+        adjustmentForm={quantity.adjustmentForm}
+        isSubmitting={quantity.isSubmitting}
+        onSubmitPurchase={quantity.submitPurchase}
+        onSubmitAdjustment={quantity.submitAdjustment}
       />
 
       <AssetSaleSheet

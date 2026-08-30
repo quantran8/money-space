@@ -124,11 +124,11 @@ the linked `asset_value_history` point — the full table stays consistent.
     from-asset.
   - `event-form-dialog.tsx` — passes `isRevaluation={editingEventType ===
     'asset_update'}` to the form.
-  - `actual-record-form.tsx` — `isRevaluation` prop: header "Định giá lại tài
+  - `actual-record-form.tsx` — `isRevaluation` prop: header "Cập nhật giá trị tài
     sản", amount label "Giá trị mới", hides wallet + details, shows a plain note
     field, submit label "Lưu định giá".
 
-**Verified** on the live DB: edit a "Định giá lại" event 3tỷ → 3.5tỷ →
+**Verified** on the live DB: edit a "Cập nhật giá trị" event 3tỷ → 3.5tỷ →
 `asset.current_value`, `money_events.amount` (delta), and the
 `asset_value_history` point all become 3.5tỷ. Full-table sync confirmed.
 

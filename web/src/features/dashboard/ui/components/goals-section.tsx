@@ -74,11 +74,19 @@ export function GoalsSection({
       ) : null}
 
       <div className="mt-5">
-        {tracks.map((track, index) => (
-          <div key={track.id} className={cn(index > 0 && 'border-t border-divider')}>
-            <GoalTrackRow track={track} />
-          </div>
-        ))}
+        {/* The card holds its place with no goals: a household that has not set
+            one still needs to see that goals exist and where to add them, and a
+            section that vanishes teaches nothing. Same plain sentence the
+            30-day sequence uses for its own empty state. */}
+        {tracks.length === 0 ? (
+          <p className="py-6 t-body-sm text-ink2">{t('home.goals.empty')}</p>
+        ) : (
+          tracks.map((track, index) => (
+            <div key={track.id} className={cn(index > 0 && 'border-t border-divider')}>
+              <GoalTrackRow track={track} />
+            </div>
+          ))
+        )}
       </div>
 
       {hasMilestone ? (
@@ -94,7 +102,7 @@ export function GoalsSection({
 function GoalTrackRow({ track }: { track: GoalTrack }) {
   const { t } = useTranslation()
 
-  const tone = track.behind ? 'text-attention' : 'text-ink3'
+  const tone = track.behind ? 'text-attention-ink' : 'text-ink3'
   // A goal with something in it must never read as 0% — that is the difference
   // between "not started" and "started", which is the whole point early on.
   const percentLabel =

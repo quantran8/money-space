@@ -289,7 +289,7 @@ export function CategoriesCard() {
                               {t('common.edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="text-alert focus:text-alert"
+                              className="text-alert-ink focus:text-alert-ink"
                               onSelect={() => setDeleteTarget(category)}
                             >
                               <Trash2 className="size-4" />

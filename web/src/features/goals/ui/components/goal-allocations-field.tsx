@@ -90,7 +90,7 @@ export function GoalAllocationsField({
       {error ? (
         <div
           role="alert"
-          className="mb-4 rounded-[12px] bg-[var(--alert-soft,#fff3ef)] px-4 py-3 t-caption leading-5 text-alert"
+          className="mb-4 rounded-[12px] bg-[var(--alert-soft,#fff3ef)] px-4 py-3 t-caption leading-5 text-alert-ink"
         >
           {error}
         </div>
@@ -148,7 +148,7 @@ export function GoalAllocationsField({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="s-tap size-9 shrink-0 text-ink3 hover:bg-card hover:text-alert"
+                      className="s-tap size-9 shrink-0 text-ink3 hover:bg-card hover:text-alert-ink"
                       aria-label={t('goals.allocations.remove')}
                       onClick={() => onChange(value.filter((_, rowIndex) => rowIndex !== index))}
                     >
@@ -232,16 +232,16 @@ export function GoalAllocationsField({
 
                       {contested ? (
                         <div className="mt-4 rounded-[11px] bg-[var(--attention-soft,#fbf4e6)] p-3.5">
-                          <p className="t-caption font-medium text-attention">
+                          <p className="t-caption font-medium text-attention-ink">
                             {t('goals.builder.sharedWallet')}
                           </p>
-                          <p className="mt-1 t-caption-sm leading-4 text-attention">
+                          <p className="mt-1 t-caption-sm leading-4 text-attention-ink">
                             {t('goals.builder.samePriorityWith', {
                               goals: (walletGoalNames?.get(row.assetId) ?? []).join(', '),
                             })}
                           </p>
                           <div className="mt-3 flex items-center gap-3">
-                            <label className="flex-1 t-caption-sm leading-4 text-attention">
+                            <label className="flex-1 t-caption-sm leading-4 text-attention-ink">
                               {t('goals.allocations.shareLabel')}
                             </label>
                             <div className="flex h-12 w-24 items-center rounded-[10px] border border-transparent bg-card px-3 transition-[border-color,box-shadow] duration-150 focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]">

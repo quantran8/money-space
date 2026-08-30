@@ -100,7 +100,7 @@ export function SignupView({ form, onSubmit, onGoogle, googlePending }: SignupVi
             </span>
           </label>
           {errors.agreeTerms?.message ? (
-            <p className="mt-1.5 t-caption font-medium text-alert">
+            <p className="mt-1.5 t-caption font-medium text-alert-ink">
               {errors.agreeTerms.message}
             </p>
           ) : null}

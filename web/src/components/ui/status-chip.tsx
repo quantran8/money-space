@@ -20,8 +20,8 @@ const DOT: Record<ChipTone, string> = {
 const TEXT: Record<ChipTone, string> = {
   neutral: 'text-ink2',
   accent: 'text-ink2',
-  attention: 'font-medium text-attention',
-  alert: 'font-medium text-alert',
+  attention: 'font-medium text-attention-ink',
+  alert: 'font-medium text-alert-ink',
 }
 
 export function StatusChip({

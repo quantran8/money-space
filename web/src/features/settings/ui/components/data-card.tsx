@@ -79,7 +79,7 @@ export function DangerCard({ onDelete }: { onDelete: () => void }) {
     // lightness (§2.2) — this one is the exception the rule exists for: it is
     // the only panel whose action cannot be undone, and the stroke is what
     // stops it reading as another settings row.
-    <Panel className="border border-alert/34">
+    <Panel className="border border-alert-ink/34">
       <PanelHeader title={t('settings.data.delete')} meta={t('settings.data.dangerMeta')} />
 
       <div className="s-head-body grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_auto]">

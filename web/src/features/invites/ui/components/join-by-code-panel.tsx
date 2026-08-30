@@ -72,7 +72,7 @@ export function JoinByCodePanel() {
           spellCheck={false}
           className="font-mono t-body-sm"
         />
-        {error ? <p className="mt-2 t-caption font-medium text-alert">{error}</p> : null}
+        {error ? <p className="mt-2 t-caption font-medium text-alert-ink">{error}</p> : null}
 
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
           {!scanning ? (

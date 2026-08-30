@@ -148,7 +148,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
         ) : !after.obligationsCovered ? (
           // Something is short, but this spend did not cause it — say so
           // without attaching a list that would misattribute the blame.
-          <p className="mt-5 t-body-sm text-attention">
+          <p className="mt-5 t-body-sm text-attention-ink">
             {t('whatif.obligations.notCovered')}
           </p>
         ) : null}
@@ -164,7 +164,7 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
               giving way, so it gets its own line rather than being folded into
               the per-goal list. */}
           {result.goalImpact.uncovered > 0 ? (
-            <p className="mb-2 t-body-sm text-alert">
+            <p className="mb-2 t-body-sm text-alert-ink">
               {t('whatif.blocks.uncovered', {
                 amount: formatVndShort(result.goalImpact.uncovered),
               })}

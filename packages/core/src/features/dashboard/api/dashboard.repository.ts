@@ -45,10 +45,19 @@ const EMPTY_OVERVIEW: DashboardOverview = {
   attentionCount: 0,
 }
 
+/**
+ * One attention signal. Every signal is DERIVED on the server from the live
+ * forecast, so it carries no text: the client renders the sentence from
+ * `ruleCode` + `params`. See backend memory/attention-items.md.
+ */
 export type AttentionItem = {
-  title: string
-  reason: string
-  level: string
+  id: string
+  ruleCode: string
+  level: 'normal' | 'important' | 'urgent'
+  amount: number | null
+  relatedObjectType: string | null
+  relatedObjectId: string | null
+  params: Record<string, string | number | boolean>
 }
 
 export async function getDashboard(householdId: string): Promise<DashboardOverview> {

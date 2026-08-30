@@ -175,12 +175,20 @@ Không dùng divider sau mọi row theo thói quen.
 ### Field
 
 ```txt
-background --wash
-no border at rest
-radius 12–14px
-focus ring --action
+background --card (trắng)
+border 1px --committed at rest
+radius --radius-control (14px), cao 44 (h-11)
+focus: border --data-primary + ring 3px rgba(115,164,215,.16)
+disabled: fill --field-disabled, border --divider, chữ --ink3
 label rõ
 ```
+
+Field **không** dùng `--wash`: bên trong một card trắng, một control nền wash
+đọc ra là một surface level thứ hai chứ không phải một field. Stroke làm việc đó
+mà không tốn một bậc lightness. Focus cũng không còn là ink outline 2px — ở
+radius 14 nó đọc ra như một slab bị disable. Xem Components.dc, "Input /
+FormField"; hiện thực ở `input.tsx` / `textarea.tsx` / `select.tsx` và
+`form-22.tsx` (`fieldShell`).
 
 Ví dụ:
 

@@ -65,6 +65,18 @@ export type MarketPosition = {
   lastPrice?: number
   /** ISO timestamp at which `lastPrice` was observed. */
   lastPriceAt?: string
+  /**
+   * Today's price from the server's shared market cache, in
+   * `marketPriceCurrency`. Filled per response by `listAssets` — never stored,
+   * and deliberately separate from `lastPrice`, which is what was RECORDED.
+   *
+   * Absent when the instrument is not in the cache (unpriceable, feed down).
+   */
+  marketPrice?: number
+  /** Currency of `marketPrice` — the instrument's OWN, never converted. */
+  marketPriceCurrency?: string
+  /** ISO timestamp the upstream observed `marketPrice`. */
+  marketPriceAt?: string
 }
 
 /** How interest is paid out during the term (kỳ trả lãi). */

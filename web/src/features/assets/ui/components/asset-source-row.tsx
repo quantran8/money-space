@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Trash2, HandCoins } from 'lucide-react'
+import { MoreHorizontal, Pencil, Plus, Trash2, HandCoins } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,8 @@ type AssetSourceRowProps = {
   onOpen?: (assetId: string) => void
   onEdit: (assetId: string) => void
   onSell?: (assetId: string) => void
+  /** Buy more of a held position — re-averages its cost basis. */
+  onBuyMore?: (assetId: string) => void
   onDelete: (assetId: string) => void
 }
 
@@ -46,12 +48,16 @@ export function AssetSourceRow({
   onOpen,
   onEdit,
   onSell,
+  onBuyMore,
   onDelete,
 }: AssetSourceRowProps) {
   const { t } = useTranslation()
   const value = computeCurrentValue(asset, asOf)
   const isSold = asset.status === 'sold'
   const canSell = !isSold && isSellableAssetType(asset.type)
+  // Buying more re-averages a cost basis, so it needs a position to average
+  // INTO — a balance asset has none.
+  const canBuyMore = !isSold && !!asset.marketPosition
   const freshness = formatFreshness(asset.valueUpdatedAt, t)
 
   return (
@@ -77,7 +83,7 @@ export function AssetSourceRow({
           >
             {holderInitials}
           </span>
-          <span className={cn('truncate t-caption', freshness.stale ? 'text-attention' : 'text-ink3')}>
+          <span className={cn('truncate t-caption', freshness.stale ? 'text-attention-ink' : 'text-ink3')}>
             {freshness.label}
           </span>
         </span>
@@ -108,6 +114,12 @@ export function AssetSourceRow({
               <Pencil className="size-4" />
               {t('common.edit')}
             </DropdownMenuItem>
+            {canBuyMore && onBuyMore ? (
+              <DropdownMenuItem onSelect={() => onBuyMore(asset.id)}>
+                <Plus className="size-4" />
+                {t('assets.purchase.title')}
+              </DropdownMenuItem>
+            ) : null}
             {canSell && onSell ? (
               <DropdownMenuItem onSelect={() => onSell(asset.id)}>
                 <HandCoins className="size-4" />
@@ -115,7 +127,7 @@ export function AssetSourceRow({
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem
-              className="text-alert focus:text-alert"
+              className="text-alert-ink focus:text-alert-ink"
               onSelect={() => onDelete(asset.id)}
             >
               <Trash2 className="size-4" />

@@ -198,7 +198,7 @@ export function GoalFormDialog({
                           htmlFor="goal-name"
                           error={errors.name?.message}
                         >
-                          <div className={cn(fieldShell, 'h-12', errors.name && 'border-alert')}>
+                          <div className={cn(fieldShell, 'h-12', errors.name && 'border-alert-ink')}>
                             <input
                               id="goal-name"
                               maxLength={80}
@@ -462,7 +462,7 @@ function PlanDatePriorityFields({
         </div>
       </Field>
       <Field label={t('goals.form.priority')} error={priorityError}>
-        <div className={cn(fieldShell, 'h-12', priorityError && 'border-alert')}>
+        <div className={cn(fieldShell, 'h-12', priorityError && 'border-alert-ink')}>
           <Controller
             control={control}
             name="priority"
@@ -503,7 +503,7 @@ function EditPlanFields({
       <SectionIntro title={t('goals.builder.updatePlan')} description={t('goals.builder.updateDescription')} />
       <div className="space-y-5">
         <Field label={t('goals.form.name')} htmlFor="goal-name" error={errors.name?.message}>
-          <div className={cn(fieldShell, 'h-12', errors.name && 'border-alert')}>
+          <div className={cn(fieldShell, 'h-12', errors.name && 'border-alert-ink')}>
             <input id="goal-name" maxLength={80} className={fieldInput} {...register('name')} />
           </div>
         </Field>

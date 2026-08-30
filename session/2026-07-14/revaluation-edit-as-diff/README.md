@@ -6,7 +6,7 @@
 
 ## What the task is
 
-The money-event edit flow for an `asset_update` (revaluation / "Định giá lại")
+The money-event edit flow for an `asset_update` (revaluation / "Cập nhật giá trị")
 record was wrong on two counts:
 
 1. The edit modal prefilled the amount field with the asset's **current balance**

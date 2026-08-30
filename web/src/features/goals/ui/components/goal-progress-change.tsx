@@ -49,7 +49,7 @@ export function GoalProgressChange({ goalId }: { goalId: string }) {
       {change.reasons.length > 0 ? (
         <>
           {' · '}
-          <span className={cn(fell && 'text-attention')}>
+          <span className={cn(fell && 'text-attention-ink')}>
             {change.reasons
               .map((reason) =>
                 t(

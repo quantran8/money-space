@@ -37,11 +37,20 @@ type EventsTimelineCardProps = {
   query: string
   onQueryChange: (query: string) => void
   isLoading?: boolean
+  /**
+   * Event id → the wallet balance at that event, when it is negative. Passed in
+   * rather than fetched here so this card stays presentational, like every other
+   * input it takes.
+   */
+  overdrafts?: Record<string, number>
   onEditEvent: (id: string) => void
   onDuplicateEvent: (id: string) => void
   onToggleEventAttention: (id: string) => void
   onDeleteEvent: (id: string) => void
 }
+
+/** Stable identity so a card with no overdrafts does not re-render on every pass. */
+const NO_OVERDRAFTS: Record<string, number> = {}
 
 export function EventsTimelineCard({
   tab,
@@ -54,6 +63,7 @@ export function EventsTimelineCard({
   query,
   onQueryChange,
   isLoading = false,
+  overdrafts = NO_OVERDRAFTS,
   onEditEvent,
   onDuplicateEvent,
   onToggleEventAttention,
@@ -195,7 +205,12 @@ export function EventsTimelineCard({
                 </h3>
                 <div className="flex flex-col gap-1">
                   {items.map((record) => (
-                    <RecordCard key={record.id} record={record} {...recordProps} />
+                    <RecordCard
+                      key={record.id}
+                      record={record}
+                      overdraftBalance={overdrafts[record.id]}
+                      {...recordProps}
+                    />
                   ))}
                 </div>
               </section>

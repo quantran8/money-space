@@ -132,6 +132,25 @@ export function updateAsset(
 }
 
 /**
+ * Buy more of a position the household already holds.
+ *
+ * Deliberately NOT an asset update: adding to a holding by editing `quantity`
+ * moves no money and leaves no event, so net worth grows out of nothing and the
+ * whole enlarged position keeps the old cost basis. This debits the wallet that
+ * paid and re-averages that basis on the server.
+ */
+export function purchaseIntoPosition(
+  householdId: string,
+  assetId: string,
+  payload: { quantity: number; purchasePrice: number; fundingAssetId?: string | null },
+) {
+  return apiRequest(`/households/${householdId}/assets/${assetId}/purchase`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+/**
  * What deleting this asset would detach — goals whose claims would go, events
  * and debts that would lose their wallet pointer.
  *

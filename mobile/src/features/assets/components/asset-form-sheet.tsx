@@ -43,6 +43,23 @@ import {
 import { SymbolPicker } from '@/features/assets/components/symbol-picker'
 
 type WalletOption = { value: string; label: string; balance?: number }
+
+/**
+ * A field the record cannot change once it exists — shown, not hidden, so the
+ * user still sees what they are editing. The field shell with its text muted to
+ * `ink3`, which is how the app says "you cannot type here".
+ */
+function LockedField({ label, value }: { label: string; value: string }) {
+  return (
+    <View>
+      <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text>
+      <View className="h-[46px] justify-center rounded-sunk border border-hair bg-sunk px-3.5">
+        <Text className="text-[16px] text-ink3">{value}</Text>
+      </View>
+    </View>
+  )
+}
+
 type Translate = (key: string, params?: Record<string, unknown>) => string
 type Control = UseFormReturn<AssetForm>['control']
 type Errors = UseFormReturn<AssetForm>['formState']['errors']
@@ -66,6 +83,8 @@ export function AssetFormSheet({
   mode,
   walletOptions,
   isEditing,
+  onBuyMore,
+  onAdjustQuantity,
   isSubmitting,
   onSubmit,
   editingAsset,
@@ -78,6 +97,10 @@ export function AssetFormSheet({
   mode: ValuationMode
   walletOptions: WalletOption[]
   isEditing: boolean
+  /** Open the "buy more" flow — editing a holding routes here, not to a text box. */
+  onBuyMore?: () => void
+  /** Open the "correct this quantity" flow. */
+  onAdjustQuantity?: () => void
   isSubmitting: boolean
   onSubmit: () => void
   /** The stored record behind an edit — drives the §22.8 change sentence. */
@@ -144,23 +167,32 @@ export function AssetFormSheet({
       }
     >
       <View className="gap-4">
-        <Select
-          label={t('assets.form.type')}
-          value={selectedType}
-          placeholder={t('assets.form.typePlaceholder')}
-          error={errors.type?.message}
-          searchable={false}
-          onChange={handleTypeChange}
-          // Grouped by how the value is arrived at: a balance you hold, a price
-          // the market sets, everything else.
-          options={assetTypeGroups.flatMap((group) =>
-            group.types.map((type) => ({
-              value: type,
-              label: t(`options.assetType.${type}`),
-              group: t(`assets.form.typeGroup.${group.id}`),
-            })),
-          )}
-        />
+        {/* Locked on edit — a wrong type is deleted and entered again, not
+            re-typed over an asset's history (memory/assets.md). */}
+        {isEditing ? (
+          <LockedField
+            label={t('assets.form.type')}
+            value={t(`options.assetType.${selectedType}`)}
+          />
+        ) : (
+          <Select
+            label={t('assets.form.type')}
+            value={selectedType}
+            placeholder={t('assets.form.typePlaceholder')}
+            error={errors.type?.message}
+            searchable={false}
+            onChange={handleTypeChange}
+            // Grouped by how the value is arrived at: a balance you hold, a price
+            // the market sets, everything else.
+            options={assetTypeGroups.flatMap((group) =>
+              group.types.map((type) => ({
+                value: type,
+                label: t(`options.assetType.${type}`),
+                group: t(`assets.form.typeGroup.${group.id}`),
+              })),
+            )}
+          />
+        )}
 
         {/* A market-priced holding is identified AND named by its symbol, so a
             second name field would ask for the same thing twice. */}
@@ -191,6 +223,9 @@ export function AssetFormSheet({
             errors={errors}
             type={selectedType}
             setValue={setValue}
+            isEditing={isEditing}
+            onBuyMore={onBuyMore}
+            onAdjustQuantity={onAdjustQuantity}
             t={t}
           />
         ) : null}
@@ -305,7 +340,6 @@ function AssetEffect({
   const rawPrincipal = useWatch({ control, name: 'principal' })
   const name = useWatch({ control, name: 'name' })
   const symbol = useWatch({ control, name: 'symbol' })
-  const type = useWatch({ control, name: 'type' })
 
   // A market-priced asset is valued from a live quote, so no honest amount can
   // be shown while typing — never look more certain than the data.
@@ -332,14 +366,6 @@ function AssetEffect({
       name?.trim() || (mode === 'market_priced' ? (symbol?.trim().toUpperCase() ?? '') : '')
     if (nextName && nextName !== editingAsset.name) {
       changes.push(t('assets.form.changeName', { from: editingAsset.name, to: nextName }))
-    }
-    if (type && type !== editingAsset.type) {
-      changes.push(
-        t('assets.form.changeType', {
-          from: t(`options.assetType.${editingAsset.type}`),
-          to: t(`options.assetType.${type}`),
-        }),
-      )
     }
     // Flipping this moves money in and out of the household's headline figure.
     if (countsAsFlexible !== (editingAsset.liquidity === 'usable_now')) {
@@ -496,12 +522,18 @@ function MarketFields({
   errors,
   type,
   setValue,
+  isEditing,
+  onBuyMore,
+  onAdjustQuantity,
   t,
 }: {
   control: Control
   errors: Errors
   type: AssetType
   setValue: UseFormSetValue<AssetForm>
+  isEditing: boolean
+  onBuyMore?: () => void
+  onAdjustQuantity?: () => void
   t: Translate
 }) {
   const fieldPrefix = `assets.form.market.${type}`
@@ -540,41 +572,47 @@ function MarketFields({
 
   return (
     <>
-      <Controller
-        control={control}
-        name="symbol"
-        render={({ field }) =>
-          assetClass ? (
-            <SymbolPicker
-              label={t(`${fieldPrefix}.symbol`)}
-              assetClass={assetClass}
-              value={field.value}
-              onChange={field.onChange}
-              onSelectSymbol={(reference) => {
-                // The venue/brand rides along so the backend can route pricing,
-                // and the unit comes from reference data rather than a guess.
-                setValue('market', reference.exchange ?? '', { shouldDirty: true })
-                if (reference.unit) setValue('unit', reference.unit, { shouldDirty: true })
-              }}
-              placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
-              error={errors.symbol?.message}
-            />
-          ) : (
-            // A class with no instrument list behind it keeps a text field — a
-            // picker that can only answer "not found" is worse than typing.
-            <Field
-              label={t(`${fieldPrefix}.symbol`)}
-              placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-              error={errors.symbol?.message}
-              autoCapitalize="characters"
-              autoCorrect={false}
-            />
-          )
-        }
-      />
+      {/* The symbol IS the holding: switching it is a sale plus a purchase,
+          not an edit. Same reason the quantity below is read-only. */}
+      {isEditing ? (
+        <LockedField label={t(`${fieldPrefix}.symbol`)} value={symbol} />
+      ) : (
+        <Controller
+          control={control}
+          name="symbol"
+          render={({ field }) =>
+            assetClass ? (
+              <SymbolPicker
+                label={t(`${fieldPrefix}.symbol`)}
+                assetClass={assetClass}
+                value={field.value}
+                onChange={field.onChange}
+                onSelectSymbol={(reference) => {
+                  // The venue/brand rides along so the backend can route pricing,
+                  // and the unit comes from reference data rather than a guess.
+                  setValue('market', reference.exchange ?? '', { shouldDirty: true })
+                  if (reference.unit) setValue('unit', reference.unit, { shouldDirty: true })
+                }}
+                placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
+                error={errors.symbol?.message}
+              />
+            ) : (
+              // A class with no instrument list behind it keeps a text field — a
+              // picker that can only answer "not found" is worse than typing.
+              <Field
+                label={t(`${fieldPrefix}.symbol`)}
+                placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
+                value={field.value}
+                onChangeText={field.onChange}
+                onBlur={field.onBlur}
+                error={errors.symbol?.message}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+            )
+          }
+        />
+      )}
 
       <MarketQuoteHint
         symbol={symbol}
@@ -584,25 +622,52 @@ function MarketFields({
         t={t}
       />
 
-      <Controller
-        control={control}
-        name="quantity"
-        render={({ field }) => {
-          const wholeOnly = isWholeQuantityType(type)
-          return (
-            <DecimalInput
-              label={t(`${fieldPrefix}.quantity`)}
-              value={field.value}
-              // A share is indivisible: the decimal part is dropped as it is
-              // typed rather than accepted and rejected later.
-              onChange={wholeOnly ? (raw) => field.onChange(raw.split(',')[0]) : field.onChange}
-              placeholder="0"
-              suffix={wholeOnly ? t(`${fieldPrefix}.quantitySuffix`) : undefined}
-              error={errors.quantity?.message}
+      {/* Editing routes to the act — buy, sell, or correct — rather than letting
+          the holding be overwritten. Typing over it moved no money and left no
+          event when more was bought, and recorded a corrected typo as the PRICE
+          having moved. Mirrors the web form. */}
+      {isEditing ? (
+        <View className="gap-3 rounded-2xl bg-wash px-4 py-3">
+          <View className="flex-row items-baseline justify-between">
+            <Text className="text-ink2">{t(`${fieldPrefix}.quantity`)}</Text>
+            <Controller
+              control={control}
+              name="quantity"
+              render={({ field }) => (
+                <Text className="font-medium text-foreground">{field.value || '0'}</Text>
+              )}
             />
-          )
-        }}
-      />
+          </View>
+          <View className="flex-row gap-2">
+            <Button variant="secondary" onPress={onBuyMore}>
+              {t('assets.purchase.title')}
+            </Button>
+            <Button variant="secondary" onPress={onAdjustQuantity}>
+              {t('assets.quantityAdjustment.title')}
+            </Button>
+          </View>
+        </View>
+      ) : (
+        <Controller
+          control={control}
+          name="quantity"
+          render={({ field }) => {
+            const wholeOnly = isWholeQuantityType(type)
+            return (
+              <DecimalInput
+                label={t(`${fieldPrefix}.quantity`)}
+                value={field.value}
+                // A share is indivisible: the decimal part is dropped as it is
+                // typed rather than accepted and rejected later.
+                onChange={wholeOnly ? (raw) => field.onChange(raw.split(',')[0]) : field.onChange}
+                placeholder="0"
+                suffix={wholeOnly ? t(`${fieldPrefix}.quantitySuffix`) : undefined}
+                error={errors.quantity?.message}
+              />
+            )
+          }}
+        />
+      )}
 
       {type === 'gold' ? (
         <Controller

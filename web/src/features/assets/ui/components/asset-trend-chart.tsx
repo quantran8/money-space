@@ -64,7 +64,7 @@ export function AssetTrendChart({ snapshots }: AssetTrendChartProps) {
           className={
             growth >= 0
               ? 't-body-sm font-medium text-action'
-              : 't-body-sm font-medium text-alert'
+              : 't-body-sm font-medium text-alert-ink'
           }
         >
           {growth >= 0 ? '+' : ''}

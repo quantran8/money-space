@@ -75,7 +75,7 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
             {...register('password')}
           />
           {errors.password?.message ? (
-            <p className="t-caption font-medium text-alert">{errors.password.message}</p>
+            <p className="t-caption font-medium text-alert-ink">{errors.password.message}</p>
           ) : null}
         </div>
 

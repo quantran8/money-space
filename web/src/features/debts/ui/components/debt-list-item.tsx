@@ -81,7 +81,7 @@ export function DebtListItem({
         {nextPayment ? (
           formatDate(nextPayment.expectedDate)
         ) : (
-          <span className="text-attention">{t('debts.demo.unconfirmed')}</span>
+          <span className="text-attention-ink">{t('debts.demo.unconfirmed')}</span>
         )}
       </TableCell>
       <TableCell className="num text-right t-caption">
@@ -117,7 +117,7 @@ export function DebtListItem({
               ) : null}
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="text-alert focus:text-alert"
+                className="text-alert-ink focus:text-alert-ink"
                 onClick={() => onDelete(debt.id)}
               >
                 <Trash2 className="size-4" /> {t('common.delete')}

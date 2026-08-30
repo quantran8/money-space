@@ -6,7 +6,7 @@ import {
   type UseFormSetValue,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { ChevronDownIcon } from 'lucide-react'
+import { ChevronDownIcon, Trash2Icon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -149,10 +149,20 @@ export function AssetFormDialog({
           <ResponsiveDialogTitle className="t-subhead font-medium tracking-[-0.015em]">
             {isEditing ? t('assets.form.updateTitle') : t('assets.form.createTitle')}
           </ResponsiveDialogTitle>
-          {/* §16.2 — a subtitle here would be mood, not meaning. */}
-          <ResponsiveDialogDescription className="sr-only">
-            {t('assets.form.help')}
-          </ResponsiveDialogDescription>
+          {/* On edit, what is being edited: the holding's own name and its
+              kind. Both used to be locked fields taking up the top of the form
+              — as a subtitle they identify the record without pretending to be
+              editable. On create there is nothing to name yet, so §16.2 holds
+              and the description stays for screen readers only. */}
+          {isEditing && editingAsset ? (
+            <ResponsiveDialogDescription className="mt-1 t-body-sm text-ink3">
+              {`${editingAsset.name} · ${t(`options.assetType.${selectedType}`)}`}
+            </ResponsiveDialogDescription>
+          ) : (
+            <ResponsiveDialogDescription className="sr-only">
+              {t('assets.form.help')}
+            </ResponsiveDialogDescription>
+          )}
         </ResponsiveDialogHeader>
 
         <form
@@ -161,48 +171,53 @@ export function AssetFormDialog({
           noValidate
         >
           <div className="space-y-4">
-            <Field label={t('assets.form.type')} error={errors.type?.message}>
-              <div className={fieldShell}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    className={cn(
-                      fieldControlReset,
-                      'flex items-center justify-between gap-2 text-left outline-none',
-                    )}
-                  >
-                    <span className={cn('truncate', !selectedType && 'text-ink3')}>
-                      {selectedType
-                        ? t(`options.assetType.${selectedType}`)
-                        : t('assets.form.typePlaceholder')}
-                    </span>
-                    <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="start"
-                    className="max-h-[320px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto"
-                  >
-                    <DropdownMenuRadioGroup
-                      value={selectedType}
-                      onValueChange={(next) => handleTypeChange(next as AssetType)}
+            {/* A wrong type is deleted and entered again, not re-typed over an
+                asset's history (memory/assets.md) — so on edit it is not a
+                field at all: the header subtitle names it instead. */}
+            {isEditing ? null : (
+              <Field label={t('assets.form.type')} error={errors.type?.message}>
+                <div className={fieldShell}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      className={cn(
+                        fieldControlReset,
+                        'flex items-center justify-between gap-2 text-left outline-none',
+                      )}
                     >
-                      {assetTypeGroups.map((group, index) => (
-                        <Fragment key={group.id}>
-                          {index > 0 ? <DropdownMenuSeparator /> : null}
-                          <DropdownMenuLabel>
-                            {t(`assets.form.typeGroup.${group.id}`)}
-                          </DropdownMenuLabel>
-                          {group.types.map((type) => (
-                            <DropdownMenuRadioItem key={type} value={type}>
-                              {t(`options.assetType.${type}`)}
-                            </DropdownMenuRadioItem>
-                          ))}
-                        </Fragment>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </Field>
+                      <span className={cn('truncate', !selectedType && 'text-ink3')}>
+                        {selectedType
+                          ? t(`options.assetType.${selectedType}`)
+                          : t('assets.form.typePlaceholder')}
+                      </span>
+                      <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      className="max-h-[320px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto"
+                    >
+                      <DropdownMenuRadioGroup
+                        value={selectedType}
+                        onValueChange={(next) => handleTypeChange(next as AssetType)}
+                      >
+                        {assetTypeGroups.map((group, index) => (
+                          <Fragment key={group.id}>
+                            {index > 0 ? <DropdownMenuSeparator /> : null}
+                            <DropdownMenuLabel>
+                              {t(`assets.form.typeGroup.${group.id}`)}
+                            </DropdownMenuLabel>
+                            {group.types.map((type) => (
+                              <DropdownMenuRadioItem key={type} value={type}>
+                                {t(`options.assetType.${type}`)}
+                              </DropdownMenuRadioItem>
+                            ))}
+                          </Fragment>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </Field>
+            )}
 
             {/* A market-priced holding is identified and named by its symbol or
                 kind, so a second custom-name field would duplicate input. */}
@@ -226,6 +241,7 @@ export function AssetFormDialog({
                 errors={errors}
                 type={selectedType}
                 setValue={setValue}
+                isEditing={isEditing}
                 t={t}
               />
             ) : null}
@@ -258,6 +274,7 @@ export function AssetFormDialog({
             <ToggleRow
               id="asset-counts-as-flexible"
               label={t('assets.form.countsAsFlexible')}
+              hint={t('assets.form.countsAsFlexibleHint')}
               control={control}
               name="countsAsFlexible"
             />
@@ -301,35 +318,34 @@ export function AssetFormDialog({
             </Disclosure>
           </div>
 
-          {/* §22.11 — a text button in the row, never a bordered "Danger zone". */}
+          {/* §22.11 — the destructive action sits in the row, never in a
+              bordered "Danger zone". It wears the `destructive` variant from
+              Components.dc: an alert-fill pill, not a bare text link.
+
+              No Cancel button: the dialog is dismissed by its own close control
+              and by Esc, so a third button in the row only competes with the
+              two that DO something. */}
           <ResponsiveDialogFooter className="mt-5 gap-2.5 sm:items-center sm:justify-between">
             {isEditing && onRemove ? (
-              <button
-                type="button"
-                onClick={onRemove}
-                className="t-body-sm text-alert transition-opacity hover:opacity-70 sm:mr-auto"
-              >
-                {t('assets.form.remove')}
-              </button>
-            ) : null}
-            <div className="flex items-center gap-2.5">
               <Button
                 type="button"
-                variant="secondary"
-                className="px-4"
-                onClick={() => handleOpenChange(false)}
+                variant="destructive"
+                size="sm"
+                onClick={onRemove}
+                className="sm:mr-auto"
               >
-                {t('common.cancel')}
+                <Trash2Icon />
+                {t('assets.form.remove')}
               </Button>
-              {/* §22.10 — never disabled on validity; errors explain the reason. */}
-              <Button type="submit" className="px-5" disabled={isSubmitting}>
-                {isSubmitting
-                  ? t('assets.form.saving')
-                  : isEditing
-                    ? t('assets.form.update')
-                    : t('assets.form.create')}
-              </Button>
-            </div>
+            ) : null}
+            {/* §22.10 — never disabled on validity; errors explain the reason. */}
+            <Button type="submit" className="px-5" disabled={isSubmitting}>
+              {isSubmitting
+                ? t('assets.form.saving')
+                : isEditing
+                  ? t('assets.form.update')
+                  : t('assets.form.create')}
+            </Button>
           </ResponsiveDialogFooter>
         </form>
       </ResponsiveDialogContent>
@@ -369,7 +385,6 @@ function AssetEffect({
   const rawPrincipal = useWatch({ control, name: 'principal' })
   const name = useWatch({ control, name: 'name' })
   const symbol = useWatch({ control, name: 'symbol' })
-  const type = useWatch({ control, name: 'type' })
 
   // Market-priced assets are valued from a live quote, so no honest amount can
   // be shown here while typing (§2.16 — never look more certain than the data).
@@ -396,14 +411,6 @@ function AssetEffect({
       name?.trim() || (mode === 'market_priced' ? (symbol?.trim().toUpperCase() ?? '') : '')
     if (nextName && nextName !== editingAsset.name) {
       changes.push(t('assets.form.changeName', { from: editingAsset.name, to: nextName }))
-    }
-    if (type && type !== editingAsset.type) {
-      changes.push(
-        t('assets.form.changeType', {
-          from: t(`options.assetType.${editingAsset.type}`),
-          to: t(`options.assetType.${type}`),
-        }),
-      )
     }
     // Flipping this moves money in and out of the household's headline figure,
     // so it is exactly the kind of change §22.8 exists to state out loud.
@@ -440,19 +447,25 @@ function AssetEffect({
 function ToggleRow({
   id,
   label,
+  hint,
   control,
   name,
 }: {
   id: string
   label: string
+  /** The consequence of switching it on, when the label alone does not carry it. */
+  hint?: string
   control: Control
   name: 'hasInterest' | 'countsAsFlexible'
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <label htmlFor={id} className="t-body-sm leading-[1.4] text-ink2">
-        {label}
-      </label>
+      <div className="min-w-0">
+        <label htmlFor={id} className="t-body-sm leading-[1.4] text-ink2">
+          {label}
+        </label>
+        {hint ? <p className="mt-1 t-caption leading-[1.45] text-ink3">{hint}</p> : null}
+      </div>
       <Controller
         control={control}
         name={name}
@@ -526,7 +539,7 @@ function AcquisitionFields({
 
       {acquisition === 'purchased' ? (
         <Field label={t('assets.form.payFrom')} error={errors.fundingAssetId?.message}>
-          <div className={cn(fieldShell, errors.fundingAssetId && 'border-alert')}>
+          <div className={cn(fieldShell, errors.fundingAssetId && 'border-alert-ink')}>
             <Controller
               control={control}
               name="fundingAssetId"
@@ -624,12 +637,14 @@ function MarketFields({
   errors,
   type,
   setValue,
+  isEditing,
   t,
 }: {
   control: Control
   errors: Errors
   type: AssetType
   setValue: UseFormSetValue<AssetForm>
+  isEditing: boolean
   t: Translate
 }) {
   const fieldPrefix = `assets.form.market.${type}`
@@ -688,57 +703,67 @@ function MarketFields({
 
   return (
     <>
-      <Controller
-        control={control}
-        name="symbol"
-        render={({ field }) => (
-          <Field label={t(`${fieldPrefix}.symbol`)} error={errors.symbol?.message}>
-            <div className={cn(fieldShell, errors.symbol && 'border-alert')}>
-              {assetClass ? (
-                <SymbolCombobox
-                  assetClass={assetClass}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onSelectSymbol={(reference) => {
-                    // The venue/brand rides along so the backend can route
-                    // pricing, and the unit comes from reference data rather
-                    // than being guessed from the symbol.
-                    setValue('market', reference.exchange ?? '', {
-                      shouldDirty: true,
-                    })
-                    if (reference.unit) {
-                      setValue('unit', reference.unit, { shouldDirty: true })
-                    }
-                  }}
-                  placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
-                />
-              ) : (
-                // A class with no instrument list behind it (funds) keeps a
-                // text field — a combobox that can only answer "not found"
-                // would be worse than letting the user type the code.
-                <input
-                  className="h-full w-full min-w-0 bg-transparent t-body uppercase leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
-                  placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
-                  autoCapitalize="characters"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                />
-              )}
-            </div>
-          </Field>
-        )}
-      />
+      {/* The symbol IS the holding: switching it is a sale plus a purchase, not
+          an edit — so on edit it is shown in the header subtitle, not offered
+          as a field here. */}
+      {isEditing ? null : (
+        <Controller
+          control={control}
+          name="symbol"
+          render={({ field }) => (
+            <Field label={t(`${fieldPrefix}.symbol`)} error={errors.symbol?.message}>
+              <div className={cn(fieldShell, errors.symbol && 'border-alert-ink')}>
+                {assetClass ? (
+                  <SymbolCombobox
+                    assetClass={assetClass}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onSelectSymbol={(reference) => {
+                      // The venue/brand rides along so the backend can route
+                      // pricing, and the unit comes from reference data rather
+                      // than being guessed from the symbol.
+                      setValue('market', reference.exchange ?? '', {
+                        shouldDirty: true,
+                      })
+                      if (reference.unit) {
+                        setValue('unit', reference.unit, { shouldDirty: true })
+                      }
+                    }}
+                    placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
+                  />
+                ) : (
+                  // A class with no instrument list behind it (funds) keeps a
+                  // text field — a combobox that can only answer "not found"
+                  // would be worse than letting the user type the code.
+                  <input
+                    className="h-full w-full min-w-0 bg-transparent t-body uppercase leading-none text-ink outline-none placeholder:font-normal placeholder:text-ink3"
+                    placeholder={t(`${fieldPrefix}.symbolPlaceholder`)}
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                  />
+                )}
+              </div>
+            </Field>
+          )}
+        />
+      )}
 
-      <MarketQuoteHint
-        symbol={symbol}
-        quote={quote}
-        isLoading={isLoading}
-        isUnavailable={isUnavailable}
-        t={t}
-      />
+      {/* Prices a NEW holding as it is entered. On edit the cost basis is
+          already settled and the detail page carries today's price, so it would
+          be a second number competing with the field beside it. */}
+      {isEditing ? null : (
+        <MarketQuoteHint
+          symbol={symbol}
+          quote={quote}
+          isLoading={isLoading}
+          isUnavailable={isUnavailable}
+          t={t}
+        />
+      )}
 
       <Controller
         control={control}
@@ -918,7 +943,7 @@ function FormulaFields({
         label={t(isLoan ? 'assets.form.loanStartDate' : 'assets.form.startDate')}
         error={errors.startDate?.message}
       >
-        <div className={cn(fieldShell, errors.startDate && 'border-alert')}>
+        <div className={cn(fieldShell, errors.startDate && 'border-alert-ink')}>
           <Controller
             control={control}
             name="startDate"
@@ -937,7 +962,7 @@ function FormulaFields({
           field people reach for next, so it stays in the main section. */}
       {isLoan ? (
         <Field label={t('assets.form.maturityDate')} error={errors.maturityDate?.message}>
-          <div className={cn(fieldShell, errors.maturityDate && 'border-alert')}>
+          <div className={cn(fieldShell, errors.maturityDate && 'border-alert-ink')}>
             <Controller
               control={control}
               name="maturityDate"
@@ -1105,7 +1130,7 @@ function FormulaExtraFields({
               label={t('assets.form.receivingWallet')}
               error={errors.receivingWalletId?.message}
             >
-              <div className={cn(fieldShell, errors.receivingWalletId && 'border-alert')}>
+              <div className={cn(fieldShell, errors.receivingWalletId && 'border-alert-ink')}>
                 <Controller
                   control={control}
                   name="receivingWalletId"

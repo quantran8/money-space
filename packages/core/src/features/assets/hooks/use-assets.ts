@@ -6,6 +6,7 @@ import {
   getAssetSnapshots,
   getAssetSummary,
   listAssets,
+  purchaseIntoPosition,
   updateAsset,
   type AssetPayload,
 } from '#/features/assets/api/assets.repository'
@@ -87,6 +88,18 @@ export function useAssets() {
     updateAsset: useMutation({
       mutationFn: ({ assetId, payload }: { assetId: string; payload: Partial<AssetPayload> }) =>
         updateAsset(activeHouseholdId!, assetId, payload),
+      onSuccess: invalidate,
+    }),
+    // Adding to a holding is a purchase, never an asset edit: the wallet pays and
+    // the cost basis re-averages, neither of which raising `quantity` could do.
+    purchaseIntoPosition: useMutation({
+      mutationFn: ({
+        assetId,
+        payload,
+      }: {
+        assetId: string
+        payload: { quantity: number; purchasePrice: number; fundingAssetId?: string | null }
+      }) => purchaseIntoPosition(activeHouseholdId!, assetId, payload),
       onSuccess: invalidate,
     }),
     deleteAsset: useMutation({

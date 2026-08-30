@@ -32,6 +32,37 @@ const FALLBACK_ASSET: Asset = {
   note: '',
 }
 
+/**
+ * The price to open a sale at: what one unit is worth TODAY.
+ *
+ * `marketPrice` (today's cached quote) leads, because a sale is agreed at the
+ * current price — `lastPrice` is only what was last RECORDED, and cost basis
+ * (`purchasePrice`) is what the position was bought at, so seeding from either
+ * opens the form at a stale number the user must notice and overwrite.
+ *
+ * Only a VND figure may be seeded: the field is đồng, and `marketPrice` carries
+ * the instrument's own currency. A foreign quote is left for the dialog to
+ * convert and fill.
+ */
+function seedUnitPrice(asset: Asset | null): string {
+  const position = asset?.marketPosition
+  if (position) {
+    const currency = position.marketPriceCurrency ?? position.quoteCurrency
+    if (position.marketPrice !== undefined && currency === 'VND') {
+      return String(Math.round(position.marketPrice))
+    }
+    const fallback = position.lastPrice ?? position.purchasePrice
+    if (fallback !== undefined && position.quoteCurrency === 'VND') {
+      return String(Math.round(fallback))
+    }
+    return ''
+  }
+  if (asset?.type === 'real_estate' && asset.areaSqm) {
+    return String(Math.round((asset.manualValue ?? 0) / asset.areaSqm))
+  }
+  return ''
+}
+
 export function useAssetSale() {
   const { t } = useTranslation()
   const { assets, asOf } = useAssets()
@@ -99,18 +130,7 @@ export function useAssetSale() {
       ...defaultAssetSaleValues,
       date: asOf || AS_OF,
       toAssetId: walletOptions[0]?.value ?? '',
-      unitPrice:
-        (sellingAsset?.marketPosition?.lastPrice ?? sellingAsset?.marketPosition?.purchasePrice) !== undefined
-          ? String(
-              Math.round(
-                sellingAsset?.marketPosition?.lastPrice ??
-                  sellingAsset?.marketPosition?.purchasePrice ??
-                  0,
-              ),
-            )
-          : sellingAsset?.type === 'real_estate' && sellingAsset.areaSqm
-            ? String(Math.round((sellingAsset.manualValue ?? 0) / sellingAsset.areaSqm))
-            : '',
+      unitPrice: seedUnitPrice(sellingAsset),
     })
     // walletOptions intentionally omitted: only re-seed on open / asset change.
     // eslint-disable-next-line react-hooks/exhaustive-deps

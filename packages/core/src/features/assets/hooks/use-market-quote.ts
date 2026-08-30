@@ -46,7 +46,15 @@ export function useMarketQuote(
   return {
     quote: quoteQuery.data ?? null,
     isLoading: enabled && quoteQuery.isLoading,
+    /** True while any fetch is in flight, including a user-triggered refresh. */
+    isFetching: enabled && quoteQuery.isFetching,
     /** True once a lookup finished and the symbol turned out unpriceable. */
     isUnavailable: enabled && quoteQuery.isSuccess && quoteQuery.data === null,
+    /**
+     * Re-ask for the price now, ignoring `staleTime`. For a user-driven
+     * "refresh" action — the server still caches for 5 minutes, so this returns
+     * that cached figure rather than hitting the provider on every click.
+     */
+    refetch: quoteQuery.refetch,
   }
 }

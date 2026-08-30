@@ -111,7 +111,7 @@ export function GoalRoadSection({
               <div
                 className={cn(
                   'money-number mt-2 t-metric',
-                  chart.gapAtNow < 0 && 'text-attention',
+                  chart.gapAtNow < 0 && 'text-attention-ink',
                 )}
               >
                 {chart.gapAtNow >= 0 ? '+' : '−'}
@@ -256,7 +256,7 @@ function Badge({ tone, label }: { tone: 'accent' | 'attention' | 'muted'; label:
     <span
       className={cn(
         'inline-flex items-center gap-2 t-caption font-medium',
-        tone === 'attention' && 'text-attention',
+        tone === 'attention' && 'text-attention-ink',
         tone === 'accent' && 'text-action',
         tone === 'muted' && 'text-ink2',
       )}

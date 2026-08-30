@@ -18,6 +18,22 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
     - `loan_receivable` → `startDate` ("Ngày cho vay") is **required**; `maturityDate` ("Ngày đáo hạn") is **optional** — money lent to family often has no agreed due date, so the form must not block on one. Both fields stay in the main form section (not the disclosure) because the due date is what people reach for next. When a due date **is** given it must satisfy `maturityDate ≥ startDate`; a loan saved without one simply has `maturityDate: null` and cannot enter the forecast. Every other formula type also keeps `maturityDate` optional, but behind the disclosure.
 - `toAsset()` converts raw form → typed `Asset`, returning `null` on incomplete inputs. `fromAsset()` does the reverse (seed the form for **edit**).
 - **Edit / create share one form** (frontend-web): the same discriminated `AssetFormDialog`; edit re-seeds via `fromAsset` and PATCHes. Rows have an Edit/Delete actions menu.
+- **Identity is fixed once the asset exists**: on edit, `type` — and for a
+  market-priced holding its `symbol` — render as a **locked field** (the
+  disabled-input recipe: `--divider` stroke, `--wash` fill, `--ink3` text),
+  never a hidden one. The user still has to see what they are editing, and a
+  disabled dropdown would invite a click that does nothing.
+  - **Why:** the asset carries its own history — valuations, money events, goal
+    claims, price points. Re-typing cash into a stock, or repointing FPT at HPG,
+    would hang all of that off something the household never owned. The remedy
+    is the act that happened: delete + re-enter a wrong record, or **sell** the
+    position and **buy** the new one. Same reasoning as the read-only quantity
+    on edit.
+  - The server refuses a changed `type` / `symbol` with a 400
+    (`assertIdentityUnchanged`); the form posts the whole record back, so an
+    unchanged value still passes.
+  - The §22.8 change summary no longer lists a type change (nothing can produce
+    one), and `assets.form.changeType` is gone from both locales.
 - **Counts towards flexible money**: a switch in the asset form, for **every**
   type, both directions. It sends `countsAsFlexible` (the ONE liquidity input a
   client may post); the server derives the bucket with
@@ -27,7 +43,8 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
     else), never `long_term`. `false` on a type that was never flexible changes
     nothing.
   - Defaults to the type's own bucket, and **resets to the new type's default
-    when the type changes** — a decision about cash says nothing about gold.
+    when the type changes** (create only — the type is locked on edit) — a
+    decision about cash says nothing about gold.
   - The form reads the switch back from `asset.liquidity === 'usable_now'`, not
     from the nullable flag: the bucket already folds in both the default and the
     override.

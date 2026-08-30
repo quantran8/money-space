@@ -47,6 +47,7 @@ nhiều màu theo category
   --canvas: #edf3f8;
   --card: #ffffff;
   --wash: #e3ecf2;
+  --field-disabled: #f7f9fa;
 
   /* hero card — the only surface using --hero */
   --hero: #b5cde8;
@@ -61,11 +62,17 @@ nhiều màu theo category
   --action: #0f1011;
   --action-inverse: #ffffff;
 
-  /* data / state */
+  /* data / state — FILL tones. Không tone nào đủ tương phản để làm chữ. */
   --data-primary: #73a4d7;
   --positive: #8fcda4;
-  --attention: #8a6410;
-  --alert: #a8341f;
+  --attention: #e1be68;
+  --alert: #e8a39a;
+
+  /* text-safe counterparts — bất cứ gì phải ĐỌC được đều lấy các tone này */
+  --data-ink: #356fa8;
+  --positive-ink: #4e855f;
+  --attention-ink: #8c6817;
+  --alert-ink: #a9544d;
 
   --committed: #d8e0e4;
   --protect: #afc0c7;
@@ -137,6 +144,12 @@ subtle hover
 small visualization bed khi thật sự cần
 compact utility control
 ```
+
+Và không dùng `--wash` cho một control **disabled**: wash là mặt của control
+còn dùng được, nên một field disabled mang wash đọc ra là đang hoạt động.
+Disabled dùng `--field-disabled` `#F7F9FA` — gần trắng, trung tính — với viền
+`--divider` và chữ `--ink3`. Đây là biến thể duy nhất của field có fill
+(Components.dc, "Input / FormField").
 
 Không dùng `--wash` để bọc:
 

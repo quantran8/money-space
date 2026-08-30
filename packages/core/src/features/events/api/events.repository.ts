@@ -31,6 +31,27 @@ export type EventPayload = {
   financialGoalId?: string | null
 }
 
+/**
+ * Advisory preview of what an edit or delete would do to the wallets it touches,
+ * read BEFORE the write. A wallet appears only when the change would drive its
+ * balance below zero at some point in its timeline.
+ *
+ * That is allowed — a negative balance truthfully records spending that exceeds
+ * recorded income — so this drives a confirmation, never a block. See
+ * wallet-replay-on-edit.
+ */
+export type EventWalletImpact = {
+  isClear: boolean
+  wallets: Array<{
+    assetId: string
+    assetName: string
+    /** Deepest point the balance reaches (most negative). */
+    lowestBalance: number
+    firstOverdraftDate: string
+    overdrafts: Array<{ moneyEventId: string; isoDate: string; balance: number }>
+  }>
+}
+
 /** Backend-computed thu/chi/net aggregate for a month (source of truth). */
 export type EventsSummaryResponse = {
   householdId: string
@@ -69,6 +90,42 @@ export function updateEvent(householdId: string, eventId: string, payload: Parti
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
+}
+
+/**
+ * What this edit would do to the wallets it touches, without writing it. POST
+ * because the candidate payload is the input, not an addressable resource.
+ */
+export function previewEventUpdate(
+  householdId: string,
+  eventId: string,
+  payload: Partial<EventPayload>,
+) {
+  return apiRequest<EventWalletImpact>(
+    `/households/${householdId}/money-events/${eventId}/preview`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+  )
+}
+
+/**
+ * Events sitting at a point where their wallet's balance is negative, mapped to
+ * that balance. Used to mark the rows worth a second look — an overdraft belongs
+ * to the wallet's running balance, so it cannot be read off a single event row.
+ */
+export function listOverdraftEvents(householdId: string) {
+  return apiRequest<{ householdId: string; overdrafts: Record<string, number> }>(
+    `/households/${householdId}/money-events/overdrafts`,
+  )
+}
+
+/** What deleting this event would do to its wallets. */
+export function eventDeleteImpact(householdId: string, eventId: string) {
+  return apiRequest<EventWalletImpact>(
+    `/households/${householdId}/money-events/${eventId}/delete-impact`,
+  )
 }
 
 export function deleteEvent(householdId: string, eventId: string) {

@@ -6,6 +6,7 @@ import { notify } from '#/shared/notify'
 
 import { useAssets } from '#/features/assets/hooks/use-assets'
 import { useAssetSale } from '#/features/assets/hooks/use-asset-sale'
+import { useAssetQuantity } from '#/features/assets/hooks/use-asset-quantity'
 import {
   buildAssetSchema,
   canBePurchased,
@@ -31,10 +32,24 @@ export function useAssetsPage() {
   const { assets, snapshots, summary, asOf, isLoading, createAsset, updateAsset, deleteAsset } =
     useAssets()
   const sale = useAssetSale()
+  // The two non-sale ways a holding moves. They live beside `sale` because the
+  // three together are the complete set of things that may change a quantity —
+  // the asset form no longer does.
+  const quantity = useAssetQuantity()
 
   function openSale(assetId: string) {
     const asset = assets.find((item) => item.id === assetId)
     if (asset) sale.openSale(asset)
+  }
+
+  /**
+   * Buy more of a holding, addressed by id — the row menu and the detail page
+   * both have an id, not the record. `openBuyMore` below stays for the edit
+   * dialog, which already holds the asset it is editing.
+   */
+  function openPurchase(assetId: string) {
+    const asset = assets.find((item) => item.id === assetId)
+    if (asset) quantity.openPurchase(asset)
   }
 
   const [formOpen, setFormOpen] = useState(false)
@@ -242,6 +257,16 @@ export function useAssetsPage() {
     // sale
     openSale,
     sale,
+    // buy more, addressed by id
+    openPurchase,
+    // quantity: buy more / correct the holding
+    quantity,
+    openBuyMore: () => {
+      if (editingAsset) quantity.openPurchase(editingAsset)
+    },
+    openAdjustQuantity: () => {
+      if (editingAsset) quantity.openAdjustment(editingAsset)
+    },
     // delete
     deleteId,
     setDeleteId,

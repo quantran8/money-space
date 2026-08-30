@@ -157,7 +157,7 @@ export function SourceFreshnessList({
                       <TableCell
                         className={cn(
                           'px-0 py-2.5 pr-4 font-mono t-caption-sm',
-                          row.isStale ? 'font-medium text-attention' : 'text-ink2',
+                          row.isStale ? 'font-medium text-attention-ink' : 'text-ink2',
                           // Only the last cell of a row carries the right radius.
                           !formatValue && 'rounded-r-[8px] text-right',
                         )}

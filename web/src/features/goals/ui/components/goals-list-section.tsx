@@ -332,7 +332,7 @@ function GoalMenu({
           <Pencil className="size-4" />
           {t('common.edit')}
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-alert focus:text-alert" onSelect={() => onDelete(goalId)}>
+        <DropdownMenuItem className="text-alert-ink focus:text-alert-ink" onSelect={() => onDelete(goalId)}>
           <Trash2 className="size-4" />
           {t('common.delete')}
         </DropdownMenuItem>

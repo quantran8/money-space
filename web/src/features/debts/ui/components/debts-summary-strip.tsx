@@ -56,7 +56,7 @@ export function DebtsSummaryStrip({ summary, debts, payments }: DebtsSummaryStri
               ? t('debts.demo.confirmedPayments', { count: upcoming.length })
               : t('debts.demo.noConfirmedPayment')
           }
-          noteClassName={upcoming.length === 0 ? 'text-attention' : undefined}
+          noteClassName={upcoming.length === 0 ? 'text-attention-ink' : undefined}
           className="sm:border-l sm:border-divider sm:px-7"
         />
         <Metric

@@ -12,7 +12,7 @@ import { DashboardSkeleton } from '@/features/dashboard/ui/components/dashboard-
 import { FinancialPictureSection } from '@/features/dashboard/ui/components/financial-picture-section'
 import { GoalsSection } from '@/features/dashboard/ui/components/goals-section'
 import { MoneySourcesSection } from '@/features/dashboard/ui/components/money-sources-section'
-import { OverdueSection } from '@/features/dashboard/ui/components/overdue-section'
+import { OverdueSection } from '@/features/forecast/ui/components/overdue-section'
 import { SpendingSection } from '@/features/dashboard/ui/components/spending-section'
 import { UpcomingSection } from '@/features/dashboard/ui/components/upcoming-section'
 
@@ -106,8 +106,12 @@ export function DashboardPage() {
 
       {/* Second, and above the forecast that already counts these: the only
           thing on Home waiting on a person, and every figure in §12.2 is
-          computed as if it were already settled. Renders nothing when nothing
-          is overdue, so it costs no permanent card. */}
+          computed as if it were already settled.
+
+          The ONE section allowed to disappear. Every other card holds its place
+          empty, because a household needs to see that the thing exists; this
+          one is a call to act, and an empty "nothing is overdue" card would be
+          a permanent reminder of a problem nobody has. */}
       {forecast ? (
         <OverdueSection
           overdue={buildOverdue(forecast, cashflowEvents)}
@@ -127,7 +131,7 @@ export function DashboardPage() {
         />
       ) : null}
 
-      {forecast ? <UpcomingSection forecast={forecast} /> : null}
+      <UpcomingSection forecast={forecast} />
 
       {/* Spending and goals share one row: the month that happened beside the
           money already pointed somewhere. Both are narrower than a full-width
@@ -139,13 +143,11 @@ export function DashboardPage() {
           asOfDate={forecast?.asOfDate ?? ''}
         />
 
-        {goalTracks.length > 0 ? (
-          <GoalsSection
-            tracks={goalTracks}
-            goalCount={goals.length}
-            earmarkedForGoals={earmarkedForGoals}
-          />
-        ) : null}
+        <GoalsSection
+          tracks={goalTracks}
+          goalCount={goals.length}
+          earmarkedForGoals={earmarkedForGoals}
+        />
       </div>
 
       {/* Full width, and last: this is a table of where money sits, not an
