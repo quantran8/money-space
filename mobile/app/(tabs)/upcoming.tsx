@@ -178,6 +178,7 @@ export default function UpcomingScreen() {
         onOpenChange={cashflowForm.handleFormOpenChange}
         form={cashflowForm.form}
         isEditing={cashflowForm.isEditing}
+        editingId={cashflowForm.editingId}
         isSubmitting={cashflowForm.isSubmitting}
         onSubmit={cashflowForm.submit}
       />

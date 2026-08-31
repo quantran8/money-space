@@ -569,14 +569,11 @@ export function AssetDetailPage() {
           </div>
         </Panel>
 
-        {/* Reference on the left, live question on the right. "How much of this
-            is actually ours to use" is what people come to the asset page to
-            ask, so it sits beside the facts rather than below them. */}
         <Panel>
           <PanelHeader title={t('assets.detail.info.title')} />
 
-          <div className="s-head-body grid gap-8 lg:grid-cols-2 lg:gap-12">
-            <div className="min-w-0">
+          <div className="s-head-body min-w-0">
+            <div>
               <dl className="grid grid-cols-[minmax(0,1fr)_minmax(0,auto)] gap-x-8 gap-y-4 t-body-sm">
                 <InfoRow
                   label={t('assets.detail.info.type')}
@@ -661,10 +658,10 @@ export function AssetDetailPage() {
                 </div>
               ) : null}
             </div>
-
-            <AssetGoalUsageSection assetId={asset.id} />
           </div>
         </Panel>
+
+        <AssetGoalUsageSection assetId={asset.id} />
 
         {asset.type === 'saving_deposit' &&
         asset.calculationTerm &&

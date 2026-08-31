@@ -5,6 +5,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Panel, Sunk } from '@/components/ui/panel'
+import { Progress } from '@/components/ui/progress'
 import type { GoalAllocationRecord } from '@money-space/core/features/goals/api/goals.repository'
 import { useGoalAllocations } from '@money-space/core/features/goals/hooks/use-goal-allocations'
 import { useGoalMonthlyProgress } from '@money-space/core/features/goals/hooks/use-goal-monthly-progress'
@@ -186,7 +187,7 @@ export function GoalDetailPage() {
                   <Trans
                     i18nKey="goals.detail.picture.achieved"
                     values={{ percent: percentLabel }}
-                    components={[<strong key="percent" className="num font-medium text-action" />]}
+                    components={[<strong key="percent" className="num font-medium text-data-ink" />]}
                   />
                 </span>
                 <span className="text-ink2">
@@ -198,22 +199,14 @@ export function GoalDetailPage() {
                 </span>
               </div>
 
-              <div
-                className="h-1 overflow-hidden rounded-full bg-committed"
-                role="progressbar"
+              <Progress
+                className="h-6"
+                value={progress}
                 aria-label={t('goals.detail.picture.progressAria', {
                   current: formatVndScale(current),
                   target: formatVndScale(target),
                 })}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(progress)}
-              >
-                <div
-                  className="seg h-full min-w-[3px] rounded-full bg-action"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+              />
             </div>
 
             {/* Assets reprice on their own, so this figure can move with the
@@ -332,4 +325,3 @@ function BackLink({ onClick, label }: { onClick: () => void; label: string }) {
     </button>
   )
 }
-

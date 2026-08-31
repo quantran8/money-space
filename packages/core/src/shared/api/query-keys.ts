@@ -34,8 +34,26 @@ export const queryKeys = {
    * already invalidates. Under `assets` it would go stale until the asset itself
    * happened to change.
    */
-  assetGoalUsage: (householdId: string, assetId: string) =>
-    ['households', householdId, 'goals', 'asset-usage', assetId] as const,
+  assetGoalUsage: (
+    householdId: string,
+    assetId: string,
+    // Part of the key: the same wallet answers differently while an event is
+    // being edited, because that event is excluded from `pendingValue`. Sharing
+    // one key would serve the create-mode figure to the edit form.
+    excludeEventId?: string,
+    // Also part of the key: the window depends on the spend's date, so the same
+    // wallet answers differently for a spend on the 31st and one on the 1st.
+    asOfDate?: string,
+  ) =>
+    [
+      'households',
+      householdId,
+      'goals',
+      'asset-usage',
+      assetId,
+      excludeEventId ?? null,
+      asOfDate ?? null,
+    ] as const,
   /**
    * What deleting one asset would detach.
    *

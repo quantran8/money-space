@@ -694,6 +694,18 @@ export const resources = {
             freeAllContributed: '{{percent}} tài sản hiện tại đã góp vào mục tiêu',
             contributedSide: 'Đã góp',
             goalCount: '{{count}} mục tiêu',
+            allocationFree: 'Tiền tự do',
+            allocationCommitted: 'Đã có nhiệm vụ',
+            ratioUnavailable: 'Chưa tính được',
+            ratioUnavailableSub: 'tỷ lệ phân bổ',
+            overdrawnWarning:
+              'Số dư ví đang âm {{value}}. Kiểm tra lại giao dịch nếu số dư này không đúng.',
+            panelTitle: 'Mục tiêu',
+            totalHeld: 'Tổng đang dành',
+            monthlyPlan: 'Mỗi tháng',
+            monthlyProgress: 'Tiến độ tháng này',
+            remainingContribution: 'Còn {{value}}',
+            planComplete: 'Đủ kế hoạch',
           },
           updatedAt: 'Cập nhật gần nhất: {{value}}',
           overview: 'Tổng quan',
@@ -1109,6 +1121,55 @@ export const resources = {
           flexible: 'Tiền linh hoạt',
           flexibleHint: 'còn lại hôm nay',
         },
+        // Tóm tắt: bao nhiêu thứ bị đụng tới, tách theo hai nhóm hệ quả khác
+        // hẳn nhau — hoá đơn là nghĩa vụ, mục tiêu là lời hứa với chính mình.
+        impact: {
+          summary: 'Bị ảnh hưởng',
+          summaryValue: '{{count}} mục',
+          bills: 'hoá đơn',
+          goals: 'mục tiêu',
+          none: 'Không khoản nào bị ảnh hưởng.',
+          showMore: 'Xem thêm {{count}}',
+        },
+        bills: {
+          title: 'Hoá đơn',
+          count: '{{count}} mới gặp rủi ro',
+          affected: 'bị ảnh hưởng',
+          shortTotal: 'thiếu tổng',
+          shortMax: 'thiếu nhiều nhất',
+          need: '/ cần {{amount}}',
+          short: 'thiếu',
+        },
+        goals: {
+          title: 'Mục tiêu',
+          count: '{{count}} mục',
+          slowest: 'chậm nhất',
+          totalDelay: 'tổng delay',
+          // Mục tiêu không khai nhịp góp thì không quy ra thời gian được —
+          // nói rõ tính được mấy cái, hơn là lặng lẽ bỏ sót.
+          delayCoverage: 'tổng delay · {{counted}}/{{total}} tính được',
+          totalReduction: 'giảm tổng',
+          delayDays: '+{{count}} ngày',
+          noDelay: 'Chưa tính được',
+          fromPace: 'góp tháng này',
+          fromSetAside: 'đã dành',
+        },
+        source: {
+          title: '{{amount}} lấy từ đâu',
+          total: 'Tổng',
+          uncoveredMeta: 'thiếu {{amount}}',
+          covered: 'đủ tiền',
+          free: 'Tiền tự do',
+          pace: 'Đóng góp goal',
+          setAside: 'Tiền goal đã dành',
+          walletCount: '{{count}} ví',
+        },
+        cashflow: {
+          title: 'Dòng tiền',
+          before: 'Trước khoản chi',
+          after: 'Sau khoản chi',
+          lowest: 'Thấp nhất sau đó',
+        },
         blocks: {
           upcomingSafety: 'Dòng tiền sắp tới',
           goal: 'Ảnh hưởng tới mục tiêu',
@@ -1240,6 +1301,14 @@ export const resources = {
             // vì con số đó trông như phần đã dành bị rút ra.
             goalBoth: 'góp tháng này −{{pace}}, đã dành −{{setAside}}',
             exceedsWallet: 'Ví này hiện có {{value}}, ít hơn khoản chi.',
+            aftermath: {
+              title: 'Các khoản sau đó',
+              // Nói thẳng bao nhiêu khoản thiếu tiền, đừng bắt user tự đếm.
+              shortfall_one: '{{count}} khoản sau đó sẽ thiếu tiền',
+              shortfall_other: '{{count}} khoản sau đó sẽ thiếu tiền',
+              ok: 'Các khoản sau đó vẫn đủ tiền.',
+              lowest: 'Thấp nhất {{value}}',
+            },
             // Hiện ngay khi chọn ví, chưa cần biết con số: khoản chi được ưu
             // tiên trước mục tiêu trên cùng ví, nên phần mục tiêu sẽ giảm. Nói
             // trước cơ chế để lát nữa thấy mục tiêu giảm thì hiểu vì sao.
@@ -1328,8 +1397,8 @@ export const resources = {
           lowest: 'Thấp nhất dự kiến',
           lowestNote: 'Dự kiến vào {{date}}',
           // Chỉ đếm khoản forecast thực sự cộng vào số dư (§2.16).
-          knownCount: '{{count}} khoản đã biết',
-          noneKnown: 'Chưa có khoản đã biết',
+          knownCount: '{{count}} khoản dự kiến',
+          noneKnown: 'Chưa có khoản dự kiến',
           // Nói thẳng là số liệu dừng sớm hơn nhãn, không để người đọc tự suy.
           truncated: 'Chỉ tính được đến {{date}}. Khoảng đã chọn dài hơn phần dự báo hiện có.',
           lowestNoSource:
@@ -1584,7 +1653,7 @@ export const resources = {
           sequenceTitle: 'Điều gì sẽ xảy ra',
           // Số khoản đứng sau mỗi tổng vào/ra của 30 ngày tới. "Đã biết" vì
           // chỉ đếm những khoản forecast thực sự tính vào số dư (§2.16).
-          horizonCount: '{{count}} khoản đã biết',
+          horizonCount: '{{count}} khoản dự kiến',
           empty: 'Chưa có khoản nào trong 30 ngày tới.',
           column: {
             date: 'Ngày',
@@ -1878,10 +1947,10 @@ export const resources = {
           description:
             'Những khoản này chưa chi, nên các con số phía trên vẫn là hiện tại. Đây là mức sau khi chúng diễn ra.',
           totalLabel: 'Đang có cho mục tiêu',
-          paceLabel: 'Góp trong tháng này',
+          paceLabel: 'Góp trong kỳ này',
           fromWallet: 'từ ví {{wallet}}',
           paceNote:
-            'Chỉ tính trong tháng này. Ngày đạt mục tiêu vẫn tính theo mức góp gia đình đã đặt.',
+            'Tính các khoản chi đã lên lịch trong 30 ngày tới. Ngày đạt mục tiêu vẫn tính theo mức góp gia đình đã đặt.',
         },
         monthly: {
           title: 'Nhịp góp',
@@ -3601,6 +3670,18 @@ export const resources = {
             freeAllContributed: '{{percent}} of the current value is contributed to goals',
             contributedSide: 'Contributed',
             goalCount: '{{count}} goals',
+            allocationFree: 'Free money',
+            allocationCommitted: 'Already assigned',
+            ratioUnavailable: 'Unavailable',
+            ratioUnavailableSub: 'allocation ratio',
+            overdrawnWarning:
+              'The wallet is {{value}} overdrawn. Check its transactions if this balance is incorrect.',
+            panelTitle: 'Goals',
+            totalHeld: 'Total set aside',
+            monthlyPlan: 'Each month',
+            monthlyProgress: 'This month’s progress',
+            remainingContribution: '{{value}} remaining',
+            planComplete: 'Plan complete',
             columns: {
               goal: 'GOAL',
               counted: 'COUNTED',
@@ -4016,6 +4097,51 @@ export const resources = {
           flexible: 'Flexible money',
           flexibleHint: 'left today',
         },
+        impact: {
+          summary: 'Affected',
+          summaryValue: '{{count}} items',
+          bills: 'bills',
+          goals: 'goals',
+          none: 'Nothing is affected.',
+          showMore: 'Show {{count}} more',
+        },
+        bills: {
+          title: 'Bills',
+          count: '{{count}} newly at risk',
+          affected: 'affected',
+          shortTotal: 'short in total',
+          shortMax: 'largest shortfall',
+          need: '/ needs {{amount}}',
+          short: 'short',
+        },
+        goals: {
+          title: 'Goals',
+          count: '{{count}} goals',
+          slowest: 'slowest',
+          totalDelay: 'total delay',
+          delayCoverage: 'total delay · {{counted}}/{{total}} measurable',
+          totalReduction: 'reduced in total',
+          delayDays: '+{{count}} days',
+          noDelay: 'Not measurable',
+          fromPace: "this month's saving",
+          fromSetAside: 'set aside',
+        },
+        source: {
+          title: 'Where {{amount}} comes from',
+          total: 'Total',
+          uncoveredMeta: '{{amount}} short',
+          covered: 'fully covered',
+          free: 'Unpromised money',
+          pace: 'Goal contributions',
+          setAside: 'Money set aside',
+          walletCount: '{{count}} wallets',
+        },
+        cashflow: {
+          title: 'Cashflow',
+          before: 'Before the spend',
+          after: 'After the spend',
+          lowest: 'Lowest after that',
+        },
         blocks: {
           upcomingSafety: 'Cashflow ahead',
           goal: 'Effect on the goal',
@@ -4125,6 +4251,13 @@ export const resources = {
             subtitleSomeFree: '{{wallet}} holds {{value}}, only {{free}} unassigned.',
             goalBoth: 'this month −{{pace}}, set aside −{{setAside}}',
             exceedsWallet: 'This wallet holds {{value}}, less than the amount.',
+            aftermath: {
+              title: 'What comes after',
+              shortfall_one: '{{count}} later item will be short',
+              shortfall_other: '{{count}} later items will be short',
+              ok: 'Everything after this is still covered.',
+              lowest: 'Lowest {{value}}',
+            },
             pending: 'This wallet is saving towards a goal. What you spend comes out of that, and the goal goes down to match.',
           },
           noWallet:
@@ -4722,9 +4855,10 @@ export const resources = {
           description:
             'None of it has been spent yet, so the figures above are what is true now. This is where they land afterwards.',
           totalLabel: 'Held for this goal',
-          paceLabel: 'Going in this month',
+          paceLabel: 'Going in this period',
           fromWallet: 'from {{wallet}}',
-          paceNote: 'This month only. The finish date still uses the pace you set.',
+          paceNote:
+            'Covers spending scheduled in the next 30 days. The finish date still uses the pace you set.',
         },
         monthly: {
           title: 'Contribution rhythm',

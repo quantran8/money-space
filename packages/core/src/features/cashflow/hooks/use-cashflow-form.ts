@@ -128,6 +128,15 @@ export function useCashflowForm() {
   return {
     form,
     formOpen,
+    /**
+     * The event being edited, or null when creating.
+     *
+     * The goal-impact preview needs it: it measures against the wallet net of
+     * scheduled outflows, and the event under edit is one of them. Without this
+     * an edit would be costed against a wallet already reduced by its own
+     * amount, counting it twice.
+     */
+    editingId,
     isEditing,
     isSubmitting,
     openCreate,

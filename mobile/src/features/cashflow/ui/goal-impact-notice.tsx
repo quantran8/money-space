@@ -44,21 +44,47 @@ import { colors } from '@/theme/tokens'
 export function GoalImpactNotice({
   assetId,
   amount,
+  excludeEventId,
+  expectedDate,
   className,
 }: {
   assetId?: string
   amount?: number
+  /**
+   * The event being edited, so it is not subtracted from the wallet twice — it
+   * is already booked, and the amount being typed replaces it rather than
+   * adding to it. Absent when creating.
+   */
+  excludeEventId?: string
+  /**
+   * The spend's own date. Only outflows on or before it count against it: a
+   * bill next month cannot squeeze a spend happening today.
+   */
+  expectedDate?: string
   className?: string
 }) {
   const { t } = useTranslation()
-  const { items, assetValue, claimedAmount, unassignedAmount } = useAssetGoalUsage(assetId)
+  const { items, assetValue, pendingValue, claimedAmount, unassignedAmount } =
+    useAssetGoalUsage(assetId, excludeEventId, expectedDate)
   const { assets } = useAssets()
 
   // Nothing to say when no goal saves into this wallet: spending from it costs
   // no goal anything, at any amount.
   if (!assetId || claimedAmount <= 0) return null
 
-  const impact = computeSpendImpact(items, assetValue, amount ?? 0)
+  // Measured against the wallet with bills already booked against it taken out
+  // — see the server's `spendImpact`, which this must agree with. The spend
+  // being entered is the second claim on the wallet whenever one is scheduled,
+  // and the raw balance would let it spend that money a second time.
+  const impact = computeSpendImpact(
+    items,
+    pendingValue,
+    amount ?? 0,
+    // Percent claims keep the wallet BEFORE the scheduled outflows as their
+    // basis: "90% of this wallet" records what was set aside when the goal was
+    // created, not a ratio to re-read whenever a bill is booked.
+    assetValue,
+  )
 
   // A wallet backing a goal, before an amount exists. State the mechanism in
   // words so the household knows what the wallet does before choosing a number.
@@ -205,7 +231,7 @@ export function GoalImpactNotice({
             : 'upcoming.complete.goalImpact.subtitle',
           {
             wallet: walletName,
-            value: formatVndShort(assetValue),
+            value: formatVndShort(pendingValue),
             free: formatVndShort(unassignedAmount),
           },
         )}

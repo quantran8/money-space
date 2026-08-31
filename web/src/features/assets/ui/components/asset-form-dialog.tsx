@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Controller,
   useWatch,
@@ -54,6 +54,7 @@ import type { MarketQuote } from '@money-space/core/features/assets/api/symbols.
 import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
 import {
   canBePurchased,
+  convertGoldPricePerUnit,
   goldUnits,
   isInterestOptional,
   isWholeQuantityType,
@@ -662,12 +663,25 @@ function MarketFields({
   // figure tagged `VND`, slipping past `canPrefill` and understating the cost
   // basis ~26,000x. That is the exact bug the guard exists to prevent.
   const quoteCurrency = assetClass === 'crypto' ? 'VND' : undefined
-  const { quote, isLoading, isUnavailable } = useMarketQuote(
+  const { quote: rawQuote, isLoading, isUnavailable } = useMarketQuote(
     assetClass,
     symbol,
     market,
     quoteCurrency,
   )
+
+  // Gold is quoted per lượng whatever the household counts in, so the figure is
+  // restated into the chosen unit before anything reads it — a holding in chỉ
+  // prefilled at the lượng price overstated the cost basis 10x.
+  const unit = useWatch({ control, name: 'unit' })
+  const quote = useMemo(() => {
+    if (!rawQuote || type !== 'gold' || !unit) return rawQuote
+    return {
+      ...rawQuote,
+      price: convertGoldPricePerUnit(rawQuote.price, unit),
+      unit,
+    }
+  }, [rawQuote, type, unit])
 
   const prefillPurchasePrice = (price: number) => {
     setValue('purchasePrice', String(Math.round(price)), {
@@ -690,10 +704,13 @@ function MarketFields({
   // may answer in its own currency regardless of what was asked.
   const canPrefill = quote?.quoteCurrency === 'VND'
 
+  // The unit is part of the key: switching chỉ → lượng makes the field's figure
+  // wrong by a factor of ten, so that re-prefills even though the symbol has
+  // not changed.
   const prefilledFor = useRef<string | null>(null)
   useEffect(() => {
     if (!quote || !canPrefill) return
-    const key = `${quote.assetClass}:${quote.symbol}`
+    const key = `${quote.assetClass}:${quote.symbol}:${quote.unit}`
     if (prefilledFor.current === key) return
     prefilledFor.current = key
     prefillPurchasePrice(quote.price)

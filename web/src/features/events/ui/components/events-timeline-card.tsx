@@ -1,5 +1,4 @@
 import {
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Inbox,
@@ -12,6 +11,13 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Panel, PanelHeader } from '@/components/ui/panel'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { FinancialRecordItem, RecordTab } from '@money-space/core/features/events/model/events-form'
 import { TODAY } from '@money-space/core/features/events/model/events-form'
@@ -293,28 +299,23 @@ function FilterSelect({
   className?: string
 }) {
   return (
-    <label
-      className={cn(
-        'flex min-h-11 min-w-0 items-center gap-2 rounded-control border border-committed bg-card px-3.5',
-        className,
-      )}
-    >
-      <Icon className="size-[17px] shrink-0 text-ink3" strokeWidth={1.75} aria-hidden />
-      <span className="shrink-0 t-body-sm text-ink3">{label}:</span>
-      <select
-        className="min-w-0 flex-1 appearance-none bg-transparent t-body-sm text-ink outline-none"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger
         aria-label={label}
+        className={cn('h-11 w-auto max-w-full min-w-0 gap-2 px-3.5', className)}
       >
+        <Icon className="size-[17px] shrink-0 text-ink3" strokeWidth={1.75} aria-hidden />
+        <span className="shrink-0 t-body-sm text-ink3">{label}:</span>
+        <SelectValue className="min-w-0 t-body-sm text-ink" />
+      </SelectTrigger>
+      <SelectContent>
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <SelectItem key={option.value} value={option.value}>
             {option.label}
-          </option>
+          </SelectItem>
         ))}
-      </select>
-      <ChevronDown className="size-4 shrink-0 text-ink3" strokeWidth={1.75} aria-hidden />
-    </label>
+      </SelectContent>
+    </Select>
   )
 }
 

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { ScheduledOutflowImpact } from '@money-space/core/features/goals/api/goals.repository'
 import { formatAmount } from '@money-space/core/features/goals/model/goals-form'
+import { goalPercent } from '@money-space/core/features/goals/model/goals'
 
 import { Collapsible, GroupedRow, Panel, RowMeta, Sunk } from '@/components/ui'
 import { formatDayMonth } from '@/features/goals/lib/goal-dates'
@@ -37,18 +38,17 @@ export function GoalScheduledOutflowsSection({
   /** The goal's target, so before/after can also be stated as a percentage. */
   target: number
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   if (!impact || impact.events.length === 0) return null
 
-  const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
-  const percent = (value: number) =>
-    target > 0
-      ? new Intl.NumberFormat(locale, {
-          minimumFractionDigits: 1,
-          maximumFractionDigits: 1,
-        }).format(Math.min(Math.max((value / target) * 100, 0), 100))
-      : null
+  // Whole percent, via the shared helper, so this section agrees with the
+  // projection panel above it — they used to round differently and disagreed by
+  // a point near the target. See `goalPercent`.
+  const percent = (value: number) => {
+    const share = goalPercent(value, target)
+    return share === null ? null : String(share)
+  }
 
   // The one event worth naming in the summary: the largest, since it is the one
   // most worth recognising and possibly changing.

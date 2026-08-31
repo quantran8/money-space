@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Text, View } from 'react-native'
 import { Controller, useWatch, type UseFormReturn, type UseFormSetValue } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -14,6 +14,7 @@ import {
 } from '@money-space/core/features/assets/model/assets'
 import {
   canBePurchased,
+  convertGoldPricePerUnit,
   goldUnits,
   isInterestOptional,
   isWholeQuantityType,
@@ -545,21 +546,37 @@ function MarketFields({
   // that labels a USD price with whatever currency was asked for, which would
   // slip past the guard below and understate the cost basis ~26,000x.
   const quoteCurrency = assetClass === 'crypto' ? 'VND' : undefined
-  const { quote, isLoading, isUnavailable } = useMarketQuote(
+  const { quote: rawQuote, isLoading, isUnavailable } = useMarketQuote(
     assetClass,
     symbol,
     market,
     quoteCurrency,
   )
 
+  // Gold is quoted per lượng whatever the household counts in, so the figure is
+  // restated into the chosen unit before anything reads it — a holding in chỉ
+  // prefilled at the lượng price overstated the cost basis 10x.
+  const unit = useWatch({ control, name: 'unit' })
+  const quote = useMemo(() => {
+    if (!rawQuote || type !== 'gold' || !unit) return rawQuote
+    return {
+      ...rawQuote,
+      price: convertGoldPricePerUnit(rawQuote.price, unit),
+      unit,
+    }
+  }, [rawQuote, type, unit])
+
   // A quote in another currency must NOT be written into a VND field: BTC at
   // 78,188 USD would land as 78,188đ.
   const canPrefill = quote?.quoteCurrency === 'VND'
 
+  // The unit is part of the key: switching chỉ → lượng makes the field's figure
+  // wrong by a factor of ten, so that re-prefills even though the symbol has
+  // not changed.
   const prefilledFor = useRef<string | null>(null)
   useEffect(() => {
     if (!quote || !canPrefill) return
-    const key = `${quote.assetClass}:${quote.symbol}`
+    const key = `${quote.assetClass}:${quote.symbol}:${quote.unit}`
     if (prefilledFor.current === key) return
     prefilledFor.current = key
     // Once per symbol: picking a different instrument re-prefills, while a

@@ -65,6 +65,8 @@ export function UpcomingPage() {
               payload: { occurrenceDate },
             })
           }
+          onEdit={cashflowForm.openEdit}
+          onDelete={cashflowForm.handleDelete}
         />
       ) : null}
 
@@ -92,6 +94,7 @@ export function UpcomingPage() {
         onOpenChange={cashflowForm.handleFormOpenChange}
         form={cashflowForm.form}
         isEditing={cashflowForm.isEditing}
+        editingId={cashflowForm.editingId}
         isSubmitting={cashflowForm.isSubmitting}
         onSubmit={cashflowForm.submit}
       />

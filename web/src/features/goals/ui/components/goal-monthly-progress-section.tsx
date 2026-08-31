@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 
 import { EmptyState } from '@/components/ui/empty-state'
 import { Panel, PanelHeader } from '@/components/ui/panel'
+import { Progress } from '@/components/ui/progress'
 import {
   Table,
   TableBody,
@@ -245,19 +246,14 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
       </div>
 
       {percent !== null ? (
-        <div
-          className="mt-4 h-2 overflow-hidden rounded-full bg-committed"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(percent)}
+        <Progress
+          className="mt-4 h-6"
+          value={percent}
           aria-label={t('goals.monthly.monthProgressAria', {
             actual: formatAmount(actual),
             planned: formatAmount(planned ?? 0),
           })}
-        >
-          <div className="seg h-full rounded-full bg-action" style={{ width: `${percent}%` }} />
-        </div>
+        />
       ) : null}
 
       <p className="mt-4 t-caption leading-5 text-ink2">
@@ -311,7 +307,7 @@ function RecentMonthsChart({
         {hasPace ? (
           <div className="hidden items-center gap-4 t-caption-sm text-ink3 sm:flex">
             <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-[2px] bg-action" />
+              <span className="size-2 rounded-[2px] bg-data-primary" />
               {t('goals.monthly.legendActual')}
             </span>
             <span className="flex items-center gap-1.5">
@@ -322,11 +318,11 @@ function RecentMonthsChart({
         ) : null}
       </div>
 
-      <div className="relative mt-5 h-[168px] rounded-control bg-wash px-4 pb-7 pt-6 sm:px-6">
+      <div className="relative mt-5 h-[168px] rounded-control bg-card px-4 pb-7 pt-6 sm:px-6">
         {planShare !== null ? (
           <>
             <div
-              className="absolute right-4 left-4 border-t border-dashed border-protect sm:right-6 sm:left-6"
+              className="absolute right-4 left-4 border-t border-dashed border-committed sm:right-6 sm:left-6"
               style={{ bottom: `calc(28px + ${planShare} * (100% - 52px) / 100)` }}
             />
             <div
@@ -355,7 +351,7 @@ function RecentMonthsChart({
               >
                 <div
                   className={cn(
-                    'seg w-full max-w-[42px] rounded-t-[5px] bg-action transition-opacity group-hover:opacity-80',
+                    'seg w-full max-w-[42px] rounded-t-[5px] bg-data-primary transition-opacity group-hover:opacity-80',
                     // A month still running is partial by definition — it reads
                     // lighter so a half-height bar is not mistaken for a miss.
                     month.inProgress && 'opacity-60',

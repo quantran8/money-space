@@ -103,7 +103,39 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   const showResult = Boolean(result)
 
   return (
-    <ResponsiveDialogContent>
+    /*
+      The answer needs a bigger surface than the question does.
+      `max-w-lg` (32rem) is right for three fields and far too narrow for five
+      consequence sections — the bills and goals rows carry a name, a pair of
+      figures and a shortfall on ONE line, and at 32rem they wrap into a stack
+      nobody can read across. So the dialog sizes to what it is currently
+      holding rather than to a single compromise width.
+
+      No `sm:` prefix needed: `ResponsiveDialog` only mounts the Dialog above
+      768px and swaps to a full-width Sheet below it, so these classes never
+      reach a phone.
+    */
+    <ResponsiveDialogContent
+      className={
+        showResult
+          ? // `flex` rather than the primitive's `grid`: auto grid rows will not
+            // shrink below their content, so the body could never become the
+            // scroll container while the dialog stayed `grid`.
+            //
+            // `overflow-hidden` then hands scrolling to that body. Without it
+            // the dialog scrolls itself, which puts the scrollbar on its outer
+            // edge — outside the rounded corner, over the shadow.
+            //
+            // A FIXED height, not a max: the primitive centres itself with
+            // `top-1/2 -translate-y-1/2`, so any height change re-centres the
+            // whole dialog. With sections revealed one at a time that meant a
+            // jump on every reveal — which is what actually made the sequence
+            // feel unsmooth. At a fixed height each section fills space that is
+            // already there and nothing moves but the section itself.
+            'flex h-[92dvh] max-w-[56rem] flex-col overflow-hidden'
+          : undefined
+      }
+    >
       <ResponsiveDialogHeader>
         <ResponsiveDialogTitle>{t('whatif.title')}</ResponsiveDialogTitle>
         <ResponsiveDialogDescription>
@@ -117,7 +149,28 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
         </ResponsiveDialogDescription>
       </ResponsiveDialogHeader>
 
-      <div className="max-h-[60vh] overflow-y-auto">
+      {/*
+        The result gets the CANVAS as its ground.
+
+        `DialogContent` is `--card` (white) and so is every `Panel` inside the
+        result, so the sections were white-on-white — five cards that read as
+        one undifferentiated wall of numbers. On a real page cards sit on
+        `--canvas`, and that lightness step is the only thing separating them
+        (§2.2: no borders, no shadows). Reproducing it here is what makes the
+        sections legible as sections.
+
+        It is also the scroll container, so the scrollbar rides inside the
+        dialog rather than on its outer edge. Negative margins + matching
+        padding let the ground run to the dialog's edges while the content stays
+        on the p-6 grid.
+      */}
+      <div
+        className={
+          showResult
+            ? '-mx-6 min-h-0 flex-1 overflow-y-auto bg-canvas px-6 py-4'
+            : 'max-h-[60vh] overflow-y-auto'
+        }
+      >
         {showResult ? (
           <WhatIfResultBlocks result={result!} />
         ) : (

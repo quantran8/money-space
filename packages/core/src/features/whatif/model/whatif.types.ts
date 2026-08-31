@@ -79,6 +79,37 @@ export type WhatIfGoalImpact = {
   uncovered: number
 }
 
+/** One wallet's part in paying for the spend. */
+export type WhatIfWalletDraw = {
+  assetId: string
+  name: string
+  /** What the wallet held before the spend. */
+  before: number
+  /** Taken from this wallet. Always > 0 — untouched wallets are not listed. */
+  taken: number
+}
+
+/**
+ * Where the money comes from, in two vocabularies.
+ *
+ * The semantic split (`free` / `fromPace` / `fromSetAside`) leads: it answers
+ * "did this cost me anything that was promised", which is what decides whether
+ * a purchase feels affordable. The wallet list is literal and secondary — the
+ * household named no wallet, the simulation chose — so it belongs behind a
+ * disclosure, never in the headline.
+ *
+ * The three amounts sum to the COVERED part of the spend. A shortfall stays in
+ * `goalImpact.uncovered`, which is a different fact with its own line.
+ */
+export type WhatIfFundingSource = {
+  /** Money no goal had claimed. Spent first, everywhere. */
+  free: number
+  fromPace: number
+  fromSetAside: number
+  /** Wallets that gave money up, most-drained first. */
+  wallets: WhatIfWalletDraw[]
+}
+
 /** An obligation the spend would leave uncovered. */
 export type WhatIfAtRisk = {
   occurrenceKey: string
@@ -107,6 +138,11 @@ export type WhatIfResult = {
    * money first, then from the least-promised wallet onwards.
    */
   goalImpact: WhatIfGoalImpact
+  /**
+   * Where the spend comes from. Derived from the same drain as `goalImpact`,
+   * so the two can never disagree about what one spend costs.
+   */
+  fundingSource: WhatIfFundingSource
   /**
    * Obligations this spend breaks, named. Only the ones it actually breaks —
    * an item already going unpaid is not this purchase's doing.

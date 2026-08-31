@@ -151,14 +151,14 @@ export function GoalRoadSection({
           </div>
         </div>
 
-        <div className="min-w-0 rounded-control bg-wash p-3 sm:p-5">
+        <div className="min-w-0 rounded-control bg-card p-3 sm:p-5">
           <div className="mb-1 flex flex-wrap items-center justify-end gap-x-5 gap-y-2 px-1 t-caption-sm text-ink3">
             <span className="flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-action" />
+              <span className="size-2.5 rounded-full bg-data-primary" />
               {t('goals.detail.road.actualLine')}
             </span>
             <span className="flex items-center gap-2">
-              <span className="h-[2px] w-5 rounded-full bg-protect" />
+              <span className="h-[2px] w-5 rounded-full bg-committed" />
               {t('goals.detail.road.plannedLine')}
             </span>
           </div>
@@ -463,7 +463,7 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
             x2={PLOT.right}
             y2={guide.y}
             // The target line is the one that matters, so it alone is solid.
-            stroke={index === 0 ? 'var(--committed)' : 'var(--hair)'}
+            stroke={index === 0 ? 'var(--committed)' : 'var(--divider)'}
             strokeWidth={1}
           />
           <ChartText x={PLOT.left - 12} y={guide.y + 4} anchor="end">
@@ -476,7 +476,7 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
         <polyline
           points={plan.map((point) => `${point.x},${point.y}`).join(' ')}
           fill="none"
-          stroke="var(--protect)"
+          stroke="var(--committed)"
           strokeWidth={3}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -487,7 +487,7 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
         <polyline
           points={actual.map((point) => `${point.x},${point.y}`).join(' ')}
           fill="none"
-          stroke="var(--accent)"
+          stroke="var(--data-primary)"
           strokeWidth={4}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -495,7 +495,7 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
       ) : null}
 
       {plan.map((point) => (
-        <circle key={`p-${point.month}`} cx={point.x} cy={point.y} r={3.5} fill="var(--protect)" />
+        <circle key={`p-${point.month}`} cx={point.x} cy={point.y} r={3.5} fill="var(--committed)" />
       ))}
       {actual.map((point, index) => (
         <circle
@@ -504,7 +504,7 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
           cy={point.y}
           // The latest actual point is where the household is standing.
           r={index === actual.length - 1 ? 6 : 4}
-          fill="var(--accent)"
+          fill="var(--data-primary)"
         />
       ))}
 
@@ -524,7 +524,7 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
           <ChartTag
             x={nowActual.x}
             y={(nowActual.y + nowPlan.y) / 2}
-            fill="var(--attention)"
+            fill="var(--attention-ink)"
             label={`${gapAtNow >= 0 ? '+' : '−'}${shortMillions(Math.abs(gapAtNow))} tr`}
           />
         </>
@@ -545,7 +545,7 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
             y1={PLOT.top - 8}
             x2={active.x}
             y2={PLOT.bottom + 8}
-            stroke="var(--protect)"
+            stroke="var(--committed)"
             strokeWidth={1}
           />
           {active.plan !== null ? (
@@ -553,8 +553,8 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
               cx={active.x}
               cy={chart.yAt(active.plan)}
               r={5.5}
-              fill="var(--protect)"
-              stroke="var(--panel)"
+              fill="var(--committed)"
+              stroke="var(--card)"
               strokeWidth={2}
             />
           ) : null}
@@ -563,8 +563,8 @@ function RoadChart({ chart, ariaLabel }: { chart: ChartModel; ariaLabel: string 
               cx={active.x}
               cy={chart.yAt(active.actual)}
               r={6.5}
-              fill="var(--accent)"
-              stroke="var(--panel)"
+              fill="var(--data-primary)"
+              stroke="var(--card)"
               strokeWidth={2}
             />
           ) : null}
@@ -609,10 +609,10 @@ function Readout({
   const width = 168
   const rows = [
     column.actual !== null
-      ? { label: t('goals.detail.road.actualLine'), value: column.actual, fill: 'var(--accent)' }
+      ? { label: t('goals.detail.road.actualLine'), value: column.actual, fill: 'var(--data-primary)' }
       : null,
     column.plan !== null
-      ? { label: t('goals.detail.road.plannedLine'), value: column.plan, fill: 'var(--protect)' }
+      ? { label: t('goals.detail.road.plannedLine'), value: column.plan, fill: 'var(--committed)' }
       : null,
   ].filter((row): row is { label: string; value: number; fill: string } => row !== null)
 
@@ -628,8 +628,8 @@ function Readout({
         width={width}
         height={height}
         rx={8}
-        fill="var(--panel)"
-        stroke="var(--hair)"
+        fill="var(--card)"
+        stroke="var(--divider)"
         strokeWidth={1}
       />
       <ChartText x={x + 12} y={PLOT.top + 20} anchor="start" fill="var(--ink)">
@@ -658,7 +658,7 @@ function Readout({
           x={x + width - 12}
           y={PLOT.top + height - 9}
           anchor="end"
-          fill={column.actual! < column.plan! ? 'var(--attention)' : 'var(--accent)'}
+          fill={column.actual! < column.plan! ? 'var(--attention-ink)' : 'var(--data-ink)'}
         >
           {`${column.actual! >= column.plan! ? '+' : '−'}${shortMillions(
             Math.abs(column.actual! - column.plan!),
@@ -698,7 +698,7 @@ function ChartText({
 
 /**
  * A label on a white plate. The plate is what keeps it readable where it sits on
- * top of a line — the chart well is `--sunk`, so plain text on the line itself
+ * top of a line — the chart well is `--card`, so plain text on the line itself
  * is not legible.
  */
 function ChartTag({ x, y, fill, label }: { x: number; y: number; fill: string; label: string }) {
@@ -706,7 +706,7 @@ function ChartTag({ x, y, fill, label }: { x: number; y: number; fill: string; l
   const clampedX = Math.min(Math.max(x + width / 2 + 10, PLOT.left + width / 2), PLOT.right - width / 2)
   return (
     <>
-      <rect x={clampedX - width / 2} y={y - 14} width={width} height={28} rx={7} fill="var(--panel)" />
+      <rect x={clampedX - width / 2} y={y - 14} width={width} height={28} rx={7} fill="var(--card)" />
       <ChartText x={clampedX} y={y + 4} anchor="middle" fill={fill}>
         {label}
       </ChartText>

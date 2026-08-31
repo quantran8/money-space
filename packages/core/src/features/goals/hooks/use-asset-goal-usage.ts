@@ -11,22 +11,44 @@ import { useActiveHousehold } from '#/shared/hooks/use-active-household'
  * under the goals prefix, so any allocation write refreshes it too — the answer
  * changes when a goal claims the asset, not when the asset itself changes.
  */
-export function useAssetGoalUsage(assetId?: string) {
+export function useAssetGoalUsage(
+  assetId?: string,
+  excludeEventId?: string,
+  asOfDate?: string,
+) {
   const { activeHouseholdId } = useActiveHousehold()
   const canQuery = Boolean(activeHouseholdId && assetId)
 
   const query = useQuery({
     queryKey:
       activeHouseholdId && assetId
-        ? queryKeys.assetGoalUsage(activeHouseholdId, assetId)
+        ? queryKeys.assetGoalUsage(
+            activeHouseholdId,
+            assetId,
+            excludeEventId,
+            asOfDate,
+          )
         : ['asset-goal-usage', 'inactive'],
-    queryFn: () => getAssetGoalUsage(activeHouseholdId!, assetId!),
+    queryFn: () =>
+      getAssetGoalUsage(
+        activeHouseholdId!,
+        assetId!,
+        excludeEventId,
+        asOfDate,
+      ),
     enabled: canQuery,
   })
 
   return {
     items: query.data?.items ?? [],
     assetValue: query.data?.assetValue ?? 0,
+    /**
+     * The wallet net of bills already booked against it — what the spend form
+     * measures a new outflow against. Falls back to `assetValue` rather than to
+     * 0 so that a stale server without the field degrades to the old (merely
+     * unadjusted) answer instead of reporting an empty wallet.
+     */
+    pendingValue: query.data?.pendingValue ?? query.data?.assetValue ?? 0,
     claimedAmount: query.data?.claimedAmount ?? 0,
     freeAmount: query.data?.freeAmount ?? 0,
     committedAmount: query.data?.committedAmount ?? 0,

@@ -5,7 +5,10 @@ import { SpendImpactBar } from '@/features/cashflow/ui/components/spend-impact-b
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useAssetGoalUsage } from '@money-space/core/features/goals/hooks/use-asset-goal-usage'
 import { computeSpendImpact } from '@money-space/core/features/goals/model/spend-impact'
+import { computeSpendAftermath } from '@money-space/core/features/cashflow/model/spend-aftermath'
+import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
  * What this outflow takes from the goals saving into the chosen wallet.
@@ -53,14 +56,28 @@ import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 export function GoalImpactNotice({
   assetId,
   amount,
+  excludeEventId,
+  expectedDate,
 }: {
   assetId?: string
   amount?: number
+  /**
+   * The event being edited, so it is not subtracted from the wallet twice — it
+   * is already booked, and the amount being typed replaces it rather than
+   * adding to it. Absent when creating.
+   */
+  excludeEventId?: string
+  /**
+   * The spend's own date. Only outflows on or before it count against it: a
+   * bill next month cannot squeeze a spend happening today.
+   */
+  expectedDate?: string
 }) {
   const { t } = useTranslation()
-  const { items, assetValue, claimedAmount, unassignedAmount } =
-    useAssetGoalUsage(assetId)
+  const { items, assetValue, pendingValue, claimedAmount, unassignedAmount } =
+    useAssetGoalUsage(assetId, excludeEventId, expectedDate)
   const { assets } = useAssets()
+  const { cashflowEvents } = useCashflowEvents()
 
   // Nothing to say when no goal is saving into this wallet at all: spending
   // from it costs no goal anything, now or at any amount.
@@ -69,7 +86,33 @@ export function GoalImpactNotice({
     return null
   }
 
-  const impact = computeSpendImpact(items, assetValue, amount ?? 0)
+  // Measured against the wallet with bills already booked against it taken out
+  // — see the server's `spendImpact`, which this must agree with. The spend
+  // being entered is the second claim on the wallet whenever one is scheduled,
+  // and the raw balance would let it spend that money a second time.
+  const impact = computeSpendImpact(
+    items,
+    pendingValue,
+    amount ?? 0,
+    // Percent claims keep the wallet BEFORE the scheduled outflows as their
+    // basis: "90% of this wallet" records what was set aside when the goal was
+    // created, not a ratio to re-read whenever a bill is booked.
+    assetValue,
+  )
+  // What this spend leaves for the outflows scheduled AFTER it. The figures
+  // above stop at this spend's own date — a later bill must not squeeze an
+  // earlier spend — so nothing there can say the wallet runs dry next week.
+  const aftermath = expectedDate
+    ? computeSpendAftermath(
+        cashflowEvents,
+        assetId,
+        assetValue - (amount ?? 0),
+        expectedDate,
+        horizonEnd(expectedDate),
+        excludeEventId,
+      )
+    : null
+
   const hasFigures = impact.totalReduction > 0
   const walletName = assets.find((asset) => asset.id === assetId)?.name ?? ''
 
@@ -96,9 +139,10 @@ export function GoalImpactNotice({
   const showPerGoal = impact.goals.length > 1
 
   return (
-    /* No wash bed: this is content, and §2.4 reserves wash for controls. The
-       divider plus the type scale below carries the separation (§9). */
-    <section className="border-t border-divider pt-4 sm:pt-5">
+    /* No bed of its own: the form wraps this in a canvas block below the
+       details fold. Wash stays out of it either way — §2.4 reserves wash for
+       controls, and this is content. */
+    <section>
       {/* The spend, and the one-phrase answer to where it comes from. */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -215,7 +259,7 @@ export function GoalImpactNotice({
             : 'upcoming.complete.goalImpact.subtitle',
           {
             wallet: walletName,
-            value: formatVndShort(assetValue),
+            value: formatVndShort(pendingValue),
             free: formatVndShort(unassignedAmount),
           },
         )}
@@ -229,6 +273,55 @@ export function GoalImpactNotice({
             value: formatVndShort(impact.assetValue),
           })}
         </p>
+      ) : null}
+
+      {/* The running balance through everything scheduled after this spend.
+          Only rendered when something IS scheduled — a wallet with nothing
+          after it gains no block. */}
+      {aftermath && aftermath.rows.length > 0 ? (
+        <div className="mt-4 border-t border-divider pt-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <p className="label-vi">
+              {t('upcoming.complete.goalImpact.aftermath.title')}
+            </p>
+            <p
+              className={cn(
+                't-caption',
+                aftermath.shortfallCount > 0 ? 'text-alert-ink' : 'text-ink3',
+              )}
+            >
+              {aftermath.shortfallCount > 0
+                ? t('upcoming.complete.goalImpact.aftermath.shortfall', {
+                    count: aftermath.shortfallCount,
+                  })
+                : t('upcoming.complete.goalImpact.aftermath.ok')}
+            </p>
+          </div>
+
+          <ul className="mt-2 space-y-1.5">
+            {aftermath.rows.map((row) => (
+              <li
+                key={row.eventId}
+                className="flex items-baseline justify-between gap-4 t-caption leading-5"
+              >
+                <span className="min-w-0 truncate text-ink2">
+                  <span className="font-mono t-caption-sm text-ink3">
+                    {dayMonth(row.expectedDate)}
+                  </span>{' '}
+                  {row.name}
+                </span>
+                <span
+                  className={cn(
+                    'num shrink-0',
+                    row.short ? 'font-medium text-alert-ink' : 'text-ink2',
+                  )}
+                >
+                  {formatVndShort(row.balanceAfter)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
     </section>
   )
@@ -268,4 +361,21 @@ function LegendItem({ fill, label }: { fill: string; label: string }) {
       {label}
     </span>
   )
+}
+
+/** `'2026-09-01'` → `'01/09'`. */
+function dayMonth(iso: string): string {
+  const [, month, day] = iso.split('-')
+  return month && day ? `${day.slice(0, 2)}/${month}` : iso
+}
+
+/**
+ * How far past the spend the walk runs: 30 days, matching the server's
+ * `SCHEDULED_OUTFLOW_HORIZON_DAYS`. Without a bound the list would run to the
+ * end of every recurring series the household has.
+ */
+function horizonEnd(fromIso: string): string {
+  const date = new Date(`${fromIso}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + 30)
+  return date.toISOString().slice(0, 10)
 }

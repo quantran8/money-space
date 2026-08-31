@@ -1,7 +1,13 @@
-import { ArrowUpRight, Loader2, TriangleAlert } from 'lucide-react'
+import { ArrowUpRight, Loader2, MoreHorizontal, Pencil, Trash2, TriangleAlert } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Label, Panel, PanelHeader } from '@/components/ui/panel'
 import type { OverdueSummary } from '@money-space/core/features/forecast/model/forecast-overdue'
 import { formatVndCellSigned } from '@money-space/core/shared/lib/format-money'
@@ -31,12 +37,20 @@ import { cn } from '@money-space/core/shared/lib/utils'
 export function OverdueSection({
   overdue,
   onComplete,
+  onEdit,
+  onDelete,
   pendingId,
   showViewAll = true,
 }: {
   overdue: OverdueSummary
   /** Marks one occurrence resolved. The ONLY way an item leaves this list (§18). */
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
+  /**
+   * Sửa/xoá khoản gốc — cùng menu ⋯ như hàng trên dòng thời gian, vì một khoản
+   * quá hạn thường sai ngày hoặc sai số chứ không phải đã trả (§18).
+   */
+  onEdit?: (sourceEventId: string) => void
+  onDelete?: (sourceEventId: string) => void
   /** The row currently being confirmed, so only ITS button shows a spinner. */
   pendingId?: string | null
   /**
@@ -99,6 +113,8 @@ export function OverdueSection({
               key={row.key}
               row={row}
               onComplete={onComplete}
+              onEdit={onEdit}
+              onDelete={onDelete}
               pending={pendingId === row.sourceEventId}
             />
           ))}
@@ -127,16 +143,20 @@ export function OverdueSection({
 function OverdueRowItem({
   row,
   onComplete,
+  onEdit,
+  onDelete,
   pending,
 }: {
   row: OverdueSummary['rows'][number]
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
+  onEdit?: (sourceEventId: string) => void
+  onDelete?: (sourceEventId: string) => void
   pending: boolean
 }) {
   const { t } = useTranslation()
 
   return (
-    <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-t border-divider py-3 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto] sm:gap-x-6">
+    <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-t border-divider py-3 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_32px] sm:gap-x-6">
       <div className="flex min-w-0 items-baseline gap-3">
         {/* When it FELL DUE, not the day the forecast lists it under. Absent
             when the source event is not loaded — better no date than today's. */}
@@ -149,7 +169,7 @@ function OverdueRowItem({
       {row.daysOverdue === undefined ? (
         <span className="hidden sm:block" />
       ) : (
-        <span className="flex items-center gap-2 t-caption whitespace-nowrap text-ink2">
+        <span className="col-start-1 row-start-2 flex items-center gap-2 t-caption whitespace-nowrap text-ink2 sm:col-start-2 sm:row-start-1">
           <span className="size-1.5 shrink-0 rounded-full bg-alert" aria-hidden />
           {t('home.upcoming.overdue.age', { count: row.daysOverdue })}
         </span>
@@ -157,7 +177,7 @@ function OverdueRowItem({
 
       <span
         className={cn(
-          'num justify-self-end t-body-sm font-medium whitespace-nowrap',
+          'num col-start-2 row-start-2 justify-self-end t-body-sm font-medium whitespace-nowrap sm:col-start-3 sm:row-start-1',
           row.signedAmount > 0 ? 'text-positive-ink' : 'text-alert-ink',
         )}
       >
@@ -175,7 +195,7 @@ function OverdueRowItem({
           // `row.dueDate`, which is only what we show (§18).
           onClick={() => onComplete(row.sourceEventId, row.date)}
           disabled={pending}
-          className="col-span-2 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-control bg-action px-4 t-body font-medium text-action-inverse transition-opacity hover:opacity-90 disabled:opacity-60 sm:col-span-1 sm:justify-self-end"
+          className="col-span-2 col-start-1 row-start-3 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-control bg-action px-4 t-body font-medium text-action-inverse transition-opacity hover:opacity-90 disabled:opacity-60 sm:col-span-1 sm:col-start-4 sm:row-start-1 sm:justify-self-end"
         >
           {pending ? (
             <>
@@ -186,6 +206,37 @@ function OverdueRowItem({
             t('home.upcoming.overdue.markDone')
           )}
         </button>
+      ) : null}
+
+      {/* "Đã xong" ở lại là nút riêng — nó là hành động duy nhất đưa khoản này
+          ra khỏi danh sách, nên không giấu sau menu. Sửa và xoá thì vào ⋯,
+          giống hệt hàng trên dòng thời gian (§12.2). */}
+      {onEdit || onDelete ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={t('upcoming.rowActions.label')}
+            className="col-start-2 row-start-1 flex size-8 items-center justify-center justify-self-end rounded-full text-ink3 outline-none transition hover:bg-card hover:text-ink sm:col-start-5 sm:row-start-1"
+          >
+            <MoreHorizontal className="size-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {onEdit ? (
+              <DropdownMenuItem onClick={() => onEdit(row.sourceEventId)}>
+                <Pencil className="mr-2 size-4" />
+                {t('upcoming.rowActions.edit')}
+              </DropdownMenuItem>
+            ) : null}
+            {onDelete ? (
+              <DropdownMenuItem
+                className="text-alert-ink focus:text-alert-ink"
+                onClick={() => onDelete(row.sourceEventId)}
+              >
+                <Trash2 className="mr-2 size-4" />
+                {t('upcoming.rowActions.delete')}
+              </DropdownMenuItem>
+            ) : null}
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : null}
     </li>
   )
