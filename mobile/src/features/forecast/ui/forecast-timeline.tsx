@@ -137,9 +137,9 @@ export function ForecastTimeline({
       <Panel>
         <PanelHeader title={t('upcoming.timeline.title')} />
         <View className="mt-5 gap-2">
-          <Skeleton height={56} className="rounded-sunk" />
-          <Skeleton height={56} className="rounded-sunk" />
-          <Skeleton height={56} className="rounded-sunk" />
+          <Skeleton height={56} className="rounded-control" />
+          <Skeleton height={56} className="rounded-control" />
+          <Skeleton height={56} className="rounded-control" />
         </View>
       </Panel>
     )
@@ -164,7 +164,7 @@ export function ForecastTimeline({
       <PanelHeader
         title={t('upcoming.timeline.title')}
         right={
-          <Text className="text-[12px] text-ink3">
+          <Text className="t-caption text-ink3">
             {t('upcoming.timeline.count', { count: rows.length })}
           </Text>
         }
@@ -174,7 +174,7 @@ export function ForecastTimeline({
           `ForecastSummary` already carries the notice and the action, and
           repeating a fact to fill space is exactly what §9 forbids. */}
       {!hasLiquidSource ? (
-        <Text className="mt-3 text-[12px] leading-4 text-ink3">
+        <Text className="mt-3 t-caption leading-4 text-ink3">
           {t('home.upcoming.remainingUnavailable')}
         </Text>
       ) : null}
@@ -234,6 +234,12 @@ function OccurrenceRow({
     (marker) => marker !== 'confirmed' && marker !== 'required',
   )
 
+  // A repayment reminder is generated from its debt and regenerated on every
+  // schedule change, so editing, postponing, cancelling or deleting it here
+  // would be undone by the next debt edit — the debt is the only place to
+  // change it. Completing stays: recording a payment is not an edit of the plan.
+  const isDebtDerived = Boolean(occurrence.debtId)
+
   const actions: ActionSheetItem[] = []
   if (onComplete) {
     actions.push({
@@ -242,14 +248,14 @@ function OccurrenceRow({
       onPress: () => onComplete(occurrence),
     })
   }
-  if (onEdit) {
+  if (onEdit && !isDebtDerived) {
     actions.push({
       key: 'edit',
       label: t('upcoming.rowActions.edit'),
       onPress: () => onEdit(occurrence.sourceEventId),
     })
   }
-  if (onPostpone) {
+  if (onPostpone && !isDebtDerived) {
     actions.push({
       key: 'postpone',
       label: t('upcoming.rowActions.postpone'),
@@ -259,7 +265,7 @@ function OccurrenceRow({
   // Cancel and delete last, in that order: §22.11 keeps the irreversible action
   // at the end of the flow, never first under a thumb already moving. Cancel
   // closes the event and keeps the record; delete removes it.
-  if (onCancel) {
+  if (onCancel && !isDebtDerived) {
     actions.push({
       key: 'cancel',
       label: t('upcoming.rowActions.cancelEvent'),
@@ -267,7 +273,7 @@ function OccurrenceRow({
       destructive: true,
     })
   }
-  if (onDelete) {
+  if (onDelete && !isDebtDerived) {
     actions.push({
       key: 'delete',
       label: t('upcoming.rowActions.delete'),
@@ -299,17 +305,17 @@ function OccurrenceRow({
               shows the real one. The clamp stays in `occurrence.date`, which is
               what the running balance and the month grouping use, and the
               `overdue` marker is what says it is being counted now. */}
-          <Text className="font-mono text-[11px] text-ink3">
+          <Text className="font-mono t-caption-sm text-ink3">
             {formatDayMonth(occurrence.originalDate ?? occurrence.date)}
           </Text>
           {ownerName ? (
-            <Text className="shrink text-[11px] text-ink3" numberOfLines={1}>
+            <Text className="shrink t-caption-sm text-ink3" numberOfLines={1}>
               {ownerName}
             </Text>
           ) : null}
         </View>
 
-        <Text className="mt-0.5 text-[14px] leading-5 text-ink" numberOfLines={2}>
+        <Text className="mt-0.5 t-body-sm leading-5 text-ink" numberOfLines={2}>
           {occurrence.name}
         </Text>
 
@@ -318,7 +324,7 @@ function OccurrenceRow({
             {markers.map((marker) => (
               <Text
                 key={marker}
-                className="rounded-full bg-attention-soft px-2 py-0.5 text-[10px] font-medium text-attention"
+                className="rounded-full bg-attention-soft px-2 py-0.5 t-caption-sm font-medium text-attention-ink"
               >
                 {t(`upcoming.markers.${marker}`)}
               </Text>
@@ -333,8 +339,8 @@ function OccurrenceRow({
             make a routine month look like an emergency. */}
         <Text
           className={cn(
-            'text-[14px] font-medium',
-            isIncoming ? 'text-interactive' : 'text-ink',
+            't-body-sm font-medium',
+            isIncoming ? 'text-action' : 'text-ink',
           )}
           style={{ fontVariant: ['tabular-nums'] }}
         >
@@ -344,9 +350,9 @@ function OccurrenceRow({
             `balanceTone` is binary and owns that rule. */}
         <Text
           className={cn(
-            'mt-0.5 text-[11px]',
+            'mt-0.5 t-caption-sm',
             runningBalance !== undefined && balanceTone(runningBalance) === 'shortfall'
-              ? 'text-alert'
+              ? 'text-alert-ink'
               : 'text-ink3',
           )}
           style={{ fontVariant: ['tabular-nums'] }}

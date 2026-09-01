@@ -36,9 +36,9 @@ export function Segmented<T extends string>({
 
   return (
     <View className={className}>
-      {label ? <Text className="mb-2 text-[14px] text-ink2">{label}</Text> : null}
+      {label ? <Text className="mb-2 t-body-sm text-ink2">{label}</Text> : null}
 
-      <View className="flex-row gap-1 rounded-sunk bg-sunk p-1">
+      <View className="flex-row gap-1 rounded-control bg-wash p-1">
         {options.map((option) => {
           const active = option.value === value
           return (
@@ -53,7 +53,7 @@ export function Segmented<T extends string>({
                 dense ? 'px-1' : 'px-3',
                 // The selected segment steps UP a surface rather than taking a
                 // fill colour — colour marks what needs action, not what is on.
-                active ? 'bg-panel' : 'bg-transparent',
+                active ? 'bg-card' : 'bg-transparent',
               )}
             >
               <Text
@@ -65,7 +65,7 @@ export function Segmented<T extends string>({
                 adjustsFontSizeToFit
                 minimumFontScale={0.85}
                 className={cn(
-                  dense ? 'text-[13px]' : 'text-[14px]',
+                  dense ? 't-body-sm' : 't-body-sm',
                   active ? 'font-medium text-ink' : 'text-ink2',
                 )}
               >

@@ -33,7 +33,7 @@ export function Skeleton({ className, height = 20 }: { className?: string; heigh
   return (
     <Animated.View
       style={{ opacity, height }}
-      className={cn('rounded-control bg-sunk', className)}
+      className={cn('rounded-control bg-wash', className)}
     />
   )
 }
@@ -57,8 +57,8 @@ export function EmptyState({
   className?: string
 }) {
   return (
-    <View className={cn('rounded-sunk bg-sunk p-4', className)}>
-      <Text className="text-[14px] leading-5 text-ink2">{message}</Text>
+    <View className={cn('rounded-control bg-wash p-4', className)}>
+      <Text className="t-body-sm leading-5 text-ink2">{message}</Text>
       {action && onAction ? (
         <Button className="mt-3 self-start" variant="ghost" onPress={onAction}>
           {action}
@@ -81,8 +81,8 @@ export function ErrorState({
   className?: string
 }) {
   return (
-    <View className={cn('rounded-sunk bg-sunk p-4', className)}>
-      <Text className="text-[14px] leading-5 text-alert">{message}</Text>
+    <View className={cn('rounded-control bg-wash p-4', className)}>
+      <Text className="t-body-sm leading-5 text-alert-ink">{message}</Text>
       {retryLabel && onRetry ? (
         <Button className="mt-3 self-start" variant="ghost" onPress={onRetry}>
           {retryLabel}
@@ -101,8 +101,8 @@ export function ErrorState({
  */
 export function CaveatNote({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <View className={cn('rounded-sunk bg-attention-soft p-3.5', className)}>
-      <Text className="text-[12px] leading-5 text-ink2">{children}</Text>
+    <View className={cn('rounded-control bg-attention-soft p-3.5', className)}>
+      <Text className="t-caption leading-5 text-ink2">{children}</Text>
     </View>
   )
 }
@@ -121,8 +121,8 @@ export function ConsequenceNote({
   className?: string
 }) {
   return (
-    <View className={cn('rounded-sunk bg-interactive-soft p-3.5', className)}>
-      <Text className="text-[14px] leading-5 text-ink">{children}</Text>
+    <View className={cn('rounded-control bg-action-soft p-3.5', className)}>
+      <Text className="t-body-sm leading-5 text-ink">{children}</Text>
     </View>
   )
 }

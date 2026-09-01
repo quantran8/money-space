@@ -11,7 +11,7 @@ import type { DataFreshnessResult } from '@money-space/core/features/freshness/m
 import { formatVndScale, splitVndScale } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
-import { Label, MoneyCompositionBar, Panel } from '@/components/ui'
+import { Label, MoneyCompositionRing, Panel } from '@/components/ui'
 import { CoverageBlock } from '@/features/freshness/ui/coverage-block'
 import { TOUCH_TARGET } from '@/theme/tokens'
 
@@ -28,9 +28,9 @@ import { TOUCH_TARGET } from '@/theme/tokens'
  * it is an output of those same sources (§2.15) — which is why it is collapsed
  * rather than moved.
  *
- * The web renders the hero and the composition bar as two columns. At 335pt
- * there is one column, and the bar goes UNDER the hero: the hero is what is
- * read first and the bar is what explains it, so stacking them keeps the
+ * The web renders the hero and the composition ring as two columns. At 335pt
+ * there is one column, and the ring goes UNDER the hero: the hero is what is
+ * read first and the ring is what explains it, so stacking them keeps the
  * reading order the split was expressing.
  */
 export function FinancialPictureSection({
@@ -82,7 +82,7 @@ export function FinancialPictureSection({
 
   return (
     <Panel>
-      <Text className="text-[16px] font-medium text-ink">{t('home.picture.title')}</Text>
+      <Text className="t-body font-medium text-ink">{t('home.picture.title')}</Text>
 
       <View className="mt-5">
         <Label>{t('home.picture.flexibleLabel')}</Label>
@@ -91,10 +91,9 @@ export function FinancialPictureSection({
             the household has, and a caveat names what is missing (§23). */}
         <View className="mt-2.5 flex-row flex-wrap items-end gap-x-2">
           <Text
-            className={cn('text-[48px] font-medium', isNegative ? 'text-alert' : 'text-ink')}
+            className={cn('t-hero', isNegative ? 'text-alert-ink' : 'text-ink')}
             style={{
               fontVariant: ['tabular-nums'],
-              letterSpacing: -1.92,
               lineHeight: 50,
             }}
           >
@@ -103,8 +102,8 @@ export function FinancialPictureSection({
           {hero.unit ? (
             <Text
               className={cn(
-                'pb-1 text-[20px] font-medium',
-                isNegative ? 'text-alert' : 'text-ink',
+                'pb-1 t-subtitle',
+                isNegative ? 'text-alert-ink' : 'text-ink',
               )}
             >
               {hero.unit}
@@ -112,7 +111,7 @@ export function FinancialPictureSection({
           ) : null}
         </View>
 
-        <Text className="mt-2.5 text-[14px] leading-5 text-ink2">
+        <Text className="mt-2.5 t-body-sm leading-5 text-ink2">
           {canProject
             ? t('home.picture.totals', { cash: formatVndScale(composition.totalLiquid) })
             : t('home.picture.noSource')}
@@ -130,10 +129,15 @@ export function FinancialPictureSection({
         />
       ) : null}
 
-      <MoneyCompositionBar
+      <MoneyCompositionRing
         className="mt-5"
         segments={composition.segments}
-        formatValue={formatVndScale}
+        formatAmount={formatVndScale}
+        centerLabel={t('home.picture.composition.ringCenter')}
+        ariaLabel={t('home.picture.composition.aria', {
+          committed: formatVndScale(composition.segments[0].amount),
+          flexible: formatVndScale(composition.segments[1].amount),
+        })}
       />
 
       {/* What-if is an ACTION inside this section, never a sixth section: a
@@ -146,7 +150,7 @@ export function FinancialPictureSection({
           style={{ minHeight: TOUCH_TARGET }}
           className="mt-2 justify-center active:opacity-70"
         >
-          <Text className="text-[14px] font-medium text-interactive">
+          <Text className="t-body-sm font-medium text-action">
             {t('home.picture.simulate')}
           </Text>
         </Pressable>

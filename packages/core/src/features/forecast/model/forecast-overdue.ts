@@ -29,6 +29,12 @@ export type OverdueRow = {
   name: string
   /** Signed for display: outgoing is negative. */
   signedAmount: number
+  /**
+   * Set when the occurrence is a debt repayment. Such a row is generated from
+   * its debt and regenerated on every schedule change, so the UI offers no
+   * edit or delete on it — only the debt can change it.
+   */
+  debtId?: string | null
 }
 
 export type OverdueSummary = {
@@ -91,6 +97,7 @@ export function buildOverdue(
       name: occurrence.name,
       signedAmount:
         occurrence.direction === 'incoming' ? occurrence.amount : -occurrence.amount,
+      debtId: occurrence.debtId,
     }
   })
 

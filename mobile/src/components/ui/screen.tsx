@@ -55,7 +55,7 @@ export function Screen({
 
   return (
     <ScrollView
-      className={cn('flex-1 bg-app', className)}
+      className={cn('flex-1 bg-canvas', className)}
       contentContainerStyle={{
         paddingTop: insets.top + spacing.tight + 4,
         paddingBottom:
@@ -75,7 +75,7 @@ export function Screen({
       <View style={{ paddingHorizontal: spacing.panel }}>
         {title ? (
           <View className="mb-4 flex-row items-center justify-between gap-3">
-            <Text className="flex-1 text-[19px] font-medium text-ink">{title}</Text>
+            <Text className="flex-1 t-subtitle text-ink">{title}</Text>
             {right}
           </View>
         ) : null}

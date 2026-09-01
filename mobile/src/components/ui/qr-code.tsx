@@ -35,7 +35,7 @@ export function QrCode({
       accessible
       accessibilityRole="image"
       accessibilityLabel={accessibilityLabel}
-      className={cn('items-center justify-center rounded-sunk bg-white p-3', className)}
+      className={cn('items-center justify-center rounded-control bg-white p-3', className)}
     >
       <QRCodeSvg
         value={value}

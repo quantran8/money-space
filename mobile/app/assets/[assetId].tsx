@@ -68,6 +68,22 @@ export default function AssetDetailScreen() {
 
   const { asset, currentValue, relatedEvents, valueHistory, isLoading } = useAssetDetail(assetId)
   const { members } = useMembers()
+
+  /**
+   * Who recorded an entry, resolved from the auth profile the money event was
+   * created under.
+   *
+   * Keyed on `profileId`, not the member id: the event records WHO WAS SIGNED
+   * IN, which is the profile. A system entry (interest accrual) has no actor at
+   * all, and a member who has since left leaves entries behind them — both fall
+   * back to the household rather than showing a blank or a stale name.
+   */
+  const actorFor = useMemo(() => {
+    const byProfile = new Map(members.map((member) => [member.profileId, member]))
+    return (entry: AssetEventEntry) =>
+      (entry.createdById ? byProfile.get(entry.createdById)?.name : undefined) ??
+      t('assets.detail.events.householdActor')
+  }, [members, t])
   const {
     asOf,
     total: householdAssetTotal,
@@ -159,10 +175,10 @@ export default function AssetDetailScreen() {
       <Screen withoutTabBar>
         <BackLink label={t('assets.detail.back')} onPress={() => router.back()} />
         <Panel className="mt-4">
-          <Text className="text-[16px] font-medium text-ink">
+          <Text className="t-body font-medium text-ink">
             {t('assets.detail.notFound.title')}
           </Text>
-          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
+          <Text className="mt-1.5 t-body-sm leading-5 text-ink2">
             {t('assets.detail.notFound.description')}
           </Text>
         </Panel>
@@ -197,7 +213,7 @@ export default function AssetDetailScreen() {
 
       <View className="mb-4 mt-3 flex-row items-start justify-between gap-3">
         <View className="flex-1">
-          <Text className="text-[22px] font-medium leading-7 text-ink">{asset.name}</Text>
+          <Text className="t-metric leading-7 text-ink">{asset.name}</Text>
           <View className="mt-1.5 flex-row items-center gap-3">
             <RowMeta>{t(`options.assetType.${asset.type}`)}</RowMeta>
             {/* Sold is a real lifecycle state, not a deletion — the record is
@@ -250,7 +266,7 @@ export default function AssetDetailScreen() {
             <Label>
               {t(isBalanceAsset ? 'assets.detail.hero.balance' : 'assets.detail.hero.currentValue')}
             </Label>
-            <Money className="mt-1.5" size={40}>
+            <Money className="mt-1.5" step="figure">
               {formatVndShort(currentValue)}
             </Money>
 
@@ -336,9 +352,9 @@ export default function AssetDetailScreen() {
               <Label>{t('assets.detail.chart.rangeDelta')}</Label>
               <Money
                 className={
-                  rangeDelta < 0 ? 'text-alert' : rangeDelta > 0 ? 'text-interactive' : undefined
+                  rangeDelta < 0 ? 'text-alert-ink' : rangeDelta > 0 ? 'text-action' : undefined
                 }
-                size={22}
+                step="metric"
               >
                 {`${rangeDelta > 0 ? '+' : rangeDelta < 0 ? '−' : ''}${formatVndShort(Math.abs(rangeDelta))}`}
               </Money>
@@ -350,7 +366,7 @@ export default function AssetDetailScreen() {
 
               {/* What moved it. The line alone cannot separate a price rally
                   from a purchase, so this names the holding changes. */}
-              <Text className="mt-3 text-[12px] leading-5 text-ink2">
+              <Text className="mt-3 t-caption leading-5 text-ink2">
                 {`${t(`assets.detail.chart.inRange${chartRange}`)}: ${
                   chartMarkers.length > 0
                     ? chartMarkers.map((marker) => marker.label).join(' · ')
@@ -442,7 +458,7 @@ export default function AssetDetailScreen() {
           {asset.note ? (
             <View className="mt-4">
               <Label>{t('assets.detail.notes.eyebrow')}</Label>
-              <Text className="mt-1.5 text-[14px] leading-5 text-ink2">{asset.note}</Text>
+              <Text className="mt-1.5 t-body-sm leading-5 text-ink2">{asset.note}</Text>
             </View>
           ) : null}
         </Panel>
@@ -470,7 +486,7 @@ export default function AssetDetailScreen() {
           {relatedEvents.length > 0 ? (
             <View className="mt-2">
               {relatedEvents.map((entry) => (
-                <EventRow key={entry.id} entry={entry} />
+                <EventRow key={entry.id} entry={entry} actor={actorFor(entry)} />
               ))}
             </View>
           ) : (
@@ -541,14 +557,24 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   return <GroupedRow title={label} value={value} valueTone="default" />
 }
 
-function EventRow({ entry }: { entry: AssetEventEntry }) {
+function EventRow({ entry, actor }: { entry: AssetEventEntry; actor: string }) {
   const { t } = useTranslation()
   const isPositive = entry.amount >= 0
 
   return (
     <GroupedRow
       title={entry.title}
-      meta={<RowMeta>{t(`options.eventType.${entry.type}`, { defaultValue: entry.type })}</RowMeta>}
+      // Who recorded it, beside what it was. A shared ledger's history is only
+      // useful if you can tell who wrote a line — an unexplained figure is
+      // usually a question for the other person, not a mystery.
+      meta={
+        <RowMeta>
+          {[
+            t(`options.eventType.${entry.type}`, { defaultValue: entry.type }),
+            actor,
+          ].join(' · ')}
+        </RowMeta>
+      }
       value={`${isPositive ? '+' : '−'}${formatVndShort(Math.abs(entry.amount))}`}
       // Money direction takes no hue by default (§3): the sign says it, and
       // colour stays for what needs acting on.

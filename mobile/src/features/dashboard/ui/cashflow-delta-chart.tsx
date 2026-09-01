@@ -20,12 +20,22 @@ const HEIGHT = 104
  * flat line pinned near the total, where a month of real movement is a rounding
  * error.
  *
- * The interpolation is a STEP, because a balance does not drift between events:
- * it holds flat and moves on the day something is paid. A smoothed curve would
- * draw money leaving the account on days nothing happened.
+ * The interpolation is MONOTONE, matching the web. Stepping was literally truer
+ * to the mechanism — a balance holds flat, then moves the day something is paid
+ * — and it was still dropped: at 30 points across a phone's width the risers
+ * read as noise, and the question this chart answers is how deep the dip goes
+ * and roughly when. The exact per-day sequence is already answered, precisely,
+ * by the event rows beside it, so the chart was paying for precision the
+ * section provides elsewhere.
+ *
+ * Monotone specifically, not a plain spline: monotone interpolation never
+ * overshoots, so the curve cannot dip below the lowest data point or rise above
+ * the highest. That matters here — the low-point dot must remain the visual
+ * minimum, and a smoothed curve must not invent a trough no cashflow event
+ * produced.
  *
  * Hand-drawn with `react-native-svg`, the same approach as the asset chart: a
- * step path, a zero rule and one dot is the whole requirement, and a charting
+ * path, a zero rule and one dot is the whole requirement, and a charting
  * library arrives with its own palette and its own idea of a grid.
  *
  * The caller decides whether this earns its place at all (§9) — below a handful
@@ -65,15 +75,7 @@ export function CashflowDeltaChart({
       y: y(point.delta),
     }))
 
-    // A step, not a polyline: hold the previous level across to the new x, then
-    // move vertically on the day it actually changes.
-    const path = coordinates
-      .map((point, index) =>
-        index === 0
-          ? `M${point.x.toFixed(2)},${point.y.toFixed(2)}`
-          : `H${point.x.toFixed(2)} V${point.y.toFixed(2)}`,
-      )
-      .join(' ')
+    const path = monotonePath(coordinates)
 
     return { coordinates, path, zeroY: y(0) }
   }, [points, width])
@@ -83,7 +85,7 @@ export function CashflowDeltaChart({
   const low = geometry && lowestIndex >= 0 ? geometry.coordinates[lowestIndex] : undefined
 
   return (
-    <View className="rounded-sunk bg-sunk p-4">
+    <View className="rounded-control bg-wash p-4">
       {/* §10.4: the unit is declared once, here, so the axis ends stay bare. */}
       <Label>{label}</Label>
 
@@ -129,13 +131,73 @@ export function CashflowDeltaChart({
       {/* Two labelled ends rather than a tick scale: at this width a full axis
           is overlapping numbers, and the endpoints are what gets compared. */}
       <View className="mt-1.5 flex-row items-center justify-between">
-        <Text className="font-mono text-[11px] text-ink3">
+        <Text className="font-mono t-caption-sm text-ink3">
           {formatDayMonth(points[0].date)}
         </Text>
-        <Text className="font-mono text-[11px] text-ink3">
+        <Text className="font-mono t-caption-sm text-ink3">
           {formatDayMonth(points[points.length - 1].date)}
         </Text>
       </View>
     </View>
   )
+}
+
+/**
+ * A monotone cubic path through the points (Fritsch–Carlson tangents).
+ *
+ * The tangent at each point is a weighted harmonic mean of the neighbouring
+ * secant slopes, and it is forced to ZERO wherever the slopes change sign —
+ * i.e. at a local peak or trough. That is the property the chart needs: the
+ * curve cannot overshoot past a data point, so the rendered minimum is the real
+ * minimum and the low-point dot always sits on it.
+ */
+function monotonePath(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return ''
+  if (points.length === 1) return `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`
+
+  // Secant slope of each segment.
+  const slopes = points.slice(0, -1).map((point, index) => {
+    const dx = points[index + 1].x - point.x
+    return dx === 0 ? 0 : (points[index + 1].y - point.y) / dx
+  })
+
+  const tangents = points.map((_, index) => {
+    if (index === 0) return slopes[0]
+    if (index === points.length - 1) return slopes[slopes.length - 1]
+    const previous = slopes[index - 1]
+    const next = slopes[index]
+    // A sign change means this point is a local extreme: a flat tangent is what
+    // stops the curve from sailing past it.
+    if (previous * next <= 0) return 0
+    return (previous + next) / 2
+  })
+
+  // Clamp the tangents so no segment can overshoot its own secant.
+  for (let index = 0; index < slopes.length; index += 1) {
+    if (slopes[index] === 0) {
+      tangents[index] = 0
+      tangents[index + 1] = 0
+      continue
+    }
+    const a = tangents[index] / slopes[index]
+    const b = tangents[index + 1] / slopes[index]
+    const magnitude = Math.hypot(a, b)
+    if (magnitude > 3) {
+      tangents[index] = ((3 / magnitude) * a) * slopes[index]
+      tangents[index + 1] = ((3 / magnitude) * b) * slopes[index]
+    }
+  }
+
+  let path = `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const current = points[index]
+    const next = points[index + 1]
+    const dx = (next.x - current.x) / 3
+    const c1x = current.x + dx
+    const c1y = current.y + dx * tangents[index]
+    const c2x = next.x - dx
+    const c2y = next.y - dx * tangents[index + 1]
+    path += ` C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${next.x.toFixed(2)},${next.y.toFixed(2)}`
+  }
+  return path
 }

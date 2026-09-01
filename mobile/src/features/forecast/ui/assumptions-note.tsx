@@ -28,14 +28,14 @@ export function AssumptionsNote({ assumptions }: { assumptions: CalculationAssum
       showLabel={t('goals.scheduledOutflows.show')}
       hideLabel={t('goals.scheduledOutflows.hide')}
       summary={
-        <Text className="text-[12px] text-ink3">{t('upcoming.assumptions.title')}</Text>
+        <Text className="t-caption text-ink3">{t('upcoming.assumptions.title')}</Text>
       }
     >
       <View className="gap-1.5">
         {assumptions.map((assumption) => (
           <Text
             key={`${assumption.code}:${assumption.value ?? ''}`}
-            className="text-[12px] leading-5 text-ink3"
+            className="t-caption leading-5 text-ink3"
           >
             {t(`upcoming.assumptions.codes.${assumption.code}`, {
               value: assumption.value,

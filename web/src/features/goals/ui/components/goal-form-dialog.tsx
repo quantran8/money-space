@@ -1,5 +1,5 @@
 import { Check, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Controller, useWatch, type FieldErrors, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
@@ -20,13 +20,6 @@ import {
   ResponsiveDialogDescription,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { GoalAllocationsField } from '@/features/goals/ui/components/goal-allocations-field'
 import type { AllocationAssetOption } from '@/features/goals/ui/components/goal-allocations-section'
 import type { GoalAllocationDraft, GoalForm } from '@money-space/core/features/goals/model/goals-form'
@@ -42,10 +35,21 @@ type GoalFormDialogProps = {
   walletGoalNames?: ReadonlyMap<string, string[]>
   isEditing: boolean
   isSubmitting: boolean
-  onSubmit: () => void
+  /** RHF's handleSubmit(): needs the form event to call preventDefault(). */
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
 type BuilderStep = 1 | 2 | 3
+
+const PRIORITIES: GoalForm['priority'][] = ['high', 'medium', 'low']
+
+const LAST_BUILDER_STEP: BuilderStep = 3
+
+const BUILDER_STEPS: Array<{ step: BuilderStep; labelKey: string }> = [
+  { step: 1, labelKey: 'goals.builder.stepPlan' },
+  { step: 2, labelKey: 'goals.builder.stepSources' },
+  { step: 3, labelKey: 'goals.builder.stepReview' },
+]
 
 function toNumber(raw: string | undefined): number {
   if (!raw) return 0
@@ -109,6 +113,21 @@ export function GoalFormDialog({
     formState: { errors, isDirty },
   } = form
   const [step, setStep] = useState<BuilderStep>(1)
+  // The furthest step reached, so the rail can offer a jump back to anything
+  // already visited without letting the user skip ahead past validation.
+  const [furthestStep, setFurthestStep] = useState<BuilderStep>(1)
+  /**
+   * Set only by a deliberate press of the Save button.
+   *
+   * `continueCreate` awaits `trigger()`, so the step advances a microtask AFTER
+   * the click handler returns, and the footer's Continue button is replaced by
+   * the submit button in that same commit. The interaction still in flight (a
+   * held Enter, or the click dispatched on mouseup) then lands on the new button
+   * and saves the goal straight from the review step. Requiring this flag makes
+   * saving impossible except through the button itself. A ref, not state — the
+   * submit handler must read it in the same tick the click sets it.
+   */
+  const saveArmed = useRef(false)
   const [noteOpen, setNoteOpen] = useState(isEditing)
 
   const name = useWatch({ control, name: 'name' }) ?? ''
@@ -138,19 +157,102 @@ export function GoalFormDialog({
 
   function requestOpenChange(next: boolean) {
     if (!next && isDirty && !window.confirm(t('goals.builder.discardChanges'))) return
+    // Closing is the only moment the wizard is finished with, so the step resets
+    // here rather than on submit — otherwise reopening to create the NEXT goal
+    // landed on the review step with an empty form.
+    if (!next) {
+      setStep(1)
+      setFurthestStep(1)
+    }
     onOpenChange(next)
+  }
+
+  function goToStep(next: BuilderStep) {
+    setStep(next)
+    setFurthestStep((reached) => (next > reached ? next : reached))
+  }
+
+  /**
+   * Rail navigation. Going back is always allowed — the user is returning to fix
+   * something, and re-validating there would flag fields they have not reached.
+   * Going forward runs the same checks the Continue button does, in order, so a
+   * jump can never skip a step's validation.
+   */
+  async function requestStep(next: BuilderStep) {
+    if (next <= step) {
+      goToStep(next)
+      return
+    }
+    for (let current = step; current < next; current += 1) {
+      const ok =
+        current === 1
+          ? await trigger(['name', 'target'])
+          : current === 2
+            ? await trigger('allocations')
+            : true
+      if (!ok) {
+        goToStep(current as BuilderStep)
+        return
+      }
+    }
+    goToStep(next)
+  }
+
+  /**
+   * One line per rail row, so the sidebar doubles as the running summary of what
+   * has been answered. Falls back to a placeholder rather than an empty row,
+   * which would read as a rendering bug.
+   */
+  function railSummary(target: BuilderStep): string {
+    const empty = t('goals.builder.rail.empty')
+    if (target === 1) {
+      return name.trim() || empty
+    }
+    if (target === 2) {
+      return allocations.length > 0
+        ? t('goals.builder.rail.sourceCount', { count: allocations.length })
+        : empty
+    }
+    return t('goals.builder.rail.reviewAll')
   }
 
   async function continueCreate() {
     if (step === 1) {
       const valid = await trigger(['name', 'target'])
-      if (valid) setStep(2)
+      if (valid) goToStep(2)
       return
     }
     if (step === 2) {
       const valid = await trigger('allocations')
-      if (valid) setStep(3)
+      if (valid) goToStep(3)
     }
+  }
+
+  /**
+   * Steps 1-2 are not a submit. Pressing Enter in any input fires the browser's
+   * implicit submission, which would otherwise SAVE the goal from step 1 —
+   * skipping the allocations and review the wizard exists to collect. Swallow it
+   * and advance instead, which is what Enter should mean mid-wizard.
+   *
+   * Editing has no steps, so it submits straight away.
+   */
+  function handleFormSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!isEditing && step < 3) {
+      event.preventDefault()
+      void continueCreate()
+      return
+    }
+    // A submit nobody armed is the race described on `saveArmed`, not an
+    // intention: the user has not read the summary yet, let alone pressed Save.
+    if (!saveArmed.current) {
+      event.preventDefault()
+      return
+    }
+    saveArmed.current = false
+    // `onSubmit` is RHF's handleSubmit(), which calls preventDefault() itself —
+    // but only when it receives the event. Forward it, or the browser performs a
+    // native submit and reloads the page.
+    onSubmit(event)
   }
 
   const priorityLabel = t(`options.priority.${priority}`)
@@ -158,27 +260,82 @@ export function GoalFormDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={requestOpenChange}>
-      <ResponsiveDialogContent className="flex h-dvh max-h-dvh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none p-0 pb-0 md:h-[min(900px,92dvh)] md:max-h-[92dvh] md:max-w-[1080px] md:rounded-[18px] [&>button:last-child]:right-5 [&>button:last-child]:top-5 [&>button:last-child]:grid [&>button:last-child]:size-11 [&>button:last-child]:place-items-center [&>button:last-child]:rounded-[10px] md:[&>button:last-child]:right-6 md:[&>button:last-child]:top-5">
-        {/* The right gutter is the close button's; the title runs up to it
-            rather than under it. */}
-        <header className="flex flex-none items-center gap-3 bg-card py-4 pl-5 pr-[76px] md:py-5 md:pl-8 md:pr-[88px]">
-          <div className="min-w-0 flex-1">
-            <ResponsiveDialogTitle className="mt-0.5 truncate t-subhead font-medium">
-              {isEditing ? t('goals.form.editTitle') : t('goals.form.title')}
+      {/* Same shell as the debt wizard: a fixed height from `md` (where
+          ResponsiveDialog switches from Sheet to Dialog) so the box does not
+          resize between steps, and a left rail from `lg`. */}
+      <ResponsiveDialogContent className="grid max-h-[92dvh] gap-0 overflow-hidden p-0 sm:max-w-[920px] md:h-[min(680px,92dvh)] lg:grid-cols-[250px_1fr]">
+        {/* The rail doubles as the running summary of what has been answered.
+            Editing has no steps, so it renders only while creating. */}
+        {!isEditing ? (
+          <aside className="hidden min-h-0 flex-col overflow-y-auto border-r border-divider bg-canvas p-5 lg:flex">
+            <ResponsiveDialogTitle className="mt-1 t-subtitle">
+              {t('goals.form.title')}
             </ResponsiveDialogTitle>
             <ResponsiveDialogDescription className="sr-only">
               {t('goals.form.help')}
             </ResponsiveDialogDescription>
-          </div>
-        </header>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit} noValidate>
-          <div className="min-h-0 flex-1 overflow-hidden">
-            <div className="grid h-full md:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="mt-6 space-y-1">
+              {BUILDER_STEPS.map((item) => {
+                const reachable = item.step <= furthestStep
+                return (
+                  <button
+                    key={item.step}
+                    type="button"
+                    disabled={!reachable}
+                    aria-current={step === item.step ? 'step' : undefined}
+                    onClick={() => void requestStep(item.step)}
+                    className={cn(
+                      'w-full rounded-control px-3 py-2.5 text-left transition-colors',
+                      reachable ? 'hover:bg-wash' : 'cursor-default',
+                      step === item.step && 'bg-wash',
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="t-caption text-ink3">{t(item.labelKey)}</span>
+                      <RailStatus step={item.step} current={step} done={item.step < furthestStep} />
+                    </div>
+                    <p className="mt-1 truncate t-body-sm">{railSummary(item.step)}</p>
+                  </button>
+                )
+              })}
+            </div>
+          </aside>
+        ) : null}
+
+        {/* `max-h-[inherit]` is what makes the inner `1fr` row scroll. The grid
+            parent caps itself at 92dvh, but a grid ROW is `auto` by default, so
+            without this the form grew to its content, overflowed the cap and was
+            simply clipped by `overflow-hidden` — the scroll region never got
+            squeezed, so on a narrow screen (a Sheet, no fixed height) a long list
+            of wallets could not be reached. */}
+        <form
+          className="grid max-h-[inherit] min-h-0 grid-rows-[auto_1fr_auto]"
+          onSubmit={handleFormSubmit}
+          noValidate
+        >
+          <header className="px-5 pb-2 pr-16 pt-5 text-left sm:px-8 sm:pr-16 sm:pt-7">
+            {!isEditing ? (
+              <p className="t-body-sm text-ink3">{t('goals.builder.stepStatus', { step })}</p>
+            ) : null}
+            {/* The rail carries the title on wide screens; the narrow layout and
+                editing both drop the rail, so the title is restated here. */}
+            <ResponsiveDialogTitle
+              className={cn('mt-1 t-subhead font-medium tracking-[-0.015em]', !isEditing && 'lg:hidden')}
+            >
+              {isEditing ? t('goals.form.editTitle') : t('goals.form.title')}
+            </ResponsiveDialogTitle>
+            {isEditing ? (
+              <ResponsiveDialogDescription className="sr-only">
+                {t('goals.form.help')}
+              </ResponsiveDialogDescription>
+            ) : null}
+          </header>
+
+          <div className="min-h-0 overflow-hidden">
+            <div className="grid h-full">
               <main className="min-h-0 overflow-y-auto">
-                <div className="mx-auto w-full max-w-[650px] px-5 py-6 md:px-8 md:py-8">
-                  {!isEditing ? <GoalStepper step={step} /> : null}
-
+                <div className="w-full px-5 pb-5 pt-4 sm:px-8">
                   {isEditing ? (
                     <EditPlanFields
                       form={form}
@@ -188,10 +345,7 @@ export function GoalFormDialog({
                     />
                   ) : step === 1 ? (
                     <section>
-                      <SectionIntro
-                        title={t('goals.builder.planQuestion')}
-                        description={t('goals.builder.planDescription')}
-                      />
+                      <SectionIntro title={t('goals.builder.planQuestion')} />
                       <div className="space-y-5">
                         <Field
                           label={t('goals.form.name')}
@@ -275,10 +429,7 @@ export function GoalFormDialog({
                     </section>
                   ) : step === 2 ? (
                     <section>
-                      <SectionIntro
-                        title={t('goals.builder.sourceQuestion')}
-                        description={t('goals.builder.sourceDescription')}
-                      />
+                      <SectionIntro title={t('goals.builder.sourceQuestion')} />
                       <Controller
                         control={control}
                         name="allocations"
@@ -304,50 +455,44 @@ export function GoalFormDialog({
                       allocations={allocations}
                       assetOptions={assetOptions}
                       noDeadline={noDeadline}
-                      onEdit={setStep}
+                      onEdit={goToStep}
                     />
                   )}
 
-                  <div className="mt-6 md:hidden">
-                    <GoalSummary
-                      target={target}
-                      current={current}
-                      remaining={remaining}
-                      plannedMonthly={plannedMonthly}
-                      monthsToGoal={monthsToGoal}
-                      progress={progress}
-                      allocations={allocations}
-                      assetOptions={assetOptions}
-                      isEditing={isEditing}
-                      compact
-                    />
-                  </div>
+                  {/* The live figures the 320px aside used to carry. Only from
+                      the review step (and while editing, which has no steps):
+                      "Đang tính vào" counts the money the chosen sources already
+                      hold, and before step 3 nothing has been chosen — it read
+                      0 đ next to a target the household had just typed, which
+                      says nothing and looks like a miscalculation. */}
+                  {isEditing || step === LAST_BUILDER_STEP ? (
+                    <div className="mt-6" aria-live="polite">
+                      <GoalSummary
+                        target={target}
+                        current={current}
+                        remaining={remaining}
+                        plannedMonthly={plannedMonthly}
+                        monthsToGoal={monthsToGoal}
+                        progress={progress}
+                        allocations={allocations}
+                        assetOptions={assetOptions}
+                        isEditing={isEditing}
+                        compact
+                      />
+                    </div>
+                  ) : null}
                 </div>
               </main>
-
-              <aside className="hidden min-h-0 overflow-y-auto bg-card p-7 md:block" aria-live="polite">
-                <GoalSummary
-                  target={target}
-                  current={current}
-                  remaining={remaining}
-                  plannedMonthly={plannedMonthly}
-                  monthsToGoal={monthsToGoal}
-                  progress={progress}
-                  allocations={allocations}
-                  assetOptions={assetOptions}
-                  isEditing={isEditing}
-                />
-              </aside>
             </div>
           </div>
 
-          <footer className="flex flex-none items-center gap-2.5 bg-card px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 md:px-8 md:pb-5">
+          <footer className="flex shrink-0 items-center gap-2.5 border-t border-divider px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 sm:px-8 sm:pb-7">
             {!isEditing && step > 1 ? (
               <Button
                 type="button"
                 variant="secondary"
                 className="min-h-11 px-4"
-                onClick={() => setStep((step - 1) as BuilderStep)}
+                onClick={() => goToStep((step - 1) as BuilderStep)}
               >
                 {t('goals.builder.back')}
               </Button>
@@ -359,6 +504,7 @@ export function GoalFormDialog({
             </p>
             {!isEditing && step < 3 ? (
               <Button
+                key="advance"
                 type="button"
                 className="ml-auto min-h-11 px-5"
                 onClick={() => void continueCreate()}
@@ -367,9 +513,13 @@ export function GoalFormDialog({
               </Button>
             ) : (
               <Button
+                key="save"
                 type="submit"
                 disabled={isSubmitting}
                 className="ml-auto min-h-11 px-5"
+                onClick={() => {
+                  saveArmed.current = true
+                }}
               >
                 {isSubmitting
                   ? t('goals.form.saving')
@@ -385,49 +535,74 @@ export function GoalFormDialog({
   )
 }
 
-function SectionIntro({ title, description }: { title: string; description: string }) {
+/**
+ * Each step asks one question, and the heading is the whole of it — a sub-line
+ * restating the question in other words is copy the reader has to read twice to
+ * learn nothing. Matches the debt wizard's StepHeading.
+ */
+function SectionIntro({ title }: { title: string }) {
+  return <h2 className="mb-5 t-title">{title}</h2>
+}
+
+/**
+ * A short, fixed set of options picked in place.
+ *
+ * Takes the Button foundation as it comes — h-11, `rounded-control`, no stroke
+ * and no shadow: the selected chip is an ink fill, the rest a sunk `wash` fill,
+ * because a border is not how this system marks a control.
+ */
+function ChoiceChips<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+}: {
+  value: T
+  options: Array<{ value: T; label: string }>
+  onChange: (value: T) => void
+  label: string
+}) {
   return (
-    <div className="mb-7">
-      <h2 className="t-metric tracking-[-0.01em]">{title}</h2>
-      <p className="mt-2 max-w-[540px] t-body-sm leading-5 text-ink2">{description}</p>
+    <div className="flex flex-wrap gap-2" role="group" aria-label={label}>
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={value === option.value}
+          onClick={() => onChange(option.value)}
+          className={cn(
+            'h-11 rounded-control bg-wash px-4 t-body-sm text-ink2 transition-colors hover:bg-committed',
+            value === option.value && 'bg-action text-action-inverse hover:bg-ink2',
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
   )
 }
 
-function GoalStepper({ step }: { step: BuilderStep }) {
-  const { t } = useTranslation()
-  const steps = [
-    t('goals.builder.stepPlan'),
-    t('goals.builder.stepSources'),
-    t('goals.builder.stepReview'),
-  ]
+/**
+ * The rail's per-step marker: a tick once the step is behind the user, a filled
+ * dot for where they are, and a committed-grey dot for what is still ahead.
+ */
+function RailStatus({
+  step,
+  current,
+  done,
+}: {
+  step: BuilderStep
+  current: BuilderStep
+  done: boolean
+}) {
+  if (done && step !== current) {
+    return <Check className="size-4 shrink-0 text-ink" aria-hidden />
+  }
   return (
-    <div className="mb-7 flex items-center gap-2 md:mb-8">
-      {steps.map((label, index) => {
-        const number = (index + 1) as BuilderStep
-        const done = number < step
-        const active = number === step
-        return (
-          <div key={label} className="contents">
-            {index > 0 ? <div className="h-px flex-1 bg-divider" /> : null}
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  'grid size-7 place-items-center rounded-full bg-wash font-mono t-caption-sm font-medium text-ink3',
-                  active && 'bg-ink text-panel',
-                  done && 'bg-accent-soft text-action',
-                )}
-              >
-                {done ? <Check className="size-3.5" strokeWidth={2} /> : number}
-              </span>
-              <span className={cn('hidden t-caption text-ink3 sm:inline', active && 'font-medium text-ink')}>
-                {label}
-              </span>
-            </div>
-          </div>
-        )
-      })}
-    </div>
+    <span
+      className={cn('size-2 shrink-0 rounded-full bg-committed', step === current && 'bg-action')}
+      aria-hidden
+    />
   )
 }
 
@@ -444,7 +619,7 @@ function PlanDatePriorityFields({
 }) {
   const { t } = useTranslation()
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4">
       {/* No `htmlFor`: the picker's control is a button, not an input. */}
       <Field label={t('goals.builder.targetMonth')}>
         <div className={cn(fieldShell, 'h-12')}>
@@ -461,25 +636,24 @@ function PlanDatePriorityFields({
           />
         </div>
       </Field>
+      {/* Three short options picked in place, as in the debt wizard: a Select
+          would hide them behind a tap and give no sense of the alternatives. */}
       <Field label={t('goals.form.priority')} error={priorityError}>
-        <div className={cn(fieldShell, 'h-12', priorityError && 'border-alert-ink')}>
-          <Controller
-            control={control}
-            name="priority"
-            render={({ field }) => (
-              <Select value={priority} onValueChange={field.onChange}>
-                <SelectTrigger className={fieldControlReset}>
-                  <SelectValue placeholder={t('goals.form.priorityPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">{t('options.priority.high')}</SelectItem>
-                  <SelectItem value="medium">{t('options.priority.medium')}</SelectItem>
-                  <SelectItem value="low">{t('options.priority.low')}</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
+        <Controller
+          control={control}
+          name="priority"
+          render={({ field }) => (
+            <ChoiceChips
+              label={t('goals.form.priority')}
+              value={priority}
+              onChange={field.onChange}
+              options={PRIORITIES.map((value) => ({
+                value,
+                label: t(`options.priority.${value}`),
+              }))}
+            />
+          )}
+        />
       </Field>
     </div>
   )
@@ -500,7 +674,7 @@ function EditPlanFields({
   const { control, register, formState: { errors } } = form
   return (
     <section>
-      <SectionIntro title={t('goals.builder.updatePlan')} description={t('goals.builder.updateDescription')} />
+      <SectionIntro title={t('goals.builder.updatePlan')} />
       <div className="space-y-5">
         <Field label={t('goals.form.name')} htmlFor="goal-name" error={errors.name?.message}>
           <div className={cn(fieldShell, 'h-12', errors.name && 'border-alert-ink')}>
@@ -583,7 +757,7 @@ function GoalSummary({
 
   if (compact) {
     return (
-      <section className="rounded-[14px] bg-card p-4" aria-live="polite">
+      <section aria-live="polite">
         <div className="flex items-baseline justify-between gap-4">
           <SummaryMetric label={t('goals.builder.countingNow')} value={formatVndScale(current)} />
           <SummaryMetric
@@ -592,7 +766,13 @@ function GoalSummary({
             right
           />
         </div>
-        <ProgressBar value={progress} />
+        {/* The bar draws a share but never states one. Without the figure the
+            block reads as "not moving" at exactly the low percentages a goal
+            starts at. */}
+        <div className="mt-3 flex items-center gap-3">
+          <ProgressBar value={progress} className="mt-0 flex-1" />
+          <span className="num shrink-0 t-body-sm font-medium">{Math.round(progress)}%</span>
+        </div>
         <p className="mt-3 rounded-[10px] bg-accent-soft px-3.5 py-3 t-caption leading-5 text-ink2">
           {forecast}
         </p>
@@ -617,7 +797,10 @@ function GoalSummary({
           <span className="t-caption text-ink2">{t('goals.builder.countingNow')}</span>
           <span className="num t-body-sm font-medium">{formatVndScale(current)}</span>
         </div>
-        <ProgressBar value={progress} />
+        <div className="mt-3 flex items-center gap-3">
+          <ProgressBar value={progress} className="mt-0 flex-1" />
+          <span className="num shrink-0 t-body-sm font-medium">{Math.round(progress)}%</span>
+        </div>
         <p className="num mt-3 t-caption text-ink3">
           {target ? t('goals.builder.remainingAmount', { amount: formatVndScale(remaining) }) : t('goals.builder.noTarget')}
         </p>
@@ -671,8 +854,8 @@ function SummaryMetric({ label, value, right = false }: { label: string; value: 
   )
 }
 
-function ProgressBar({ value }: { value: number }) {
-  return <Progress value={value} className="mt-3 h-6 text-action" />
+function ProgressBar({ value, className }: { value: number; className?: string }) {
+  return <Progress value={value} className={cn('mt-3 h-6 text-action', className)} />
 }
 
 function GoalReview({
@@ -699,9 +882,13 @@ function GoalReview({
   const { t } = useTranslation()
   return (
     <section>
-      <SectionIntro title={t('goals.builder.reviewTitle')} description={t('goals.builder.reviewDescription')} />
-      <div className="space-y-4">
-        <div className="rounded-[14px] bg-card p-5">
+      <SectionIntro title={t('goals.builder.reviewTitle')} />
+      {/* Divider-separated sections, not stacked cards. The review already sits
+          on a card, and a rounded box inside one is the nested-surface pattern
+          v5 removes — hierarchy comes from type, spacing and a hairline rule
+          (Components.dc, "MetricCell → inline metric"). */}
+      <div className="divide-y divide-divider">
+        <div className="pb-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="t-caption-sm text-ink3">{name}</p>
@@ -722,7 +909,7 @@ function GoalReview({
           {note ? <p className="mt-4 t-caption leading-5 text-ink2">{note}</p> : null}
         </div>
 
-        <div className="rounded-[14px] bg-card p-5">
+        <div className="py-6">
           <div className="flex items-center justify-between gap-4">
             <h3 className="t-subtitle">
               {t('goals.builder.sourceCount', { count: allocations.length })}
@@ -754,10 +941,11 @@ function GoalReview({
           </div>
         </div>
 
-        <p className="rounded-[14px] bg-accent-soft p-4 t-caption leading-5 text-ink2">
-          {t('goals.builder.backendRecalculate')}
-        </p>
       </div>
+
+      <p className="mt-6 rounded-control bg-accent-soft p-4 t-caption leading-5 text-ink2">
+        {t('goals.builder.backendRecalculate')}
+      </p>
     </section>
   )
 }

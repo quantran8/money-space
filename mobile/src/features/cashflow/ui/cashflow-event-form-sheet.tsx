@@ -128,7 +128,7 @@ export function CashflowEventFormSheet({
           )}
         />
         {walletMissing ? <CaveatNote>{t('upcoming.form.walletDeleted')}</CaveatNote> : null}
-        <Text className="text-[12px] leading-4 text-ink3">
+        <Text className="t-caption leading-4 text-ink3">
           {t(isOutgoing ? 'upcoming.form.walletHintOut' : 'upcoming.form.walletHintIn')}
         </Text>
       </View>
@@ -295,7 +295,7 @@ export function CashflowEventFormSheet({
             {/* `estimated` incoming is displayed but never banked. Say so where
                 the choice is made, not only on the timeline afterwards. */}
             {!isOutgoing && certainty === 'estimated' ? (
-              <Text className="mt-1.5 text-[12px] leading-4 text-ink3">
+              <Text className="mt-1.5 t-caption leading-4 text-ink3">
                 {t('upcoming.form.estimatedIncomingHint')}
               </Text>
             ) : null}

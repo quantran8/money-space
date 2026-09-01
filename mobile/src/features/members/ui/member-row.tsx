@@ -51,20 +51,20 @@ export function MemberRow({
   const active = member.status === 'active'
 
   return (
-    <View className="rounded-sunk px-1 py-3">
+    <View className="rounded-control px-1 py-3">
       <View className="flex-row items-center gap-3">
         {/* Initials are ASCII by construction (core strips the diacritics), so
             the mono face is safe here — and correct: this is metadata. */}
-        <View className="h-10 w-10 items-center justify-center rounded-full bg-sunk">
-          <Text className="font-mono text-[12px] font-medium text-ink2">{member.initials}</Text>
+        <View className="h-10 w-10 items-center justify-center rounded-full bg-wash">
+          <Text className="font-mono t-caption font-medium text-ink2">{member.initials}</Text>
         </View>
 
         <View className="min-w-0 flex-1">
-          <Text className="text-[14px] font-medium text-ink" numberOfLines={1}>
+          <Text className="t-body-sm font-medium text-ink" numberOfLines={1}>
             {member.name || member.email}
           </Text>
           {member.email && member.name ? (
-            <Text className="mt-0.5 font-mono text-[11px] text-ink3" numberOfLines={1}>
+            <Text className="mt-0.5 font-mono t-caption-sm text-ink3" numberOfLines={1}>
               {member.email}
             </Text>
           ) : null}

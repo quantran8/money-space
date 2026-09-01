@@ -74,7 +74,7 @@ export function Select<T extends string>({
 
   return (
     <View className={className}>
-      {label ? <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text> : null}
+      {label ? <Text className="mb-1.5 t-body-sm text-ink2">{label}</Text> : null}
 
       <Pressable
         onPress={() => {
@@ -86,12 +86,12 @@ export function Select<T extends string>({
         accessibilityValue={{ text: selected?.label }}
         style={{ minHeight: TOUCH_TARGET }}
         className={cn(
-          'flex-row items-center justify-between gap-2 rounded-sunk border px-3.5',
-          error ? 'border-alert bg-panel' : 'border-hair bg-sunk',
+          'flex-row items-center justify-between gap-2 rounded-control border px-3.5',
+          error ? 'border-alert-ink bg-card' : 'border-divider bg-wash',
         )}
       >
         <Text
-          className={cn('flex-1 text-[16px]', selected ? 'text-ink' : 'text-ink3')}
+          className={cn('flex-1 t-body', selected ? 'text-ink' : 'text-ink3')}
           numberOfLines={1}
         >
           {selected?.label ?? placeholder ?? ''}
@@ -99,7 +99,7 @@ export function Select<T extends string>({
         <ChevronDown size={16} color={colors.ink3} strokeWidth={1.75} />
       </Pressable>
 
-      {error ? <Text className="mt-1.5 text-[12px] text-alert">{error}</Text> : null}
+      {error ? <Text className="mt-1.5 t-caption text-alert-ink">{error}</Text> : null}
 
       <BottomSheet open={open} onClose={() => setOpen(false)} title={label}>
         {showSearch ? (
@@ -117,7 +117,7 @@ export function Select<T extends string>({
           row.kind === 'group' ? (
             <Text
               key={`group:${row.label}`}
-              className="mb-1 mt-3 text-[11px] font-medium uppercase text-ink3"
+              className="mb-1 mt-3 t-caption-sm font-medium uppercase text-ink3"
               style={{ letterSpacing: 0.66 }}
             >
               {row.label}
@@ -132,9 +132,9 @@ export function Select<T extends string>({
               accessibilityRole="button"
               accessibilityState={{ selected: row.option.value === value }}
               style={{ minHeight: TOUCH_TARGET }}
-              className="flex-row items-center justify-between gap-3 rounded-control px-1 active:bg-sunk"
+              className="flex-row items-center justify-between gap-3 rounded-control px-1 active:bg-wash"
             >
-              <Text className="flex-1 text-[15px] text-ink">{row.option.label}</Text>
+              <Text className="flex-1 t-body text-ink">{row.option.label}</Text>
               {row.option.value === value ? (
                 <Check size={18} color={colors.interactive} strokeWidth={2} />
               ) : null}

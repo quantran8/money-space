@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { Controller, useFieldArray, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -13,8 +13,8 @@ import type {
 
 import type { DebtForm } from '@money-space/core/features/debts/model/debts-form'
 import {
-  addMonthsIso,
-  type RepaymentEstimate,
+  toMonthStartIso,
+  withDayOfMonth,
 } from '@money-space/core/features/debts/model/debts-interest'
 import {
   isFixedScheduleLender,
@@ -33,6 +33,7 @@ import {
   DecimalInput,
   Field,
   MoneyInput,
+  MonthField,
   Segmented,
   Select,
   Sunk,
@@ -41,14 +42,18 @@ import {
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
 
 type Option = { value: string; label: string }
-type Step = 1 | 2 | 3 | 4
+type Step = 1 | 2 | 3 | 4 | 5 | 6
 
-const STEPS: Step[] = [1, 2, 3, 4]
+const LAST_STEP: Step = 6
+
+const STEPS: Step[] = [1, 2, 3, 4, 5, 6]
 const STEP_KEYS: Record<Step, string> = {
   1: 'debt',
-  2: 'schedule',
-  3: 'interest',
-  4: 'review',
+  2: 'amount',
+  3: 'received',
+  4: 'schedule',
+  5: 'interest',
+  6: 'review',
 }
 
 /**
@@ -56,22 +61,18 @@ const STEP_KEYS: Record<Step, string> = {
  * later step's missing value never traps the user on an earlier one. The
  * conditionally-required ones (`expectedFinalDueDate` / `interestPeriods` for a
  * bank loan, `firstPaymentDate` once a frequency is set) are listed on the step
- * whose UI actually renders their error.
+ * whose UI actually renders their error. The per-period amount sits on the
+ * interest step, not the schedule one: its suggested value is only right once
+ * we know whether the loan charges interest.
  */
 const STEP_FIELDS: Record<Step, (keyof DebtForm)[]> = {
-  1: ['name', 'lenderName', 'originalAmount', 'outstandingAmount', 'borrowedAt'],
-  2: ['paymentFrequency', 'firstPaymentDate', 'fixedPaymentAmount', 'expectedFinalDueDate'],
-  3: ['interestPeriods'],
-  4: [],
+  1: ['name', 'lenderName'],
+  2: ['originalAmount', 'outstandingAmount'],
+  3: ['borrowedAt'],
+  4: ['paymentFrequency', 'firstPaymentDate', 'expectedFinalDueDate'],
+  5: ['interestPeriods', 'fixedPaymentAmount'],
+  6: [],
 }
-
-const DUE_DATE_PRESETS = [
-  { key: 'sixMonths', months: 6 },
-  { key: 'oneYear', months: 12 },
-  { key: 'twoYears', months: 24 },
-  { key: 'threeYears', months: 36 },
-  { key: 'fiveYears', months: 60 },
-]
 
 type DebtFormSheetProps = {
   open: boolean
@@ -86,7 +87,6 @@ type DebtFormSheetProps = {
   setShowMoreDetails: (updater: (value: boolean) => boolean) => void
   receiveAssetOptions: Option[]
   memberOptions: Option[]
-  repaymentEstimate: RepaymentEstimate | null
   termMonths: number | null
   submit: () => void
 }
@@ -117,7 +117,6 @@ export function DebtFormSheet({
   setShowMoreDetails,
   receiveAssetOptions,
   memberOptions,
-  repaymentEstimate,
   termMonths,
   submit,
 }: DebtFormSheetProps) {
@@ -161,11 +160,13 @@ export function DebtFormSheet({
   const ownerName = memberOptions.find((option) => option.value === ownerMemberId)?.label
 
   /**
-   * The preset chips are a loan TERM, so they count from the first repayment —
-   * "1 năm" means a year of payments, not a year from the day money landed.
-   * Before a first-payment date exists we anchor on the borrow date, the only
-   * other date we have.
+   * The day the final payment lands on. It follows the first repayment — the
+   * payoff month is picked, its day is never asked for twice. Before a
+   * first-payment date exists we anchor on the borrow date, the only other date
+   * we have.
    */
+  const interestIsOptional = !isFixedScheduleLender(selectedLenderType)
+
   const dueAnchor = firstPaymentDate || borrowedAt
 
   function goToStep(next: Step) {
@@ -202,13 +203,30 @@ export function DebtFormSheet({
     onOpenChange(false)
   }
 
-  function applyDuePreset(months: number) {
-    if (!dueAnchor) return
-    setValue('expectedFinalDueDate', addMonthsIso(dueAnchor, months), {
-      shouldDirty: true,
-      shouldValidate: true,
-    })
-  }
+  /**
+   * A bank/institution loan is a fixed-schedule debt: a rate is required, so
+   * interest is not a choice there. Switching the lender type to a bank after
+   * turning interest off would otherwise leave the form in a state validation
+   * rejects with the switch no longer on screen to fix it.
+   */
+  useEffect(() => {
+    if (!interestIsOptional && !hasInterest) {
+      setValue('hasInterest', true, { shouldDirty: true, shouldValidate: true })
+    }
+  }, [interestIsOptional, hasInterest, setValue])
+
+  /**
+   * The final due date is chosen as a month; the day it lands on is the day the
+   * repayments land on. Re-anchor it whenever that day moves, so changing the
+   * first payment date after picking a month does not leave the two out of step.
+   */
+  useEffect(() => {
+    if (!expectedFinalDueDate || !dueAnchor) return
+    const merged = withDayOfMonth(expectedFinalDueDate, dueAnchor)
+    if (merged && merged !== expectedFinalDueDate) {
+      setValue('expectedFinalDueDate', merged, { shouldValidate: true })
+    }
+  }, [expectedFinalDueDate, dueAnchor, setValue])
 
   /**
    * The borrowed amount is the one number the user must supply. While the
@@ -234,9 +252,9 @@ export function DebtFormSheet({
         </Button>
       ) : null}
 
-      {step < 4 ? (
+      {step < LAST_STEP ? (
         <Button className="flex-1" onPress={() => void requestStep((step + 1) as Step)}>
-          {t(step === 3 ? 'debts.form.actions.review' : 'debts.form.actions.continue')}
+          {t(step === LAST_STEP - 1 ? 'debts.form.actions.review' : 'debts.form.actions.continue')}
         </Button>
       ) : (
         <Button className="flex-1" onPress={submit} loading={isSavingDebt}>
@@ -253,40 +271,44 @@ export function DebtFormSheet({
       title={editingId ? t('debts.form.editTitle') : t('debts.form.createTitle')}
       footer={footer}
     >
-      {/* The step rail. Dots, not numbers in circles — four numbered chips on a
-          375pt row leave no room for the labels that say what each step is. */}
-      <View className="mb-5 flex-row gap-1.5">
-        {STEPS.map((item) => (
-          <Pressable
-            key={item}
-            onPress={() => void requestStep(item)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: step === item }}
-            accessibilityLabel={t(`debts.form.steps.${STEP_KEYS[item]}`)}
-            style={{ minHeight: TOUCH_TARGET - 12 }}
-            className="flex-1 justify-center gap-1.5"
-          >
-            <View
-              className={cn(
-                'h-[3px] rounded-full',
-                step === item ? 'bg-interactive' : 'bg-committed',
-              )}
-            />
-            <Text
-              className={cn(
-                'text-[11px]',
-                step === item ? 'font-medium text-ink' : 'text-ink3',
-              )}
-              numberOfLines={1}
+      {/* The step rail. Six lanes leave no room for a label under each, so the
+          bar carries position only and the current step is named beside the
+          count — the web's sidebar does not fit a 375pt screen. */}
+      <View className="mb-5 gap-2">
+        <View className="flex-row items-baseline justify-between gap-3">
+          <Text className="t-caption text-ink3">
+            {t('debts.form.rail.stepOf', { step, total: LAST_STEP })}
+          </Text>
+          <Text className="t-body-sm font-medium text-ink" numberOfLines={1}>
+            {t(`debts.form.steps.${STEP_KEYS[step]}`)}
+          </Text>
+        </View>
+        <View className="flex-row gap-1.5">
+          {STEPS.map((item) => (
+            <Pressable
+              key={item}
+              onPress={() => void requestStep(item)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: step === item }}
+              accessibilityLabel={t(`debts.form.steps.${STEP_KEYS[item]}`)}
+              style={{ minHeight: TOUCH_TARGET - 28 }}
+              className="flex-1 justify-center"
             >
-              {t(`debts.form.steps.${STEP_KEYS[item]}`)}
-            </Text>
-          </Pressable>
-        ))}
+              <View
+                className={cn(
+                  'h-[3px] rounded-full',
+                  item <= step ? 'bg-action' : 'bg-committed',
+                )}
+              />
+            </Pressable>
+          ))}
+        </View>
       </View>
 
       {step === 1 ? (
         <View className="gap-4">
+          <StepHeading title={t('debts.form.sections.debt')} />
+
           <Controller
             control={control}
             name="name"
@@ -316,6 +338,34 @@ export function DebtFormSheet({
               />
             )}
           />
+
+          {/* Three short options that all fit — a sheet to reveal them would
+              cost a tap and hide the alternatives (§Segmented). */}
+          <Controller
+            control={control}
+            name="lenderType"
+            render={({ field }) => (
+              <Segmented
+                label={t('debts.form.fields.lenderType')}
+                value={field.value}
+                options={[
+                  { value: 'relative' as const, label: t('debts.form.lenderType.relative') },
+                  {
+                    value: 'bank_institution' as const,
+                    label: t('debts.form.lenderType.bank_institution'),
+                  },
+                  { value: 'other' as const, label: t('debts.form.lenderType.other') },
+                ]}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </View>
+      ) : null}
+
+      {step === 2 ? (
+        <View className="gap-4">
+          <StepHeading title={t('debts.form.sections.amount')} />
 
           <Controller
             control={control}
@@ -348,35 +398,19 @@ export function DebtFormSheet({
                   error={errors.outstandingAmount?.message}
                 />
                 {!errors.outstandingAmount ? (
-                  <Text className="mt-1.5 text-[12px] leading-4 text-ink3">
+                  <Text className="mt-1.5 t-caption leading-4 text-ink3">
                     {t('debts.form.fields.outstandingHint')}
                   </Text>
                 ) : null}
               </View>
             )}
           />
+        </View>
+      ) : null}
 
-          {/* Three short options that all fit — a sheet to reveal them would
-              cost a tap and hide the alternatives (§Segmented). */}
-          <Controller
-            control={control}
-            name="lenderType"
-            render={({ field }) => (
-              <Segmented
-                label={t('debts.form.fields.lenderType')}
-                value={field.value}
-                options={[
-                  { value: 'relative' as const, label: t('debts.form.lenderType.relative') },
-                  {
-                    value: 'bank_institution' as const,
-                    label: t('debts.form.lenderType.bank_institution'),
-                  },
-                  { value: 'other' as const, label: t('debts.form.lenderType.other') },
-                ]}
-                onChange={field.onChange}
-              />
-            )}
-          />
+      {step === 3 ? (
+        <View className="gap-4">
+          <StepHeading title={t('debts.form.sections.received')} />
 
           <Controller
             control={control}
@@ -439,14 +473,15 @@ export function DebtFormSheet({
           </Sunk>
         </View>
       ) : null}
-
-      {step === 2 ? (
+      {step === 4 ? (
         <View className="gap-4">
+          <StepHeading title={t('debts.form.sections.schedule')} />
+
           <Controller
             control={control}
             name="paymentFrequency"
             render={({ field }) => (
-              <Select
+              <Segmented
                 label={t('debts.form.fields.frequency')}
                 value={field.value}
                 options={[
@@ -472,7 +507,7 @@ export function DebtFormSheet({
                   error={errors.firstPaymentDate?.message}
                 />
                 {!errors.firstPaymentDate ? (
-                  <Text className="mt-1.5 text-[12px] leading-4 text-ink3">
+                  <Text className="mt-1.5 t-caption leading-4 text-ink3">
                     {t('debts.form.fields.firstPaymentDateHelp')}
                   </Text>
                 ) : null}
@@ -484,61 +519,15 @@ export function DebtFormSheet({
             control={control}
             name="expectedFinalDueDate"
             render={({ field }) => (
-              <DateField
+              <MonthField
                 label={t('debts.form.fields.finalDueDate')}
-                value={field.value}
-                onChange={field.onChange}
+                value={toMonthStartIso(field.value)}
+                onChange={(month) => field.onChange(withDayOfMonth(month, dueAnchor))}
                 error={errors.expectedFinalDueDate?.message}
               />
             )}
           />
 
-          {/* Term presets. Wrapped chips, each clearing 44pt. */}
-          <View className="flex-row flex-wrap gap-1.5">
-            {DUE_DATE_PRESETS.map((preset) => {
-              const active =
-                Boolean(dueAnchor) && expectedFinalDueDate === addMonthsIso(dueAnchor, preset.months)
-              return (
-                <Pressable
-                  key={preset.months}
-                  onPress={() => applyDuePreset(preset.months)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active, disabled: !dueAnchor }}
-                  style={{ minHeight: TOUCH_TARGET - 8, opacity: dueAnchor ? 1 : 0.4 }}
-                  className={cn(
-                    'justify-center rounded-full px-3.5',
-                    active ? 'bg-interactive' : 'bg-sunk',
-                  )}
-                >
-                  <Text
-                    className={cn(
-                      'text-[12px] font-medium',
-                      active ? 'text-white' : 'text-ink2',
-                    )}
-                  >
-                    {t(`debts.form.presets.${preset.key}`)}
-                  </Text>
-                </Pressable>
-              )
-            })}
-          </View>
-
-          <Controller
-            control={control}
-            name="fixedPaymentAmount"
-            render={({ field }) => (
-              <MoneyInput
-                label={t('debts.form.fields.paymentAmount')}
-                placeholder={t('debts.form.fields.paymentPlaceholder')}
-                value={field.value}
-                onChange={(value) => {
-                  field.onChange(value)
-                  setValue('fixedPaymentTouched', true, { shouldDirty: true })
-                }}
-                error={errors.fixedPaymentAmount?.message}
-              />
-            )}
-          />
 
           {/* The repayment wallet is a DEFAULT, not a binding — the household
               repays from whichever wallet suits that month (memory/debts.md).
@@ -556,82 +545,50 @@ export function DebtFormSheet({
                     options={receiveAssetOptions}
                     onChange={field.onChange}
                   />
-                  <Text className="mt-1.5 text-[12px] leading-4 text-ink3">
+                  <Text className="mt-1.5 t-caption leading-4 text-ink3">
                     {t('debts.form.fields.repaymentAssetHint')}
                   </Text>
                 </View>
               )}
             />
           ) : null}
-
-          {/* Whatever `estimateRepayment` returns, rendered — never re-derived
-              here (annuity vs reducing-balance lives in core). */}
-          {repaymentEstimate ? (
-            <ConsequenceNote>
-              <Text className="text-[14px] leading-5 text-ink">
-                {t(
-                  termMonths
-                    ? 'debts.form.schedule.suggestionWithTerm'
-                    : 'debts.form.schedule.suggestion',
-                  {
-                    amount: formatVndShort(repaymentEstimate.perPayment),
-                    installments: repaymentEstimate.installments,
-                    months: termMonths,
-                  },
-                )}
-              </Text>
-              <Pressable
-                onPress={() => {
-                  setValue('fixedPaymentAmount', String(repaymentEstimate.perPayment), {
-                    shouldValidate: true,
-                  })
-                  setValue('fixedPaymentTouched', false, { shouldDirty: true })
-                }}
-                accessibilityRole="button"
-                style={{ minHeight: TOUCH_TARGET }}
-                className="justify-center"
-              >
-                <Text className="text-[14px] font-medium text-interactive">
-                  {t('debts.form.schedule.use')}
-                </Text>
-              </Pressable>
-            </ConsequenceNote>
-          ) : (
-            <Sunk>
-              <Text className="text-[14px] leading-5 text-ink2">
-                {t('debts.form.schedule.empty')}
-              </Text>
-            </Sunk>
-          )}
         </View>
       ) : null}
 
-      {step === 3 ? (
+      {step === 5 ? (
         <View className="gap-4">
+          <StepHeading title={t('debts.form.sections.interest')} />
+
           {/* A bank/institution loan is a fixed-schedule debt: rate, term and a
               fixed payment are all required (memory/debts.md). */}
-          {isFixedScheduleLender(selectedLenderType) ? (
+          {!interestIsOptional ? (
             <CaveatNote>{t('debts.form.bankRequirement')}</CaveatNote>
           ) : null}
 
           <Sunk>
-            <Controller
-              control={control}
-              name="hasInterest"
-              render={({ field }) => (
-                <Switch
-                  label={t('debts.form.fields.hasInterest')}
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              )}
-            />
+            {/* No switch for a bank loan: the rules REQUIRE a rate, so offering a
+                choice that validation then refuses is a question with one answer.
+                The note above already says why, and the effect on
+                `interestIsOptional` keeps the stored value honest. */}
+            {interestIsOptional ? (
+              <Controller
+                control={control}
+                name="hasInterest"
+                render={({ field }) => (
+                  <Switch
+                    label={t('debts.form.fields.hasInterest')}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            ) : null}
 
             {hasInterest ? (
               <View className="mt-4 gap-4">
                 <View>
                   <View className="flex-row items-center justify-between gap-3">
-                    <Text className="text-[14px] text-ink2">
+                    <Text className="t-body-sm text-ink2">
                       {t('debts.form.fields.interestPeriods')}
                     </Text>
                     <Pressable
@@ -642,7 +599,7 @@ export function DebtFormSheet({
                       className="flex-row items-center gap-1"
                     >
                       <Plus size={15} color={colors.interactive} strokeWidth={2} />
-                      <Text className="text-[14px] font-medium text-interactive">
+                      <Text className="t-body-sm font-medium text-action">
                         {t('debts.form.interestPeriods.add')}
                       </Text>
                     </Pressable>
@@ -652,7 +609,7 @@ export function DebtFormSheet({
                     {interestFields.map((item, index) => {
                       const isLast = index === interestFields.length - 1
                       return (
-                        <View key={item.id} className="rounded-sunk bg-panel p-3">
+                        <View key={item.id} className="rounded-control bg-card p-3">
                           <View className="flex-row items-end gap-3">
                             {/* A rate is a decimal, not money — "8,2" must not
                                 group into "8.2 nghìn". */}
@@ -674,11 +631,11 @@ export function DebtFormSheet({
                                 term, so it is shown computed, never typed. */}
                             {isLast ? (
                               <View className="flex-1">
-                                <Text className="mb-1.5 text-[14px] text-ink2">
+                                <Text className="mb-1.5 t-body-sm text-ink2">
                                   {t('debts.form.fields.duration')}
                                 </Text>
-                                <View className="h-[46px] justify-center rounded-sunk bg-sunk px-3.5">
-                                  <Text className="text-[14px] text-ink2">
+                                <View className="h-[46px] justify-center rounded-control bg-wash px-3.5">
+                                  <Text className="t-body-sm text-ink2">
                                     {lastStageMonths != null
                                       ? t('debts.form.interestPeriods.months', {
                                           count: lastStageMonths,
@@ -725,11 +682,11 @@ export function DebtFormSheet({
                   </View>
 
                   {errors.interestPeriods?.message ? (
-                    <Text className="mt-1.5 text-[12px] text-alert">
+                    <Text className="mt-1.5 t-caption text-alert-ink">
                       {errors.interestPeriods.message}
                     </Text>
                   ) : null}
-                  <Text className="mt-2 text-[12px] leading-4 text-ink3">
+                  <Text className="mt-2 t-caption leading-4 text-ink3">
                     {t('debts.form.interestPeriods.remainingHint')}
                   </Text>
                 </View>
@@ -748,7 +705,7 @@ export function DebtFormSheet({
                         ]}
                         onChange={field.onChange}
                       />
-                      <Text className="mt-1.5 text-[12px] leading-4 text-ink3">
+                      <Text className="mt-1.5 t-caption leading-4 text-ink3">
                         {t(
                           field.value === 'reducing'
                             ? 'debts.form.calc.reducingHint'
@@ -762,6 +719,22 @@ export function DebtFormSheet({
             ) : null}
           </Sunk>
 
+          <Controller
+            control={control}
+            name="fixedPaymentAmount"
+            render={({ field }) => (
+              <MoneyInput
+                label={t('debts.form.fields.paymentAmount')}
+                placeholder={t('debts.form.fields.paymentPlaceholder')}
+                value={field.value}
+                onChange={(value) => {
+                  field.onChange(value)
+                  setValue('fixedPaymentTouched', true, { shouldDirty: true })
+                }}
+                error={errors.fixedPaymentAmount?.message}
+              />
+            )}
+          />
           <Controller
             control={control}
             name="note"
@@ -783,8 +756,10 @@ export function DebtFormSheet({
         </View>
       ) : null}
 
-      {step === 4 ? (
+      {step === 6 ? (
         <View className="gap-4">
+          <StepHeading title={t(editingId ? 'debts.form.sections.reviewEdit' : 'debts.form.sections.reviewCreate')} />
+
           <Sunk>
             <View className="gap-2.5">
               <ReviewRow label={t('debts.form.fields.name')} value={name || '—'} />
@@ -865,6 +840,15 @@ function displayIso(iso: string) {
   return year && month && day ? `${day}/${month}/${year}` : '—'
 }
 
+/**
+ * Each step asks one question, and the heading is the whole of it — a sub-line
+ * restating the question in other words is copy the reader has to read twice to
+ * learn nothing.
+ */
+function StepHeading({ title }: { title: string }) {
+  return <Text className="t-title text-ink">{title}</Text>
+}
+
 function ReviewRow({
   label,
   value,
@@ -878,9 +862,9 @@ function ReviewRow({
 }) {
   return (
     <View className="flex-row items-start justify-between gap-4">
-      <Text className="flex-shrink text-[14px] text-ink2">{label}</Text>
+      <Text className="flex-shrink t-body-sm text-ink2">{label}</Text>
       <Text
-        className={cn('flex-1 text-right text-[14px] font-medium text-ink', mono && 'font-mono')}
+        className={cn('flex-1 text-right t-body-sm font-medium text-ink', mono && 'font-mono')}
         // Money never truncates, so it wraps rather than ellipsing.
         style={numeric ? { fontVariant: ['tabular-nums'] } : undefined}
       >

@@ -54,7 +54,7 @@ export function SavingWithdrawalPanel({ term }: { term: CalculationTerm }) {
 
       {hasEarly ? (
         <Sunk className="mt-5 flex-row items-center justify-between">
-          <Text className="flex-1 text-[14px] text-ink2">
+          <Text className="flex-1 t-body-sm text-ink2">
             {t('assets.detail.withdrawal.withdrawMonth', {
               month: clampedMonth,
               total: termMonths,
@@ -84,10 +84,10 @@ export function SavingWithdrawalPanel({ term }: { term: CalculationTerm }) {
       {/* Column headings, once. The rows below carry the two figures in the
           same order, so the labels do not repeat per row. */}
       <View className="mt-5 flex-row items-center justify-end gap-4 pb-1">
-        <Text className="w-[86px] text-right text-[11px] text-ink3">
+        <Text className="w-[86px] text-right t-caption-sm text-ink3">
           {t('assets.detail.withdrawal.onTime')}
         </Text>
-        <Text className="w-[86px] text-right text-[11px] text-ink3">
+        <Text className="w-[86px] text-right t-caption-sm text-ink3">
           {t('assets.detail.withdrawal.early')}
         </Text>
       </View>
@@ -162,10 +162,10 @@ function Amount({
   muted: boolean
   tone?: 'default' | 'attention'
 }) {
-  const color = tone === 'attention' ? 'text-attention' : muted ? 'text-ink2' : 'text-ink'
+  const color = tone === 'attention' ? 'text-attention-ink' : muted ? 'text-ink2' : 'text-ink'
   return (
     <Text
-      className={`w-[86px] text-right text-[14px] ${muted ? '' : 'font-medium'} ${color}`}
+      className={`w-[86px] text-right t-body-sm ${muted ? '' : 'font-medium'} ${color}`}
       style={{ fontVariant: ['tabular-nums'] }}
     >
       {value < 0 ? '−' : ''}
@@ -190,7 +190,7 @@ function StepButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
-      className="items-center justify-center rounded-control bg-panel active:opacity-80"
+      className="items-center justify-center rounded-control bg-card active:opacity-80"
     >
       <Icon size={16} color={colors.ink} strokeWidth={2} />
     </Pressable>

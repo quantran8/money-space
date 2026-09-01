@@ -164,7 +164,7 @@ export function GoalFormSheet({
               />
             )}
           />
-          <Text className="mt-1.5 text-[11px] leading-4 text-ink3">
+          <Text className="mt-1.5 t-caption-sm leading-4 text-ink3">
             {t('goals.builder.priorityHelp')}
           </Text>
         </View>
@@ -191,19 +191,19 @@ export function GoalFormSheet({
           <Sunk>
             <Label>{t('goals.form.currentLocked')}</Label>
             <Text
-              className="mt-1.5 text-[18px] font-medium text-ink"
+              className="mt-1.5 t-subtitle text-ink"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {formatAmount(current)}
             </Text>
-            <Text className="mt-1.5 text-[11px] leading-4 text-ink3">
+            <Text className="mt-1.5 t-caption-sm leading-4 text-ink3">
               {t('goals.builder.sourcesManagedSeparately')}
             </Text>
           </Sunk>
         ) : (
           <View>
-            <Text className="mb-1.5 text-[14px] text-ink2">{t('goals.form.allocations')}</Text>
-            <Text className="mb-3 text-[11px] leading-4 text-ink3">
+            <Text className="mb-1.5 t-body-sm text-ink2">{t('goals.form.allocations')}</Text>
+            <Text className="mb-3 t-caption-sm leading-4 text-ink3">
               {t('goals.builder.sourceDescription')}
             </Text>
             <Controller
@@ -237,7 +237,7 @@ export function GoalFormSheet({
             date — progress only. Said here rather than discovered later on the
             detail screen, where the missing date has no explanation. */}
         {!isEditing && monthlyFromWallets <= 0 ? (
-          <Text className="text-[11px] leading-4 text-ink3">{t('goals.form.monthlyEmpty')}</Text>
+          <Text className="t-caption-sm leading-4 text-ink3">{t('goals.form.monthlyEmpty')}</Text>
         ) : null}
       </View>
     </BottomSheet>

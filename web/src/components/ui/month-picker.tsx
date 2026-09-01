@@ -89,7 +89,12 @@ export function MonthPicker({
           className={cn(
             'h-11 w-full justify-start rounded-control border border-committed bg-card px-4 text-left t-body-sm hover:bg-card [&_svg]:text-ink3',
             !selected && 'text-ink3',
-            ariaInvalid && 'outline-2 outline-alert',
+            // Invalid marks the BORDER, the way input.tsx does — never an
+            // outline. The Button base is `rounded-pill`, so an outline kept
+            // that radius (plus focus's outline-offset) and drew an offset pill
+            // around a field the caller had squared off with `rounded-none`.
+            ariaInvalid &&
+              'border-alert-ink shadow-[0_0_0_3px_var(--alert-tint)]',
             className
           )}
           aria-invalid={ariaInvalid}

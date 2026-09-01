@@ -180,7 +180,6 @@ export function DebtDetailPage() {
     submit,
     selectedLenderType,
     isSavingDebt,
-    repaymentEstimate,
     termMonths,
     dialogOpen,
     editingId,
@@ -468,7 +467,6 @@ export function DebtDetailPage() {
         setShowMoreDetails={setShowMoreDetails}
         receiveAssetOptions={receiveAssetOptions}
         memberOptions={memberOptions}
-        repaymentEstimate={repaymentEstimate}
         termMonths={termMonths}
         onSubmit={submit}
         pasteAmountFromClipboard={pasteAmountFromClipboard}

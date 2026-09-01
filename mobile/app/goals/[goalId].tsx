@@ -106,7 +106,7 @@ export default function GoalDetailScreen() {
       <Screen withoutTabBar>
         <Sections>
           <Skeleton height={36} className="w-40" />
-          <Skeleton height={200} className="rounded-panel" />
+          <Skeleton height={200} className="rounded-card" />
         </Sections>
       </Screen>
     )
@@ -117,10 +117,10 @@ export default function GoalDetailScreen() {
       <Screen withoutTabBar>
         <BackLink label={t('goals.detail.back')} onPress={() => navigate('/goals')} />
         <Panel className="mt-3">
-          <Text className="text-[16px] font-medium text-ink">
+          <Text className="t-body font-medium text-ink">
             {t('goals.detail.notFound.title')}
           </Text>
-          <Text className="mt-1 text-[14px] leading-5 text-ink2">
+          <Text className="mt-1 t-body-sm leading-5 text-ink2">
             {t('goals.detail.notFound.description')}
           </Text>
         </Panel>
@@ -156,12 +156,12 @@ export default function GoalDetailScreen() {
 
       <View className="mb-4 mt-2 flex-row items-start justify-between gap-3">
         <View className="flex-1">
-          <Text className="text-[19px] font-medium text-ink" numberOfLines={2}>
+          <Text className="t-subtitle text-ink" numberOfLines={2}>
             {goal.name}
           </Text>
           {/* Priority qualifies the goal, not the figure — so it sits beside
               the name, never on the panel below. */}
-          <Text className="mt-0.5 text-[12px] text-ink3">{priorityLabels[goal.priority]}</Text>
+          <Text className="mt-0.5 t-caption text-ink3">{priorityLabels[goal.priority]}</Text>
         </View>
         <Button variant="secondary" className="px-4" onPress={() => openEdit(goal.id)}>
           {t('common.edit')}
@@ -177,14 +177,14 @@ export default function GoalDetailScreen() {
 
           <View className="mt-3 flex-row flex-wrap items-end gap-x-2">
             <Text
-              className="text-[44px] font-medium text-ink"
-              style={{ fontVariant: ['tabular-nums'], letterSpacing: -1.76, lineHeight: 48 }}
+              className="t-hero text-ink"
+              style={{ fontVariant: ['tabular-nums'] }}
             >
               {savedFigure.amount}
               {savedFigure.unit ? ` ${savedFigure.unit}` : ''}
             </Text>
             <Text
-              className="mb-2 text-[12px] text-ink3"
+              className="mb-2 t-caption text-ink3"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               / {formatVndScale(target)}
@@ -194,13 +194,13 @@ export default function GoalDetailScreen() {
           {/* Percentage and shortfall read as one line above the bar: the bar
               shows the shape, these two say what it amounts to. */}
           <View className="mt-5 flex-row flex-wrap items-center justify-between gap-x-4 gap-y-1">
-            <Text className="text-[14px] text-ink2">
+            <Text className="t-body-sm text-ink2">
               {t('goals.detail.picture.achieved', { percent: percentLabel }).replace(
                 /<\/?0>/g,
                 '',
               )}
             </Text>
-            <Text className="text-[14px] text-ink2">
+            <Text className="t-body-sm text-ink2">
               {t('goals.detail.picture.remaining', {
                 amount: formatVndScale(remaining),
               }).replace(/<\/?1>/g, '')}
@@ -224,15 +224,15 @@ export default function GoalDetailScreen() {
           {/* The target and when this pace lands on it — under the figure
               stack, not beside it, so the two kinds of number are never read
               as one series. */}
-          <View className="mt-6 border-t border-hair pt-4">
+          <View className="mt-6 border-t border-divider pt-4">
             <Label>{t('goals.detail.picture.targetLabel')}</Label>
             <Text
-              className="mt-1.5 text-[26px] font-medium text-ink"
-              style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.78 }}
+              className="mt-1.5 t-metric text-ink"
+              style={{ fontVariant: ['tabular-nums'] }}
             >
               {formatVndScale(target)}
             </Text>
-            <Text className="mt-1 text-[12px] text-ink3">
+            <Text className="mt-1 t-caption text-ink3">
               {projectedLabel
                 ? t('goals.detail.picture.projectedOn', { date: projectedLabel })
                 : isRealDate(goal.targetDate)

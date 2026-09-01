@@ -91,7 +91,7 @@ export function GoalImpactNotice({
   if (impact.totalReduction <= 0) {
     return (
       <Sunk className={className}>
-        <Text className="text-[14px] leading-5 text-ink2">
+        <Text className="t-body-sm leading-5 text-ink2">
           {t('upcoming.complete.goalImpact.pending')}
         </Text>
       </Sunk>
@@ -109,23 +109,23 @@ export function GoalImpactNotice({
       {/* The spend, and the one-phrase answer to where it comes from. */}
       <View className="flex-row items-end justify-between gap-3">
         <View className="flex-1">
-          <Text className="text-[11px] text-ink3">
+          <Text className="t-caption-sm text-ink3">
             {t('upcoming.complete.goalImpact.spendLabel')}
           </Text>
           <Text
-            className="mt-1 text-[22px] font-medium text-ink"
-            style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.66 }}
+            className="mt-1 t-metric text-ink"
+            style={{ fontVariant: ['tabular-nums'] }}
           >
             {formatVndShort(impact.totalReduction)}
           </Text>
         </View>
         <View className="items-end">
-          <Text className="text-[11px] text-ink3">
+          <Text className="t-caption-sm text-ink3">
             {t('upcoming.complete.goalImpact.takenFrom')}
           </Text>
           <Text
-            className={`mt-1 text-[14px] font-medium ${
-              reachesSetAside ? 'text-attention' : 'text-interactive'
+            className={`mt-1 t-body-sm font-medium ${
+              reachesSetAside ? 'text-attention-ink' : 'text-action'
             }`}
           >
             {reachesSetAside
@@ -186,11 +186,11 @@ export function GoalImpactNotice({
         <View className="mt-4 gap-1">
           {impact.goals.map((goal) => (
             <View key={goal.goalId} className="flex-row items-baseline justify-between gap-3">
-              <Text className="flex-1 text-[12px] text-ink2" numberOfLines={1}>
+              <Text className="flex-1 t-caption text-ink2" numberOfLines={1}>
                 {goal.goalName}
               </Text>
               <Text
-                className="shrink-0 text-[12px] text-ink2"
+                className="shrink-0 t-caption text-ink2"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 {goal.setAsideReduction > 0 && goal.paceReduction > 0
@@ -211,7 +211,7 @@ export function GoalImpactNotice({
       ) : null}
 
       {/* The sentence that explains the whole thing. */}
-      <Text className="mt-3 text-[12px] leading-5 text-ink2">
+      <Text className="mt-3 t-caption leading-5 text-ink2">
         {reachesSetAside
           ? t('upcoming.complete.goalImpact.explainSetAside', {
               pace: formatVndShort(impact.totalPaceReduction),
@@ -224,7 +224,7 @@ export function GoalImpactNotice({
           not `freeAmount`: the latter only subtracts what is set aside, so it
           would claim money is free directly above lines showing that same money
           coming out of the goals. */}
-      <Text className="mt-2 text-[12px] leading-5 text-ink3">
+      <Text className="mt-2 t-caption leading-5 text-ink3">
         {t(
           unassignedAmount > 0
             ? 'upcoming.complete.goalImpact.subtitleSomeFree'
@@ -240,7 +240,7 @@ export function GoalImpactNotice({
       {/* A shortfall is a different fact from "your goal shrinks", so it gets
           its own line rather than being folded into anything above. */}
       {impact.exceedsWallet ? (
-        <Text className="mt-2 text-[12px] leading-5 text-alert">
+        <Text className="mt-2 t-caption leading-5 text-alert-ink">
           {t('upcoming.complete.goalImpact.exceedsWallet', {
             value: formatVndShort(impact.assetValue),
           })}
@@ -265,10 +265,10 @@ function ChangeRow({
   return (
     <View>
       <View className="flex-row items-baseline justify-between gap-3">
-        <Text className="flex-1 text-[11px] text-ink3">{label}</Text>
+        <Text className="flex-1 t-caption-sm text-ink3">{label}</Text>
         {delta ? (
           <Text
-            className="text-[12px] font-medium text-attention"
+            className="t-caption font-medium text-attention-ink"
             style={{ fontVariant: ['tabular-nums'] }}
           >
             {delta}
@@ -277,13 +277,13 @@ function ChangeRow({
       </View>
       {/* Money never truncates, so the pair wraps rather than ellipsing. */}
       <View className="mt-1 flex-row flex-wrap items-center gap-2">
-        <Text className="text-[14px] text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
+        <Text className="t-body-sm text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
           {before}
         </Text>
         <ArrowRight size={14} color={colors.ink3} strokeWidth={1.5} />
         <Text
-          className="text-[16px] font-medium text-ink"
-          style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.48 }}
+          className="t-body font-medium text-ink"
+          style={{ fontVariant: ['tabular-nums'] }}
         >
           {after}
         </Text>
@@ -296,7 +296,7 @@ function LegendItem({ fill, label }: { fill: string; label: string }) {
   return (
     <View className="flex-row items-center gap-2">
       <View className="h-2 w-2 rounded-full" style={{ backgroundColor: fill }} />
-      <Text className="flex-1 text-[11px] text-ink2">{label}</Text>
+      <Text className="flex-1 t-caption-sm text-ink2">{label}</Text>
     </View>
   )
 }

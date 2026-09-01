@@ -28,8 +28,8 @@ export function Button({
   className?: string
 }) {
   const surface: Record<Variant, string> = {
-    primary: 'bg-interactive',
-    secondary: 'bg-sunk',
+    primary: 'bg-action',
+    secondary: 'bg-wash',
     ghost: 'bg-transparent',
     destructive: 'bg-transparent',
   }
@@ -37,8 +37,8 @@ export function Button({
   const label: Record<Variant, string> = {
     primary: 'text-white',
     secondary: 'text-ink',
-    ghost: 'text-interactive',
-    destructive: 'text-alert',
+    ghost: 'text-action',
+    destructive: 'text-alert-ink',
   }
 
   return (
@@ -63,7 +63,7 @@ export function Button({
           color={variant === 'primary' ? '#FFFFFF' : colors.interactive}
         />
       ) : (
-        <Text className={cn('text-[15px] font-medium', label[variant])}>{children}</Text>
+        <Text className={cn('t-body font-medium', label[variant])}>{children}</Text>
       )}
     </Pressable>
   )

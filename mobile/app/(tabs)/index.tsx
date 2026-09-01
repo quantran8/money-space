@@ -140,7 +140,7 @@ export default function DashboardScreen() {
     <Screen
       title={t('nav.dashboard')}
       right={
-        <Text className="font-mono text-[11px] text-ink3">
+        <Text className="font-mono t-caption-sm text-ink3">
           {formatToday(forecast?.asOfDate)}
         </Text>
       }

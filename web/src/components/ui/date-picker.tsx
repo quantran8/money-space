@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
 import { enUS, vi } from 'date-fns/locale'
 import { CalendarIcon } from 'lucide-react'
@@ -45,11 +46,13 @@ export function DatePicker({
   const locale = i18n.resolvedLanguage === 'vi' ? vi : enUS
   const resolvedPlaceholder = placeholder ?? t('common.selectDate')
 
+  const [open, setOpen] = useState(false)
+
   return (
     // `modal` keeps the calendar's clicks from reaching a parent Dialog's
     // interact-outside handler (which would otherwise close the whole modal
     // when the popover is portaled outside the dialog's DOM).
-    <Popover modal>
+    <Popover modal open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -57,7 +60,12 @@ export function DatePicker({
           className={cn(
             'h-11 w-full justify-start rounded-control border border-committed bg-card px-4 text-left t-body-sm hover:bg-card [&_svg]:text-ink3',
             !selected && 'text-ink3',
-            ariaInvalid && 'outline-2 outline-alert',
+            // Invalid marks the BORDER, the way input.tsx does — never an
+            // outline. The Button base is `rounded-pill`, so an outline kept
+            // that radius (plus focus's outline-offset) and drew an offset pill
+            // around a field the caller had squared off with `rounded-none`.
+            ariaInvalid &&
+              'border-alert-ink shadow-[0_0_0_3px_var(--alert-tint)]',
             className
           )}
           aria-invalid={ariaInvalid}
@@ -73,7 +81,9 @@ export function DatePicker({
           defaultMonth={selected}
           locale={locale}
           onSelect={(date) => {
-            if (date) onChange(formatDateValue(date))
+            if (!date) return
+            onChange(formatDateValue(date))
+            setOpen(false)
           }}
         />
       </PopoverContent>

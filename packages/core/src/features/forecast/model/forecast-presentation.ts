@@ -90,5 +90,8 @@ export function occurrenceMarkers(occurrence: ForecastOccurrence): string[] {
   if (!occurrence.countedInBalance && occurrence.exclusionReason) {
     markers.push(occurrence.exclusionReason)
   }
+  // Says why the row carries no edit or delete: it is generated from a debt and
+  // only the debt can change it.
+  if (occurrence.debtId) markers.push('debt')
   return markers
 }

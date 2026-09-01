@@ -84,7 +84,7 @@ export function GoalAllocationsSection({
           why the contribution group is missing entirely. */}
       {allocations.length > 0 && contributions.length === 0 ? (
         <Sunk className="mt-5">
-          <Text className="text-[14px] leading-5 text-ink2">
+          <Text className="t-body-sm leading-5 text-ink2">
             {t('goals.allocations.noWalletTitle')}
           </Text>
           <Button
@@ -188,7 +188,7 @@ export function GoalAllocationsSection({
           once, under the group it applies to, is what stops the goal's progress
           looking arbitrary. */}
       {holdings.length > 0 ? (
-        <Text className="mt-5 text-[11px] leading-4 text-ink3">
+        <Text className="mt-5 t-caption-sm leading-4 text-ink3">
           {t('goals.allocations.marketNote')}
         </Text>
       ) : null}
@@ -227,13 +227,13 @@ function SourceGroup({
         <View className="flex-1">
           <Label>{label}</Label>
           <Text
-            className="mt-1.5 text-[22px] font-medium text-ink"
-            style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.66 }}
+            className="mt-1.5 t-metric text-ink"
+            style={{ fontVariant: ['tabular-nums'] }}
           >
             {total}
           </Text>
         </View>
-        <Text className="shrink-0 text-[11px] text-ink3">{count}</Text>
+        <Text className="shrink-0 t-caption-sm text-ink3">{count}</Text>
       </View>
 
       <View className="mt-3">{children}</View>
@@ -272,29 +272,29 @@ function SourceRow({
   return (
     <View className="flex-row items-center gap-2 py-2">
       <View className="flex-1">
-        <Text className="text-[14px] text-ink" numberOfLines={1}>
+        <Text className="t-body-sm text-ink" numberOfLines={1}>
           {name}
         </Text>
-        <Text className="mt-0.5 text-[11px] text-ink3" numberOfLines={1}>
+        <Text className="mt-0.5 t-caption-sm text-ink3" numberOfLines={1}>
           {note}
         </Text>
         {warning ? (
           <View className="mt-1 flex-row items-center gap-1.5">
             <View className="h-1.5 w-1.5 shrink-0 rounded-full bg-attention" />
-            <Text className="text-[11px] text-attention">{warning}</Text>
+            <Text className="t-caption-sm text-attention-ink">{warning}</Text>
           </View>
         ) : null}
       </View>
 
       <View className="items-end">
         <Text
-          className="text-[14px] font-medium text-ink"
+          className="t-body-sm font-medium text-ink"
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {value}
         </Text>
         {sub ? (
-          <Text className="mt-0.5 text-[11px] text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
+          <Text className="mt-0.5 t-caption-sm text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
             {sub}
           </Text>
         ) : null}

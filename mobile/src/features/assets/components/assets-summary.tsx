@@ -55,7 +55,7 @@ export function AssetsSummary({
         <Label>{t('assets.demo.netWorth')}</Label>
         {/* Money can be NEGATIVE and is never clamped — a household that owes
             more than it holds is exactly who needs to see the real figure. */}
-        <Money className="mt-1.5" size={34}>
+        <Money className="mt-1.5" step="metric">
           {formatVndScale(netWorth)}
         </Money>
         <RowMetaMono>{t('assets.demo.netWorthNote')}</RowMetaMono>
@@ -64,14 +64,14 @@ export function AssetsSummary({
       <View className="mt-5 flex-row gap-2">
         <Sunk className="flex-1 p-3.5">
           <Label>{t('assets.demo.assets')}</Label>
-          <Money className="mt-1" size={18}>
+          <Money className="mt-1" step="subtitle">
             {formatVndScale(total)}
           </Money>
           <RowMetaMono>{t('assets.demo.assetCount', { count: assetCount })}</RowMetaMono>
         </Sunk>
         <Sunk className="flex-1 p-3.5">
           <Label>{t('assets.demo.debt')}</Label>
-          <Money className="mt-1" size={18}>
+          <Money className="mt-1" step="subtitle">
             {formatVndScale(totalDebt)}
           </Money>
           <RowMetaMono>{t('assets.demo.debtCount', { count: debtCount })}</RowMetaMono>

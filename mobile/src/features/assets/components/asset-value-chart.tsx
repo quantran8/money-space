@@ -98,8 +98,8 @@ export function AssetValueChart({
 
   if (points.length < 2) {
     return (
-      <View className="items-center justify-center rounded-sunk bg-sunk px-4 py-10">
-        <Text className="text-center text-[14px] text-ink2">
+      <View className="items-center justify-center rounded-control bg-wash px-4 py-10">
+        <Text className="text-center t-body-sm text-ink2">
           {t('assets.detail.chart.empty')}
         </Text>
       </View>
@@ -110,7 +110,7 @@ export function AssetValueChart({
   const last = points[points.length - 1]
 
   return (
-    <View className="rounded-sunk bg-sunk p-4">
+    <View className="rounded-control bg-wash p-4">
       <View
         style={{ height: HEIGHT }}
         onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
@@ -163,8 +163,8 @@ export function AssetValueChart({
           full axis is four overlapping numbers, and the endpoints are what the
           reader actually compares. */}
       <View className="mt-2 flex-row items-center justify-between">
-        <Text className="font-mono text-[11px] text-ink3">{displayDate(first.isoDate)}</Text>
-        <Text className="font-mono text-[11px] text-ink3">{displayDate(last.isoDate)}</Text>
+        <Text className="font-mono t-caption-sm text-ink3">{displayDate(first.isoDate)}</Text>
+        <Text className="font-mono t-caption-sm text-ink3">{displayDate(last.isoDate)}</Text>
       </View>
     </View>
   )

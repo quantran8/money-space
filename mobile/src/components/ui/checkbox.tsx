@@ -37,15 +37,15 @@ export function Checkbox({
         <View
           className={cn(
             'h-5 w-5 items-center justify-center rounded-[6px] border',
-            checked ? 'border-interactive bg-interactive' : 'border-hair bg-panel',
+            checked ? 'border-action bg-action' : 'border-divider bg-card',
           )}
         >
           {checked ? <Check size={14} color="#FFFFFF" strokeWidth={2.5} /> : null}
         </View>
-        <Text className="flex-1 text-[14px] leading-5 text-ink2">{label}</Text>
+        <Text className="flex-1 t-body-sm leading-5 text-ink2">{label}</Text>
       </Pressable>
 
-      {error ? <Text className="mt-1 text-[12px] text-alert">{error}</Text> : null}
+      {error ? <Text className="mt-1 t-caption text-alert-ink">{error}</Text> : null}
     </View>
   )
 }

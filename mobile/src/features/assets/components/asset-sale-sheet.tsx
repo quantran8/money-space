@@ -103,8 +103,8 @@ export function AssetSaleSheet({
             the sheet title says the action, this says what it acts on. */}
         {asset ? (
           <Sunk>
-            <Text className="text-[14px] font-medium text-ink">{asset.name}</Text>
-            <Text className="mt-0.5 text-[12px] text-ink2">{holdingLabel}</Text>
+            <Text className="t-body-sm font-medium text-ink">{asset.name}</Text>
+            <Text className="mt-0.5 t-caption text-ink2">{holdingLabel}</Text>
           </Sunk>
         ) : null}
 
@@ -176,8 +176,8 @@ export function AssetSaleSheet({
             calculated, so there it is typed. */}
         {isMarketAsset ? (
           <Sunk className="flex-row items-center justify-between gap-3">
-            <Text className="flex-1 text-[14px] text-ink2">{t('assets.sale.proceeds')}</Text>
-            <Money size={18}>{formatVndShort(parseRawMoney(proceeds) || 0)}</Money>
+            <Text className="flex-1 t-body-sm text-ink2">{t('assets.sale.proceeds')}</Text>
+            <Money step="subtitle">{formatVndShort(parseRawMoney(proceeds) || 0)}</Money>
           </Sunk>
         ) : (
           <Controller
@@ -198,7 +198,7 @@ export function AssetSaleSheet({
         {/* The schema still validates `proceeds`, so a market sale with no
             price yet says so here rather than failing silently on submit. */}
         {isMarketAsset && errors.proceeds?.message ? (
-          <Text className="-mt-2 text-[12px] text-alert">{errors.proceeds.message}</Text>
+          <Text className="-mt-2 t-caption text-alert-ink">{errors.proceeds.message}</Text>
         ) : null}
 
         <Controller

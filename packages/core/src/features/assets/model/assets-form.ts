@@ -151,33 +151,20 @@ export function manualValueLabelKey(type: AssetType): string {
 export const goldUnits = ['chỉ', 'lượng', 'gram'] as const
 
 /**
- * How many of a unit make up one lượng. Dealers publish a single figure per
- * lượng, so a holding kept in chỉ or gram has no quote of its own — it is
- * derived here.
- */
-const goldUnitsPerLuong: Record<string, number> = {
-  'chỉ': 10,
-  'lượng': 1,
-  gram: 37.5,
-}
-
-/**
- * A per-lượng gold quote restated in the unit the holding is actually kept in.
+ * The quote's price for `unit`, read from the set the backend sent.
  *
- * The feed quotes one number, per lượng, whatever the household counts in — so
- * a holding in chỉ prefilled at the lượng price overstated the cost basis 10x
- * (37.5x for gram). Returns the price unchanged for a unit outside the list,
- * which is what a record saved before the picker existed can still carry: a
- * guessed divisor would be worse than the dealer's own figure.
+ * The BACKEND owns the lượng→chỉ/gram ratios and ships all three with every gold
+ * quote, so this only ever looks one up. A second copy of that table here is
+ * what let the form's figure and the server's own valuation disagree by the
+ * unit's ratio — see memory/asset-valuation.md. Falls back to `price` for a
+ * non-gold quote, or a unit the backend did not price.
  */
-export function convertGoldPricePerUnit(pricePerLuong: number, unit: string): number {
-  const perLuong = goldUnitsPerLuong[unit.trim().toLowerCase()]
-  return perLuong ? pricePerLuong / perLuong : pricePerLuong
-}
-
-/** Whether `unit` is one this app can restate a per-lượng quote into. */
-export function isConvertibleGoldUnit(unit: string): boolean {
-  return unit.trim().toLowerCase() in goldUnitsPerLuong
+export function quotePriceForUnit(
+  quote: { price: number; unitPrices?: Record<string, number> },
+  unit: string | undefined,
+): number {
+  const key = unit?.trim().toLowerCase() ?? ''
+  return quote.unitPrices?.[key] ?? quote.price
 }
 
 /** Loans (and only loans) can be interest-free — see `AssetForm.hasInterest`. */
