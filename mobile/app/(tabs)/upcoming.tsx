@@ -21,13 +21,14 @@ import {
   AssumptionsNote,
   ForecastSummary,
   ForecastTimeline,
-  HorizonSelector,
+  OverdueSection,
+  RangePicker,
 } from '@/features/forecast'
 
 /**
  * Sắp tới — the forecast timeline, and every action on it.
  *
- * The screen IS the forecast: `useUpcomingPage` (core) owns the horizon, the
+ * The screen IS the forecast: `useUpcomingPage` (core) owns the range, the
  * request and the day filtering, and it reads through `useForecastBundle`, so
  * forecast + flexible money + financial state arrive in ONE request rather than
  * three that each re-run the same engine server-side.
@@ -44,8 +45,19 @@ export default function UpcomingScreen() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const { horizonDays, setHorizonDays, forecast, days, isLoading, isError, error, isEmpty } =
-    useUpcomingPage()
+  const {
+    range,
+    setRange,
+    bounds,
+    forecast,
+    summary,
+    days,
+    overdue,
+    isLoading,
+    isError,
+    error,
+    isEmpty,
+  } = useUpcomingPage()
 
   const cashflowForm = useCashflowForm()
   const {
@@ -137,10 +149,10 @@ export default function UpcomingScreen() {
       onRefresh={() => void refetch()}
     >
       <Sections>
-        <HorizonSelector value={horizonDays} onChange={setHorizonDays} />
+        <RangePicker range={range} onChange={setRange} bounds={bounds} />
 
         {/* The error is scoped to the section that failed (§6.5) — a network
-            blip must not replace the whole screen, and the horizon control
+            blip must not replace the whole screen, and the range picker
             above stays usable. */}
         {isError ? (
           <ErrorState
@@ -150,8 +162,35 @@ export default function UpcomingScreen() {
           />
         ) : null}
 
-        {forecast ? (
-          <ForecastSummary forecast={forecast} onAddSource={() => navigate('/networth')} />
+        {forecast && summary ? (
+          <ForecastSummary
+            forecast={forecast}
+            summary={summary}
+            onAddSource={() => navigate('/networth')}
+          />
+        ) : null}
+
+        {/* Above the timeline, and lifted out of it: these are the only rows on
+            the screen waiting on a person, and the backend clamps them onto
+            today, so inside the timeline they read as "due today" among things
+            that genuinely are. Renders nothing when nothing is overdue. */}
+        {overdue ? (
+          <OverdueSection
+            overdue={overdue}
+            pendingId={
+              completeCashflowEvent.isPending
+                ? completeCashflowEvent.variables?.eventId
+                : null
+            }
+            onComplete={(sourceEventId, occurrenceDate) =>
+              completeCashflowEvent.mutate({
+                eventId: sourceEventId,
+                payload: { occurrenceDate },
+              })
+            }
+            onEdit={cashflowForm.openEdit}
+            onDelete={setDeletingId}
+          />
         ) : null}
 
         <ForecastTimeline
@@ -178,6 +217,7 @@ export default function UpcomingScreen() {
         onOpenChange={cashflowForm.handleFormOpenChange}
         form={cashflowForm.form}
         isEditing={cashflowForm.isEditing}
+        editingId={cashflowForm.editingId}
         isSubmitting={cashflowForm.isSubmitting}
         onSubmit={cashflowForm.submit}
       />

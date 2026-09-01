@@ -85,7 +85,7 @@ export function AssetPriceUpdateSheet({
       }
     >
       <View className="gap-4">
-        <Text className="text-[14px] leading-5 text-ink2">
+        <Text className="t-body-sm leading-5 text-ink2">
           {t(isBond ? 'assets.priceUpdate.bondHelp' : 'assets.priceUpdate.marketHelp', {
             name: asset.name,
             unit: asset.marketPosition?.unit ?? '',

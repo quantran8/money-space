@@ -139,14 +139,14 @@ export function DebtUpdateModeSheet({
       title={t('debts.updateMode.title')}
       footer={footer}
     >
-      <Text className="text-[14px] leading-5 text-ink2">
+      <Text className="t-body-sm leading-5 text-ink2">
         {t('debts.updateMode.description')}
       </Text>
 
       <View className="mt-5 gap-2">
         {originalAmountChanged ? (
           <>
-            <Text className="text-[14px] font-medium text-ink2">
+            <Text className="t-body-sm font-medium text-ink2">
               {t('debts.updateMode.amountQuestion')}
             </Text>
             <ModeOption
@@ -200,7 +200,7 @@ export function DebtUpdateModeSheet({
 
       {before && after ? (
         <Sunk className="mt-4">
-          <Text className="text-[14px] font-medium text-ink">
+          <Text className="t-body-sm font-medium text-ink">
             {t('debts.updateMode.preview.title')}
           </Text>
 
@@ -280,7 +280,7 @@ export function DebtUpdateModeSheet({
             ) : null}
           </View>
 
-          <Text className="mt-2 text-[12px] leading-4 text-ink3">
+          <Text className="mt-2 t-caption leading-4 text-ink3">
             {hasVisibleChange
               ? t('debts.updateMode.preview.footnote')
               : t('debts.updateMode.preview.noChange')}
@@ -316,17 +316,17 @@ function PreviewRow({
 
   return (
     <View className="flex-row items-baseline justify-between gap-3 py-1.5">
-      <Text className="flex-shrink text-[14px] text-ink2">{label}</Text>
+      <Text className="flex-shrink t-body-sm text-ink2">{label}</Text>
       <View className="flex-1 flex-row items-baseline justify-end gap-1.5">
         <Text
-          className="text-[14px] text-ink3"
+          className="t-body-sm text-ink3"
           style={{ textDecorationLine: 'line-through', fontVariant: ['tabular-nums'] }}
         >
           {before}
         </Text>
-        <Text className="text-[14px] text-ink3">→</Text>
+        <Text className="t-body-sm text-ink3">→</Text>
         <Text
-          className={cn('text-[14px] font-medium', emphasize ? 'text-interactive' : 'text-ink')}
+          className={cn('t-body-sm font-medium', emphasize ? 'text-action' : 'text-ink')}
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {after}
@@ -357,14 +357,14 @@ function ModeOption({
       accessibilityHint={hint}
       style={{ minHeight: TOUCH_TARGET }}
       className={cn(
-        'justify-center rounded-sunk border px-3.5 py-3',
-        active ? 'border-interactive bg-interactive-soft' : 'border-transparent bg-sunk',
+        'justify-center rounded-control border px-3.5 py-3',
+        active ? 'border-action bg-action-soft' : 'border-transparent bg-wash',
       )}
     >
-      <Text className={cn('text-[14px] font-medium', active ? 'text-ink' : 'text-ink2')}>
+      <Text className={cn('t-body-sm font-medium', active ? 'text-ink' : 'text-ink2')}>
         {title}
       </Text>
-      <Text className="mt-0.5 text-[12px] leading-4 text-ink3">{hint}</Text>
+      <Text className="mt-0.5 t-caption leading-4 text-ink3">{hint}</Text>
     </Pressable>
   )
 }

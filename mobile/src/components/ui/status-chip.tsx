@@ -36,8 +36,8 @@ export function StatusChip({
   const text: Record<StatusTone, string> = {
     neutral: 'text-ink2',
     interactive: 'text-ink',
-    attention: 'text-attention',
-    alert: 'text-alert',
+    attention: 'text-attention-ink',
+    alert: 'text-alert-ink',
   }
 
   return (
@@ -46,7 +46,7 @@ export function StatusChip({
         className="h-1.5 w-1.5 rounded-full"
         style={{ backgroundColor: dot[tone] }}
       />
-      <Text className={cn('text-[14px]', text[tone])}>{label}</Text>
+      <Text className={cn('t-body-sm', text[tone])}>{label}</Text>
     </View>
   )
 }

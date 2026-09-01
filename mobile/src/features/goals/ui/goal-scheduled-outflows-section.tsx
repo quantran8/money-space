@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { ScheduledOutflowImpact } from '@money-space/core/features/goals/api/goals.repository'
 import { formatAmount } from '@money-space/core/features/goals/model/goals-form'
+import { goalPercent } from '@money-space/core/features/goals/model/goals'
 
 import { Collapsible, GroupedRow, Panel, RowMeta, Sunk } from '@/components/ui'
 import { formatDayMonth } from '@/features/goals/lib/goal-dates'
@@ -37,18 +38,17 @@ export function GoalScheduledOutflowsSection({
   /** The goal's target, so before/after can also be stated as a percentage. */
   target: number
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   if (!impact || impact.events.length === 0) return null
 
-  const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
-  const percent = (value: number) =>
-    target > 0
-      ? new Intl.NumberFormat(locale, {
-          minimumFractionDigits: 1,
-          maximumFractionDigits: 1,
-        }).format(Math.min(Math.max((value / target) * 100, 0), 100))
-      : null
+  // Whole percent, via the shared helper, so this section agrees with the
+  // projection panel above it — they used to round differently and disagreed by
+  // a point near the target. See `goalPercent`.
+  const percent = (value: number) => {
+    const share = goalPercent(value, target)
+    return share === null ? null : String(share)
+  }
 
   // The one event worth naming in the summary: the largest, since it is the one
   // most worth recognising and possibly changing.
@@ -63,10 +63,10 @@ export function GoalScheduledOutflowsSection({
         summary={
           <View>
             <View className="flex-row items-center gap-2">
-              <Text className="text-[16px] font-medium text-ink">
+              <Text className="t-body font-medium text-ink">
                 {t('goals.scheduledOutflows.heading')}
               </Text>
-              <Text className="rounded-full bg-attention-soft px-2 py-0.5 text-[10px] font-medium text-attention">
+              <Text className="rounded-full bg-attention-soft px-2 py-0.5 t-caption-sm font-medium text-attention-ink">
                 {t('goals.scheduledOutflows.count', { count: impact.events.length })}
               </Text>
             </View>
@@ -76,20 +76,20 @@ export function GoalScheduledOutflowsSection({
                 phone would wrap a single line mid-figure and money must not
                 break across lines. */}
             <View className="mt-2.5 flex-row flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Text className="font-mono text-[11px] text-ink3">
+              <Text className="font-mono t-caption-sm text-ink3">
                 {formatDayMonth(lead.expectedDate)}
               </Text>
-              <Text className="text-[14px] font-medium text-ink" numberOfLines={1}>
+              <Text className="t-body-sm font-medium text-ink" numberOfLines={1}>
                 {lead.assetName}
               </Text>
               <Text
-                className="text-[14px] font-medium text-alert"
+                className="t-body-sm font-medium text-alert-ink"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 −{formatAmount(impact.outflowAmount)}
               </Text>
             </View>
-            <Text className="mt-0.5 text-[14px] text-ink2">
+            <Text className="mt-0.5 t-body-sm text-ink2">
               {t('goals.scheduledOutflows.after')}{' '}
               <Text className="font-medium text-ink" style={{ fontVariant: ['tabular-nums'] }}>
                 {formatAmount(impact.projectedAmount)}
@@ -99,7 +99,7 @@ export function GoalScheduledOutflowsSection({
           </View>
         }
       >
-        <Text className="text-[14px] leading-5 text-ink2">
+        <Text className="t-body-sm leading-5 text-ink2">
           {t('goals.scheduledOutflows.description')}
         </Text>
 
@@ -109,7 +109,7 @@ export function GoalScheduledOutflowsSection({
             two complete pictures instead of reconstructing one from edits. */}
         <Sunk className="mt-4">
           <Text
-            className="text-[11px] font-medium uppercase text-ink3"
+            className="t-caption-sm font-medium uppercase text-ink3"
             style={{ letterSpacing: 0.66 }}
           >
             {t('goals.scheduledOutflows.beforeLabel')}
@@ -122,16 +122,16 @@ export function GoalScheduledOutflowsSection({
           />
         </Sunk>
 
-        <View className="mt-2 rounded-sunk bg-attention-soft p-4">
+        <View className="mt-2 rounded-control bg-attention-soft p-4">
           <View className="flex-row items-baseline justify-between gap-3">
             <Text
-              className="text-[11px] font-medium uppercase text-attention"
+              className="t-caption-sm font-medium uppercase text-attention-ink"
               style={{ letterSpacing: 0.66 }}
             >
               {t('goals.scheduledOutflows.afterLabel')}
             </Text>
             <Text
-              className="text-[11px] font-medium text-attention"
+              className="t-caption-sm font-medium text-attention-ink"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               −{formatAmount(impact.outflowAmount)}
@@ -167,7 +167,7 @@ export function GoalScheduledOutflowsSection({
           ))}
         </View>
 
-        <Text className="mt-3 text-[11px] leading-4 text-ink3">
+        <Text className="mt-3 t-caption-sm leading-4 text-ink3">
           {t('goals.scheduledOutflows.paceNote')}
         </Text>
       </Collapsible>
@@ -204,9 +204,9 @@ function ImpactFigures({
 function Figure({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-baseline justify-between gap-3">
-      <Text className="flex-1 text-[14px] text-ink2">{label}</Text>
+      <Text className="flex-1 t-body-sm text-ink2">{label}</Text>
       <Text
-        className="text-[14px] font-medium text-ink"
+        className="t-body-sm font-medium text-ink"
         style={{ fontVariant: ['tabular-nums'] }}
       >
         {value}

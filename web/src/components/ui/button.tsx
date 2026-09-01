@@ -60,13 +60,24 @@ export interface ButtonProps
   asChild?: boolean
 }
 
+/**
+ * `type` defaults to `button`, NOT the HTML default of `submit`.
+ *
+ * A bare <button> inside a <form> submits it. In a multi-step form that made
+ * every unmarked control a submit: advancing a step re-rendered the footer so
+ * the real submit button appeared under the pointer, and the same click's
+ * mouseup landed on it — saving the record from the middle of the wizard.
+ * Submitting is explicit here; the 13 call sites that mean it pass
+ * `type="submit"` themselves, and `asChild` callers keep whatever the child is.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, type, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        {...(asChild ? {} : { type: type ?? 'button' })}
         {...props}
       />
     )

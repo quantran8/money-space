@@ -54,7 +54,7 @@ export function MembersSection({
               {t('members.invite.action')}
             </Button>
           ) : members.length > 0 ? (
-            <Text className="font-mono text-[11px] text-ink3">
+            <Text className="font-mono t-caption-sm text-ink3">
               {t('members.list.count', { count: members.length })}
             </Text>
           ) : undefined
@@ -63,8 +63,8 @@ export function MembersSection({
 
       {isLoading ? (
         <View className="mt-5 gap-2">
-          <Skeleton height={56} className="rounded-sunk" />
-          <Skeleton height={56} className="rounded-sunk" />
+          <Skeleton height={56} className="rounded-control" />
+          <Skeleton height={56} className="rounded-control" />
         </View>
       ) : members.length === 0 ? (
         <EmptyState
@@ -90,15 +90,15 @@ export function MembersSection({
       )}
 
       {isSolo && members.length > 0 ? (
-        <View className="mt-4 rounded-sunk bg-sunk p-4">
-          <Text className="text-[14px] leading-5 text-ink2">{t('members.list.soloPrompt')}</Text>
+        <View className="mt-4 rounded-control bg-wash p-4">
+          <Text className="t-body-sm leading-5 text-ink2">{t('members.list.soloPrompt')}</Text>
           <Button className="mt-3" onPress={onInvite}>
             {t('members.invite.action')}
           </Button>
         </View>
       ) : invitedCount > 0 ? (
-        <View className="mt-4 rounded-sunk bg-sunk px-4 py-3">
-          <Text className="text-[12px] leading-5 text-ink2">
+        <View className="mt-4 rounded-control bg-wash px-4 py-3">
+          <Text className="t-caption leading-5 text-ink2">
             {t('members.list.invitedCount', { count: invitedCount })}
           </Text>
         </View>

@@ -28,17 +28,17 @@ export function DashboardSkeleton() {
         <Skeleton height={16} className="w-1/3" />
         <Skeleton height={30} className="mt-5 w-1/2" />
         <View className="mt-6 gap-2">
-          <Skeleton height={44} className="rounded-sunk" />
-          <Skeleton height={44} className="rounded-sunk" />
-          <Skeleton height={44} className="rounded-sunk" />
+          <Skeleton height={44} className="rounded-control" />
+          <Skeleton height={44} className="rounded-control" />
+          <Skeleton height={44} className="rounded-control" />
         </View>
       </Panel>
 
       <Panel>
         <Skeleton height={16} className="w-2/5" />
         <View className="mt-5 gap-2">
-          <Skeleton height={64} className="rounded-sunk" />
-          <Skeleton height={64} className="rounded-sunk" />
+          <Skeleton height={64} className="rounded-control" />
+          <Skeleton height={64} className="rounded-control" />
         </View>
       </Panel>
     </Sections>

@@ -61,9 +61,9 @@ export function QuickActionList({
           onPress={() => handlePress(action)}
           accessibilityRole="button"
           style={{ minHeight: TOUCH_TARGET + 2 }}
-          className="justify-center rounded-sunk bg-sunk px-4 active:bg-interactive-soft"
+          className="justify-center rounded-control bg-wash px-4 active:bg-action-soft"
         >
-          <Text className="text-[15px] text-ink">{t(`events.form.action.${action}`)}</Text>
+          <Text className="t-body text-ink">{t(`events.form.action.${action}`)}</Text>
         </Pressable>
       ))}
     </View>

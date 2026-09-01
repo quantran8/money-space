@@ -44,28 +44,54 @@ import { colors } from '@/theme/tokens'
 export function GoalImpactNotice({
   assetId,
   amount,
+  excludeEventId,
+  expectedDate,
   className,
 }: {
   assetId?: string
   amount?: number
+  /**
+   * The event being edited, so it is not subtracted from the wallet twice — it
+   * is already booked, and the amount being typed replaces it rather than
+   * adding to it. Absent when creating.
+   */
+  excludeEventId?: string
+  /**
+   * The spend's own date. Only outflows on or before it count against it: a
+   * bill next month cannot squeeze a spend happening today.
+   */
+  expectedDate?: string
   className?: string
 }) {
   const { t } = useTranslation()
-  const { items, assetValue, claimedAmount, unassignedAmount } = useAssetGoalUsage(assetId)
+  const { items, assetValue, pendingValue, claimedAmount, unassignedAmount } =
+    useAssetGoalUsage(assetId, excludeEventId, expectedDate)
   const { assets } = useAssets()
 
   // Nothing to say when no goal saves into this wallet: spending from it costs
   // no goal anything, at any amount.
   if (!assetId || claimedAmount <= 0) return null
 
-  const impact = computeSpendImpact(items, assetValue, amount ?? 0)
+  // Measured against the wallet with bills already booked against it taken out
+  // — see the server's `spendImpact`, which this must agree with. The spend
+  // being entered is the second claim on the wallet whenever one is scheduled,
+  // and the raw balance would let it spend that money a second time.
+  const impact = computeSpendImpact(
+    items,
+    pendingValue,
+    amount ?? 0,
+    // Percent claims keep the wallet BEFORE the scheduled outflows as their
+    // basis: "90% of this wallet" records what was set aside when the goal was
+    // created, not a ratio to re-read whenever a bill is booked.
+    assetValue,
+  )
 
   // A wallet backing a goal, before an amount exists. State the mechanism in
   // words so the household knows what the wallet does before choosing a number.
   if (impact.totalReduction <= 0) {
     return (
       <Sunk className={className}>
-        <Text className="text-[14px] leading-5 text-ink2">
+        <Text className="t-body-sm leading-5 text-ink2">
           {t('upcoming.complete.goalImpact.pending')}
         </Text>
       </Sunk>
@@ -83,23 +109,23 @@ export function GoalImpactNotice({
       {/* The spend, and the one-phrase answer to where it comes from. */}
       <View className="flex-row items-end justify-between gap-3">
         <View className="flex-1">
-          <Text className="text-[11px] text-ink3">
+          <Text className="t-caption-sm text-ink3">
             {t('upcoming.complete.goalImpact.spendLabel')}
           </Text>
           <Text
-            className="mt-1 text-[22px] font-medium text-ink"
-            style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.66 }}
+            className="mt-1 t-metric text-ink"
+            style={{ fontVariant: ['tabular-nums'] }}
           >
             {formatVndShort(impact.totalReduction)}
           </Text>
         </View>
         <View className="items-end">
-          <Text className="text-[11px] text-ink3">
+          <Text className="t-caption-sm text-ink3">
             {t('upcoming.complete.goalImpact.takenFrom')}
           </Text>
           <Text
-            className={`mt-1 text-[14px] font-medium ${
-              reachesSetAside ? 'text-attention' : 'text-interactive'
+            className={`mt-1 t-body-sm font-medium ${
+              reachesSetAside ? 'text-attention-ink' : 'text-action'
             }`}
           >
             {reachesSetAside
@@ -160,11 +186,11 @@ export function GoalImpactNotice({
         <View className="mt-4 gap-1">
           {impact.goals.map((goal) => (
             <View key={goal.goalId} className="flex-row items-baseline justify-between gap-3">
-              <Text className="flex-1 text-[12px] text-ink2" numberOfLines={1}>
+              <Text className="flex-1 t-caption text-ink2" numberOfLines={1}>
                 {goal.goalName}
               </Text>
               <Text
-                className="shrink-0 text-[12px] text-ink2"
+                className="shrink-0 t-caption text-ink2"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 {goal.setAsideReduction > 0 && goal.paceReduction > 0
@@ -185,7 +211,7 @@ export function GoalImpactNotice({
       ) : null}
 
       {/* The sentence that explains the whole thing. */}
-      <Text className="mt-3 text-[12px] leading-5 text-ink2">
+      <Text className="mt-3 t-caption leading-5 text-ink2">
         {reachesSetAside
           ? t('upcoming.complete.goalImpact.explainSetAside', {
               pace: formatVndShort(impact.totalPaceReduction),
@@ -198,14 +224,14 @@ export function GoalImpactNotice({
           not `freeAmount`: the latter only subtracts what is set aside, so it
           would claim money is free directly above lines showing that same money
           coming out of the goals. */}
-      <Text className="mt-2 text-[12px] leading-5 text-ink3">
+      <Text className="mt-2 t-caption leading-5 text-ink3">
         {t(
           unassignedAmount > 0
             ? 'upcoming.complete.goalImpact.subtitleSomeFree'
             : 'upcoming.complete.goalImpact.subtitle',
           {
             wallet: walletName,
-            value: formatVndShort(assetValue),
+            value: formatVndShort(pendingValue),
             free: formatVndShort(unassignedAmount),
           },
         )}
@@ -214,7 +240,7 @@ export function GoalImpactNotice({
       {/* A shortfall is a different fact from "your goal shrinks", so it gets
           its own line rather than being folded into anything above. */}
       {impact.exceedsWallet ? (
-        <Text className="mt-2 text-[12px] leading-5 text-alert">
+        <Text className="mt-2 t-caption leading-5 text-alert-ink">
           {t('upcoming.complete.goalImpact.exceedsWallet', {
             value: formatVndShort(impact.assetValue),
           })}
@@ -239,10 +265,10 @@ function ChangeRow({
   return (
     <View>
       <View className="flex-row items-baseline justify-between gap-3">
-        <Text className="flex-1 text-[11px] text-ink3">{label}</Text>
+        <Text className="flex-1 t-caption-sm text-ink3">{label}</Text>
         {delta ? (
           <Text
-            className="text-[12px] font-medium text-attention"
+            className="t-caption font-medium text-attention-ink"
             style={{ fontVariant: ['tabular-nums'] }}
           >
             {delta}
@@ -251,13 +277,13 @@ function ChangeRow({
       </View>
       {/* Money never truncates, so the pair wraps rather than ellipsing. */}
       <View className="mt-1 flex-row flex-wrap items-center gap-2">
-        <Text className="text-[14px] text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
+        <Text className="t-body-sm text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
           {before}
         </Text>
         <ArrowRight size={14} color={colors.ink3} strokeWidth={1.5} />
         <Text
-          className="text-[16px] font-medium text-ink"
-          style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.48 }}
+          className="t-body font-medium text-ink"
+          style={{ fontVariant: ['tabular-nums'] }}
         >
           {after}
         </Text>
@@ -270,7 +296,7 @@ function LegendItem({ fill, label }: { fill: string; label: string }) {
   return (
     <View className="flex-row items-center gap-2">
       <View className="h-2 w-2 rounded-full" style={{ backgroundColor: fill }} />
-      <Text className="flex-1 text-[11px] text-ink2">{label}</Text>
+      <Text className="flex-1 t-caption-sm text-ink2">{label}</Text>
     </View>
   )
 }

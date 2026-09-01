@@ -36,6 +36,12 @@ import type { AssetGoalClaim } from '#/features/goals/api/goals.repository'
  *
  * Scoped to ONE wallet, which is all the form needs and all
  * `assetGoalUsage` provides. The server's version spans every wallet.
+ *
+ * `assetValue` must be the wallet NET of outflows already scheduled against it
+ * (`pendingValue`), not its raw balance. A spend being entered is the second
+ * claim on the wallet whenever a bill is already booked, and measuring against
+ * the raw balance spends that money twice — a 30tr wallet with a 4tr bill on it
+ * reported a further 30tr as costing the goal its whole 27tr of set-aside.
  */
 
 export interface LocalGoalSpendImpact {
@@ -249,14 +255,26 @@ export function computeSpendImpact(
   claims: AssetGoalClaim[],
   assetValue: number,
   amount: number,
+  /**
+   * What percent claims are a percentage OF, when `assetValue` has already been
+   * lowered by outflows the household scheduled but has not yet paid.
+   *
+   * A percent claim records a decision made once — "90% of this wallet" is how
+   * the form writes down 27tr on the day the goal was created — not a ratio to
+   * re-derive every time the wallet moves. Passing the lowered wallet as both
+   * value and basis re-read 90% against 26tr and reported 23,4tr set aside,
+   * shaving 3,6tr nobody spent and leaving a 2,6tr "pace" that should have been
+   * zero. Mirrors the server's `resolveSpendImpact` parameter of the same name.
+   */
+  percentBasisValue: number = assetValue,
 ): LocalSpendImpact {
   const spend = Math.max(0, amount)
   const assetValueAfter = Math.max(0, assetValue - spend)
 
   // The percent basis is the UNSPENT wallet on both sides — see
   // `allocationValue` for why re-deriving it from the lowered value was wrong.
-  const before = claimsAtValue(claims, assetValue, assetValue)
-  const after = claimsAtValue(claims, assetValueAfter, assetValue)
+  const before = claimsAtValue(claims, assetValue, percentBasisValue)
+  const after = claimsAtValue(claims, assetValueAfter, percentBasisValue)
 
   const names = new Map(claims.map((claim) => [claim.goalId, claim.goalName]))
   const goals: LocalGoalSpendImpact[] = []

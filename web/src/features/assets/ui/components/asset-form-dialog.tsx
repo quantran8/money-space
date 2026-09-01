@@ -56,6 +56,7 @@ import {
   canBePurchased,
   goldUnits,
   isInterestOptional,
+  quotePriceForUnit,
   isWholeQuantityType,
   manualValueLabelKey,
   parseMoneyToVnd,
@@ -662,12 +663,19 @@ function MarketFields({
   // figure tagged `VND`, slipping past `canPrefill` and understating the cost
   // basis ~26,000x. That is the exact bug the guard exists to prevent.
   const quoteCurrency = assetClass === 'crypto' ? 'VND' : undefined
+
+  // A gold quote carries every unit's price, so switching chỉ → gram picks a
+  // figure out of the response rather than re-fetching. The backend owns the
+  // ratios; converting here let the form and the server's own valuation
+  // disagree by the unit's ratio — see memory/asset-valuation.md.
+  const unit = useWatch({ control, name: 'unit' })
   const { quote, isLoading, isUnavailable } = useMarketQuote(
     assetClass,
     symbol,
     market,
     quoteCurrency,
   )
+  const quotedPrice = quote ? quotePriceForUnit(quote, unit) : null
 
   const prefillPurchasePrice = (price: number) => {
     setValue('purchasePrice', String(Math.round(price)), {
@@ -690,16 +698,19 @@ function MarketFields({
   // may answer in its own currency regardless of what was asked.
   const canPrefill = quote?.quoteCurrency === 'VND'
 
+  // The chosen unit is part of the key, not the quote's: switching chỉ → lượng
+  // makes the field's figure wrong by a factor of ten, so that re-prefills even
+  // though the symbol — and now the response — has not changed.
   const prefilledFor = useRef<string | null>(null)
   useEffect(() => {
-    if (!quote || !canPrefill) return
-    const key = `${quote.assetClass}:${quote.symbol}`
+    if (!quote || !canPrefill || quotedPrice === null) return
+    const key = `${quote.assetClass}:${quote.symbol}:${unit ?? quote.unit}`
     if (prefilledFor.current === key) return
     prefilledFor.current = key
-    prefillPurchasePrice(quote.price)
+    prefillPurchasePrice(quotedPrice)
     // `prefillPurchasePrice` is a stable form helper.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quote, canPrefill])
+  }, [quote, canPrefill, quotedPrice, unit])
 
   return (
     <>
@@ -759,6 +770,8 @@ function MarketFields({
         <MarketQuoteHint
           symbol={symbol}
           quote={quote}
+          price={quotedPrice}
+          unit={type === 'gold' ? unit : undefined}
           isLoading={isLoading}
           isUnavailable={isUnavailable}
           t={t}
@@ -827,12 +840,18 @@ function MarketFields({
 function MarketQuoteHint({
   symbol,
   quote,
+  price,
+  unit,
   isLoading,
   isUnavailable,
   t,
 }: {
   symbol: string
   quote: MarketQuote | null
+  /** The quote's price in `unit` — for gold, the unit the form is showing. */
+  price: number | null
+  /** The chosen gold unit; absent for classes quoted in one unit only. */
+  unit?: string
   isLoading: boolean
   isUnavailable: boolean
   t: Translate
@@ -847,7 +866,7 @@ function MarketQuoteHint({
     )
   }
 
-  if (isUnavailable || !quote) {
+  if (isUnavailable || !quote || price === null) {
     return (
       <p className="t-body-sm text-ink3" aria-live="polite">
         {t('assets.form.market.quoteUnavailable')}
@@ -862,8 +881,8 @@ function MarketQuoteHint({
     >
       <span className="text-ink3">{t('assets.form.market.quoteLabel')}</span>
       <span className="font-medium text-ink">
-        {formatMoney(quote.price, quote.quoteCurrency as DisplayCurrency)} /{' '}
-        {quote.unit}
+        {formatMoney(price, quote.quoteCurrency as DisplayCurrency)} /{' '}
+        {unit || quote.unit}
       </span>
     </div>
   )

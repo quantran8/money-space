@@ -150,6 +150,23 @@ export function manualValueLabelKey(type: AssetType): string {
  */
 export const goldUnits = ['chỉ', 'lượng', 'gram'] as const
 
+/**
+ * The quote's price for `unit`, read from the set the backend sent.
+ *
+ * The BACKEND owns the lượng→chỉ/gram ratios and ships all three with every gold
+ * quote, so this only ever looks one up. A second copy of that table here is
+ * what let the form's figure and the server's own valuation disagree by the
+ * unit's ratio — see memory/asset-valuation.md. Falls back to `price` for a
+ * non-gold quote, or a unit the backend did not price.
+ */
+export function quotePriceForUnit(
+  quote: { price: number; unitPrices?: Record<string, number> },
+  unit: string | undefined,
+): number {
+  const key = unit?.trim().toLowerCase() ?? ''
+  return quote.unitPrices?.[key] ?? quote.price
+}
+
 /** Loans (and only loans) can be interest-free — see `AssetForm.hasInterest`. */
 export function isInterestOptional(type: AssetType): boolean {
   return type === 'loan_receivable'

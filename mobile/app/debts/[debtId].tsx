@@ -187,10 +187,10 @@ function DebtDetailScreen() {
       <Screen withoutTabBar>
         <BackLink label={t('debts.detail.back')} onPress={goBack} />
         <Panel className="mt-3">
-          <Text className="text-[16px] font-medium text-ink">
+          <Text className="t-body font-medium text-ink">
             {t('debts.detail.notFoundTitle')}
           </Text>
-          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
+          <Text className="mt-1.5 t-body-sm leading-5 text-ink2">
             {t('debts.detail.notFoundBody')}
           </Text>
         </Panel>
@@ -222,8 +222,19 @@ function DebtDetailScreen() {
       ? Number(debt.firstPaymentDate.slice(8, 10))
       : null
 
-  // Paid instalments and expected ones, in one time sequence (§7) — the
-  // question is "where am I in this loan", which a split list cannot answer.
+  /**
+   * Paid instalments and expected ones, numbered across ONE time sequence and
+   * then split into two groups.
+   *
+   * The numbering is cross-group on purpose: "kỳ 7" means the seventh payment
+   * of this loan whichever list it is sitting in, so a reader can see they are
+   * seven of twelve through without counting rows. Numbering each group from 1
+   * would produce two "kỳ 1"s for the same loan.
+   *
+   * Split rather than interleaved: "what have I paid" and "what is still
+   * coming" are the two questions asked here, and a single list makes the
+   * reader find the boundary themselves.
+   */
   const schedule = [
     ...repayments.map((entry) => ({
       id: `paid-${entry.id}`,
@@ -237,9 +248,13 @@ function DebtDetailScreen() {
       amount: payment.amount,
       paid: false,
     })),
-  ].sort((left, right) => left.isoDate.localeCompare(right.isoDate))
+  ]
+    .sort((left, right) => left.isoDate.localeCompare(right.isoDate))
+    .map((item, index) => ({ ...item, index: index + 1 }))
 
   const firstUnpaidId = schedule.find((item) => !item.paid)?.id
+  const paidPeriods = schedule.filter((item) => item.paid)
+  const openPeriods = schedule.filter((item) => !item.paid)
 
   return (
     <Screen>
@@ -251,7 +266,7 @@ function DebtDetailScreen() {
             label={t(`options.debtStatus.${debt.status}`)}
             tone={STATUS_TONE[debt.status]}
           />
-          <Text className="mt-1.5 text-[19px] font-medium leading-tight text-ink">
+          <Text className="mt-1.5 t-subtitle leading-tight text-ink">
             {debt.name}
           </Text>
         </View>
@@ -290,7 +305,7 @@ function DebtDetailScreen() {
           <PanelHeader
             title={t('debts.detail.overview.title')}
             right={
-              <Text className="font-mono text-[11px] text-ink3">
+              <Text className="font-mono t-caption-sm text-ink3">
                 {displayDate(latestUpdate, t('debts.detail.noValue'))}
               </Text>
             }
@@ -298,19 +313,19 @@ function DebtDetailScreen() {
 
           <Label className="mt-5">{t('debts.detail.overview.outstanding')}</Label>
           <View className="mt-1.5 flex-row items-baseline gap-1.5">
-            <Money size={40}>{outstanding.amount}</Money>
+            <Money step="figure">{outstanding.amount}</Money>
             {outstanding.unit ? (
-              <Text className="text-[17px] font-medium text-ink">{outstanding.unit}</Text>
+              <Text className="t-body font-medium text-ink">{outstanding.unit}</Text>
             ) : null}
           </View>
 
           <View className="mt-5">
             <View className="flex-row items-baseline justify-between gap-3">
-              <Text className="text-[12px] text-ink2">
+              <Text className="t-caption text-ink2">
                 {t('debts.detail.overview.progress')}
               </Text>
               <Text
-                className="text-[14px] font-medium text-ink"
+                className="t-body-sm font-medium text-ink"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 {Math.round(progress)}%
@@ -323,11 +338,19 @@ function DebtDetailScreen() {
                 percent: Math.round(progress),
               })}
             />
-            <Text className="mt-2 text-[12px] text-ink2">
-              {t('debts.detail.overview.repaid')}{' '}
-              <Text className="font-medium text-ink" style={{ fontVariant: ['tabular-nums'] }}>
-                {formatVndShort(repaid)}
-              </Text>
+            {/* Instalments, not money: the percentage above already says the
+                money, and "2 / 5 kỳ" is the half a household counts. Falls back
+                to the amount when there is no schedule to count. */}
+            <Text
+              className="mt-2 t-caption text-ink2"
+              style={{ fontVariant: ['tabular-nums'] }}
+            >
+              {schedule.length > 0
+                ? t('debts.detail.overview.periodsDone', {
+                    done: paidPeriods.length,
+                    total: schedule.length,
+                  })
+                : `${t('debts.detail.overview.repaid')} ${formatVndShort(repaid)}`}
             </Text>
           </View>
         </Panel>
@@ -414,7 +437,7 @@ function DebtDetailScreen() {
             </View>
 
             {debt.note ? (
-              <Text className="mt-4 text-[14px] leading-5 text-ink2">{debt.note}</Text>
+              <Text className="mt-4 t-body-sm leading-5 text-ink2">{debt.note}</Text>
             ) : null}
           </Sunk>
         </Panel>
@@ -423,24 +446,21 @@ function DebtDetailScreen() {
           <PanelHeader title={t('debts.detail.schedule.title')} />
 
           {schedule.length > 0 ? (
-            <View className="mt-3">
-              {schedule.map((item) => (
-                <GroupedRow
-                  key={item.id}
-                  title={displayDate(item.isoDate, t('debts.detail.noValue'))}
-                  // Paid / next says the state in words; the tone never
-                  // carries it alone (§9).
-                  meta={
-                    item.paid ? (
-                      <RowMeta>{t('debts.detail.schedule.paid')}</RowMeta>
-                    ) : item.id === firstUnpaidId ? (
-                      <RowMeta>{t('debts.detail.schedule.next')}</RowMeta>
-                    ) : undefined
-                  }
-                  value={formatVndShort(item.amount)}
-                  valueTone={item.paid ? 'muted' : 'default'}
+            <View className="mt-3 gap-5">
+              {paidPeriods.length > 0 ? (
+                <PeriodGroup
+                  title={t('debts.detail.schedule.paid')}
+                  periods={paidPeriods}
+                  firstUnpaidId={firstUnpaidId}
                 />
-              ))}
+              ) : null}
+              {openPeriods.length > 0 ? (
+                <PeriodGroup
+                  title={t('debts.detail.schedule.upcoming')}
+                  periods={openPeriods}
+                  firstUnpaidId={firstUnpaidId}
+                />
+              ) : null}
             </View>
           ) : (
             <EmptyState className="mt-4" message={t('debts.detail.schedule.empty')} />
@@ -505,13 +525,61 @@ function LoanFact({
 }) {
   return (
     <View className="flex-row items-start justify-between gap-4">
-      <Text className="flex-shrink text-[14px] text-ink2">{label}</Text>
+      <Text className="flex-shrink t-body-sm text-ink2">{label}</Text>
       <Text
-        className={mono ? 'flex-1 text-right font-mono text-[14px] text-ink' : 'flex-1 text-right text-[14px] font-medium text-ink'}
+        className={mono ? 'flex-1 text-right font-mono t-body-sm text-ink' : 'flex-1 text-right t-body-sm font-medium text-ink'}
         style={numeric ? { fontVariant: ['tabular-nums'] } : undefined}
       >
         {value}
       </Text>
+    </View>
+  )
+}
+
+/**
+ * One half of the schedule — settled or still coming.
+ *
+ * The web draws each period as a tile in a three-column grid. At 375pt that is
+ * one column, so the periods stay grouped rows: the index and date lead, the
+ * amount keeps the right edge, and the state is said in words rather than
+ * carried by tone alone (§9).
+ */
+function PeriodGroup({
+  title,
+  periods,
+  firstUnpaidId,
+}: {
+  title: string
+  periods: { id: string; index: number; isoDate: string; amount: number; paid: boolean }[]
+  firstUnpaidId?: string
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <View>
+      <Text className="t-caption font-medium text-ink3">{title}</Text>
+      <View className="mt-2">
+        {periods.map((item) => (
+          <GroupedRow
+            key={item.id}
+            title={t('debts.detail.schedule.periodIndex', { index: item.index })}
+            meta={
+              <RowMeta>
+                {[
+                  displayDate(item.isoDate, t('debts.detail.noValue')),
+                  item.paid
+                    ? t('debts.detail.schedule.paid')
+                    : item.id === firstUnpaidId
+                      ? t('debts.detail.schedule.next')
+                      : t('debts.detail.schedule.upcoming'),
+                ].join(' · ')}
+              </RowMeta>
+            }
+            value={formatVndShort(item.amount)}
+            valueTone={item.paid ? 'muted' : 'default'}
+          />
+        ))}
+      </View>
     </View>
   )
 }

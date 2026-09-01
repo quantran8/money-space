@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useWhatIf } from '@money-space/core/features/whatif/hooks/use-whatif'
 import { buildShareSummary } from '@money-space/core/features/whatif/model/whatif-share'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
+import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { parseRawMoney } from '@money-space/core/shared/lib/number-format'
 import { notify } from '@money-space/core/shared/notify'
 import {
@@ -13,7 +14,7 @@ import {
 } from '@money-space/core/shared/stores/whatif-store'
 
 import { BottomSheet, Button, DateField, Field, MoneyInput } from '@/components/ui'
-import { todayIso } from '@/features/forecast'
+import { formatFullDate, todayIso } from '@/features/forecast'
 import { WhatIfResultBlocks } from '@/features/whatif/ui/whatif-result-blocks'
 
 /**
@@ -117,40 +118,69 @@ function WhatIfSheetForm({
     }
   }
 
+  /**
+   * Once there is an answer, the ANSWER is the screen.
+   *
+   * The form and the result used to be stacked, which meant the figure the
+   * household came for opened below three fields they had just filled in —
+   * below the fold on every phone. So the question collapses into the one line
+   * it can be stated in ("11,11 tỷ · 26/08/2026") and the result takes the
+   * body. `Thử số khác` puts the fields back with the previous answer dropped,
+   * which is also what makes the primary button unambiguous: it says `Xem thử`
+   * in exactly the state where the fields are on screen.
+   */
+  const showResult = Boolean(result)
+
   return (
     <View>
-      {/* Load-bearing, not filler: this is the line that says nothing is saved
-          and that no answer here is advice about whether to buy. */}
-      <Text className="text-[14px] leading-5 text-ink2">{t('whatif.description')}</Text>
+      {showResult ? (
+        // The question the answer belongs to, so the figures below are never
+        // read against the wrong number.
+        <Text className="t-body-sm leading-5 text-ink2">
+          {t('whatif.summary', {
+            amount: formatVndShort(amountValue),
+            date: formatFullDate(plannedDate),
+          })}
+        </Text>
+      ) : (
+        /* Load-bearing, not filler: this is the line that says nothing is saved
+           and that no answer here is advice about whether to buy. */
+        <Text className="t-body-sm leading-5 text-ink2">{t('whatif.description')}</Text>
+      )}
 
       <View className="mt-5 gap-4">
-        {/* The note leads: naming the purchase first is what turns an abstract
-            number into the question the household is actually asking. */}
-        <Field
-          label={t('whatif.form.label')}
-          placeholder={t('whatif.form.labelPlaceholder')}
-          value={label}
-          onChangeText={setLabel}
-        />
+        {showResult ? (
+          /* Consequence renders only after the household asks for it (§2.9). */
+          <WhatIfResultBlocks result={result!} />
+        ) : (
+          <>
+            {/* The note leads: naming the purchase first is what turns an
+                abstract number into the question the household is actually
+                asking. */}
+            <Field
+              label={t('whatif.form.label')}
+              placeholder={t('whatif.form.labelPlaceholder')}
+              value={label}
+              onChangeText={setLabel}
+            />
 
-        <MoneyInput
-          label={t('whatif.form.amount')}
-          value={amount}
-          onChange={(next) => {
-            setAmount(next)
-            if (amountError) setAmountError(undefined)
-          }}
-          error={amountError}
-        />
+            <MoneyInput
+              label={t('whatif.form.amount')}
+              value={amount}
+              onChange={(next) => {
+                setAmount(next)
+                if (amountError) setAmountError(undefined)
+              }}
+              error={amountError}
+            />
 
-        <DateField
-          label={t('whatif.form.plannedDate')}
-          value={plannedDate}
-          onChange={setPlannedDate}
-        />
-
-        {/* Consequence renders only after the household asks for it (§2.9). */}
-        {result ? <WhatIfResultBlocks result={result} /> : null}
+            <DateField
+              label={t('whatif.form.plannedDate')}
+              value={plannedDate}
+              onChange={setPlannedDate}
+            />
+          </>
+        )}
       </View>
 
       {/* The actions scroll with the content rather than pinning to the sheet's
@@ -158,24 +188,21 @@ function WhatIfSheetForm({
           hundred points, and a pinned bar would sit over the answer the
           household just asked for while they read it. */}
       <View className="mt-5 gap-2">
-        {/* Once a result is on screen the button re-runs it against the edited
-            figures, so it stops reading as "show me" and becomes "bring this
-            up to date". Never disabled. */}
-        <Button onPress={handleRun} loading={isRunning}>
-          {isRunning
-            ? t('whatif.actions.running')
-            : result
-              ? t('whatif.actions.update')
-              : t('whatif.actions.run')}
-        </Button>
+        {/* The fields are only ever on screen in the non-result state, so the
+            button is unambiguous: it runs the question it can actually see. */}
+        {showResult ? null : (
+          <Button onPress={handleRun} loading={isRunning}>
+            {isRunning ? t('whatif.actions.running') : t('whatif.actions.run')}
+          </Button>
+        )}
 
         {result ? (
           <>
             <Button variant="secondary" onPress={handleShare}>
               {t('whatif.actions.share')}
             </Button>
-            {/* Clears the answer, not the sheet — the next question usually
-                starts from the same date. */}
+            {/* Puts the fields back, dropping the answer — the next question
+                usually starts from the same date. */}
             <Button variant="ghost" onPress={reset}>
               {t('whatif.actions.tryAnother')}
             </Button>

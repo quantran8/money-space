@@ -36,6 +36,8 @@ type CashflowEventFormDialogProps = {
   onOpenChange: (open: boolean) => void
   form: UseFormReturn<CashflowEventForm>
   isEditing: boolean
+  /** The event being edited, so its own amount is not double-counted. */
+  editingId?: string | null
   isSubmitting: boolean
   onSubmit: () => void
 }
@@ -79,6 +81,7 @@ export function CashflowEventFormDialog({
   onOpenChange,
   form,
   isEditing,
+  editingId,
   isSubmitting,
   onSubmit,
 }: CashflowEventFormDialogProps) {
@@ -95,6 +98,7 @@ export function CashflowEventFormDialog({
   const certainty = watch('certainty')
   const settlementAssetId = watch('settlementAssetId')
   const amount = watch('amount')
+  const expectedDate = watch('expectedDate')
   const { assets } = useAssets()
   // Only wallets the API will accept — flexible money that holds a balance.
   const settlementOptions = assets.filter(canSettleCashflow)
@@ -284,7 +288,7 @@ export function CashflowEventFormDialog({
                         value={field.value}
                         onChange={field.onChange}
                         aria-invalid={Boolean(errors.expectedDate)}
-                        className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden"
+                        className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body shadow-none hover:bg-transparent [&_svg]:hidden"
                       />
                     )}
                   />
@@ -294,17 +298,6 @@ export function CashflowEventFormDialog({
               {/* Outgoing asks for the wallet up front: it is required, and the
                   goal impact below cannot be worked out without it. */}
               {isOutgoing ? walletSection : null}
-
-              {/* What this outflow takes from the goals saving into that wallet.
-                  Computed locally, so it appears as the amount is typed — the
-                  household sees the trade BEFORE saving, not on the goal screen
-                  afterwards. Renders nothing when no goal is affected. */}
-              {isOutgoing ? (
-                <GoalImpactNotice
-                  assetId={settlementAssetId || undefined}
-                  amount={cashflowAmountToVnd(amount)}
-                />
-              ) : null}
 
               <div>
                 <button
@@ -422,6 +415,29 @@ export function CashflowEventFormDialog({
                   </div>
                 ) : null}
               </div>
+
+              {/* What this outflow costs the goals on that wallet, and what it
+                  leaves for the bills after it.
+
+                  Below the details fold, and on its own wash surface: it is the
+                  only block here that REPORTS rather than asks, so sitting in
+                  the run of inputs made it read as one more field. It also
+                  moves on every keystroke, which the fields around it do not.
+                  Last means the household meets it having already said what
+                  they are spending — the consequence after the decision, where
+                  it can still change their mind.
+
+                  Renders nothing when no goal is affected. */}
+              {isOutgoing ? (
+                <div className="rounded-control bg-canvas px-4 py-3.5 empty:hidden">
+                  <GoalImpactNotice
+                    assetId={settlementAssetId || undefined}
+                    amount={cashflowAmountToVnd(amount)}
+                    excludeEventId={editingId ?? undefined}
+                    expectedDate={expectedDate}
+                  />
+                </div>
+              ) : null}
             </div>
           </div>
 

@@ -81,8 +81,8 @@ export function GoalAllocationsField({
   return (
     <View>
       {error ? (
-        <View className="mb-3 rounded-sunk bg-sunk p-3.5">
-          <Text className="text-[12px] leading-5 text-alert">{error}</Text>
+        <View className="mb-3 rounded-control bg-wash p-3.5">
+          <Text className="t-caption leading-5 text-alert-ink">{error}</Text>
         </View>
       ) : null}
 
@@ -103,11 +103,11 @@ export function GoalAllocationsField({
             <Sunk key={row.assetId}>
               <View className="flex-row items-start gap-2">
                 <View className="flex-1">
-                  <Text className="text-[14px] font-medium text-ink" numberOfLines={1}>
+                  <Text className="t-body-sm font-medium text-ink" numberOfLines={1}>
                     {asset?.name ?? row.assetId}
                   </Text>
                   <Text
-                    className="mt-0.5 text-[11px] text-ink3"
+                    className="mt-0.5 t-caption-sm text-ink3"
                     style={{ fontVariant: ['tabular-nums'] }}
                   >
                     {t('goals.allocations.assetHolds', {
@@ -148,7 +148,7 @@ export function GoalAllocationsField({
                   ]}
                 />
               ) : (
-                <Text className="mt-3 text-[11px] leading-4 text-ink3">
+                <Text className="mt-3 t-caption-sm leading-4 text-ink3">
                   {t('goals.builder.marketHoldingOnly')}
                 </Text>
               )}
@@ -177,11 +177,11 @@ export function GoalAllocationsField({
                       been guessed at, and the guess is what they would be
                       correcting. */}
                   {contested ? (
-                    <View className="mt-3 rounded-sunk bg-attention-soft p-3.5">
-                      <Text className="text-[12px] font-medium text-attention">
+                    <View className="mt-3 rounded-control bg-attention-soft p-3.5">
+                      <Text className="t-caption font-medium text-attention-ink">
                         {t('goals.builder.sharedWallet')}
                       </Text>
-                      <Text className="mt-1 text-[11px] leading-4 text-attention">
+                      <Text className="mt-1 t-caption-sm leading-4 text-attention-ink">
                         {t('goals.builder.samePriorityWith', {
                           goals: (walletGoalNames?.get(row.assetId) ?? []).join(', '),
                         })}
@@ -222,7 +222,7 @@ export function GoalAllocationsField({
                     />
                   )}
                   {!wallet ? (
-                    <Text className="mt-2 text-[11px] leading-4 text-ink3">
+                    <Text className="mt-2 t-caption-sm leading-4 text-ink3">
                       {t('goals.allocations.holdingNote')}
                     </Text>
                   ) : null}
@@ -236,15 +236,15 @@ export function GoalAllocationsField({
             the household is choosing from a short list, and a card layout on a
             375pt screen buys nothing a row does not. */}
         <View>
-          <Text className="text-[14px] font-medium text-ink">{t('goals.builder.addSource')}</Text>
-          <Text className="mt-0.5 text-[11px] text-ink3">
+          <Text className="t-body-sm font-medium text-ink">{t('goals.builder.addSource')}</Text>
+          <Text className="mt-0.5 t-caption-sm text-ink3">
             {available.length > 0
               ? t('goals.builder.availableSources', { count: available.length })
               : t('goals.builder.allSourcesUsed')}
           </Text>
 
           {available.length === 0 ? (
-            <Text className="mt-3 text-[12px] text-ink3">{t('goals.builder.noMoreSources')}</Text>
+            <Text className="mt-3 t-caption text-ink3">{t('goals.builder.noMoreSources')}</Text>
           ) : (
             <View className="mt-2 gap-1">
               {available.map((option) => (
@@ -254,14 +254,14 @@ export function GoalAllocationsField({
                   accessibilityRole="button"
                   accessibilityLabel={option.name}
                   style={{ minHeight: TOUCH_TARGET }}
-                  className="flex-row items-center gap-3 rounded-sunk bg-sunk px-3.5 active:opacity-80"
+                  className="flex-row items-center gap-3 rounded-control bg-wash px-3.5 active:opacity-80"
                 >
                   <View className="flex-1">
-                    <Text className="text-[14px] font-medium text-ink" numberOfLines={1}>
+                    <Text className="t-body-sm font-medium text-ink" numberOfLines={1}>
                       {option.name}
                     </Text>
                     <Text
-                      className="mt-0.5 text-[11px] text-ink3"
+                      className="mt-0.5 t-caption-sm text-ink3"
                       style={{ fontVariant: ['tabular-nums'] }}
                     >
                       {formatAmount(option.balance)}

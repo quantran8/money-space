@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
+import { useCashflowForm } from '@money-space/core/features/cashflow/hooks/use-cashflow-form'
+import { CashflowEventFormDialog } from '@/features/cashflow/ui/components/cashflow-event-form-dialog'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
 import { useDashboardPage } from '@money-space/core/features/dashboard/hooks/use-dashboard-page'
 import {
@@ -52,6 +54,10 @@ export function DashboardPage() {
   const state = useDashboardPage({ sharedHolderLabel: t('home.location.sharedHolder') })
   // Before the early return — hooks cannot be called conditionally.
   const { cashflowEvents, completeCashflowEvent } = useCashflowEvents()
+  // Home shows the overdue card, so it needs the same ⋯ menu the timeline has:
+  // an overdue row is more often wrong (sai ngày, sai số) than simply unpaid,
+  // and sending the reader to /upcoming to fix it is a detour.
+  const cashflowForm = useCashflowForm()
   /**
    * The occurrence awaiting a wallet choice. Confirming MOVES MONEY, so it
    * cannot fire straight from the row — without a wallet the API has nothing
@@ -128,6 +134,8 @@ export function DashboardPage() {
               settlementAssetId: source.settlementAssetId,
             })
           }}
+          onEdit={cashflowForm.openEdit}
+          onDelete={cashflowForm.handleDelete}
         />
       ) : null}
 
@@ -180,6 +188,16 @@ export function DashboardPage() {
           }}
         />
       ) : null}
+
+      <CashflowEventFormDialog
+        open={cashflowForm.formOpen}
+        onOpenChange={cashflowForm.handleFormOpenChange}
+        form={cashflowForm.form}
+        isEditing={cashflowForm.isEditing}
+        editingId={cashflowForm.editingId}
+        isSubmitting={cashflowForm.isSubmitting}
+        onSubmit={cashflowForm.submit}
+      />
     </div>
   )
 }

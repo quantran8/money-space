@@ -85,11 +85,11 @@ function ToastHost({ toast, opacity }: { toast: ToastState; opacity: Animated.Va
       style={{ opacity, bottom: insets.bottom + 72 }}
       className="absolute left-4 right-4 z-50"
     >
-      <View className="rounded-panel bg-panel px-4 py-3.5">
+      <View className="rounded-card bg-card px-4 py-3.5">
         <Text
           accessibilityLiveRegion="polite"
-          className={`text-[14px] leading-5 ${
-            toast.tone === 'error' ? 'text-alert' : 'text-ink'
+          className={`t-body-sm leading-5 ${
+            toast.tone === 'error' ? 'text-alert-ink' : 'text-ink'
           }`}
         >
           {toast.message}

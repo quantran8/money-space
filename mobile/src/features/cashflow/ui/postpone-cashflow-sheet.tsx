@@ -79,7 +79,7 @@ export function PostponeCashflowSheet({
       }
     >
       <View className="gap-4">
-        <Text className="text-[14px] leading-5 text-ink">
+        <Text className="t-body-sm leading-5 text-ink">
           {t('upcoming.postpone.description', { name: eventName })}
         </Text>
 
@@ -100,12 +100,12 @@ export function PostponeCashflowSheet({
                 style={{ minHeight: TOUCH_TARGET - 8 }}
                 className={cn(
                   'justify-center rounded-full px-3.5',
-                  active ? 'bg-interactive' : 'bg-sunk',
+                  active ? 'bg-action' : 'bg-wash',
                 )}
               >
                 <Text
                   className={cn(
-                    'text-[12px] font-medium',
+                    't-caption font-medium',
                     active ? 'text-white' : 'text-ink2',
                   )}
                 >

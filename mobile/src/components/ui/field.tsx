@@ -36,7 +36,7 @@ export function Field({
 
   return (
     <View className={className}>
-      {label ? <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text> : null}
+      {label ? <Text className="mb-1.5 t-body-sm text-ink2">{label}</Text> : null}
 
       <TextInput
         {...props}
@@ -51,22 +51,22 @@ export function Field({
         placeholderTextColor={colors.ink3}
         style={[{ fontSize: 16 }, props.style]}
         className={cn(
-          'h-[46px] rounded-sunk border px-3.5 text-ink',
+          'h-[46px] rounded-control border px-3.5 text-ink',
           error
-            ? 'border-alert bg-panel'
+            ? 'border-alert-ink bg-card'
             : focused
-              ? 'border-interactive bg-panel'
+              ? 'border-action bg-card'
               : // A hairline at rest, not a transparent edge. The sunk fill
                 // alone is the same tone as the informational blocks around it,
                 // so a field read as another panel rather than as something you
                 // can type into. §2 allows the stroke here for exactly this:
                 // the relation stopped being readable from surface alone.
-                'border-hair bg-sunk',
+                'border-divider bg-wash',
         )}
       />
 
-      {hint && !error ? <Text className="mt-1.5 text-[12px] text-ink3">{hint}</Text> : null}
-      {error ? <Text className="mt-1.5 text-[12px] text-alert">{error}</Text> : null}
+      {hint && !error ? <Text className="mt-1.5 t-caption text-ink3">{hint}</Text> : null}
+      {error ? <Text className="mt-1.5 t-caption text-alert-ink">{error}</Text> : null}
     </View>
   )
 }

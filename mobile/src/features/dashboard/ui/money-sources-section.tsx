@@ -69,7 +69,7 @@ export function MoneySourcesSection({
               style={{ minHeight: TOUCH_TARGET }}
               className="justify-center active:opacity-70"
             >
-              <Text className="text-[14px] font-medium text-interactive">
+              <Text className="t-body-sm font-medium text-action">
                 {t('home.location.viewAll', { count: map.totalCount })}
               </Text>
             </Pressable>
@@ -85,7 +85,7 @@ export function MoneySourcesSection({
               as a proportion and the household still needs the figure. */}
           <View className="mt-5">
             <Label>{t('home.location.totalValue')}</Label>
-            <Money className="mt-1.5" size={28}>
+            <Money className="mt-1.5" step="metric">
               {formatVndScale(map.total)}
             </Money>
           </View>
@@ -102,7 +102,7 @@ export function MoneySourcesSection({
           </View>
 
           {map.hiddenCount > 0 ? (
-            <Text className="mt-4 text-[12px] leading-5 text-ink3">
+            <Text className="mt-4 t-caption leading-5 text-ink3">
               {t('home.location.hidden', { count: map.hiddenCount })}
             </Text>
           ) : null}
@@ -140,18 +140,18 @@ function SourceBar({
     >
       <View className="flex-row items-baseline gap-3">
         <View className="flex-1">
-          <Text className="text-[14px] text-ink" numberOfLines={1}>
+          <Text className="t-body-sm text-ink" numberOfLines={1}>
             {bar.name}
           </Text>
           {bar.holder ? (
-            <Text className="mt-0.5 text-[11px] text-ink3" numberOfLines={1}>
+            <Text className="mt-0.5 t-caption-sm text-ink3" numberOfLines={1}>
               {bar.holder}
             </Text>
           ) : null}
         </View>
 
         <Text
-          className="text-[14px] font-medium text-ink"
+          className="t-body-sm font-medium text-ink"
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {formatVndScale(bar.value)}

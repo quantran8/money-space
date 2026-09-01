@@ -69,21 +69,27 @@ export function MoneyCompositionRing({
   const total = weights.reduce((sum, weight) => sum + weight, 0)
 
   /**
-   * Falls back to equal shares when everything is zero, so the ring never
-   * renders as an empty disc.
-   *
+   * Nothing to divide: there is no composition of zero money, so the ring draws
+   * as ONE empty track rather than as equal shares. Splitting it evenly stated a
+   * 50/50 ratio the household does not have — a made-up figure is worse than an
+   * obviously empty gauge, and the legend still carries the real zeroes.
+   */
+  const isEmpty = total <= 0
+
+  /**
    * `minPointSize` has no Pie equivalent, so a share too small to draw is
    * floored here instead: below this the arc collapses to nothing and the
    * segment disappears, and a household whose flexible money has run down to
    * almost nothing is exactly who needs to see that it is still there (§11.4).
    */
-  const data = segments.map((segment, index) => ({
-    ...segment,
-    value:
-      total > 0 ? Math.max(weights[index] / total, MIN_SHARE) : 1 / segments.length,
-    // Per-datum fill rather than <Cell>, which recharts 3 deprecates.
-    fill: FILL[segment.tone],
-  }))
+  const data = isEmpty
+    ? [{ key: 'empty', value: 1, fill: 'var(--committed)' }]
+    : segments.map((segment, index) => ({
+        ...segment,
+        value: Math.max(weights[index] / total, MIN_SHARE),
+        // Per-datum fill rather than <Cell>, which recharts 3 deprecates.
+        fill: FILL[segment.tone],
+      }))
 
   const headline = segments.find((segment) => segment.tone === 'flexible') ?? segments[0]
 
@@ -119,8 +125,10 @@ export function MoneyCompositionRing({
               /* The gap and the rounded caps: each share reads as its own
                  token rather than as a slice of a divided disc, which is what
                  keeps this a composition and not a pie. */
-              paddingAngle={2}
-              cornerRadius={6}
+              /* A single empty track has no neighbours to separate, and a 2°
+                 gap on a lone full-circle arc reads as a broken ring. */
+              paddingAngle={isEmpty ? 0 : 2}
+              cornerRadius={isEmpty ? 0 : 6}
               stroke="none"
               isAnimationActive={false}
             />

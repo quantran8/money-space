@@ -15,5 +15,8 @@
     "mobile:typecheck": "pnpm --filter money-space-mobile typecheck",
     "mobile:lint": "pnpm --filter money-space-mobile lint",
     "verify": "pnpm build && pnpm lint && pnpm mobile:typecheck && pnpm mobile:lint"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
   }
 }

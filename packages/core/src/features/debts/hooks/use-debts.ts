@@ -23,6 +23,11 @@ export function useDebts() {
       // An effective-from-now / disbursement / reconcile update logs a money
       // event, so the events timeline (and the debt detail history) must refetch.
       queryKeys.events(activeHouseholdId),
+      // A debt write rewrites its own repayment schedule — deleting a debt drops
+      // its cashflow events entirely — so the scheduled-payment lists the debts
+      // page reads must drop too. Prefix key: it covers every filtered variant.
+      queryKeys.cashflowEvents(activeHouseholdId),
+      queryKeys.attentionItems(activeHouseholdId),
       // A debt write moves the repayment schedule, which the forecast and the
       // flexible-money figure are computed from. One prefix key covers every
       // horizon and all three readings — they share a cache entry.

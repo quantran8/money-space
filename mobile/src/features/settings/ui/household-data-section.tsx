@@ -40,8 +40,8 @@ export function HouseholdDataSection({
       <PanelHeader title={t('household.merged.householdData')} />
 
       <View className="mt-4">
-        <Text className="text-[14px] font-medium text-ink">{t('settings.data.delete')}</Text>
-        <Text className="mt-1.5 text-[14px] leading-5 text-ink2">{consequence}</Text>
+        <Text className="t-body-sm font-medium text-ink">{t('settings.data.delete')}</Text>
+        <Text className="mt-1.5 t-body-sm leading-5 text-ink2">{consequence}</Text>
         <Button className="-ml-2 mt-1 self-start px-2" variant="destructive" onPress={onDelete}>
           {t('settings.data.deleteAction')}
         </Button>

@@ -33,6 +33,8 @@ export type CashflowEventFormSheetProps = {
   /** From core's `useCashflowForm`. Never a form built here. */
   form: UseFormReturn<CashflowEventForm>
   isEditing: boolean
+  /** The event being edited, so its own amount is not double-counted. */
+  editingId?: string | null
   isSubmitting: boolean
   onSubmit: () => void
   /** Offered as a destructive action while editing. Omit to hide it. */
@@ -68,6 +70,7 @@ export function CashflowEventFormSheet({
   onOpenChange,
   form,
   isEditing,
+  editingId,
   isSubmitting,
   onSubmit,
   onDelete,
@@ -82,6 +85,7 @@ export function CashflowEventFormSheet({
   const certainty = useWatch({ control, name: 'certainty' })
   const settlementAssetId = useWatch({ control, name: 'settlementAssetId' })
   const amount = useWatch({ control, name: 'amount' })
+  const expectedDate = useWatch({ control, name: 'expectedDate' })
 
   const { assets, asOf } = useAssets()
   const walletOptions = settlementWalletOptions(assets, asOf || AS_OF, (params) =>
@@ -124,7 +128,7 @@ export function CashflowEventFormSheet({
           )}
         />
         {walletMissing ? <CaveatNote>{t('upcoming.form.walletDeleted')}</CaveatNote> : null}
-        <Text className="text-[12px] leading-4 text-ink3">
+        <Text className="t-caption leading-4 text-ink3">
           {t(isOutgoing ? 'upcoming.form.walletHintOut' : 'upcoming.form.walletHintIn')}
         </Text>
       </View>
@@ -231,17 +235,6 @@ export function CashflowEventFormSheet({
             impact below cannot be worked out without it. */}
         {isOutgoing ? walletSection : null}
 
-        {/* What this outflow takes from the goals saving into that wallet.
-            Computed locally in core, so it appears as the amount is typed — the
-            household sees the trade BEFORE saving, not on the goal screen
-            afterwards. Renders nothing when no goal is affected. */}
-        {isOutgoing ? (
-          <GoalImpactNotice
-            assetId={settlementAssetId || undefined}
-            amount={cashflowAmountToVnd(amount)}
-          />
-        ) : null}
-
         <Disclosure
           open={detailsOpen}
           onToggle={() => setDetailsOpen((value) => !value)}
@@ -302,7 +295,7 @@ export function CashflowEventFormSheet({
             {/* `estimated` incoming is displayed but never banked. Say so where
                 the choice is made, not only on the timeline afterwards. */}
             {!isOutgoing && certainty === 'estimated' ? (
-              <Text className="mt-1.5 text-[12px] leading-4 text-ink3">
+              <Text className="mt-1.5 t-caption leading-4 text-ink3">
                 {t('upcoming.form.estimatedIncomingHint')}
               </Text>
             ) : null}
@@ -330,6 +323,20 @@ export function CashflowEventFormSheet({
             )}
           />
         </Disclosure>
+
+        {/* What this outflow costs the goals on that wallet, and what it leaves
+            for the bills after it. Below the details fold: it is the only block
+            here that REPORTS rather than asks, and it moves on every keystroke,
+            so sitting among the inputs made it read as one more field. `Sunk`
+            gives it its own surface. Renders nothing when no goal is affected. */}
+        {isOutgoing ? (
+          <GoalImpactNotice
+            assetId={settlementAssetId || undefined}
+            amount={cashflowAmountToVnd(amount)}
+            excludeEventId={editingId ?? undefined}
+            expectedDate={expectedDate}
+          />
+        ) : null}
       </View>
     </BottomSheet>
   )

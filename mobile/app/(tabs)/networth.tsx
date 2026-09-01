@@ -124,6 +124,7 @@ export default function NetWorthScreen() {
             members={members}
             isLoading={isLoading}
             asOf={asOf || AS_OF}
+            total={total}
             query={query}
             onQueryChange={setQuery}
             liquidityFilter={liquidityFilter}

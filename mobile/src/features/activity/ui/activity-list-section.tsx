@@ -45,9 +45,9 @@ export function ActivityListSection({
     return (
       <Panel>
         <View className="gap-2">
-          <Skeleton height={44} className="rounded-sunk" />
-          <Skeleton height={44} className="rounded-sunk" />
-          <Skeleton height={44} className="rounded-sunk" />
+          <Skeleton height={44} className="rounded-control" />
+          <Skeleton height={44} className="rounded-control" />
+          <Skeleton height={44} className="rounded-control" />
         </View>
       </Panel>
     )
@@ -87,16 +87,16 @@ function ActivityRow({ entry }: { entry: ActivityEntry }) {
     <View className="flex-row items-start gap-3 py-2.5">
       {/* Initials, or "••" when the system did it. Core strips the diacritics,
           so this cell is ASCII by construction and the mono face is safe. */}
-      <Text className="w-6 pt-0.5 font-mono text-[11px] text-ink3">{actorInitials(entry)}</Text>
+      <Text className="w-6 pt-0.5 font-mono t-caption-sm text-ink3">{actorInitials(entry)}</Text>
 
       <View className="min-w-0 flex-1">
-        <Text className="text-[14px] leading-5 text-ink">{describeEntry(entry, t)}</Text>
-        {impact ? <Text className="mt-0.5 text-[12px] leading-4 text-ink3">{impact}</Text> : null}
+        <Text className="t-body-sm leading-5 text-ink">{describeEntry(entry, t)}</Text>
+        {impact ? <Text className="mt-0.5 t-caption leading-4 text-ink3">{impact}</Text> : null}
       </View>
 
       {entry.amount === null ? null : (
         <Text
-          className="pt-0.5 text-[14px] text-ink2"
+          className="pt-0.5 t-body-sm text-ink2"
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {formatVndScale(entry.amount)}

@@ -31,6 +31,12 @@ export type MarketQuote = {
   priceTime: string
   /** Upstream that supplied it, e.g. `vnstock`, `coinmarketcap`, `btmc`. */
   source: string
+  /**
+   * Gold only: the same quote in every unit it can be held in, keyed by unit
+   * (`chỉ`, `lượng`, `gram`). Switching the form's unit reads across this map —
+   * one request covers all three, and nothing here rescales a price.
+   */
+  unitPrices?: Record<string, number>
 }
 
 type SearchSymbolsResponse = {

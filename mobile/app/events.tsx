@@ -14,6 +14,7 @@ import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
 import { EventFormSheet } from '@/features/events/ui/event-form-sheet'
 import { EventsSummaryPanel } from '@/features/events/ui/events-summary-panel'
 import { EventsTimelineSection } from '@/features/events/ui/events-timeline-section'
+import { MonthScope } from '@/features/events/ui/month-scope'
 
 /**
  * `/events` — Sự kiện tài chính, the ledger of money that has ALREADY moved.
@@ -119,15 +120,17 @@ export default function EventsScreen() {
             no stack behind it, and the system gesture is invisible (§9). */}
         <BackLink label={t('nav.household')} onPress={() => navigate('/household')} />
 
-        <EventsSummaryPanel summary={periodSummary} month={selectedMonth} />
+        {/* The scope sits above every figure it governs: a month control below
+            the totals leaves the summary's month implied (§34). */}
+        <MonthScope month={selectedMonth} onChange={setSelectedMonth} />
+
+        <EventsSummaryPanel summary={periodSummary} />
 
         <EventsTimelineSection
           tab={tab}
           onTabChange={setTab}
           groupedRecords={groupedRecords}
           memberOptions={memberOptions}
-          selectedMonth={selectedMonth}
-          onMonthChange={setSelectedMonth}
           selectedMember={selectedMember}
           onMemberChange={setSelectedMember}
           isLoading={isLoading}

@@ -20,7 +20,7 @@ export default function SignupScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-app"
+      className="flex-1 bg-canvas"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
@@ -28,12 +28,12 @@ export default function SignupScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View className="px-5">
-          <Text className="text-[19px] font-medium text-ink">{t('auth.signup.title')}</Text>
-          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
+          <Text className="t-subtitle text-ink">{t('auth.signup.title')}</Text>
+          <Text className="mt-1.5 t-body-sm leading-5 text-ink2">
             {t('auth.signup.description')}
           </Text>
 
-          <View className="mt-6 rounded-panel bg-panel p-5">
+          <View className="mt-6 rounded-card bg-card p-5">
             <Controller
               control={control}
               name="fullName"
@@ -132,8 +132,8 @@ export default function SignupScreen() {
           </View>
 
           <View className="mt-4 flex-row items-center justify-center gap-1">
-            <Text className="text-[14px] text-ink2">{t('auth.signup.haveAccount')}</Text>
-            <Link href="/auth" className="text-[14px] font-medium text-interactive">
+            <Text className="t-body-sm text-ink2">{t('auth.signup.haveAccount')}</Text>
+            <Link href="/auth" className="t-body-sm font-medium text-action">
               {t('auth.tabs.login')}
             </Link>
           </View>

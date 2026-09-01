@@ -43,15 +43,15 @@ export function GroupedRow({
 }) {
   const tone = {
     default: 'text-ink',
-    attention: 'text-attention',
-    alert: 'text-alert',
+    attention: 'text-attention-ink',
+    alert: 'text-alert-ink',
     muted: 'text-ink2',
   }[valueTone]
 
   const body = (
     <View className="flex-row items-center gap-3">
       <View className="flex-1">
-        <Text className="text-[14px] leading-5 text-ink" numberOfLines={2}>
+        <Text className="t-body-sm leading-5 text-ink" numberOfLines={2}>
           {title}
         </Text>
         {meta ? <View className="mt-0.5">{meta}</View> : null}
@@ -60,14 +60,14 @@ export function GroupedRow({
       {value ? (
         <View className="items-end">
           <Text
-            className={cn('text-[14px] font-medium', tone)}
+            className={cn('t-body-sm font-medium', tone)}
             style={{ fontVariant: ['tabular-nums'] }}
           >
             {value}
           </Text>
           {valueMeta ? (
             <Text
-              className="mt-0.5 text-[11px] text-ink3"
+              className="mt-0.5 t-caption-sm text-ink3"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {valueMeta}
@@ -91,7 +91,7 @@ export function GroupedRow({
       style={{ minHeight: TOUCH_TARGET }}
       // An interactive row highlights on the sunk surface — the same band a
       // table row uses on the web.
-      className={cn('justify-center rounded-control py-2.5 active:bg-sunk', className)}
+      className={cn('justify-center rounded-control py-2.5 active:bg-wash', className)}
     >
       {body}
     </Pressable>
@@ -103,10 +103,10 @@ export function GroupedRow({
  * mono face never touches accented Vietnamese (§5, hard constraint).
  */
 export function RowMetaMono({ children }: { children: string }) {
-  return <Text className="font-mono text-[11px] text-ink3">{children}</Text>
+  return <Text className="font-mono t-caption-sm text-ink3">{children}</Text>
 }
 
 /** Metadata that contains Vietnamese. Sans face, same size and weight. */
 export function RowMeta({ children }: { children: ReactNode }) {
-  return <Text className="text-[11px] text-ink3">{children}</Text>
+  return <Text className="t-caption-sm text-ink3">{children}</Text>
 }

@@ -38,8 +38,8 @@ export function Switch({
       className={cn('flex-row items-center gap-3', className)}
     >
       <View className="flex-1">
-        <Text className="text-[14px] font-medium text-ink">{label}</Text>
-        {hint ? <Text className="mt-0.5 text-[12px] leading-4 text-ink3">{hint}</Text> : null}
+        <Text className="t-body-sm font-medium text-ink">{label}</Text>
+        {hint ? <Text className="mt-0.5 t-caption leading-4 text-ink3">{hint}</Text> : null}
       </View>
 
       {/* The track steps up a surface when on and takes the interactive
@@ -47,11 +47,11 @@ export function Switch({
       <View
         className={cn(
           'h-[26px] w-[44px] justify-center rounded-full px-[3px]',
-          value ? 'bg-interactive' : 'bg-committed',
+          value ? 'bg-action' : 'bg-committed',
         )}
       >
         <View
-          className={cn('h-5 w-5 rounded-full bg-panel', value ? 'self-end' : 'self-start')}
+          className={cn('h-5 w-5 rounded-full bg-card', value ? 'self-end' : 'self-start')}
         />
       </View>
     </Pressable>

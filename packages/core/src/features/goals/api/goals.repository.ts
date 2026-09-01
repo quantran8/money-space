@@ -296,6 +296,15 @@ export type AssetGoalUsage = {
   assetId: string
   assetValue: number
   /**
+   * The wallet once money already scheduled to leave it is out.
+   *
+   * Beside `assetValue`, never instead of it. The asset page asks "what is in
+   * this wallet" and wants the real balance — an unpaid bill has not left. The
+   * cashflow form asks "what can a NEW spend draw on", and there a booked bill
+   * is already spoken for, so this is the figure its impact is measured against.
+   */
+  pendingValue: number
+  /**
    * Money SET ASIDE against it — the same sum the write path enforces.
    *
    * Excludes the monthly paces on purpose: a pace does not stop a new
@@ -329,9 +338,27 @@ export type AssetGoalUsage = {
  * Served by the goals module even though the path is under assets — the answer
  * needs goals, and the module edge only runs one way.
  */
-export function getAssetGoalUsage(householdId: string, assetId: string) {
+export function getAssetGoalUsage(
+  householdId: string,
+  assetId: string,
+  /**
+   * The event being edited, left out of `pendingValue`. That event is already
+   * booked against the wallet, so costing an edit without excluding it would
+   * charge its amount twice.
+   */
+  excludeEventId?: string,
+  /**
+   * The spend's own date. Only outflows on or before it count against it — a
+   * bill next month cannot take money from a spend happening today.
+   */
+  asOfDate?: string,
+) {
+  const params = new URLSearchParams()
+  if (excludeEventId) params.set('excludeEventId', excludeEventId)
+  if (asOfDate) params.set('asOfDate', asOfDate)
+  const query = params.size > 0 ? `?${params}` : ''
   return apiRequest<AssetGoalUsage>(
-    `/households/${householdId}/assets/${assetId}/goal-usage`,
+    `/households/${householdId}/assets/${assetId}/goal-usage${query}`,
   )
 }
 
@@ -397,7 +424,7 @@ export function getSpendImpact(
  */
 export type ScheduledOutflowImpact = {
   goalId: string
-  /** Last day covered — the end of the current month. */
+  /** Last day covered — 30 days out from today. */
   throughDate: string
   events: {
     id: string

@@ -282,7 +282,6 @@ export function NetWorthPage() {
         setShowMoreDetails={debtsPage.setShowMoreDetails}
         receiveAssetOptions={debtsPage.receiveAssetOptions}
         memberOptions={debtsPage.memberOptions}
-        repaymentEstimate={debtsPage.repaymentEstimate}
         termMonths={debtsPage.termMonths}
         onSubmit={debtsPage.submit}
         pasteAmountFromClipboard={debtsPage.pasteAmountFromClipboard}
