@@ -7,6 +7,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
 
 import { MetricCell, Panel, PanelHeader, ProgressBar } from '@/components/ui'
 import { colors, TOUCH_TARGET } from '@/theme/tokens'
+import { GoalPriorityMark } from '@/features/goals/ui/goal-priority-mark'
 
 /**
  * Home section 3 — Mục tiêu chính (§12.3).
@@ -55,7 +56,7 @@ export function GoalsSection({
             style={{ minHeight: TOUCH_TARGET }}
             className="justify-center active:opacity-70"
           >
-            <Text className="text-[14px] font-medium text-interactive">
+            <Text className="t-body-sm font-medium text-action">
               {goalCount > tracks.length
                 ? t('home.goals.viewAll', { count: goalCount })
                 : t('home.goals.details')}
@@ -87,7 +88,7 @@ export function GoalsSection({
             className="h-3 w-0.5 rounded-full"
             style={{ backgroundColor: colors.ink }}
           />
-          <Text className="flex-1 text-[12px] leading-4 text-ink3">
+          <Text className="flex-1 t-caption leading-4 text-ink3">
             {t('home.goals.milestoneLegend')}
           </Text>
         </View>
@@ -112,14 +113,16 @@ function GoalTrackRow({ track, onPress }: { track: GoalTrack; onPress: () => voi
       accessibilityRole="button"
       accessibilityLabel={track.name}
       style={{ minHeight: TOUCH_TARGET }}
-      className="rounded-sunk px-3 py-3 active:bg-sunk"
+      className="rounded-control px-3 py-3 active:bg-wash"
     >
       <View className="flex-row items-center gap-2">
-        <Text className="flex-1 text-[14px] font-medium text-ink" numberOfLines={1}>
+        {/* Same mark as the goals list — one concept, one look (§2.10). */}
+        <GoalPriorityMark priority={track.priority} size="compact" />
+        <Text className="flex-1 t-body-sm font-medium text-ink" numberOfLines={1}>
           {track.name}
         </Text>
         {track.isMain ? (
-          <Text className="shrink-0 rounded-full bg-interactive-soft px-2 py-0.5 text-[10px] font-medium text-interactive">
+          <Text className="shrink-0 rounded-full bg-action-soft px-2 py-0.5 t-caption-sm font-medium text-action">
             {t('home.goals.mainBadge')}
           </Text>
         ) : null}
@@ -127,15 +130,15 @@ function GoalTrackRow({ track, onPress }: { track: GoalTrack; onPress: () => voi
 
       <View className="mt-1.5 flex-row items-baseline gap-2">
         <Text
-          className="flex-1 text-[12px] text-ink2"
+          className="flex-1 t-caption text-ink2"
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {formatVndScale(track.current)} / {formatVndScale(track.target)}
         </Text>
         <Text
           className={cn(
-            'font-mono text-[11px]',
-            track.behind ? 'text-attention' : 'text-ink3',
+            'font-mono t-caption-sm',
+            track.behind ? 'text-attention-ink' : 'text-ink3',
           )}
         >
           {percentLabel}
@@ -147,7 +150,7 @@ function GoalTrackRow({ track, onPress }: { track: GoalTrack; onPress: () => voi
       <View className="mt-2 justify-center" style={{ height: 12 }}>
         <ProgressBar
           percent={track.percent}
-          tone={track.behind ? 'attention' : 'interactive'}
+          tone={track.behind ? 'attention' : 'data'}
           label={
             track.requiredPercent === undefined
               ? t('home.goals.trackAria', { percent: track.percent })

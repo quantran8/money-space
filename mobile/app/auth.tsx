@@ -28,7 +28,7 @@ export default function AuthScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-app"
+      className="flex-1 bg-canvas"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
@@ -36,12 +36,12 @@ export default function AuthScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View className="px-5">
-          <Text className="text-[19px] font-medium text-ink">{t('auth.login.title')}</Text>
-          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
+          <Text className="t-subtitle text-ink">{t('auth.login.title')}</Text>
+          <Text className="mt-1.5 t-body-sm leading-5 text-ink2">
             {t('auth.login.description')}
           </Text>
 
-          <View className="mt-6 rounded-panel bg-panel p-5">
+          <View className="mt-6 rounded-card bg-card p-5">
             <Controller
               control={control}
               name="email"
@@ -85,8 +85,8 @@ export default function AuthScreen() {
           </View>
 
           <View className="mt-4 flex-row items-center justify-center gap-1">
-            <Text className="text-[14px] text-ink2">{t('auth.login.noAccount')}</Text>
-            <Link href="/signup" className="text-[14px] font-medium text-interactive">
+            <Text className="t-body-sm text-ink2">{t('auth.login.noAccount')}</Text>
+            <Link href="/signup" className="t-body-sm font-medium text-action">
               {t('auth.tabs.signup')}
             </Link>
           </View>

@@ -54,29 +54,29 @@ export function InviteQrSheet({
         <Button onPress={onClose}>{t('common.done')}</Button>
       }
     >
-      <View className="items-center gap-4 rounded-sunk bg-sunk px-4 py-6">
+      <View className="items-center gap-4 rounded-control bg-wash px-4 py-6">
         {joinUrl ? (
           <QrCode value={joinUrl} accessibilityLabel={t('invites.qr.imageAlt')} />
         ) : (
-          <Skeleton height={256} className="w-[256px] rounded-sunk" />
+          <Skeleton height={256} className="w-[256px] rounded-control" />
         )}
 
         {/* Only speaks up when there is something to say: a failure, or the
             wait while the code is minted. The steady state is the code. */}
         {error || isPreparing ? (
           <Text
-            className={`max-w-[280px] text-center text-[12px] leading-5 ${error ? 'text-alert' : 'text-ink2'}`}
+            className={`max-w-[280px] text-center t-caption leading-5 ${error ? 'text-alert-ink' : 'text-ink2'}`}
           >
             {error ?? t('invites.qr.preparing')}
           </Text>
         ) : null}
       </View>
 
-      <Text className="mt-5 text-[14px] text-ink2">{t('invites.qr.linkLabel')}</Text>
+      <Text className="mt-5 t-body-sm text-ink2">{t('invites.qr.linkLabel')}</Text>
 
-      <View className="mt-2 rounded-sunk bg-sunk px-3.5 py-3">
+      <View className="mt-2 rounded-control bg-wash px-3.5 py-3">
         {joinUrl ? (
-          <Text selectable className="font-mono text-[11px] leading-5 text-ink2">
+          <Text selectable className="font-mono t-caption-sm leading-5 text-ink2">
             {joinUrl}
           </Text>
         ) : (
@@ -92,7 +92,7 @@ export function InviteQrSheet({
       </View>
 
       {invite ? (
-        <Text className="mt-3 text-[11px] leading-5 text-ink3">
+        <Text className="mt-3 t-caption-sm leading-5 text-ink3">
           {t('invites.qr.expiresOn', { date: formatExpiry(invite.expiresAt) })}
         </Text>
       ) : null}

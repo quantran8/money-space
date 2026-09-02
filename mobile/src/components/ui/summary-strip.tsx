@@ -24,22 +24,22 @@ export function SummaryStrip({
       {items.map((item) => {
         const tone = {
           default: 'text-ink',
-          attention: 'text-attention',
-          alert: 'text-alert',
+          attention: 'text-attention-ink',
+          alert: 'text-alert-ink',
         }[item.tone ?? 'default']
 
         return (
           <View
             key={item.key}
             // Half the row minus the gap; a third tile wraps below.
-            className="min-w-[47%] flex-1 rounded-sunk bg-sunk p-3.5"
+            className="min-w-[47%] flex-1 rounded-control bg-wash p-3.5"
           >
-            <Text className="text-[12px] text-ink2" numberOfLines={1}>
+            <Text className="t-caption text-ink2" numberOfLines={1}>
               {item.label}
             </Text>
             <Text
-              className={cn('mt-1 text-[18px] font-medium', tone)}
-              style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.54 }}
+              className={cn('mt-1 t-subtitle', tone)}
+              style={{ fontVariant: ['tabular-nums'] }}
             >
               {item.value}
             </Text>

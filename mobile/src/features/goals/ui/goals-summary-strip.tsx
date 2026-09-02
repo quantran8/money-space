@@ -41,15 +41,15 @@ export function GoalsSummaryStrip({
     <Panel>
       <PanelHeader
         title={t('goals.demo.overview')}
-        right={<Text className="text-[12px] text-ink3">{t('goals.countLabel', { count })}</Text>}
+        right={<Text className="t-caption text-ink3">{t('goals.countLabel', { count })}</Text>}
       />
 
       <View className="mt-6">
         <Label>{t('goals.demo.saved')}</Label>
-        <Money className="mt-2" size={34}>
+        <Money className="mt-2" step="metric">
           {formatAmount(stats.saved)}
         </Money>
-        <Text className="mt-2 text-[12px] leading-5 text-ink2">
+        <Text className="mt-2 t-caption leading-5 text-ink2">
           {t('goals.demo.savedNote', { target: formatAmount(stats.target) })}
         </Text>
       </View>
@@ -73,7 +73,7 @@ export function GoalsSummaryStrip({
       {/* One caveat line, not two notes under two tiles: a household with no
           declared pace needs to be told that once, and the second tile's
           "tính từ mục tiêu có ngày mong muốn" is scope the first note covers. */}
-      <Text className="mt-3 text-[11px] leading-4 text-ink3">
+      <Text className="mt-3 t-caption-sm leading-4 text-ink3">
         {plannedMonthly > 0
           ? t('goals.demo.monthlyPlanNote')
           : t('goals.demo.noMonthlyPlan')}

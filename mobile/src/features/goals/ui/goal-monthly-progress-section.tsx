@@ -78,7 +78,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
         right={
           plannedRate != null ? (
             <Text
-              className="text-[12px] text-ink3"
+              className="t-caption text-ink3"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {t('goals.monthly.rateMeta', { amount: formatAmount(plannedRate) })}
@@ -97,18 +97,18 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
 
       {isLoading ? (
         <View className="mt-5 gap-2">
-          <Skeleton height={92} className="rounded-sunk" />
-          <Skeleton height={44} className="rounded-sunk" />
+          <Skeleton height={92} className="rounded-control" />
+          <Skeleton height={44} className="rounded-control" />
         </View>
       ) : rows.length === 0 ? (
         <Sunk className="mt-5">
-          <Text className="text-[14px] leading-5 text-ink2">{t('goals.monthly.empty')}</Text>
+          <Text className="t-body-sm leading-5 text-ink2">{t('goals.monthly.empty')}</Text>
         </Sunk>
       ) : (
         <>
           {running ? <RunningMonthCard month={running} /> : null}
 
-          <Text className="mt-6 text-[14px] font-medium text-ink">
+          <Text className="mt-6 t-body-sm font-medium text-ink">
             {t('goals.monthly.historyTitle')}
           </Text>
 
@@ -117,7 +117,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
             // A heading over an empty body would promise a record that does not
             // exist yet.
             <Sunk className="mt-3">
-              <Text className="text-[14px] text-ink2">{t('goals.monthly.historyEmpty')}</Text>
+              <Text className="t-body-sm text-ink2">{t('goals.monthly.historyEmpty')}</Text>
             </Sunk>
           ) : (
             <View className="mt-2">
@@ -129,7 +129,7 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
 
           {/* Assets repricing is not the household saving. Said once, under the
               rows it qualifies. */}
-          <Text className="mt-4 text-[11px] leading-4 text-ink3">
+          <Text className="mt-4 t-caption-sm leading-4 text-ink3">
             {t('goals.monthly.marketNote')}
           </Text>
         </>
@@ -161,14 +161,14 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
           {/* "Có thể góp", not "đã góp", when the figure is the HEADROOM
               estimate: what the wallets could still put in, not money observed
               moving. A month that has not ended cannot be reported as kept. */}
-          <Text className="text-[11px] text-ink3">
+          <Text className="t-caption-sm text-ink3">
             {month.isEstimate
               ? t('goals.monthly.couldContribute')
               : t('goals.monthly.contributed')}
           </Text>
           <Text
-            className="mt-1 text-[28px] font-medium text-ink"
-            style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.84 }}
+            className="mt-1 t-metric text-ink"
+            style={{ fontVariant: ['tabular-nums'] }}
           >
             {formatAmount(actual)}
           </Text>
@@ -176,9 +176,9 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
 
         {planned != null ? (
           <View className="items-end">
-            <Text className="text-[11px] text-ink3">{t('goals.monthly.monthlyRate')}</Text>
+            <Text className="t-caption-sm text-ink3">{t('goals.monthly.monthlyRate')}</Text>
             <Text
-              className="mt-1 text-[14px] font-medium text-ink"
+              className="mt-1 t-body-sm font-medium text-ink"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {formatAmount(planned)}
@@ -199,7 +199,7 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
         />
       ) : null}
 
-      <Text className="mt-3 text-[12px] leading-5 text-ink2">
+      <Text className="mt-3 t-caption leading-5 text-ink2">
         {left === null
           ? t('goals.monthly.noRate')
           : month.isEstimate
@@ -242,7 +242,7 @@ function ClosedMonthRow({ month }: { month: GoalMonthProgress }) {
           undefined
         ) : short ? (
           <RowMeta>
-            <Text className="text-attention">
+            <Text className="text-attention-ink">
               {t('goals.monthly.short', { amount: formatAmount(Math.abs(gap)) })}
             </Text>
           </RowMeta>

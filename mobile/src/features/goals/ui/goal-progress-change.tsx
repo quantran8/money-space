@@ -47,14 +47,14 @@ export function GoalProgressChange({ goalId }: { goalId: string }) {
     .join(', ')
 
   return (
-    <Text className="mt-3 text-[12px] leading-5 text-ink2">
+    <Text className="mt-3 t-caption leading-5 text-ink2">
       {t('goals.detail.change.line', {
         since,
         previous: formatAmount(change.previousAmount),
         current: formatAmount(change.currentAmount),
       })}
       {reasons ? (
-        <Text className={fell ? 'text-attention' : 'text-ink2'}> · {reasons}</Text>
+        <Text className={fell ? 'text-attention-ink' : 'text-ink2'}> · {reasons}</Text>
       ) : null}
     </Text>
   )

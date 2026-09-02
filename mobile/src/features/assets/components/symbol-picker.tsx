@@ -59,7 +59,7 @@ export function SymbolPicker({
 
   return (
     <View className={className}>
-      <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text>
+      <Text className="mb-1.5 t-body-sm text-ink2">{label}</Text>
 
       <Pressable
         onPress={() => {
@@ -71,17 +71,17 @@ export function SymbolPicker({
         accessibilityValue={{ text: value }}
         style={{ minHeight: TOUCH_TARGET }}
         className={cn(
-          'flex-row items-center justify-between gap-2 rounded-sunk border px-3.5',
-          error ? 'border-alert bg-panel' : 'border-transparent bg-sunk',
+          'flex-row items-center justify-between gap-2 rounded-control border px-3.5',
+          error ? 'border-alert-ink bg-card' : 'border-transparent bg-wash',
         )}
       >
-        <Text className={cn('flex-1 text-[16px]', value ? 'text-ink' : 'text-ink3')} numberOfLines={1}>
+        <Text className={cn('flex-1 t-body', value ? 'text-ink' : 'text-ink3')} numberOfLines={1}>
           {value || placeholder || ''}
         </Text>
         <ChevronDown size={16} color={colors.ink3} strokeWidth={1.75} />
       </Pressable>
 
-      {error ? <Text className="mt-1.5 text-[12px] text-alert">{error}</Text> : null}
+      {error ? <Text className="mt-1.5 t-caption text-alert-ink">{error}</Text> : null}
 
       <BottomSheet open={open} onClose={() => setOpen(false)} title={label}>
         <Field
@@ -100,7 +100,7 @@ export function SymbolPicker({
               ))}
             </View>
           ) : symbols.length === 0 ? (
-            <Text className="px-1 py-6 text-center text-[14px] text-ink2">
+            <Text className="px-1 py-6 text-center t-body-sm text-ink2">
               {t('assets.form.symbolNoResults')}
             </Text>
           ) : (
@@ -111,14 +111,14 @@ export function SymbolPicker({
                 accessibilityRole="button"
                 accessibilityState={{ selected: item.symbol === value }}
                 style={{ minHeight: TOUCH_TARGET }}
-                className="flex-row items-center justify-between gap-3 rounded-control px-1 py-1.5 active:bg-sunk"
+                className="flex-row items-center justify-between gap-3 rounded-control px-1 py-1.5 active:bg-wash"
               >
                 <View className="flex-1">
-                  <Text className="text-[15px] text-ink">{item.symbol}</Text>
+                  <Text className="t-body text-ink">{item.symbol}</Text>
                   {/* An instrument name can be Vietnamese ("Vàng miếng SJC"),
                       so this line is the sans face, never mono. */}
                   {item.name ? (
-                    <Text className="mt-0.5 text-[12px] text-ink3" numberOfLines={1}>
+                    <Text className="mt-0.5 t-caption text-ink3" numberOfLines={1}>
                       {item.exchange ? `${item.name} · ${item.exchange}` : item.name}
                     </Text>
                   ) : null}

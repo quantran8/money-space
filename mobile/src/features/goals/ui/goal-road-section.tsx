@@ -96,13 +96,13 @@ export function GoalRoadSection({
           <View className="mt-5">
             <Label>{t('goals.detail.road.vsPlan')}</Label>
             <Text
-              className={`mt-1.5 text-[30px] font-medium ${gapAtNow < 0 ? 'text-attention' : 'text-ink'}`}
-              style={{ fontVariant: ['tabular-nums'], letterSpacing: -0.9 }}
+              className={`mt-1.5 t-metric ${gapAtNow < 0 ? 'text-attention-ink' : 'text-ink'}`}
+              style={{ fontVariant: ['tabular-nums'] }}
             >
               {gapAtNow >= 0 ? '+' : '−'}
               {formatVndScale(Math.abs(gapAtNow))}
             </Text>
-            <Text className="mt-1 text-[11px] text-ink3">
+            <Text className="mt-1 t-caption-sm text-ink3">
               {gapAtNow < 0
                 ? t('goals.detail.road.behindWord')
                 : t('goals.detail.road.aheadWord')}
@@ -111,7 +111,7 @@ export function GoalRoadSection({
             </Text>
           </View>
         ) : (
-          <Text className="mt-4 text-[14px] leading-6 text-ink2">
+          <Text className="mt-4 t-body-sm leading-6 text-ink2">
             {pace != null && projectedLabel
               ? `${t('goals.detail.road.perMonth', { amount: formatVndScale(pace) })} → ${projectedLabel}.`
               : t('goals.detail.road.noPaceConclusion')}
@@ -124,13 +124,13 @@ export function GoalRoadSection({
         <View className="mt-6">
           <Label>{t('goals.detail.road.atCurrentPace')}</Label>
           <Text
-            className={`mt-1.5 text-[20px] font-medium text-ink ${projectedLabel ? 'font-mono' : ''}`}
+            className={`mt-1.5 t-subtitle text-ink ${projectedLabel ? 'font-mono' : ''}`}
             style={{ fontVariant: ['tabular-nums'] }}
           >
             {projectedLabel ?? noDate}
           </Text>
           {requiredMonthly != null && requiredMonthly > 0 && desiredLabel ? (
-            <Text className="mt-1.5 text-[12px] leading-4 text-ink3">
+            <Text className="mt-1.5 t-caption leading-4 text-ink3">
               {t('goals.detail.road.toBeOnTime', { date: desiredLabel })}
               {' · '}
               {t('goals.detail.road.perMonth', { amount: formatVndScale(requiredMonthly) })}
@@ -142,12 +142,12 @@ export function GoalRoadSection({
             is working, not answer — but always one tap from the figure. */}
         <Collapsible
           className="mt-6"
-          summary={<Text className="text-[14px] text-interactive">{t('goals.detail.road.explain')}</Text>}
+          summary={<Text className="t-body-sm text-action">{t('goals.detail.road.explain')}</Text>}
           showLabel={t('goals.detail.road.explain')}
           hideLabel={t('goals.detail.road.hide')}
         >
           <Sunk>
-            <Text className="text-[12px] leading-5 text-ink2">
+            <Text className="t-caption leading-5 text-ink2">
               <Text className="font-medium text-ink">{t('goals.detail.road.calcTitle')}</Text>{' '}
               {pace != null
                 ? t('goals.detail.road.calc', {
@@ -156,15 +156,15 @@ export function GoalRoadSection({
                   })
                 : t('goals.detail.road.calcNoPace', { remaining: formatVndScale(remaining) })}
             </Text>
-            <Text className="mt-2 text-[12px] leading-5 text-ink2">
+            <Text className="mt-2 t-caption leading-5 text-ink2">
               {t('goals.detail.road.calcLines')}
             </Text>
             {projection ? (
-              <Text className="mt-2 text-[12px] leading-5 text-ink2">
+              <Text className="mt-2 t-caption leading-5 text-ink2">
                 {t(`goals.projection.reason.${projection.reason}`)}
               </Text>
             ) : null}
-            <Text className="mt-2 text-[12px] leading-5 text-ink3">
+            <Text className="mt-2 t-caption leading-5 text-ink3">
               {t('goals.detail.road.targetValue')}: {formatVndScale(target)}
             </Text>
           </Sunk>

@@ -52,7 +52,7 @@ export function DateField({
 
   return (
     <View className={className}>
-      {label ? <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text> : null}
+      {label ? <Text className="mb-1.5 t-body-sm text-ink2">{label}</Text> : null}
 
       <Pressable
         onPress={() => setOpen(true)}
@@ -61,31 +61,29 @@ export function DateField({
         accessibilityValue={{ text: display(value) }}
         style={{ minHeight: TOUCH_TARGET }}
         className={cn(
-          'justify-center rounded-sunk border px-3.5',
-          error ? 'border-alert bg-panel' : 'border-hair bg-sunk',
+          'justify-center rounded-control border px-3.5',
+          error ? 'border-alert-ink bg-card' : 'border-divider bg-wash',
         )}
       >
-        <Text className={cn('font-mono text-[16px]', value ? 'text-ink' : 'text-ink3')}>
+        <Text className={cn('font-mono t-body', value ? 'text-ink' : 'text-ink3')}>
           {value ? display(value) : 'dd/mm/yyyy'}
         </Text>
       </Pressable>
 
-      {error ? <Text className="mt-1.5 text-[12px] text-alert">{error}</Text> : null}
+      {error ? <Text className="mt-1.5 t-caption text-alert-ink">{error}</Text> : null}
 
       {open ? (
         <DateTimePicker
           value={value ? fromIso(value) : new Date()}
           mode="date"
-          // iOS keeps the picker inline until dismissed; Android shows its own
-          // dialog and closes itself on pick.
+          // Android shows its own dialog and closes itself on pick; the iOS
+          // inline picker would stay open, so both are dismissed here once a
+          // day is chosen.
           display={Platform.OS === 'ios' ? 'inline' : 'default'}
           accentColor={colors.interactive}
           onChange={(event, date) => {
-            if (Platform.OS !== 'ios') setOpen(false)
-            if (event.type === 'dismissed') {
-              setOpen(false)
-              return
-            }
+            setOpen(false)
+            if (event.type === 'dismissed') return
             if (date) onChange(toIso(date))
           }}
         />

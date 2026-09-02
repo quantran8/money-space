@@ -593,7 +593,9 @@ export const resources = {
           removeTitle: 'Gỡ nguồn tiền này?',
           removeBody: '{{amount}} sẽ không còn được tính vào bức tranh tài chính của gia đình.',
           removeAlsoDetaches:
-            'Tài sản này đang gắn với {{goalCount}} mục tiêu ({{goals}}), {{eventCount}} khoản thu chi và {{debtCount}} khoản nợ. Xoá sẽ gỡ các liên kết đó — mục tiêu, khoản thu chi và khoản nợ vẫn còn, nhưng không còn trỏ tới tài sản này nữa.',
+            'Tài sản này đang gắn với {{goalCount}} mục tiêu ({{goals}}), {{eventCount}} khoản dự chi và {{debtCount}} khoản nợ. Xoá sẽ gỡ các liên kết đó — mục tiêu, khoản dự chi và khoản nợ vẫn còn, nhưng không còn trỏ tới tài sản này nữa.',
+          removeDeletesMoneyEvents:
+            'Xoá cũng sẽ xoá luôn {{count}} giao dịch đã ghi qua nguồn tiền này. Các giao dịch đó biến mất khỏi lịch sử, nên tổng thu chi của những tháng đã qua sẽ thay đổi theo. Không thể hoàn tác.',
           removeLeavesGoalsWithoutWallet:
             'Sau khi xoá, {{goals}} sẽ không còn ví nào để góp tiền mỗi tháng. Mục tiêu vẫn còn nhưng phần theo dõi tiến độ hằng tháng sẽ trống cho tới khi bạn thêm ví khác.',
           removeConfirm: 'Gỡ nguồn tiền',
@@ -975,16 +977,27 @@ export const resources = {
           pasteAmount: 'Dán số tiền',
           steps: {
             debt: 'Khoản nợ',
+            amount: 'Số tiền',
+            received: 'Nhận tiền',
             schedule: 'Lịch trả',
-            interest: 'Lãi suất',
+            interest: 'Lãi suất & kỳ trả',
             review: 'Xác nhận',
           },
           sections: {
-            debt: 'Thông tin khoản nợ',
-            schedule: 'Lịch trả',
-            interest: 'Lãi suất',
-            reviewCreate: 'Kiểm tra trước khi tạo',
-            reviewEdit: 'Kiểm tra trước khi lưu',
+            debt: 'Khoản nợ này là gì?',
+            amount: 'Bạn đã vay bao nhiêu?',
+            received: 'Khoản vay đã vào đâu?',
+            schedule: 'Bạn sẽ trả khoản này theo nhịp nào?',
+            interest: 'Với lãi suất này, mỗi kỳ bạn sẽ trả bao nhiêu?',
+            reviewCreate: 'Khoản nợ sẽ được theo dõi như sau',
+            reviewEdit: 'Thay đổi sẽ được lưu như sau',
+          },
+          rail: {
+            creating: 'Đang tạo',
+            editing: 'Đang sửa',
+            empty: 'Chưa khai báo',
+            reviewAll: 'Xem lại toàn bộ',
+            stepOf: 'Bước {{step}} / {{total}}',
           },
           fields: {
             name: 'Tên khoản nợ',
@@ -1037,9 +1050,6 @@ export const resources = {
             fiveYears: '5 năm',
           },
           schedule: {
-            suggestion: 'Gợi ý {{amount}} / kỳ · {{installments}} kỳ',
-            suggestionWithTerm: 'Gợi ý {{amount}} / kỳ · {{installments}} kỳ trong {{months}} tháng.',
-            use: 'Sử dụng',
             empty: 'Chọn ngày trả xong và tần suất để xem mức trả dự kiến.',
           },
           bankRequirement: 'Khoản vay ngân hàng cần có lãi suất, ngày kết thúc và số tiền trả định kỳ.',
@@ -1090,24 +1100,21 @@ export const resources = {
       },
       whatif: {
         cta: 'Thử một khoản chi',
-        title: 'Nếu chi khoản này thì sao?',
-        description:
-          'Xem điều gì thay đổi sau khi chi. Không lưu lại, không phải lời khuyên nên hay không nên.',
+        title: 'Thử một khoản chi',
+        description: 'Xem điều gì thay đổi sau khi chi. Không lưu lại.',
         arrow: '→',
         error: 'Chưa tính được lúc này. Thử lại giúp mình nhé.',
         form: {
           amount: 'Số tiền',
-          plannedDate: 'Dự kiến chi ngày',
+          plannedDate: 'Ngày chi',
+          // Vẫn dùng ở bản mobile, nơi ô ghi chú còn giữ.
           label: 'Ghi chú',
           labelPlaceholder: 'Ví dụ: đổi laptop',
-          // Nút chính không bao giờ bị khoá (§22.10) — bấm thì nói thiếu gì.
           amountRequired: 'Nhập số tiền lớn hơn 0.',
-          // Không bắt buộc: what-if là câu hỏi thử, ép chọn ví thì lần thử nào
-          // cũng thành phiền. Chọn ví thì đổi lại câu trả lời chi tiết hơn hẳn.
         },
         // Câu hỏi thu lại thành một dòng khi đã có kết quả — chỗ của phần thân
         // lúc đó là câu trả lời, không phải mấy ô vừa điền xong.
-        summary: '{{context}} · {{amount}} · {{date}}',
+        summary: '{{amount}} · {{date}}',
         summaryNoLabel: 'Khoản chi thử',
         delta: {
           label: 'So với hiện tại',
@@ -1201,8 +1208,9 @@ export const resources = {
           projectedDate: 'Dự kiến hoàn thành {{date}}.',
         },
         actions: {
-          run: 'Xem thử',
+          run: 'Xem ảnh hưởng',
           running: 'Đang tính...',
+          cancel: 'Huỷ',
           update: 'Cập nhật',
           tryAnother: 'Thử số khác',
           share: 'Chia sẻ',
@@ -1435,6 +1443,7 @@ export const resources = {
           estimated_incoming: 'Chưa tính vào số dư',
           planned_outgoing: 'Khoản dự định',
           postponed: 'Đã dời ngày',
+          debt: 'Khoản vay',
         },
         assumptions: {
           title: 'Cách tính con số này',
@@ -2000,11 +2009,17 @@ export const resources = {
           createEyebrow: 'MỤC TIÊU MỚI',
           editEyebrow: 'CHỈNH SỬA',
           stepStatus: 'Bước {{step}} / 3',
+          rail: {
+            creating: 'Đang tạo',
+            editing: 'Đang sửa',
+            empty: 'Chưa khai báo',
+            reviewAll: 'Xem lại toàn bộ',
+            sourceCount: '{{count}} ví',
+          },
           stepPlan: 'Mục tiêu',
           stepSources: 'Nguồn tiền',
           stepReview: 'Xem lại',
           planQuestion: 'Gia đình đang hướng tới điều gì?',
-          planDescription: 'Chỉ cần tên, số tiền và thời điểm mong muốn. Nguồn tiền sẽ chọn ở bước sau.',
           targetLabel: 'Cần bao nhiêu',
           targetMonth: 'Muốn đạt vào',
           priorityHelp: 'Mục tiêu ưu tiên cao được cấp tiền trước khi một ví không đủ cho tất cả.',
@@ -2013,9 +2028,7 @@ export const resources = {
           sourceQuestion: 'Tiền cho mục tiêu đến từ đâu?',
           sourceDescription: 'Chọn tiền đang có, tài sản đang nắm giữ hoặc ví sẽ góp đều mỗi tháng.',
           reviewTitle: 'Xem lại trước khi tạo',
-          reviewDescription: 'Mục tiêu không giữ tiền riêng. Tiến độ được tính từ các nguồn tiền bên dưới.',
           updatePlan: 'Cập nhật kế hoạch',
-          updateDescription: 'Nguồn tiền và mức góp được quản lý riêng để tránh thay đổi tiến độ ngoài ý muốn.',
           noSources: 'Chưa có nguồn tiền',
           chooseSource: 'Chọn ít nhất một ví, tài khoản hoặc tài sản.',
           useAssetFor: 'Dùng tài sản này để',
@@ -3578,7 +3591,9 @@ export const resources = {
           removeTitle: 'Remove this money source?',
           removeBody: "{{amount}} will no longer count towards your household's picture.",
           removeAlsoDetaches:
-            'This asset backs {{goalCount}} goal(s) ({{goals}}), {{eventCount}} event(s) and {{debtCount}} debt(s). Deleting it detaches those links — the goals, events and debts stay, but they will no longer point at this asset.',
+            'This asset backs {{goalCount}} goal(s) ({{goals}}), {{eventCount}} scheduled event(s) and {{debtCount}} debt(s). Deleting it detaches those links — the goals, scheduled events and debts stay, but they will no longer point at this asset.',
+          removeDeletesMoneyEvents:
+            'Deleting also deletes the {{count}} movement(s) recorded through this money source. They leave your history for good, so past months\' totals will change with them. This cannot be undone.',
           removeLeavesGoalsWithoutWallet:
             'After this, {{goals}} will have no wallet left to be saved into each month. The goal stays, but its monthly pace panel will be empty until you add another wallet.',
           removeConfirm: 'Remove',
@@ -3956,16 +3971,27 @@ export const resources = {
           pasteAmount: 'Paste amount',
           steps: {
             debt: 'Debt',
+            amount: 'Amount',
+            received: 'Received',
             schedule: 'Schedule',
-            interest: 'Interest',
+            interest: 'Interest & payment',
             review: 'Review',
           },
           sections: {
-            debt: 'Debt information',
-            schedule: 'Repayment schedule',
-            interest: 'Interest',
-            reviewCreate: 'Review before creating',
-            reviewEdit: 'Review before saving',
+            debt: 'What is this debt?',
+            amount: 'How much did you borrow?',
+            received: 'Where did the money go?',
+            schedule: 'How often will you repay this?',
+            interest: 'At this rate, how much is each payment?',
+            reviewCreate: 'This debt will be tracked as follows',
+            reviewEdit: 'Your changes will be saved as follows',
+          },
+          rail: {
+            creating: 'Creating',
+            editing: 'Editing',
+            empty: 'Not set yet',
+            reviewAll: 'Review everything',
+            stepOf: 'Step {{step}} / {{total}}',
           },
           fields: {
             name: 'Debt name',
@@ -4018,9 +4044,6 @@ export const resources = {
             fiveYears: '5 years',
           },
           schedule: {
-            suggestion: 'Suggested {{amount}} per payment · {{installments}} payments',
-            suggestionWithTerm: 'Suggested {{amount}} per payment · {{installments}} payments over {{months}} months.',
-            use: 'Use',
             empty: 'Choose a payoff date and frequency to see an estimated payment.',
           },
           bankRequirement: 'Bank loans require an interest rate, payoff date, and periodic payment amount.',
@@ -4379,6 +4402,7 @@ export const resources = {
           estimated_incoming: 'Not counted in the balance',
           planned_outgoing: 'Planned item',
           postponed: 'Date moved',
+          debt: 'Debt',
         },
         assumptions: {
           title: 'How this was calculated',
@@ -4908,11 +4932,17 @@ export const resources = {
           createEyebrow: 'NEW GOAL',
           editEyebrow: 'EDIT',
           stepStatus: 'Step {{step}} / 3',
+          rail: {
+            creating: 'Creating',
+            editing: 'Editing',
+            empty: 'Not set yet',
+            reviewAll: 'Review everything',
+            sourceCount: '{{count}} wallets',
+          },
           stepPlan: 'Goal',
           stepSources: 'Sources',
           stepReview: 'Review',
           planQuestion: 'What are you working toward?',
-          planDescription: 'Start with a name, amount, and desired month. Choose the money behind it next.',
           targetLabel: 'Amount needed',
           targetMonth: 'Desired month',
           priorityHelp: 'Higher-priority goals receive money first when a wallet cannot cover them all.',
@@ -4921,9 +4951,7 @@ export const resources = {
           sourceQuestion: 'Where will the money come from?',
           sourceDescription: 'Choose money already held, market assets, or wallets contributing each month.',
           reviewTitle: 'Review before creating',
-          reviewDescription: 'A goal does not hold money separately. Its progress comes from the sources below.',
           updatePlan: 'Update the plan',
-          updateDescription: 'Sources and contributions are managed separately to avoid unintended progress changes.',
           noSources: 'No money sources yet',
           chooseSource: 'Choose at least one wallet, account, or asset.',
           useAssetFor: 'Use this asset to',

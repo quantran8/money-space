@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Text, View } from 'react-native'
 import { Controller, useWatch, type UseFormReturn, type UseFormSetValue } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -14,9 +14,9 @@ import {
 } from '@money-space/core/features/assets/model/assets'
 import {
   canBePurchased,
-  convertGoldPricePerUnit,
   goldUnits,
   isInterestOptional,
+  quotePriceForUnit,
   isWholeQuantityType,
   manualValueLabelKey,
   parseMoneyToVnd,
@@ -53,9 +53,9 @@ type WalletOption = { value: string; label: string; balance?: number }
 function LockedField({ label, value }: { label: string; value: string }) {
   return (
     <View>
-      <Text className="mb-1.5 text-[14px] text-ink2">{label}</Text>
-      <View className="h-[46px] justify-center rounded-sunk border border-hair bg-sunk px-3.5">
-        <Text className="text-[16px] text-ink3">{value}</Text>
+      <Text className="mb-1.5 t-body-sm text-ink2">{label}</Text>
+      <View className="h-[46px] justify-center rounded-control border border-divider bg-wash px-3.5">
+        <Text className="t-body text-ink3">{value}</Text>
       </View>
     </View>
   )
@@ -546,46 +546,40 @@ function MarketFields({
   // that labels a USD price with whatever currency was asked for, which would
   // slip past the guard below and understate the cost basis ~26,000x.
   const quoteCurrency = assetClass === 'crypto' ? 'VND' : undefined
-  const { quote: rawQuote, isLoading, isUnavailable } = useMarketQuote(
+
+  // A gold quote carries every unit's price, so switching chỉ → gram picks a
+  // figure out of the response rather than re-fetching. The backend owns the
+  // ratios; converting here let the form and the server's own valuation
+  // disagree by the unit's ratio — see memory/asset-valuation.md.
+  const unit = useWatch({ control, name: 'unit' })
+  const { quote, isLoading, isUnavailable } = useMarketQuote(
     assetClass,
     symbol,
     market,
     quoteCurrency,
   )
-
-  // Gold is quoted per lượng whatever the household counts in, so the figure is
-  // restated into the chosen unit before anything reads it — a holding in chỉ
-  // prefilled at the lượng price overstated the cost basis 10x.
-  const unit = useWatch({ control, name: 'unit' })
-  const quote = useMemo(() => {
-    if (!rawQuote || type !== 'gold' || !unit) return rawQuote
-    return {
-      ...rawQuote,
-      price: convertGoldPricePerUnit(rawQuote.price, unit),
-      unit,
-    }
-  }, [rawQuote, type, unit])
+  const quotedPrice = quote ? quotePriceForUnit(quote, unit) : null
 
   // A quote in another currency must NOT be written into a VND field: BTC at
   // 78,188 USD would land as 78,188đ.
   const canPrefill = quote?.quoteCurrency === 'VND'
 
-  // The unit is part of the key: switching chỉ → lượng makes the field's figure
-  // wrong by a factor of ten, so that re-prefills even though the symbol has
-  // not changed.
+  // The chosen unit is part of the key, not the quote's: switching chỉ → lượng
+  // makes the field's figure wrong by a factor of ten, so that re-prefills even
+  // though the symbol — and now the response — has not changed.
   const prefilledFor = useRef<string | null>(null)
   useEffect(() => {
-    if (!quote || !canPrefill) return
-    const key = `${quote.assetClass}:${quote.symbol}:${quote.unit}`
+    if (!quote || !canPrefill || quotedPrice === null) return
+    const key = `${quote.assetClass}:${quote.symbol}:${unit ?? quote.unit}`
     if (prefilledFor.current === key) return
     prefilledFor.current = key
     // Once per symbol: picking a different instrument re-prefills, while a
     // figure the user edited afterwards survives a stale refetch of the same one.
-    setValue('purchasePrice', String(Math.round(quote.price)), {
+    setValue('purchasePrice', String(Math.round(quotedPrice)), {
       shouldDirty: true,
       shouldValidate: true,
     })
-  }, [quote, canPrefill, setValue])
+  }, [quote, canPrefill, quotedPrice, unit, setValue])
 
   return (
     <>
@@ -634,6 +628,8 @@ function MarketFields({
       <MarketQuoteHint
         symbol={symbol}
         quote={quote}
+        price={quotedPrice}
+        unit={type === 'gold' ? unit : undefined}
         isLoading={isLoading}
         isUnavailable={isUnavailable}
         t={t}
@@ -739,12 +735,18 @@ function MarketFields({
 function MarketQuoteHint({
   symbol,
   quote,
+  price,
+  unit,
   isLoading,
   isUnavailable,
   t,
 }: {
   symbol: string
   quote: { price: number; unit: string; quoteCurrency: string; source: string } | null
+  /** The quote's price in `unit` — for gold, the unit the form is showing. */
+  price: number | null
+  /** The chosen gold unit; absent for classes quoted in one unit only. */
+  unit?: string
   isLoading: boolean
   isUnavailable: boolean
   t: Translate
@@ -752,27 +754,27 @@ function MarketQuoteHint({
   if (!symbol.trim()) return null
 
   if (isLoading) {
-    return <Text className="text-[14px] text-ink3">{t('assets.form.market.quoteLoading')}</Text>
+    return <Text className="t-body-sm text-ink3">{t('assets.form.market.quoteLoading')}</Text>
   }
 
-  if (isUnavailable || !quote) {
+  if (isUnavailable || !quote || price === null) {
     // The form still submits, valued from whatever the user types.
-    return <Text className="text-[14px] text-ink3">{t('assets.form.market.quoteUnavailable')}</Text>
+    return <Text className="t-body-sm text-ink3">{t('assets.form.market.quoteUnavailable')}</Text>
   }
 
   return (
     <View>
-      <Text className="text-[14px] text-ink2">
+      <Text className="t-body-sm text-ink2">
         {t('assets.form.market.quoteLabel')}{' '}
         <Text className="font-medium text-ink" style={{ fontVariant: ['tabular-nums'] }}>
           {/* `formatMoney`, not the app-wide `formatVndShort`: a quote is
               priced in the EXCHANGE's currency, which is not the household's,
               and only this formatter takes one. */}
-          {formatMoney(quote.price, quote.quoteCurrency as DisplayCurrency)} / {quote.unit}
+          {formatMoney(price, quote.quoteCurrency as DisplayCurrency)} / {unit || quote.unit}
         </Text>
       </Text>
       {/* Every derived number is explainable — this says where it came from. */}
-      <Text className="mt-0.5 text-[11px] text-ink3">
+      <Text className="mt-0.5 t-caption-sm text-ink3">
         {t('assets.form.market.quoteSource', { source: quote.source })}
       </Text>
     </View>

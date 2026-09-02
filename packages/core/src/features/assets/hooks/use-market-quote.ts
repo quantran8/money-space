@@ -13,6 +13,8 @@ import { queryKeys } from '#/shared/api/query-keys'
  * before that. `quoteCurrency` asks the backend to price in that currency: the
  * form's money fields are đồng, so a class that would otherwise quote in USD
  * (crypto, foreign equities) asks for VND and gets a figure it can prefill.
+ * A gold quote carries `unitPrices` — the same figure in chỉ, lượng and gram —
+ * so switching the form's unit is a lookup, not another request.
  *
  * A symbol the providers cannot quote resolves to `null` rather than an error,
  * so the form shows "no price available" and the user carries on typing their

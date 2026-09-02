@@ -37,7 +37,7 @@ export function ConfirmDialog({
   return (
     <BottomSheet open={open} onClose={onClose} title={title}>
       {consequence ? (
-        <Text className="text-[14px] leading-5 text-ink2">{consequence}</Text>
+        <Text className="t-body-sm leading-5 text-ink2">{consequence}</Text>
       ) : null}
 
       <View className="mt-6 gap-2">

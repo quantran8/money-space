@@ -307,6 +307,11 @@ function OccurrenceRow({
   const { t } = useTranslation()
   const isIncoming = occurrence.direction === 'incoming'
   const tone = balanceTone(runningBalance ?? 0)
+  // A repayment reminder is generated from its debt and regenerated whenever the
+  // debt's schedule changes, so editing or deleting it here would be undone by
+  // the next debt edit. The debt is the only place to change it — completing it
+  // stays available, since recording a payment is not an edit of the plan.
+  const isDebtDerived = Boolean(occurrence.debtId)
   const markers = occurrenceMarkers(occurrence).filter(
     (marker) => marker !== 'confirmed' && marker !== 'required',
   )
@@ -366,7 +371,7 @@ function OccurrenceRow({
       </TableCell>
 
       <TableCell className="col-start-2 row-start-1 justify-self-end px-0 py-0 lg:rounded-r-[8px] lg:py-3 lg:pr-3 lg:text-right">
-        {onComplete || onEdit || onDelete ? (
+        {onComplete || ((onEdit || onDelete) && !isDebtDerived) ? (
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label={t('upcoming.rowActions.label')}
@@ -383,13 +388,13 @@ function OccurrenceRow({
                   {t('upcoming.rowActions.complete')}
                 </DropdownMenuItem>
               ) : null}
-              {onEdit ? (
+              {onEdit && !isDebtDerived ? (
                 <DropdownMenuItem onClick={() => onEdit(occurrence.sourceEventId)}>
                   <Pencil className="mr-2 size-4" />
                   {t('upcoming.rowActions.edit')}
                 </DropdownMenuItem>
               ) : null}
-              {onDelete ? (
+              {onDelete && !isDebtDerived ? (
                 <DropdownMenuItem
                   className="text-alert-ink focus:text-alert-ink"
                   onClick={() => onDelete(occurrence.sourceEventId)}

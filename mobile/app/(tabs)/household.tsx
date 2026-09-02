@@ -19,6 +19,7 @@ import { HouseholdIdentitySection } from '@/features/household/ui/household-iden
 import { InviteQrSheet } from '@/features/invites/ui/invite-qr-sheet'
 import { MembersSection } from '@/features/members/ui/members-section'
 import { HouseholdDataSection } from '@/features/settings/ui/household-data-section'
+import { SignOutSection } from '@/features/settings/ui/sign-out-section'
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
 
 /**
@@ -47,7 +48,7 @@ import { TOUCH_TARGET, colors } from '@/theme/tokens'
 export default function HouseholdScreen() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { activeHousehold, activeHouseholdId } = useActiveHousehold()
+  const { activeHouseholdId } = useActiveHousehold()
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -113,13 +114,12 @@ export default function HouseholdScreen() {
         {isSettingsLoading ? (
           <Panel>
             <Skeleton height={28} className="w-40" />
-            <Skeleton height={46} className="mt-6 rounded-sunk" />
-            <Skeleton height={46} className="mt-3 rounded-sunk" />
+            <Skeleton height={46} className="mt-6 rounded-control" />
+            <Skeleton height={46} className="mt-3 rounded-control" />
           </Panel>
         ) : (
           <HouseholdIdentitySection
             form={settingsForm}
-            householdName={activeHousehold?.name ?? ''}
             isSaving={settingsSaving}
             onSave={() => void submitSettings()}
           />
@@ -157,6 +157,13 @@ export default function HouseholdScreen() {
               not that question. If that port decides the hub needs an entry
               point, it goes in this panel. */}
         </Panel>
+
+        {/* Sign-out lives on this screen, not in a nav drawer: the drawer is
+            gone (the tab bar is the navigation), and "who is in this space and
+            how is it set up" is the question this hub answers — leaving it is
+            part of that. Above the danger card so the destructive action stays
+            last (§22.11). */}
+        <SignOutSection />
 
         {canDeleteHousehold ? (
           <HouseholdDataSection
@@ -256,9 +263,9 @@ function HubLink({ label, onPress }: { label: string; onPress: () => void }) {
       accessibilityRole="button"
       accessibilityLabel={label}
       style={{ minHeight: TOUCH_TARGET }}
-      className="-mx-2 flex-row items-center justify-between gap-3 rounded-control px-2 active:bg-sunk"
+      className="-mx-2 flex-row items-center justify-between gap-3 rounded-control px-2 active:bg-wash"
     >
-      <Text className="flex-1 text-[14px] text-ink">{label}</Text>
+      <Text className="flex-1 t-body-sm text-ink">{label}</Text>
       <ChevronRight size={18} color={colors.ink3} strokeWidth={1.75} />
     </Pressable>
   )

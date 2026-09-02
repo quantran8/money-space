@@ -18,6 +18,7 @@ import {
   Skeleton,
 } from '@/components/ui'
 import { dateLocale, formatGoalMonth, isRealDate } from '@/features/goals/lib/goal-dates'
+import { GoalPriorityMark } from '@/features/goals/ui/goal-priority-mark'
 import { TOUCH_TARGET } from '@/theme/tokens'
 
 import type { ActionSheetItem } from '@/components/ui'
@@ -70,7 +71,7 @@ export function GoalsListSection({
         title={t('goals.demo.listTitle')}
         right={
           goals.length > 0 ? (
-            <Text className="text-[12px] text-ink3">
+            <Text className="t-caption text-ink3">
               {t('goals.countLabel', { count: goals.length })}
             </Text>
           ) : undefined
@@ -79,8 +80,8 @@ export function GoalsListSection({
 
       {isLoading ? (
         <View className="mt-6 gap-2">
-          <Skeleton height={104} className="rounded-sunk" />
-          <Skeleton height={104} className="rounded-sunk" />
+          <Skeleton height={104} className="rounded-control" />
+          <Skeleton height={104} className="rounded-control" />
         </View>
       ) : goals.length === 0 ? (
         <EmptyState
@@ -168,16 +169,19 @@ function GoalCard({
       accessibilityRole="button"
       accessibilityLabel={goal.name}
       style={{ minHeight: TOUCH_TARGET }}
-      className="rounded-sunk px-3 py-3.5 active:bg-sunk"
+      className="rounded-control px-3 py-3.5 active:bg-wash"
     >
       <View className="flex-row items-start gap-2">
         <View className="flex-1">
           <View className="flex-row items-center gap-2">
-            <Text className="flex-1 text-[15px] font-medium text-ink" numberOfLines={1}>
+            {/* The rank, before the name: a scan down the list finds the goals
+                that pull funding forward without reading a single one. */}
+            <GoalPriorityMark priority={goal.priority} size="compact" />
+            <Text className="flex-1 t-body font-medium text-ink" numberOfLines={1}>
               {goal.name}
             </Text>
             {isPrimary ? (
-              <Text className="shrink-0 rounded-full bg-interactive-soft px-2 py-0.5 text-[10px] font-medium text-interactive">
+              <Text className="shrink-0 rounded-full bg-action-soft px-2 py-0.5 t-caption-sm font-medium text-action">
                 {t('home.mainGoal.badge')}
               </Text>
             ) : null}
@@ -186,7 +190,7 @@ function GoalCard({
           {/* The fraction gets its own line: at 375pt a name and two money
               values on one row is how money ends up truncated (§6). */}
           <Text
-            className="mt-2 text-[14px] font-medium text-ink"
+            className="mt-2 t-body-sm font-medium text-ink"
             style={{ fontVariant: ['tabular-nums'] }}
           >
             {formatAmount(current)} / {formatAmount(target)}
@@ -247,16 +251,16 @@ function PlanRow({
 }) {
   return (
     <View className="flex-row items-baseline gap-3">
-      <Text className="w-[86px] shrink-0 text-[12px] text-ink3">{label}</Text>
+      <Text className="w-[86px] shrink-0 t-caption text-ink3">{label}</Text>
       <Text
-        className={`text-[12px] font-medium ${tone === 'attention' ? 'text-attention' : 'text-ink'} ${mono ? 'font-mono' : ''}`}
+        className={`t-caption font-medium ${tone === 'attention' ? 'text-attention-ink' : 'text-ink'} ${mono ? 'font-mono' : ''}`}
         style={{ fontVariant: ['tabular-nums'] }}
       >
         {value}
       </Text>
       {note ? (
         <Text
-          className={`text-[11px] ${tone === 'attention' ? 'text-attention' : 'text-ink3'}`}
+          className={`t-caption-sm ${tone === 'attention' ? 'text-attention-ink' : 'text-ink3'}`}
         >
           {note}
         </Text>

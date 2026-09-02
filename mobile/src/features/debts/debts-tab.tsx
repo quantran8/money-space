@@ -61,7 +61,6 @@ export function DebtsTab() {
     submit,
     selectedLenderType,
     isSavingDebt,
-    repaymentEstimate,
     termMonths,
     dialogOpen,
     editingId,
@@ -114,15 +113,16 @@ export function DebtsTab() {
     return map
   }, [payments])
 
-  // Obligations landing inside the 30-day window the forecast covers.
-  const upcoming = useMemo(
-    () =>
-      payments.filter((payment) => {
-        const days = daysFromNow(payment.expectedDate)
-        return Boolean(payment.debtId) && days >= 0 && days <= 30
-      }),
-    [payments],
-  )
+  // Obligations landing inside the 30-day window the forecast covers. Only debts
+  // still on this tab count: a payment whose debt was deleted or paid off is not
+  // money the household still owes.
+  const upcoming = useMemo(() => {
+    const activeDebtIds = new Set(activeDebts.map((debt) => debt.id))
+    return payments.filter((payment) => {
+      const days = daysFromNow(payment.expectedDate)
+      return Boolean(payment.debtId) && activeDebtIds.has(payment.debtId!) && days >= 0 && days <= 30
+    })
+  }, [payments, activeDebts])
   const upcomingAmount = upcoming.reduce((sum, payment) => sum + payment.amount, 0)
 
   const farthestDate = useMemo(
@@ -143,7 +143,7 @@ export function DebtsTab() {
         <PanelHeader
           title={t('debts.demo.overview')}
           right={
-            <Text className="text-[12px] text-ink3">
+            <Text className="t-caption text-ink3">
               {t('debts.demo.count', { count: activeDebts.length })}
             </Text>
           }
@@ -176,7 +176,7 @@ export function DebtsTab() {
         />
 
         {/* One caveat line, saying what the figures do NOT yet cover. */}
-        <Text className="mt-3 text-[12px] leading-4 text-ink3">
+        <Text className="mt-3 t-caption leading-4 text-ink3">
           {upcoming.length > 0
             ? t('debts.demo.confirmedPayments', { count: upcoming.length })
             : t('debts.demo.noConfirmedPayment')}
@@ -257,7 +257,6 @@ export function DebtsTab() {
         setShowMoreDetails={setShowMoreDetails}
         receiveAssetOptions={receiveAssetOptions}
         memberOptions={memberOptions}
-        repaymentEstimate={repaymentEstimate}
         termMonths={termMonths}
         submit={submit}
       />

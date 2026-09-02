@@ -255,6 +255,27 @@ body{
     grid-template-columns:minmax(0,1fr) auto auto!important;
     gap:10px!important;
   }
+  /* What-if metric triplets. Not `.keep-cols` — that is the legend shape
+     (`1fr auto auto`), and these are equal-weight figures. They keep a real
+     grid on a phone: three stacked metrics is a wall, and the app itself wraps
+     the third cell onto its own row rather than collapsing the lot. */
+  .app-card .wi-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:12px!important;
+  }
+  .app-card .wi-metrics > *{
+    border-left:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  /* The third cell wraps under the first two and takes a rule above it
+     instead of the left one it would carry mid-row. */
+  .app-card .wi-metrics > :nth-child(3){
+    grid-column:span 2!important;
+    border-top:1px solid var(--divider)!important;
+    padding-top:12px!important;
+  }
+
   /* The label is the only part that may shrink; the percent and the amount are
      the values the row exists to show, so they keep their intrinsic width. */
   .app-card .keep-cols > :first-child{min-width:0!important}
@@ -787,49 +808,121 @@ body{
         “Chi 36 triệu<br>thì sao?”
       </h2>
       <p class="t-body" style="color:rgba(255,255,255,.6);max-width:420px;margin-top:22px">
-        Thấy consequence trước khi dùng tiền thật.
+        Thấy hoá đơn nào hụt và mục tiêu chậm bao lâu — trước khi dùng tiền thật.
       </p>
     </div>
 
-    <div class="app-card" style="color:var(--ink)">
-      <div style="display:flex;align-items:center;gap:12px">
-        <i data-lucide="plane" class="icon-inline ink3"></i>
-        <div class="t-body med" style="flex:1">Chuyến đi Nhật</div>
-        <div class="num t-body med">36,0 tr</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <!-- 1 — Bị ảnh hưởng: two counts, never summed into one. A bill is an
+           obligation and a goal is a promise; adding them flattens the
+           difference the whole result is built on. -->
+      <div class="app-card" style="color:var(--ink)">
+        <div class="wi-metrics" style="display:grid;grid-template-columns:minmax(0,.8fr) repeat(2,minmax(0,1fr));gap:24px;align-items:center">
+          <div>
+            <div class="t-caption-sm ink3">Bị ảnh hưởng</div>
+            <div class="num t-metric" style="margin-top:2px;color:var(--attention)">3 mục</div>
+          </div>
+          <div style="border-left:1px solid var(--divider);padding-left:24px">
+            <div class="num t-subhead">2</div>
+            <div class="t-caption-sm ink3" style="margin-top:2px">hoá đơn</div>
+          </div>
+          <div style="border-left:1px solid var(--divider);padding-left:24px">
+            <div class="num t-subhead">1</div>
+            <div class="t-caption-sm ink3" style="margin-top:2px">mục tiêu</div>
+          </div>
+        </div>
       </div>
 
-      <div class="rule" style="margin:18px 0 20px"></div>
-
-      <div style="background:var(--model);padding:20px 22px">
-        <div class="t-caption med ink3" style="text-transform:uppercase;letter-spacing:.1em">
-          Nếu thực hiện
+      <!-- 2 — Hoá đơn: obligations come before promises (§16), and carry
+           --alert where goals carry --attention. "Có gì đó thiếu" is enough to
+           worry someone and not enough to act on, so the rows name which. -->
+      <div class="app-card" style="color:var(--ink)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <i data-lucide="receipt-text" class="icon-inline" style="color:var(--alert)"></i>
+          <div class="t-body med" style="flex:1">Hoá đơn</div>
+          <div class="t-caption-sm ink3">2 mới gặp rủi ro</div>
         </div>
 
-        <div style="margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0">
-          <div style="padding-right:28px">
-            <div class="t-caption ink3">Linh hoạt</div>
-            <div style="display:flex;align-items:baseline;gap:10px;margin-top:7px">
-              <span class="num t-body ink3">96,0</span>
-              <i data-lucide="arrow-right" class="icon-small ink3"></i>
-              <span class="num t-metric">60,0 tr</span>
-            </div>
+        <div class="wi-metrics" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+          <div style="padding-bottom:10px;padding-right:16px">
+            <div class="num t-metric">2</div>
+            <div class="t-caption-sm ink3" style="margin-top:2px">bị ảnh hưởng</div>
           </div>
-
-          <div style="padding-left:28px;border-left:1px solid var(--divider)">
-            <div class="t-caption ink3">Mục tiêu mua nhà</div>
-            <div style="display:flex;align-items:baseline;gap:10px;margin-top:7px">
-              <span class="t-body ink3">09/2029</span>
-              <i data-lucide="arrow-right" class="icon-small ink3"></i>
-              <span class="t-metric">11/2029</span>
-            </div>
+          <div style="border-left:1px solid var(--divider);padding-left:16px;padding-right:16px">
+            <div class="num t-metric">4,2 tr</div>
+            <div class="t-caption-sm ink3" style="margin-top:2px">thiếu tổng</div>
+          </div>
+          <div style="border-left:1px solid var(--divider);padding-left:16px">
+            <div class="num t-metric">3,0 tr</div>
+            <div class="t-caption-sm ink3" style="margin-top:2px">thiếu nhiều nhất</div>
           </div>
         </div>
 
-        <div class="rule" style="margin:20px 0 14px"></div>
+        <div class="keep-cols" style="display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--divider)">
+          <div style="min-width:0">
+            <div class="t-body-sm med">Tiền nhà tháng 10</div>
+            <div class="num t-caption-sm ink3" style="margin-top:2px">05/10/2026</div>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:14px;justify-content:flex-end;white-space:nowrap">
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <span class="num t-subhead" style="color:var(--alert)">−0,4 tr</span>
+              <span class="num t-caption-sm ink3">/ cần 8,5 tr</span>
+            </div>
+            <div style="text-align:right">
+              <div class="num t-body-sm" style="color:var(--alert)">−3,0 tr</div>
+              <div class="t-caption-sm ink3">thiếu</div>
+            </div>
+          </div>
+        </div>
 
-        <div style="display:flex;justify-content:space-between;gap:16px">
-          <span class="t-body-sm ink2">Goal impact</span>
-          <span class="t-body-sm med">Chậm khoảng 2 tháng</span>
+        <div class="keep-cols" style="display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:12px 0 0;border-top:1px solid var(--divider)">
+          <div style="min-width:0">
+            <div class="t-body-sm med">Học phí quý 4</div>
+            <div class="num t-caption-sm ink3" style="margin-top:2px">12/10/2026</div>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:14px;justify-content:flex-end;white-space:nowrap">
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <span class="num t-subhead" style="color:var(--alert)">1,1 tr</span>
+              <span class="num t-caption-sm ink3">/ cần 5,4 tr</span>
+            </div>
+            <div style="text-align:right">
+              <div class="num t-body-sm" style="color:var(--alert)">−1,2 tr</div>
+              <div class="t-caption-sm ink3">thiếu</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 — Mục tiêu: what the goals give up, in money AND time. -->
+      <div class="app-card" style="color:var(--ink)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <i data-lucide="target" class="icon-inline" style="color:var(--attention)"></i>
+          <div class="t-body med" style="flex:1">Mục tiêu</div>
+          <div class="t-caption-sm ink3">1 mục</div>
+        </div>
+
+        <div class="wi-metrics" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+          <div style="padding-bottom:10px;padding-right:16px">
+            <div class="num t-metric" style="color:var(--attention)">+62 ngày</div>
+            <div class="t-caption-sm ink3" style="margin-top:2px">chậm nhất</div>
+          </div>
+          <div style="border-left:1px solid var(--divider);padding-left:16px;padding-right:16px">
+            <div class="num t-metric">+62 ngày</div>
+            <div class="t-caption-sm ink3" style="margin-top:2px">tổng delay</div>
+          </div>
+          <div style="border-left:1px solid var(--divider);padding-left:16px">
+            <div class="num t-metric">31,8 tr</div>
+            <div class="t-caption-sm ink3" style="margin-top:2px">giảm tổng</div>
+          </div>
+        </div>
+
+        <div class="keep-cols" style="display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:12px 0 0;border-top:1px solid var(--divider)">
+          <div class="t-body-sm med" style="min-width:0">Mua nhà</div>
+          <div style="text-align:right;white-space:nowrap">
+            <div class="num t-body-sm" style="color:var(--attention)">+62 ngày</div>
+            <div class="num t-caption-sm ink3" style="margin-top:2px">−31,8 tr · góp tháng này</div>
+          </div>
         </div>
       </div>
     </div>

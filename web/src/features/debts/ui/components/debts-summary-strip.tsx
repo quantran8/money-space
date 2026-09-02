@@ -24,9 +24,12 @@ export function DebtsSummaryStrip({ summary, debts, payments }: DebtsSummaryStri
   const { t, i18n } = useTranslation()
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
   const activeDebts = debts.filter((debt) => debt.status === 'active' || debt.status === 'overdue')
+  // Only obligations of a debt still on this page count: a payment whose debt was
+  // deleted or paid off is not money the household still owes.
+  const activeDebtIds = new Set(activeDebts.map((debt) => debt.id))
   const upcoming = payments.filter((payment) => {
     const days = daysFromNow(payment.expectedDate)
-    return Boolean(payment.debtId) && days >= 0 && days <= 30
+    return Boolean(payment.debtId) && activeDebtIds.has(payment.debtId!) && days >= 0 && days <= 30
   })
   const upcomingAmount = upcoming.reduce((sum, payment) => sum + payment.amount, 0)
   const farthestDate = activeDebts

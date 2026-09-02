@@ -58,6 +58,31 @@ export function addMonthsIso(isoDate: string, months: number): string {
 }
 
 /**
+ * Rewrite an ISO date onto the day-of-month of `dayFrom`, clamping to the end of
+ * the target month.
+ *
+ * The final due date is picked as a month only — the day it falls on is always
+ * the day the repayments land on, so it follows the first payment date instead
+ * of being asked for twice.
+ */
+export function withDayOfMonth(isoDate: string, dayFrom: string): string {
+  if (!isoDate) return ''
+  const [year, month] = isoDate.split('-').map(Number)
+  const day = Number(dayFrom?.split('-')[2])
+  if (!year || !month) return ''
+  if (!day) return isoDate
+  const lastDay = new Date(year, month, 0).getDate()
+  return `${year}-${String(month).padStart(2, '0')}-${String(Math.min(day, lastDay)).padStart(2, '0')}`
+}
+
+/** The `YYYY-MM-01` a month picker holds for an ISO date. */
+export function toMonthStartIso(isoDate: string): string {
+  if (!isoDate) return ''
+  const [year, month] = isoDate.split('-')
+  return year && month ? `${year}-${month}-01` : ''
+}
+
+/**
  * Whole months between two ISO dates (yyyy-mm-dd), rounded to the nearest
  * month and never below 1. Returns null when either date is missing/invalid.
  */

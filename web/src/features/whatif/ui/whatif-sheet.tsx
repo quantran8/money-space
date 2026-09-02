@@ -4,12 +4,8 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
-import {
-  EventField,
-  EventFieldInput,
-  EventMoneyInput,
-  eventDateTriggerClass,
-} from '@/components/ui/event-field'
+import { EventMoneyInput } from '@/components/ui/event-field'
+import { WhatIfField, whatIfDateTriggerClass } from '@/features/whatif/ui/components/whatif-field'
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -54,13 +50,13 @@ export function WhatIfSheet() {
 
 function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   const { t } = useTranslation()
+  const close = useWhatIfStore((state) => state.close)
   const { result, run, reset, isRunning } = useWhatIf()
 
   const [amount, setAmount] = useState(prefill.amount ? String(prefill.amount) : '')
   const [plannedDate, setPlannedDate] = useState(
     prefill.plannedDate ?? new Date().toISOString().slice(0, 10),
   )
-  const [label, setLabel] = useState('')
 
   const amountValue = parseRawMoney(amount)
   const canRun = Number.isFinite(amountValue) && amountValue > 0 && !!plannedDate
@@ -72,7 +68,6 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
         amount: amountValue,
         plannedDate,
         goalId: prefill.goalId,
-        label: label.trim() || undefined,
       })
     } catch (error) {
       toast.error(getErrorMessage(error, t('whatif.error')))
@@ -138,12 +133,21 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
     >
       <ResponsiveDialogHeader>
         <ResponsiveDialogTitle>{t('whatif.title')}</ResponsiveDialogTitle>
-        <ResponsiveDialogDescription>
+        {/*
+          The form state carries NO visible description: "Không lưu thay đổi"
+          was reassurance nobody asked for, and it pushed the first field down
+          for a sentence read once and never again.
+
+          It stays mounted `sr-only` rather than being dropped, because Radix
+          warns when a dialog has no description and the title alone does not
+          say what the sheet does. Once there is an answer the slot earns its
+          place back — it holds the question the result belongs to.
+        */}
+        <ResponsiveDialogDescription className={showResult ? undefined : 'sr-only'}>
           {showResult
             ? t('whatif.summary', {
                 amount: formatVndShort(amountValue),
                 date: plannedDate,
-                context: label.trim() || t('whatif.summaryNoLabel'),
               })
             : t('whatif.description')}
         </ResponsiveDialogDescription>
@@ -168,46 +172,45 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
         className={
           showResult
             ? '-mx-6 min-h-0 flex-1 overflow-y-auto bg-canvas px-6 py-4'
-            : 'max-h-[60vh] overflow-y-auto'
+            : 'mt-2 max-h-[60vh] overflow-y-auto'
         }
       >
         {showResult ? (
           <WhatIfResultBlocks result={result!} />
         ) : (
-          <div className="space-y-4">
-            {/* The note leads: naming the purchase first is what turns an abstract
-                number into the question the household is actually asking. */}
-            <EventField label={t('whatif.form.label')} htmlFor="whatif-label">
-              <EventFieldInput
-                id="whatif-label"
-                value={label}
-                onChange={(event) => setLabel(event.target.value)}
-                placeholder={t('whatif.form.labelPlaceholder')}
-              />
-            </EventField>
-
-            <EventField
+          <div className="space-y-5">
+            <WhatIfField
               label={t('whatif.form.amount')}
               htmlFor="whatif-amount"
-              trailing={<span className="t-body-sm text-ink2">đ</span>}
+              trailing={<span className="shrink-0 t-body-sm text-ink2">đ</span>}
             >
+              {/*
+                `t-body`, not the hero `t-figure` the money input defaults to:
+                inside a 44px control the figure size has no room to breathe,
+                and this is a number being tried out, not a headline.
+
+                `!` because `cn`'s tailwind-merge does not know the `.t-*` steps
+                are one family — it keeps BOTH classes, leaving the winner to
+                CSS source order. The override says so outright instead.
+              */}
               <EventMoneyInput
                 id="whatif-amount"
                 value={amount}
                 onChange={setAmount}
                 placeholder="0"
+                className="!t-body"
               />
-            </EventField>
+            </WhatIfField>
 
             {/* No `htmlFor`: the picker's control is a button, not an input, so
                 a label pointing at an id would reference nothing. */}
-            <EventField label={t('whatif.form.plannedDate')}>
+            <WhatIfField label={t('whatif.form.plannedDate')}>
               <DatePicker
                 value={plannedDate}
                 onChange={setPlannedDate}
-                className={eventDateTriggerClass}
+                className={whatIfDateTriggerClass}
               />
-            </EventField>
+            </WhatIfField>
           </div>
         )}
       </div>
@@ -225,9 +228,14 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
             </Button>
           </>
         ) : (
-          <Button onClick={handleRun} disabled={!canRun || isRunning}>
-            {isRunning ? t('whatif.actions.running') : t('whatif.actions.run')}
-          </Button>
+          <>
+            <Button variant="ghost" onClick={close}>
+              {t('whatif.actions.cancel')}
+            </Button>
+            <Button onClick={handleRun} disabled={!canRun || isRunning}>
+              {isRunning ? t('whatif.actions.running') : t('whatif.actions.run')}
+            </Button>
+          </>
         )}
       </ResponsiveDialogFooter>
     </ResponsiveDialogContent>

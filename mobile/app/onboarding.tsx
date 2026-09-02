@@ -39,30 +39,30 @@ function ChooseStep({ onCreate }: { onCreate: () => void }) {
 
   return (
     <ScrollView
-      className="flex-1 bg-app"
+      className="flex-1 bg-canvas"
       contentContainerStyle={{ paddingTop: insets.top + 48, paddingBottom: insets.bottom + 24 }}
     >
       <View className="px-5">
-        <Text className="text-[19px] font-medium text-ink">{t('onboarding.choose.title')}</Text>
+        <Text className="t-subtitle text-ink">{t('onboarding.choose.title')}</Text>
 
         <Pressable
           onPress={onCreate}
           accessibilityRole="button"
           style={{ minHeight: TOUCH_TARGET }}
-          className="mt-6 rounded-panel bg-panel p-5 active:opacity-80"
+          className="mt-6 rounded-card bg-card p-5 active:opacity-80"
         >
-          <Text className="text-[16px] font-medium text-ink">
+          <Text className="t-body font-medium text-ink">
             {t('onboarding.choose.create.title')}
           </Text>
         </Pressable>
 
         {/* Joining happens by scanning the inviter's QR, which deep-links
             straight to /join — so this only has to explain where that is. */}
-        <View className="mt-3 rounded-panel bg-panel p-5">
-          <Text className="text-[16px] font-medium text-ink">
+        <View className="mt-3 rounded-card bg-card p-5">
+          <Text className="t-body font-medium text-ink">
             {t('onboarding.choose.join.title')}
           </Text>
-          <Text className="mt-1.5 text-[14px] leading-5 text-ink2">
+          <Text className="mt-1.5 t-body-sm leading-5 text-ink2">
             {t('invites.joinByCode.scanHint')}
           </Text>
         </View>
@@ -82,7 +82,7 @@ function CreateStep({ onBack }: { onBack: () => void }) {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-app"
+      className="flex-1 bg-canvas"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
@@ -96,16 +96,16 @@ function CreateStep({ onBack }: { onBack: () => void }) {
             style={{ minHeight: TOUCH_TARGET }}
             className="justify-center"
           >
-            <Text className="text-[14px] font-medium text-interactive">
+            <Text className="t-body-sm font-medium text-action">
               {t('onboarding.choose.back')}
             </Text>
           </Pressable>
 
-          <Text className="mt-2 text-[19px] font-medium text-ink">
+          <Text className="mt-2 t-subtitle text-ink">
             {t('onboarding.form.title')}
           </Text>
 
-          <View className="mt-6 rounded-panel bg-panel p-5">
+          <View className="mt-6 rounded-card bg-card p-5">
             <Controller
               control={control}
               name="name"

@@ -154,6 +154,10 @@ function OverdueRowItem({
   pending: boolean
 }) {
   const { t } = useTranslation()
+  // Generated from its debt and regenerated on every schedule change, so a hand
+  // edit here would be undone. "Đã xong" stays: recording a payment is not an
+  // edit of the plan.
+  const isDebtDerived = Boolean(row.debtId)
 
   return (
     <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-t border-divider py-3 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_32px] sm:gap-x-6">
@@ -211,7 +215,7 @@ function OverdueRowItem({
       {/* "Đã xong" ở lại là nút riêng — nó là hành động duy nhất đưa khoản này
           ra khỏi danh sách, nên không giấu sau menu. Sửa và xoá thì vào ⋯,
           giống hệt hàng trên dòng thời gian (§12.2). */}
-      {onEdit || onDelete ? (
+      {(onEdit || onDelete) && !isDebtDerived ? (
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={t('upcoming.rowActions.label')}

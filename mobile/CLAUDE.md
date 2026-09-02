@@ -89,14 +89,23 @@ import {
 If a primitive is missing, add it to the kit rather than hand-rolling markup in
 a feature. One Button, one Field, one way to show a status.
 
-Design source of truth is [../design/](../design/) (v4.2), **not** the v3.1
-folder the web's CLAUDE.md still points at. Mobile-specific rules:
+Design source of truth is [../design/](../design/) — **v5**, and the
+`.dc.html` pages in `../design-v5-styleguide/` outrank the markdown where they
+disagree. Mobile-specific rules:
 
 - Panel padding 20 (`p-5`). Desktop's 32 never applies.
 - Touch targets ≥ 44pt for nav, CTAs and action links.
 - Tables become **grouped rows**. Core flows never scroll horizontally.
 - Money values never truncate.
-- `--interactive` is the CTA colour (v4.2 renamed the web's `--accent`).
+- `action` (ink) is the CTA colour. v5 split interaction from data semantics:
+  `action` is what you press, `data-primary` (blue) is what a chart draws with,
+  and `positive` (green) means a good consequence — **never** "this is
+  clickable". A static metric never wears the action colour.
+- Anything that must be READ takes an `*-ink` token (`text-alert-ink`,
+  `text-attention-ink`). The bare `alert` / `attention` / `positive` tones are
+  FILLS — a dot, a bar, a destructive background — and fail AA as text.
+- Cards carry no shadow and no border; they separate from `canvas` by lightness
+  alone. `Sunk` is a **control surface** (field, chart bed), not a card tier.
 
 Tokens live twice — [tailwind.config.js](tailwind.config.js) for classes,
 [src/theme/tokens.ts](src/theme/tokens.ts) for props that take colours. Change
@@ -106,14 +115,30 @@ both.
 
 Two faces, two jobs, one hard constraint:
 
-- **Be Vietnam Pro** — all Vietnamese text, titles, labels, money.
+- **Urbanist** — all Vietnamese text, titles, labels, money. Loaded at
+  **300/400/500 only**; there is no 600, so `font-semibold` must never be used.
 - **IBM Plex Mono** — ASCII only: dates, counts, units, percentages.
 
 Mono must never touch accented Vietnamese. `RowMetaMono` vs `RowMeta` in
 [grouped-row.tsx](src/components/ui/grouped-row.tsx) exists for exactly this.
 
-Money always renders with `fontVariant: ['tabular-nums']`, or columns of
-amounts do not line up.
+Both faces are loaded in [app/_layout.tsx](app/_layout.tsx) via
+`@expo-google-fonts/*`; the first frame is held until they land.
+
+**Size comes from the scale, never from a literal.** The eleven `.t-*` steps
+(`t-display` … `t-caption-sm`) are defined in the tailwind config plugin and
+mirror `web/src/index.css`. A step carries size, weight AND tracking together,
+so:
+
+- Never write `text-[17px]` — it is not a step.
+- Never add `font-medium` to `t-hero` / `t-figure` / `t-metric` / `t-title` /
+  `t-subtitle`; those already state their weight. On `t-body` and below it is
+  legitimate emphasis within a step.
+- Never re-state `letterSpacing` beside a step. The exception is positive
+  tracking on an uppercase label, which no step carries.
+
+`Money` takes `step`, not a pixel size. Money always renders with
+`fontVariant: ['tabular-nums']`, or columns of amounts do not line up.
 
 ## i18n
 

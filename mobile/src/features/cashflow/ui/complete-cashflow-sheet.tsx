@@ -99,7 +99,7 @@ export function CompleteCashflowSheet({
     >
       <View className="gap-4">
         <View>
-          <Text className="text-[14px] leading-5 text-ink">
+          <Text className="t-body-sm leading-5 text-ink">
             {t('upcoming.complete.description', {
               name: eventName,
               amount: formatVndShort(amount),
@@ -108,7 +108,7 @@ export function CompleteCashflowSheet({
           {/* Which occurrence. A recurring event has many, and completing the
               wrong one advances the series past a month nobody paid. */}
           {occurrenceDate ? (
-            <Text className="mt-1 font-mono text-[12px] text-ink3">
+            <Text className="mt-1 font-mono t-caption text-ink3">
               {formatFullDate(occurrenceDate)}
             </Text>
           ) : null}

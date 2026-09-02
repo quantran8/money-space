@@ -39,46 +39,46 @@ function JoinContent() {
 
   return (
     <ScrollView
-      className="flex-1 bg-app"
+      className="flex-1 bg-canvas"
       contentContainerStyle={{ paddingTop: insets.top + 48, paddingBottom: insets.bottom + 24 }}
     >
       <View className="px-5">
-        <Text className="text-[11px] font-medium uppercase text-ink3" style={{ letterSpacing: 0.66 }}>
+        <Text className="t-caption-sm font-medium uppercase text-ink3" style={{ letterSpacing: 0.66 }}>
           {t('invites.join.eyebrow')}
         </Text>
 
-        <View className="mt-4 rounded-panel bg-panel p-5">
+        <View className="mt-4 rounded-card bg-card p-5">
           {isAutoJoining ? (
             <View className="items-center py-6">
               <ActivityIndicator />
-              <Text className="mt-3 text-[14px] text-ink">
+              <Text className="mt-3 t-body-sm text-ink">
                 {preview?.householdName
                   ? t('invites.join.autoJoiningNamed', { name: preview.householdName })
                   : t('invites.join.autoJoining')}
               </Text>
-              <Text className="mt-1 text-[14px] text-ink2">
+              <Text className="mt-1 t-body-sm text-ink2">
                 {t('invites.join.autoJoiningHint')}
               </Text>
             </View>
           ) : isMissingToken ? (
-            <Text className="text-[14px] leading-5 text-ink">{t('invites.join.notFound')}</Text>
+            <Text className="t-body-sm leading-5 text-ink">{t('invites.join.notFound')}</Text>
           ) : isLoading ? (
             <View className="items-center py-6">
               <ActivityIndicator />
             </View>
           ) : loadError ? (
-            <Text className="text-[14px] leading-5 text-alert">{loadError}</Text>
+            <Text className="t-body-sm leading-5 text-alert-ink">{loadError}</Text>
           ) : (
             <>
-              <Text className="text-[19px] font-medium leading-6 text-ink">
+              <Text className="t-subtitle leading-6 text-ink">
                 {t('invites.join.title', { name: preview?.householdName ?? '' })}
               </Text>
-              <Text className="mt-2 text-[14px] leading-5 text-ink2">
+              <Text className="mt-2 t-body-sm leading-5 text-ink2">
                 {preview?.invitedByName
                   ? t('invites.join.invitedBy', { name: preview.invitedByName })
                   : t('invites.join.invitedByUnknown')}
               </Text>
-              <Text className="mt-3 text-[14px] leading-5 text-ink2">
+              <Text className="mt-3 t-body-sm leading-5 text-ink2">
                 {t('invites.join.equalMembers')}
               </Text>
 

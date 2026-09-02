@@ -67,7 +67,7 @@ export function SpendImpactBar({
                 figure fits: 14% of 375pt is 52pt, which clips "12,1 tr". */}
             {share >= 26 ? (
               <Text
-                className="text-[11px] font-medium text-white"
+                className="t-caption-sm font-medium text-white"
                 numberOfLines={1}
                 style={{ fontVariant: ['tabular-nums'] }}
               >

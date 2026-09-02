@@ -53,7 +53,7 @@ export function Collapsible({
             value and here was not even a label: it read as a caption that
             happened to be tappable. */}
         <View className="flex-row items-center gap-1.5 pt-0.5">
-          <Text className="text-[14px] font-medium text-interactive">
+          <Text className="t-body-sm font-medium text-action">
             {open ? hideLabel : showLabel}
           </Text>
           <ChevronDown

@@ -1,10 +1,10 @@
 import { Controller } from 'react-hook-form'
-import { Text, View } from 'react-native'
+import { View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
 import type { Settings } from '@money-space/core/features/settings/model/settings-form'
 
-import { Button, Label, Panel, Select } from '@/components/ui'
+import { Button, Field, Panel, Select } from '@/components/ui'
 
 import type { UseFormReturn } from 'react-hook-form'
 
@@ -12,12 +12,15 @@ import type { UseFormReturn } from 'react-hook-form'
  * The household's own card: what it is called, and the two settings that
  * change how every number in the app reads.
  *
- * Only currency and language are here. The web's card carries the same two and
- * no more, for a reason that is worth restating: `updateHouseholdConfig`
- * PATCHes `currency` alone, so a control for anything else would be a control
- * that silently discards what the household chose — the worst possible bug in
- * a product whose proposition is "you decide". Language is client-side and
- * takes effect immediately.
+ * The name is a real field. It was read-only for as long as the backend had no
+ * endpoint to change it — a control that silently discarded what the household
+ * chose would be the worst possible bug in a product whose proposition is "you
+ * decide". `updateHouseholdConfig` now takes a payload and validates each field
+ * only when present, so the name can be edited here (60 characters, the same
+ * limit the backend enforces).
+ *
+ * Currency is stored with it; language is client-side and takes effect
+ * immediately.
  *
  * Save is a button in this panel rather than beside the screen title. On the
  * web it sits level with the title because it commits two selects buried in a
@@ -27,25 +30,35 @@ import type { UseFormReturn } from 'react-hook-form'
  */
 export function HouseholdIdentitySection({
   form,
-  householdName,
   isSaving,
   onSave,
 }: {
   form: UseFormReturn<Settings>
-  /** The stored name — this card reads it, `useSettingsPage` does not write it. */
-  householdName: string
   isSaving: boolean
   onSave: () => void
 }) {
   const { t } = useTranslation()
-  const { control } = form
+  const {
+    control,
+    formState: { errors },
+  } = form
 
   return (
     <Panel>
-      <Label>{t('household.merged.householdName')}</Label>
-      <Text className="mt-1.5 text-[26px] font-medium text-ink" style={{ letterSpacing: -0.78 }}>
-        {householdName}
-      </Text>
+      <Controller
+        control={control}
+        name="householdName"
+        render={({ field }) => (
+          <Field
+            label={t('household.merged.householdName')}
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            error={errors.householdName?.message}
+            maxLength={60}
+          />
+        )}
+      />
 
       {/* ── SEAM: freshness ────────────────────────────────────────────────
           The web's card opens with a dot saying whether every source is still
@@ -54,7 +67,7 @@ export function HouseholdIdentitySection({
           it here would give the household two places telling it the same
           thing, and they would disagree the moment one is updated. */}
 
-      <View className="mt-6 gap-3">
+      <View className="mt-4 gap-3">
         <Controller
           control={control}
           name="currency"

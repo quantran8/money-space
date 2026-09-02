@@ -36,7 +36,7 @@ export function Disclosure({
         style={{ minHeight: TOUCH_TARGET }}
         className="flex-row items-center gap-1.5"
       >
-        <Text className="text-[14px] font-medium text-interactive">{label}</Text>
+        <Text className="t-body-sm font-medium text-action">{label}</Text>
         {open ? (
           <ChevronUp size={16} color={colors.interactive} strokeWidth={1.75} />
         ) : (

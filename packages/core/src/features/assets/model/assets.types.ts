@@ -190,6 +190,12 @@ export type AssetDeleteImpact = {
     status: string
   }>
   debts: Array<{ id: string; name: string; status: string }>
+  /**
+   * How many recorded movements the delete destroys. Unlike everything above,
+   * these are not detached but removed outright — past months' thu/chi totals
+   * change with them, so the confirmation has to say so.
+   */
+  moneyEventCount: number
   /** Nothing points at the asset; the delete needs no confirmation. */
   isClear: boolean
 }

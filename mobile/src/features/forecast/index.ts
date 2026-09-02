@@ -6,7 +6,8 @@
 export { AssumptionsNote } from '@/features/forecast/ui/assumptions-note'
 export { ForecastSummary } from '@/features/forecast/ui/forecast-summary'
 export { ForecastTimeline } from '@/features/forecast/ui/forecast-timeline'
-export { HorizonSelector } from '@/features/forecast/ui/horizon-selector'
+export { OverdueSection } from '@/features/forecast/ui/overdue-section'
+export { RangePicker } from '@/features/forecast/ui/range-picker'
 
 export {
   formatDayMonth,

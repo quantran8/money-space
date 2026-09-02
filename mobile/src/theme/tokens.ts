@@ -1,5 +1,5 @@
 /**
- * Design v4.2 tokens as JavaScript values.
+ * Design v5 tokens as JavaScript values.
  *
  * NativeWind covers styling through `className`, but some APIs take colours as
  * props rather than classes — the tab bar, chart fills, icon strokes. Those
@@ -11,35 +11,73 @@
  */
 
 export const colors = {
-  // Three surfaces, separated by lightness only.
-  app: '#EEF1F3',
-  panel: '#FFFFFF',
-  sunk: '#F5F7F8',
+  // v5 surfaces (01-foundations §2.1). Cool cast, tuned so a white card still
+  // separates from the canvas now that shadows are gone.
+  canvas: '#EDF3F8',
+  card: '#FFFFFF',
+  wash: '#E3ECF2',
+  divider: '#EEF1F2',
+  /** The one surface allowed to wear it: the hero card, radius 28. */
+  hero: '#B5CDE8',
+  heroDeep: '#ACC6E3',
+  /** A disabled control's fill — deliberately NOT wash, which reads as usable. */
+  fieldDisabled: '#F7F9FA',
 
-  ink: '#15181C',
-  ink2: '#525860',
-  ink3: '#707780',
-  hair: '#E5E9EC',
+  ink: '#0F1011',
+  ink2: '#596268',
+  ink3: '#6B767C',
 
-  interactive: '#0A6B47',
-  interactiveSoft: '#E3EFEA',
+  /** Interaction is ink, never green (§4). */
+  action: '#0F1011',
+  actionInverse: '#FFFFFF',
+  actionSoft: '#EEF1F2',
+  dataPrimary: '#73A4D7',
 
-  attention: '#9A6818',
+  // Fill tones — a dot, a bar, a tick, a destructive background. Anything that
+  // must be READ takes the `*Ink` counterpart below.
+  positive: '#8FCDA4',
+  attention: '#E1BE68',
   attentionSoft: '#F6EDDC',
-  alert: '#B23A26',
+  alert: '#E8A39A',
 
-  committed: '#D2D6DA',
-  protect: '#A9B0B8',
-} as const
+  // Text-safe counterparts, all clearing 4.5:1 on a white card. These are DATA
+  // tones — direction, provenance — never an interaction colour. A button
+  // never wears one.
+  positiveInk: '#4E855F',
+  dataInk: '#356FA8',
+  alertInk: '#A9544D',
+  attentionInk: '#8C6817',
 
-export const radius = {
-  panel: 14,
-  sunk: 10,
-  control: 8,
+  committed: '#D8E0E4',
+  protect: '#AFC0C7',
+
+  scrim: 'rgba(15, 16, 17, 0.34)',
+
+  // v4 aliases, kept so a screen mid-migration still resolves.
+  app: '#EDF3F8',
+  panel: '#FFFFFF',
+  sunk: '#E3ECF2',
+  hair: '#EEF1F2',
+  interactive: '#0F1011',
+  interactiveSoft: '#EEF1F2',
 } as const
 
 /**
- * The spacing scale, v4.2 §7.
+ * v5 geometry (§2.1, §8). Cards grew from 14 to 22, and the hero card owns 28.
+ * `control` is a field or a chip; a pill is fully round.
+ */
+export const radius = {
+  hero: 28,
+  card: 22,
+  control: 14,
+  pill: 999,
+  // v4 aliases.
+  panel: 22,
+  sunk: 14,
+} as const
+
+/**
+ * The spacing scale, v5 §7.
  *
  * Named by JOB, not by size. Six screens each picking their own `mt-3` /
  * `mt-4` / `mt-5` is how the app ended up with thirteen different gaps and a
@@ -67,43 +105,51 @@ export const spacing = {
 } as const
 
 /**
- * The type scale, v4.2 §5.
+ * The type scale, v5 §5.2–5.3 — the same eleven steps the web ships, so a
+ * figure reads at the same rank on both clients.
  *
- * `secondary` is 14, not 13. The whole supporting layer — a wallet's holder, a
- * relative date, the caveat under a figure — had drifted down to 13 and 12,
- * where `--ink3` on `--sunk` is legible in a screenshot and hard work on a
- * phone held at arm's length. Metadata may be quiet; it may not be unreadable.
+ * Weight falls as size rises: 500 for display and headings, 400 for the money
+ * steps, 300 for body and metadata. v4 set money at 300, which is too thin to
+ * carry the one number a screen exists to answer.
  */
 export const type = {
+  /** The landing figure. Rarely used in-app. */
+  display: { size: 72, weight: '500', lineHeight: 73, letterSpacing: -2.52 },
   /** The one figure a screen exists to answer. */
-  hero: 56,
+  hero: { size: 56, weight: '400', lineHeight: 59, letterSpacing: -2.24 },
   /** A second-rank metric. */
-  metric: 30,
+  figure: { size: 40, weight: '400', lineHeight: 44, letterSpacing: -1.4 },
   /** A metric inside a cell or row. */
-  metricSmall: 22,
+  metric: { size: 28, weight: '400', lineHeight: 32, letterSpacing: -0.84 },
   /** Screen title. */
-  pageTitle: 19,
+  title: { size: 24, weight: '500', lineHeight: 31, letterSpacing: -0.48 },
   /** Section title. */
-  sectionTitle: 16,
+  subtitle: { size: 20, weight: '500', lineHeight: 27, letterSpacing: -0.2 },
+  /** A quiet 20 — a lead line rather than a heading. */
+  subhead: { size: 20, weight: '400', lineHeight: 26, letterSpacing: 0 },
   /** Body copy. */
-  body: 14,
+  body: { size: 16, weight: '300', lineHeight: 24, letterSpacing: 0 },
   /** Supporting copy: holders, dates, captions, caveats. */
-  secondary: 14,
+  bodySm: { size: 14, weight: '300', lineHeight: 21, letterSpacing: 0 },
   /** The smallest text that may carry meaning. Never a money value. */
-  caption: 12,
-  /** Uppercase semantic label. */
-  label: 11,
+  caption: { size: 12, weight: '300', lineHeight: 17, letterSpacing: 0 },
+  /** The floor. A unit, a tick label. */
+  captionSm: { size: 11, weight: '300', lineHeight: 15, letterSpacing: 0 },
 } as const
 
-/** The minimum touch target, v4.2 §9. Nav, CTA and action links all clear it. */
+/** The minimum touch target, v5 §9. Nav, CTA and action links all clear it. */
 export const TOUCH_TARGET = 44
 
 /**
- * Liquidity encoded by WEIGHT, not hue (§5.4): money usable today carries the
- * accent, long-term holdings recede. Amber stays reserved for `attention`.
+ * Liquidity ramp — one hue, three monotone lightness steps, so the ordering
+ * (usable now → long term) survives greyscale and CVD.
+ *
+ * v4 encoded this by WEIGHT off the green accent. v5 cannot: the accent IS
+ * `--action` (near-black), so that ramp measures below the chroma floor —
+ * three greys where the design intends one quantity split three ways.
  */
 export const liquidityColors = {
-  usable_now: colors.interactive,
-  not_immediately_usable: colors.protect,
-  long_term: colors.committed,
+  usable_now: '#0954C4',
+  not_immediately_usable: '#3486EA',
+  long_term: '#7CB6F3',
 } as const

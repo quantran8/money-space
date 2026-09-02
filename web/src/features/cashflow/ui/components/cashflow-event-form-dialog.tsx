@@ -288,7 +288,7 @@ export function CashflowEventFormDialog({
                         value={field.value}
                         onChange={field.onChange}
                         aria-invalid={Boolean(errors.expectedDate)}
-                        className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body hover:bg-transparent [&_svg]:hidden"
+                        className="h-full rounded-none border-0 bg-transparent p-0 font-mono t-body shadow-none hover:bg-transparent [&_svg]:hidden"
                       />
                     )}
                   />

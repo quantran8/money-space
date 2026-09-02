@@ -43,7 +43,7 @@ export function ActionSheet({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
-        className={cn('items-center justify-center rounded-control active:bg-sunk', className)}
+        className={cn('items-center justify-center rounded-control active:bg-wash', className)}
       >
         <MoreHorizontal size={18} color={colors.ink3} strokeWidth={1.75} />
       </Pressable>
@@ -59,10 +59,10 @@ export function ActionSheet({
               }}
               accessibilityRole="button"
               style={{ minHeight: TOUCH_TARGET }}
-              className="justify-center rounded-control px-1 active:bg-sunk"
+              className="justify-center rounded-control px-1 active:bg-wash"
             >
               <Text
-                className={cn('text-[15px]', item.destructive ? 'text-alert' : 'text-ink')}
+                className={cn('t-body', item.destructive ? 'text-alert-ink' : 'text-ink')}
               >
                 {item.label}
               </Text>

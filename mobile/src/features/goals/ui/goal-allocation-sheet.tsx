@@ -191,7 +191,7 @@ export function GoalAllocationSheet({
         </View>
       }
     >
-      <Text className="mb-4 text-[14px] text-ink2">{goalName}</Text>
+      <Text className="mb-4 t-body-sm text-ink2">{goalName}</Text>
 
       <View className="gap-4">
         {/* Locked while editing: swapping the asset is not an edit of this
