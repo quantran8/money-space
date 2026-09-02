@@ -110,14 +110,20 @@ export function useEventsPage() {
   // household rows). The value is the stable CODE; the label follows the user's
   // language via i18n keyed by that code, falling back to the row's DB label for
   // custom categories that have no translation key.
+  // The household's default leads the picker — it is the one the form
+  // pre-selects, so it should not sit mid-list where the reader has to scroll
+  // past it to confirm what is already chosen. Everything after keeps the
+  // server's sortOrder.
   const categoryOptions = useMemo(
     () =>
-      categories.map((category) => ({
-        value: category.code,
-        label: t(`options.eventCategory.${category.code}`, {
-          defaultValue: category.label,
-        }),
-      })),
+      [...categories]
+        .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
+        .map((category) => ({
+          value: category.code,
+          label: t(`options.eventCategory.${category.code}`, {
+            defaultValue: category.label,
+          }),
+        })),
     [categories, t],
   )
 

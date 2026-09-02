@@ -48,12 +48,18 @@ export function CategoriesCard() {
   const displayName = (category: EventCategoryItem) =>
     t(`options.eventCategory.${category.code}`, { defaultValue: category.label })
 
+  // The default leads its tab. The API already returns it first, but the split
+  // below re-groups the rows, so each list re-applies it: the row the household
+  // reaches for should not sit mid-alphabet in either tab.
+  const defaultFirst = (items: EventCategoryItem[]) =>
+    [...items].sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
+
   const systemCategories = useMemo(
-    () => categories.filter((category) => category.isSystem),
+    () => defaultFirst(categories.filter((category) => category.isSystem)),
     [categories],
   )
   const customCategories = useMemo(
-    () => categories.filter((category) => !category.isSystem),
+    () => defaultFirst(categories.filter((category) => !category.isSystem)),
     [categories],
   )
   const visible = tab === 'system' ? systemCategories : customCategories
@@ -249,7 +255,8 @@ export function CategoriesCard() {
                       {/* The default toggle is available on system rows too —
                           the default is a per-household pointer, not a row
                           flag — so it stays visible rather than fading in with
-                          the overflow. */}
+                          the overflow. Every member gets it: categories are
+                          about the money, and both partners are equal there. */}
                       <Button
                         type="button"
                         variant="ghost"

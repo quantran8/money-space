@@ -184,21 +184,11 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
               htmlFor="whatif-amount"
               trailing={<span className="shrink-0 t-body-sm text-ink2">đ</span>}
             >
-              {/*
-                `t-body`, not the hero `t-figure` the money input defaults to:
-                inside a 44px control the figure size has no room to breathe,
-                and this is a number being tried out, not a headline.
-
-                `!` because `cn`'s tailwind-merge does not know the `.t-*` steps
-                are one family — it keeps BOTH classes, leaving the winner to
-                CSS source order. The override says so outright instead.
-              */}
               <EventMoneyInput
                 id="whatif-amount"
                 value={amount}
                 onChange={setAmount}
                 placeholder="0"
-                className="!t-body"
               />
             </WhatIfField>
 

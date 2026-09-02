@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
 
-import { Button, RowMeta, StatusChip } from '@/components/ui'
+import { Button, RowMeta } from '@/components/ui'
 
 /**
  * One person in the household.
@@ -48,6 +48,8 @@ export function MemberRow({
   const { t } = useTranslation()
 
   const exit = isOwner ? 'none' : isSelf ? 'leave' : canRemoveOthers ? 'remove' : 'none'
+  // Still gates the exit: there is nothing to leave or remove on a row for
+  // someone who has not accepted the invite yet.
   const active = member.status === 'active'
 
   return (
@@ -69,11 +71,6 @@ export function MemberRow({
             </Text>
           ) : null}
         </View>
-
-        <StatusChip
-          tone={active ? 'interactive' : 'attention'}
-          label={active ? t('members.list.active') : t('members.list.pending')}
-        />
       </View>
 
       {holdsCount > 0 ? (
