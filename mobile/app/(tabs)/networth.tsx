@@ -203,13 +203,22 @@ export default function NetWorthScreen() {
           // What else goes with it. Nothing cascades in the database — assets
           // are soft-deleted — so these links would otherwise point at a row
           // nothing returns, which is what left goals showing a wallet the
-          // household had already removed.
+          // household had already removed. These are DETACHED and survive; the
+          // line below covers what is destroyed outright.
           deleteImpact.impact && !deleteImpact.isClear
             ? t('assets.form.removeAlsoDetaches', {
                 goals: deleteImpact.impact.goals.map((goal) => goal.name).join(', '),
                 goalCount: deleteImpact.impact.goals.length,
                 eventCount: deleteImpact.impact.cashflowEvents.length,
                 debtCount: deleteImpact.impact.debts.length,
+              })
+            : null,
+          // The one irreversible line, so it comes before the detach notice: the
+          // movements recorded through this wallet are DESTROYED, not detached,
+          // and past months' thu/chi move with them.
+          deleteImpact.impact && deleteImpact.impact.moneyEventCount > 0
+            ? t('assets.form.removeDeletesMoneyEvents', {
+                count: deleteImpact.impact.moneyEventCount,
               })
             : null,
           // Stated separately and last: a goal losing its last wallet still

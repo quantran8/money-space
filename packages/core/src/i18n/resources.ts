@@ -593,7 +593,9 @@ export const resources = {
           removeTitle: 'Gỡ nguồn tiền này?',
           removeBody: '{{amount}} sẽ không còn được tính vào bức tranh tài chính của gia đình.',
           removeAlsoDetaches:
-            'Tài sản này đang gắn với {{goalCount}} mục tiêu ({{goals}}), {{eventCount}} khoản thu chi và {{debtCount}} khoản nợ. Xoá sẽ gỡ các liên kết đó — mục tiêu, khoản thu chi và khoản nợ vẫn còn, nhưng không còn trỏ tới tài sản này nữa.',
+            'Tài sản này đang gắn với {{goalCount}} mục tiêu ({{goals}}), {{eventCount}} khoản dự chi và {{debtCount}} khoản nợ. Xoá sẽ gỡ các liên kết đó — mục tiêu, khoản dự chi và khoản nợ vẫn còn, nhưng không còn trỏ tới tài sản này nữa.',
+          removeDeletesMoneyEvents:
+            'Xoá cũng sẽ xoá luôn {{count}} giao dịch đã ghi qua nguồn tiền này. Các giao dịch đó biến mất khỏi lịch sử, nên tổng thu chi của những tháng đã qua sẽ thay đổi theo. Không thể hoàn tác.',
           removeLeavesGoalsWithoutWallet:
             'Sau khi xoá, {{goals}} sẽ không còn ví nào để góp tiền mỗi tháng. Mục tiêu vẫn còn nhưng phần theo dõi tiến độ hằng tháng sẽ trống cho tới khi bạn thêm ví khác.',
           removeConfirm: 'Gỡ nguồn tiền',
@@ -3589,7 +3591,9 @@ export const resources = {
           removeTitle: 'Remove this money source?',
           removeBody: "{{amount}} will no longer count towards your household's picture.",
           removeAlsoDetaches:
-            'This asset backs {{goalCount}} goal(s) ({{goals}}), {{eventCount}} event(s) and {{debtCount}} debt(s). Deleting it detaches those links — the goals, events and debts stay, but they will no longer point at this asset.',
+            'This asset backs {{goalCount}} goal(s) ({{goals}}), {{eventCount}} scheduled event(s) and {{debtCount}} debt(s). Deleting it detaches those links — the goals, scheduled events and debts stay, but they will no longer point at this asset.',
+          removeDeletesMoneyEvents:
+            'Deleting also deletes the {{count}} movement(s) recorded through this money source. They leave your history for good, so past months\' totals will change with them. This cannot be undone.',
           removeLeavesGoalsWithoutWallet:
             'After this, {{goals}} will have no wallet left to be saved into each month. The goal stays, but its monthly pace panel will be empty until you add another wallet.',
           removeConfirm: 'Remove',
