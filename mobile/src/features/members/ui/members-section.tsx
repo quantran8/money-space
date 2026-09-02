@@ -14,6 +14,12 @@ import { MemberRow } from '@/features/members/ui/member-row'
  * burying the only way to do it behind a 13px link in a header makes a solo
  * household a dead end. Once there are two people the prompt has done its job
  * and the action shrinks back into the header.
+ *
+ * All three of those entry points are creator-only. Inviting is one of the
+ * three lifecycle operations the backend guards against `createdBy`, so for the
+ * other member every one of them could only ever end in a 403 — and a
+ * full-width prompt for an action you cannot take is the loudest possible way
+ * to be told no.
  */
 export function MembersSection({
   members,
@@ -49,7 +55,7 @@ export function MembersSection({
       <PanelHeader
         title={t('household.merged.membersTitle')}
         right={
-          !isLoading && !isSolo ? (
+          !isLoading && !isSolo && isViewerOwner ? (
             <Button variant="ghost" className="-mr-2 px-2" onPress={onInvite}>
               {t('members.invite.action')}
             </Button>
@@ -70,8 +76,8 @@ export function MembersSection({
         <EmptyState
           className="mt-5"
           message={t('members.list.soloPrompt')}
-          action={t('members.invite.action')}
-          onAction={onInvite}
+          action={isViewerOwner ? t('members.invite.action') : undefined}
+          onAction={isViewerOwner ? onInvite : undefined}
         />
       ) : (
         <View className="mt-4">
@@ -89,7 +95,7 @@ export function MembersSection({
         </View>
       )}
 
-      {isSolo && members.length > 0 ? (
+      {isSolo && members.length > 0 && isViewerOwner ? (
         <View className="mt-4 rounded-control bg-wash p-4">
           <Text className="t-body-sm leading-5 text-ink2">{t('members.list.soloPrompt')}</Text>
           <Button className="mt-3" onPress={onInvite}>

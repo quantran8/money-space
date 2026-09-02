@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { cn } from '@money-space/core/shared/lib/utils'
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
 
 type MemberRowProps = {
@@ -58,11 +57,13 @@ export function MemberRow({
 }: MemberRowProps) {
   const { t } = useTranslation()
   const exit = isOwner ? 'none' : isSelf ? 'leave' : canRemoveOthers ? 'remove' : 'none'
+  // Still gates the exit: there is nothing to leave or remove on a row for
+  // someone who has not accepted the invite yet.
   const isActive = member.status === 'active'
   const displayName = member.name || member.email
 
   return (
-    <article className="-mx-3 grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-2 rounded-control px-3 py-1 transition-colors hover:bg-canvas sm:grid-cols-[minmax(0,1fr)_auto_auto_44px]">
+    <article className="-mx-3 grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-2 rounded-control px-3 py-1 transition-colors hover:bg-canvas sm:grid-cols-[minmax(0,1fr)_auto_44px]">
       <div className="flex min-w-0 items-center gap-3">
         <div className="grid size-11 shrink-0 place-items-center rounded-full bg-wash t-caption font-medium text-ink2">
           {member.initials}
@@ -73,23 +74,16 @@ export function MemberRow({
         </div>
       </div>
 
-      {/* Below `sm` the two facts drop under the name rather than squeezing
-          four columns onto a phone. The indent is not a spacing step — it is
-          the avatar (44) plus its gap (12), so the facts line up with the copy
+      {/* Below `sm` responsibility drops under the name rather than squeezing
+          three columns onto a phone. The indent is not a spacing step — it is
+          the avatar (44) plus its gap (12), so the fact lines up with the copy
           rather than with the row edge.
 
-          A member with no sources keeps the empty cell from `sm` up, so status
-          lands in the same column on every row; on a phone it is a blank line
-          instead, so it is dropped there. */}
+          A member with no sources keeps the empty cell from `sm` up so the
+          column holds its width across rows; on a phone it would be a blank
+          line instead, so it is dropped there. */}
       <p className="num order-3 col-span-2 pl-[56px] t-caption text-ink3 empty:hidden sm:order-none sm:col-span-1 sm:whitespace-nowrap sm:pl-0 sm:empty:block">
         {holdsCount > 0 ? t('members.list.holdsSources', { count: holdsCount }) : null}
-      </p>
-
-      <p className="order-4 col-span-2 flex items-center gap-2 pl-[56px] t-body-sm text-ink2 sm:order-none sm:col-span-1 sm:whitespace-nowrap sm:pl-0">
-        <span
-          className={cn('size-1.5 shrink-0 rounded-full', isActive ? 'bg-positive' : 'bg-attention')}
-        />
-        {isActive ? t('members.list.active') : t('members.list.pending')}
       </p>
 
       {isActive && exit !== 'none' ? (

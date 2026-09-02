@@ -157,8 +157,12 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           label={t('whatif.cashflow.before')}
           value={before.lowestProjectedBalance}
           /* The before bar is always full: it is the reference the after bar is
-             read against, not a quantity of its own. */
-          fill={colors.committed}
+             read against, not a quantity of its own. `dataPrimary`, the same
+             fill as the after bar — this is one measurement drawn twice, so the
+             pair is a composition, not two different things. It used to be
+             `committed` (the hairline grey), which read as a disabled track
+             rather than as the reference. */
+          fill={colors.dataPrimary}
           share={100}
         />
 
@@ -166,6 +170,12 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           {`− ${formatVndShort(spend)}`}
         </Text>
 
+        {/* Same fill and same track as "before": what changed is the LENGTH, and
+            the drop is the gap of bare track the fill no longer covers. Not
+            `positive`/`alert` — §4 reserves those for a consequence that really
+            is good or really is a deficit, and this bar is drawn the same way
+            whichever it turns out to be. The figure above it carries the result
+            tone; the bar carries the magnitude. */}
         <BalanceBlock
           className="mt-3"
           label={t('whatif.cashflow.after')}

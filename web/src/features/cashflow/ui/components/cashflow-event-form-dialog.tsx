@@ -244,7 +244,7 @@ export function CashflowEventFormDialog({
                     render={({ field }) => (
                       <EventMoneyInput
                         id="cashflow-amount"
-                        className="h-full t-body font-medium tracking-normal"
+                        className="h-full tracking-normal"
                         placeholder="0"
                         value={field.value}
                         onChange={field.onChange}

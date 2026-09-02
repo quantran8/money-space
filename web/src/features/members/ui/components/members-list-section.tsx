@@ -48,8 +48,12 @@ export function MembersListSection({
             {/* Always available, including in a solo household. A separate
                 "mời thêm người" prompt used to take the button's place below the
                 list, which meant the one household that most needs the action
-                was the one household without it in the header. */}
-            {!isLoading ? (
+                was the one household without it in the header.
+
+                Creator-only, though: issuing an invite is one of the three
+                lifecycle operations the backend guards against `createdBy`, so
+                for the other member the button could only ever end in a 403. */}
+            {!isLoading && isViewerOwner ? (
               <Button type="button" variant="secondary" size="sm" onClick={onInvite}>
                 <UserPlus className="size-4" strokeWidth={1.75} />
                 {t('members.invite.action')}

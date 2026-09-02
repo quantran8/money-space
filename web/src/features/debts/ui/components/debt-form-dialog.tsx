@@ -192,7 +192,7 @@ function MoneyControl({
     <div className={cn(controlClass, error && 'border-alert-ink')}>
       <EventMoneyInput
         id={id}
-        className="h-full t-body font-medium tracking-normal"
+        className="h-full tracking-normal"
         placeholder={placeholder}
         value={value}
         onChange={onChange}
@@ -754,7 +754,7 @@ export function DebtFormDialog({
                       <Controller control={control} name="fixedPaymentAmount" render={({ field }) => (
                         <EventMoneyInput
                           id="debt-payment"
-                          className={cn('w-auto max-w-[260px] t-figure', errors.fixedPaymentAmount && 'text-alert-ink')}
+                          className={cn('w-auto max-w-[260px]', errors.fixedPaymentAmount && 'text-alert-ink')}
                           placeholder={t('debts.form.fields.paymentPlaceholder')}
                           value={field.value}
                           onChange={(value) => {

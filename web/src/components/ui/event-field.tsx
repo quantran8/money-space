@@ -92,12 +92,18 @@ export function EventFieldTextarea({
 }
 
 /**
- * Large, borderless money input for the hero "Số tiền" field. Types digits only,
- * displays grouped ("8.000.000"); pushes the raw digit string up via onChange.
- * Mirrors the global {@link import('@/components/ui/number-input').MoneyInput}
- * formatting but styled for the sunk block (big and transparent). Carries
- * `.money-number` — negative tracking is safe here because the field only ever
- * holds digits (§10.3).
+ * Borderless money input for the "Số tiền" field. Types digits only, displays
+ * grouped ("8.000.000"); pushes the raw digit string up via onChange. Mirrors
+ * the global {@link import('@/components/ui/number-input').MoneyInput}
+ * formatting but styled to sit transparent inside an {@link EventField}.
+ * Carries `.money-number` — negative tracking is safe here because the field
+ * only ever holds digits (§10.3).
+ *
+ * `t-body`, at control size. This was `t-figure` (40px) — the hero amount input
+ * v5 dropped: §21 is "Money input normal control size. Không hero-size input.",
+ * and Components.dc's "Số tiền" field renders at 16px in all three states. At
+ * 40px the digits also overran the 44px control they sit in, and every caller
+ * that noticed was overriding it back down one field at a time.
  */
 type EventMoneyInputProps = {
   id?: string
@@ -132,7 +138,7 @@ export function EventMoneyInput({
       }
       onBlur={onBlur}
       className={cn(
-        'money-number min-w-0 flex-1 bg-transparent t-figure text-ink outline-none placeholder:text-ink3 disabled:cursor-default disabled:opacity-100',
+        'money-number min-w-0 flex-1 bg-transparent t-body font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink3 disabled:cursor-default disabled:opacity-100',
         className,
       )}
     />
