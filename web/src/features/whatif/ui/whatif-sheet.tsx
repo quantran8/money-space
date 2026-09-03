@@ -15,7 +15,10 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog'
 import { useWhatIf } from '@money-space/core/features/whatif/hooks/use-whatif'
+import { useWhatIfAssetSale } from '@money-space/core/features/whatif/hooks/use-whatif-asset-sale'
+import type { WhatIfAssetSale } from '@money-space/core/features/whatif/model/whatif.types'
 import { WhatIfResultBlocks } from '@/features/whatif/ui/components/whatif-result-blocks'
+import { WhatIfAssetSaleStep } from '@/features/whatif/ui/components/whatif-asset-sale-step'
 import { buildShareSummary } from '@money-space/core/features/whatif/model/whatif-share'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
@@ -57,21 +60,66 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   const [plannedDate, setPlannedDate] = useState(
     prefill.plannedDate ?? new Date().toISOString().slice(0, 10),
   )
+  const [saleStepOpen, setSaleStepOpen] = useState(false)
+  const sale = useWhatIfAssetSale(result?.fundingOptions)
 
   const amountValue = parseRawMoney(amount)
   const canRun = Number.isFinite(amountValue) && amountValue > 0 && !!plannedDate
+  const shortfall = result?.liquidity?.shortfall ?? 0
+
+  async function runWith(assetSale?: WhatIfAssetSale) {
+    await run({
+      amount: amountValue,
+      plannedDate,
+      goalId: prefill.goalId,
+      assetSale,
+    })
+  }
 
   async function handleRun() {
     if (!canRun) return
     try {
-      await run({
-        amount: amountValue,
-        plannedDate,
-        goalId: prefill.goalId,
-      })
+      await runWith()
     } catch (error) {
       toast.error(getErrorMessage(error, t('whatif.error')))
     }
+  }
+
+  function handleOpenSaleStep() {
+    sale.seedFromShortfall(shortfall)
+    setSaleStepOpen(true)
+  }
+
+  /** Re-run with the sale included; stay on the step if it does not validate. */
+  async function handleApplySale() {
+    const assetSale = sale.validate()
+    if (!assetSale) return
+    try {
+      await runWith(assetSale)
+      setSaleStepOpen(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('whatif.error')))
+    }
+  }
+
+  /** Undo the sale, keeping the draft so the CTA can restore it. */
+  async function handleRemoveSale() {
+    try {
+      await runWith()
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('whatif.error')))
+    }
+  }
+
+  /**
+   * Back to the fields — and the sale goes with the answer it belonged to.
+   * Carrying "bán 300tr chứng khoán" into a question about a 5tr purchase would
+   * silently answer a question the household did not ask.
+   */
+  function handleTryAnother() {
+    sale.clear()
+    setSaleStepOpen(false)
+    reset()
   }
 
   async function handleShare() {
@@ -95,7 +143,13 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
    * is also what makes the primary button unambiguous: it says `Xem thử` in
    * exactly the state where the fields are on screen.
    */
-  const showResult = Boolean(result)
+  const showResult = Boolean(result) && !saleStepOpen
+  /**
+   * The funding step is a QUESTION, and this sheet has one place for questions.
+   * Expanding it inside the result would put an asset picker and a money input
+   * back under the hero — exactly the stacking answer-first removed.
+   */
+  const showSaleStep = Boolean(result) && saleStepOpen
 
   return (
     /*
@@ -132,7 +186,9 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
       }
     >
       <ResponsiveDialogHeader>
-        <ResponsiveDialogTitle>{t('whatif.title')}</ResponsiveDialogTitle>
+        <ResponsiveDialogTitle>
+          {showSaleStep ? t('whatif.assetSale.title') : t('whatif.title')}
+        </ResponsiveDialogTitle>
         {/*
           The form state carries NO visible description: "Không lưu thay đổi"
           was reassurance nobody asked for, and it pushed the first field down
@@ -143,13 +199,17 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
           say what the sheet does. Once there is an answer the slot earns its
           place back — it holds the question the result belongs to.
         */}
-        <ResponsiveDialogDescription className={showResult ? undefined : 'sr-only'}>
-          {showResult
-            ? t('whatif.summary', {
-                amount: formatVndShort(amountValue),
-                date: plannedDate,
-              })
-            : t('whatif.description')}
+        <ResponsiveDialogDescription
+          className={showResult || showSaleStep ? undefined : 'sr-only'}
+        >
+          {showSaleStep
+            ? t('whatif.assetSale.description')
+            : showResult
+              ? t('whatif.summary', {
+                  amount: formatVndShort(amountValue),
+                  date: plannedDate,
+                })
+              : t('whatif.description')}
         </ResponsiveDialogDescription>
       </ResponsiveDialogHeader>
 
@@ -175,8 +235,20 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
             : 'mt-2 max-h-[60vh] overflow-y-auto'
         }
       >
-        {showResult ? (
-          <WhatIfResultBlocks result={result!} />
+        {showSaleStep ? (
+          <div className="mt-2">
+            <WhatIfAssetSaleStep sale={sale} />
+          </div>
+        ) : showResult ? (
+          <WhatIfResultBlocks
+            result={result!}
+            onTryAssetSale={
+              // Offered only when there is a shortfall AND something to sell.
+              shortfall > 0 && !result!.assetSale && sale.options.length > 0
+                ? handleOpenSaleStep
+                : undefined
+            }
+          />
         ) : (
           <div className="space-y-5">
             <WhatIfField
@@ -206,13 +278,29 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
       </div>
 
       <ResponsiveDialogFooter>
-        {showResult ? (
+        {showSaleStep ? (
+          <>
+            {/* The previous answer is still in the mutation cache, so going
+                back costs nothing and re-runs nothing. */}
+            <Button variant="ghost" onClick={() => setSaleStepOpen(false)}>
+              {t('whatif.assetSale.back')}
+            </Button>
+            <Button onClick={handleApplySale} disabled={isRunning}>
+              {isRunning ? t('whatif.actions.running') : t('whatif.assetSale.apply')}
+            </Button>
+          </>
+        ) : showResult ? (
           <>
             {/* Editing the figures means going back to them — there are no
                 fields on screen to re-run against. */}
-            <Button variant="ghost" onClick={reset}>
+            <Button variant="ghost" onClick={handleTryAnother}>
               {t('whatif.actions.tryAnother')}
             </Button>
+            {result!.assetSale ? (
+              <Button variant="ghost" onClick={handleRemoveSale} disabled={isRunning}>
+                {t('whatif.assetSale.remove')}
+              </Button>
+            ) : null}
             <Button variant="outline" onClick={handleShare}>
               {t('whatif.actions.share')}
             </Button>

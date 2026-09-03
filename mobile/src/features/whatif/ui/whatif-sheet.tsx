@@ -3,6 +3,8 @@ import { Share, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
 import { useWhatIf } from '@money-space/core/features/whatif/hooks/use-whatif'
+import { useWhatIfAssetSale } from '@money-space/core/features/whatif/hooks/use-whatif-asset-sale'
+import type { WhatIfAssetSale } from '@money-space/core/features/whatif/model/whatif.types'
 import { buildShareSummary } from '@money-space/core/features/whatif/model/whatif-share'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
@@ -16,6 +18,7 @@ import {
 import { BottomSheet, Button, DateField, Field, MoneyInput } from '@/components/ui'
 import { formatFullDate, todayIso } from '@/features/forecast'
 import { WhatIfResultBlocks } from '@/features/whatif/ui/whatif-result-blocks'
+import { WhatIfAssetSaleFields } from '@/features/whatif/ui/whatif-asset-sale-fields'
 
 /**
  * The single global what-if surface (memory/what-if.md).
@@ -73,8 +76,21 @@ function WhatIfSheetForm({
   const [plannedDate, setPlannedDate] = useState(prefill.plannedDate ?? todayIso())
   const [label, setLabel] = useState('')
   const [amountError, setAmountError] = useState<string | undefined>()
+  const [saleStepOpen, setSaleStepOpen] = useState(false)
+  const sale = useWhatIfAssetSale(result?.fundingOptions)
 
   const amountValue = parseRawMoney(amount)
+  const shortfall = result?.liquidity?.shortfall ?? 0
+
+  async function runWith(assetSale?: WhatIfAssetSale) {
+    await run({
+      amount: amountValue,
+      plannedDate,
+      goalId: prefill.goalId,
+      label: label.trim() || undefined,
+      assetSale,
+    })
+  }
 
   /**
    * §22.10 — the primary button is NEVER disabled. Pressing it with nothing
@@ -87,15 +103,46 @@ function WhatIfSheetForm({
     }
     setAmountError(undefined)
     try {
-      await run({
-        amount: amountValue,
-        plannedDate,
-        goalId: prefill.goalId,
-        label: label.trim() || undefined,
-      })
+      await runWith()
     } catch (caught) {
       notify.error(getErrorMessage(caught, t('whatif.error')))
     }
+  }
+
+  function handleOpenSaleStep() {
+    sale.seedFromShortfall(shortfall)
+    setSaleStepOpen(true)
+  }
+
+  /** Same rule as the amount field: press, then hear what is missing. */
+  async function handleApplySale() {
+    const assetSale = sale.validate()
+    if (!assetSale) return
+    try {
+      await runWith(assetSale)
+      setSaleStepOpen(false)
+    } catch (caught) {
+      notify.error(getErrorMessage(caught, t('whatif.error')))
+    }
+  }
+
+  async function handleRemoveSale() {
+    try {
+      await runWith()
+    } catch (caught) {
+      notify.error(getErrorMessage(caught, t('whatif.error')))
+    }
+  }
+
+  /**
+   * Back to the fields — and the sale goes with the answer it belonged to.
+   * Carrying "bán 300tr chứng khoán" into a question about a 5tr purchase would
+   * silently answer a question the household did not ask.
+   */
+  function handleTryAnother() {
+    sale.clear()
+    setSaleStepOpen(false)
+    reset()
   }
 
   /**
@@ -129,11 +176,21 @@ function WhatIfSheetForm({
    * which is also what makes the primary button unambiguous: it says `Xem thử`
    * in exactly the state where the fields are on screen.
    */
-  const showResult = Boolean(result)
+  const showResult = Boolean(result) && !saleStepOpen
+  /**
+   * The funding step is a QUESTION, and this sheet has one place for questions.
+   * Putting an asset picker and a money input under the result would stack them
+   * below the fold again — what answer-first removed.
+   */
+  const showSaleStep = Boolean(result) && saleStepOpen
 
   return (
     <View>
-      {showResult ? (
+      {showSaleStep ? (
+        <Text className="t-body-sm leading-5 text-ink2">
+          {t('whatif.assetSale.description')}
+        </Text>
+      ) : showResult ? (
         // The question the answer belongs to, so the figures below are never
         // read against the wrong number.
         <Text className="t-body-sm leading-5 text-ink2">
@@ -149,9 +206,18 @@ function WhatIfSheetForm({
       )}
 
       <View className="mt-5 gap-4">
-        {showResult ? (
+        {showSaleStep ? (
+          <WhatIfAssetSaleFields sale={sale} />
+        ) : showResult ? (
           /* Consequence renders only after the household asks for it (§2.9). */
-          <WhatIfResultBlocks result={result!} />
+          <WhatIfResultBlocks
+            result={result!}
+            onTryAssetSale={
+              shortfall > 0 && !result!.assetSale && sale.options.length > 0
+                ? handleOpenSaleStep
+                : undefined
+            }
+          />
         ) : (
           <>
             {/* The note leads: naming the purchase first is what turns an
@@ -190,20 +256,38 @@ function WhatIfSheetForm({
       <View className="mt-5 gap-2">
         {/* The fields are only ever on screen in the non-result state, so the
             button is unambiguous: it runs the question it can actually see. */}
-        {showResult ? null : (
+        {showResult || showSaleStep ? null : (
           <Button onPress={handleRun} loading={isRunning}>
             {isRunning ? t('whatif.actions.running') : t('whatif.actions.run')}
           </Button>
         )}
 
-        {result ? (
+        {showSaleStep ? (
+          <>
+            {/* Never disabled (§22.10): pressing with an incomplete draft says
+                which field is missing. */}
+            <Button onPress={handleApplySale} loading={isRunning}>
+              {isRunning ? t('whatif.actions.running') : t('whatif.assetSale.apply')}
+            </Button>
+            {/* The previous answer is still cached, so going back re-runs
+                nothing. */}
+            <Button variant="ghost" onPress={() => setSaleStepOpen(false)}>
+              {t('whatif.assetSale.back')}
+            </Button>
+          </>
+        ) : result ? (
           <>
             <Button variant="secondary" onPress={handleShare}>
               {t('whatif.actions.share')}
             </Button>
+            {result.assetSale ? (
+              <Button variant="ghost" onPress={handleRemoveSale} loading={isRunning}>
+                {t('whatif.assetSale.remove')}
+              </Button>
+            ) : null}
             {/* Puts the fields back, dropping the answer — the next question
                 usually starts from the same date. */}
-            <Button variant="ghost" onPress={reset}>
+            <Button variant="ghost" onPress={handleTryAnother}>
               {t('whatif.actions.tryAnother')}
             </Button>
           </>
