@@ -172,3 +172,35 @@ would be needed to capture that; deliberately out of scope for now.
 - `AssetLiquidity = usable_now | not_immediately_usable | long_term`
 - `AssetClass = gold | crypto | stock | fund | foreign_currency`
 - `AssetType` (15 values, listed in the two tables above)
+
+
+## Hiển thị: scale rút gọn vs đồng đầy đủ
+
+`formatVndScale`/`formatVndShort` làm tròn (một chữ số ở bậc triệu). Đúng theo
+design §6 cho số đọc lướt, nhưng **hai số cách nhau ít hơn một bậc sẽ hiện y
+hệt nhau** — và nếu màn hình đặt cạnh chúng một hiệu số, màn hình tự mâu thuẫn.
+
+Ca gốc: giá vốn 15.120.000đ, giá hiện tại 15.050.000đ, lỗ 70.000đ. Cả hai ra
+`15,1 tr`, đứng cạnh `−70.000đ` — ba số không khớp, và **số đúng lại là số trông
+sai**. Cùng lỗi này xuất hiện lại ở goal progress, goal impact, what-if sale,
+và câu xác nhận "đổi giá trị từ X thành Y".
+
+Nguy hiểm nhất: `PreviewRow` trong `debt-update-mode-dialog` ẩn dòng khi
+`before === after` **so sánh trên chuỗi đã format** — một chỉnh sửa 70.000đ làm
+hai vế ra cùng `84,1 tr`, dòng biến mất, trong khi ghi chú vẫn nói "chỉ hiển thị
+mục thay đổi". Người dùng xác nhận một thay đổi không nhìn thấy được, trước một
+lần ghi có thể viết lại lịch sử giao dịch.
+
+Quy tắc (`formatVndExact`, xem docstring và design §6):
+
+- **Đồng đầy đủ** khi giá trị chính xác tới đồng **và** người đọc phải cộng trừ
+  được trên màn hình — giá vốn cạnh lãi/lỗ, đơn giá cạnh số lượng và tổng, số
+  tiền đang xác nhận, số dư một giao dịch sắp thay đổi, dư nợ, cảnh báo âm ví.
+- **Scale rút gọn** cho số đọc lướt, không bao giờ đối chiếu — dự phóng, trục
+  biểu đồ, tổng theo nhóm, headline. Với dự phóng thì hiện đủ đồng là *false
+  precision*, sai theo hướng ngược lại (§6: "Không hiển thị precision cao hơn
+  input").
+
+Làm tròn **chỉ ở lớp hiển thị**; mọi `Math.round` trong form/model đều về đồng
+nguyên (đơn vị nhỏ nhất của VND) nên không có giá trị lưu trữ nào bị mất chính
+xác. Rủi ro là người dùng quyết định sai, không phải sai số trong DB.

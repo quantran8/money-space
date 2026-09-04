@@ -373,6 +373,15 @@ Rules:
 - Trong bảng có thể đưa đơn vị lên header.
 - Ngoài bảng luôn kèm đơn vị.
 - Không hiển thị precision cao hơn input.
+- **Cũng không hiển thị precision THẤP hơn khi người đọc phải đối chiếu.** Scale
+  rút gọn làm tròn, nên hai số cách nhau ít hơn một bậc sẽ hiện y hệt nhau. Giá
+  vốn 15.120.000đ và giá hiện tại 15.050.000đ cùng ra `15,1 tr`, đặt cạnh
+  `−70.000đ`: ba con số mâu thuẫn, và con số đúng lại là con số trông sai.
+  Dùng **đồng đầy đủ** (`formatVndExact`) khi giá trị chính xác tới đồng **và**
+  người đọc phải cộng trừ được trên màn hình — giá vốn cạnh lãi/lỗ, đơn giá cạnh
+  số lượng và tổng, số tiền người dùng vừa nhập và đang xác nhận, số dư một giao
+  dịch sắp thay đổi, dư nợ còn lại. Giữ scale rút gọn cho số đọc lướt và không
+  bao giờ phải đối chiếu — dự phóng, trục biểu đồ, tổng theo nhóm, headline.
 
 ---
 

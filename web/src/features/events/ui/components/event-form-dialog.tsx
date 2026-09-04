@@ -6,7 +6,6 @@ import type {
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -15,11 +14,13 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog'
 import { ActualRecordForm } from '@/features/events/ui/components/actual-record-form'
+import type { CategoryComboboxOption } from '@/features/events/ui/components/category-combobox'
 import { QuickActionPicker } from '@/features/events/ui/components/quick-action-picker'
 import type {
   ActualRecordForm as ActualRecordFormValues,
   QuickAction,
 } from '@money-space/core/features/events/model/events-form'
+import { cn } from '@money-space/core/shared/lib/utils'
 
 type Option = { value: string; label: string }
 
@@ -43,7 +44,7 @@ type EventFormDialogProps = {
   /** Wallets eligible as a money source (cash / bank account only). Used for the
    *  "nguồn tiền" selects; destination selects still use the full assetOptions. */
   sourceAssetOptions: Option[]
-  categoryOptions: Option[]
+  categoryOptions: CategoryComboboxOption[]
   // actual form
   actualControl: Control<ActualRecordFormValues>
   registerActual: UseFormRegister<ActualRecordFormValues>
@@ -96,9 +97,21 @@ export function EventFormDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
-      {/* §22.9 — 520px for a simple form, body scrolls, footer stays visible. */}
-      <ResponsiveDialogContent className="grid max-h-[88dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[520px]">
-        <ResponsiveDialogHeader className="px-5 pb-5 pr-16 pt-5 text-left sm:px-8 sm:pr-16 sm:pt-7">
+      {/* The type picker is a wider scan list; the forms return to the compact
+          520px measure. Both keep the body scroll separate from the header. */}
+      <ResponsiveDialogContent
+        closeButtonClassName="flex size-11 items-center justify-center rounded-pill p-0 opacity-100 [&_svg]:size-5"
+        className={cn(
+          'grid max-h-[88dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0',
+          quickAction ? 'sm:max-w-[520px]' : 'sm:max-w-[560px]',
+        )}
+      >
+        <ResponsiveDialogHeader
+          className={cn(
+            'px-5 pr-16 pt-5 text-left sm:pr-16 sm:pt-7',
+            quickAction ? 'pb-5 sm:px-8' : 'pb-4 sm:px-7',
+          )}
+        >
           {/* Returning to the picker used to require closing the dialog. */}
           {quickAction && !isEditing ? (
             <button
@@ -109,14 +122,24 @@ export function EventFormDialog({
               ← {t('events.form.back')}
             </button>
           ) : null}
-          <ResponsiveDialogTitle className="t-subhead font-medium tracking-[-0.015em]">
+          <ResponsiveDialogTitle
+            size={quickAction ? 'default' : 'title'}
+            className={quickAction ? 'font-medium tracking-[-0.015em]' : undefined}
+          >
             {title}
           </ResponsiveDialogTitle>
           {/* §16.2 — a subtitle here would be mood, not meaning. */}
           <ResponsiveDialogDescription className="sr-only">{title}</ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <div className="overflow-y-auto px-5 pb-5 sm:px-8 sm:pb-7">
+        <div
+          className={cn(
+            'overflow-y-auto',
+            quickAction
+              ? 'px-5 pb-5 sm:px-8 sm:pb-7'
+              : 'max-h-[min(72dvh,480px)] px-3 pb-3 sm:px-4',
+          )}
+        >
           {!quickAction ? (
             <QuickActionPicker
               onSelect={onSelectQuickAction}

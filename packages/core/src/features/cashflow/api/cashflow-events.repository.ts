@@ -27,6 +27,9 @@ export type CashflowEventFilters = {
 
 export type CashflowEventPayload = {
   name: string
+  /** FK to `money_event_categories.id`. Falls back to the system `other`
+   *  category on the backend when omitted. */
+  categoryId?: string
   amount: number
   direction: CashflowDirection
   expectedDate: string

@@ -18,13 +18,23 @@ import {
   termMonthsOf,
   type CalculationTerm,
 } from '@money-space/core/features/assets/model/assets'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 
 type SavingWithdrawalPanelProps = {
   term: CalculationTerm
 }
 
-/** Format a payout figure; a negative interest is a clawback (shown as such). */
+/**
+ * Format a payout figure; a negative interest is a clawback (shown as such).
+ *
+ * Exact đồng: this table has to foot. Each column is principal + interest =
+ * total, and the callout below is the difference between the two totals — so
+ * four of the seven figures are derived from the others on screen. At the
+ * compact scale a 350.000đ early interest disappeared into "100,0 tr + ... =
+ * 100,4 tr", and the stated difference ("3,9 tr") disagreed with the two totals
+ * printed above it ("104,2 − 100,4 = 3,8"). Breaking a deposit is the decision
+ * this panel exists to inform.
+ */
 function Money({ value, tone }: { value: number; tone?: 'muted' | 'orange' }) {
   const cls =
     tone === 'orange'
@@ -36,7 +46,7 @@ function Money({ value, tone }: { value: number; tone?: 'muted' | 'orange' }) {
   return (
     <span className={`money-number ${cls}`}>
       {sign}
-      {formatVndShort(Math.abs(value))}
+      {formatVndExact(Math.abs(value))}
     </span>
   )
 }
@@ -153,7 +163,7 @@ export function SavingWithdrawalPanel({ term }: SavingWithdrawalPanelProps) {
           {t('assets.detail.withdrawal.difference')}
         </span>
         <span className="money-number font-medium text-attention-ink">
-          -{formatVndShort(Math.abs(difference))}
+          -{formatVndExact(Math.abs(difference))}
         </span>
       </div>
     </Card>

@@ -20,7 +20,7 @@ import {
   isFixedScheduleLender,
   type LenderType,
 } from '@money-space/core/features/debts/model/debts.types'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 import { sanitizeIntegerInput } from '@money-space/core/shared/lib/number-format'
 import { cn } from '@money-space/core/shared/lib/utils'
 
@@ -827,11 +827,17 @@ export function DebtFormSheet({
   )
 }
 
-/** `—` when there is nothing yet: never `0đ` for "not entered" (§Invariant 2). */
+/**
+ * `—` when there is nothing yet: never `0đ` for "not entered" (§Invariant 2).
+ *
+ * Exact đồng — this takes the raw input string and echoes the user's own
+ * keystrokes back on the review step, which is the clearest case there is for
+ * showing every digit.
+ */
 function reviewMoney(raw: string) {
   const amount = Number(sanitizeIntegerInput(raw ?? ''))
   if (!amount || !Number.isFinite(amount)) return '—'
-  return formatVndShort(amount)
+  return formatVndExact(amount)
 }
 
 /** ISO → `dd/mm/yyyy`. ASCII, so the mono face is safe on it. */

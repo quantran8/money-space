@@ -30,7 +30,7 @@ export type MoneyEventItem = {
       | 'debt_update'
     | 'adjustment'
     | 'other'
-  category: string
+  categoryId: string
   direction: 'inflow' | 'outflow' | 'neutral'
   assetId?: string
   assetName?: string

@@ -13,6 +13,7 @@ import {
 } from '@money-space/core/features/events/hooks/use-event-wallet-impact'
 import { describeOverdraft } from '@money-space/core/features/events/model/wallet-overdraft'
 import { EventFormDialog } from '@/features/events/ui/components/event-form-dialog'
+import { EventsCategoryCard } from '@/features/events/ui/components/events-category-card'
 import { EventsMonthScope } from '@/features/events/ui/components/events-month-scope'
 import { EventsSummaryStrip } from '@/features/events/ui/components/events-summary-strip'
 import { EventsTimelineCard } from '@/features/events/ui/components/events-timeline-card'
@@ -25,6 +26,9 @@ export function EventsPage() {
     sale,
     groupedRecords,
     periodSummary,
+    spendingByCategory,
+    incomeByCategory,
+    byMember,
     isLoading,
     tab,
     setTab,
@@ -48,6 +52,7 @@ export function EventsPage() {
     sourceAssetOptions,
     memberOptions,
     categoryOptions,
+    categoryVisualById,
     actualControl,
     registerActual,
     handleActualSubmit,
@@ -96,11 +101,22 @@ export function EventsPage() {
       <div className="s-card-gap flex flex-col">
         <EventsSummaryStrip summary={periodSummary} />
 
+        {/* Between the month's totals and the rows that make them up: it
+            breaks the same month down one level, which is the step between
+            "what did the month come to" and "what was each change". */}
+        <EventsCategoryCard
+          spending={spendingByCategory}
+          income={incomeByCategory}
+          byMember={byMember}
+          isLoading={isLoading}
+        />
+
         <EventsTimelineCard
           tab={tab}
           onTabChange={setTab}
           groupedRecords={groupedRecords}
           overdrafts={overdrafts}
+          categoryVisualById={categoryVisualById}
           memberOptions={memberOptions}
           selectedMonth={selectedMonth}
           selectedMember={selectedMember}

@@ -209,6 +209,9 @@ export function toSalePayload(
   asset: Asset,
   values: AssetSaleForm,
   asOf: string,
+  /** The `investment` category's id — `category` is a real FK now, so the
+   *  caller resolves it from the household's category list. */
+  categoryId: string,
   editingEvent?: MoneyEventItem,
 ): EventPayload {
   const market = isMarketSale(asset)
@@ -221,7 +224,7 @@ export function toSalePayload(
     amount,
     feeAmount,
     type: 'asset_sale',
-    category: 'investment',
+    categoryId,
     isoDate: values.date,
     fromAssetId: asset.id,
     toAssetId: values.toAssetId,
@@ -257,4 +260,35 @@ export function toSalePayload(
   }
 
   return payload
+}
+
+/**
+ * The price to open a sale at: what one unit is worth TODAY.
+ *
+ * `marketPrice` (today's cached quote) leads, because a sale is agreed at the
+ * current price — `lastPrice` is only what was last RECORDED, and cost basis
+ * (`purchasePrice`) is what the position was bought at, so seeding from either
+ * opens the form at a stale number the user must notice and overwrite.
+ *
+ * Only a VND figure may be seeded: the field is đồng, and `marketPrice` carries
+ * the instrument's own currency. A foreign quote is left for the dialog to
+ * convert and fill.
+ */
+export function seedUnitPrice(asset: Asset | null): string {
+  const position = asset?.marketPosition
+  if (position) {
+    const currency = position.marketPriceCurrency ?? position.quoteCurrency
+    if (position.marketPrice !== undefined && currency === 'VND') {
+      return String(Math.round(position.marketPrice))
+    }
+    const fallback = position.lastPrice ?? position.purchasePrice
+    if (fallback !== undefined && position.quoteCurrency === 'VND') {
+      return String(Math.round(fallback))
+    }
+    return ''
+  }
+  if (asset?.type === 'real_estate' && asset.areaSqm) {
+    return String(Math.round((asset.manualValue ?? 0) / asset.areaSqm))
+  }
+  return ''
 }

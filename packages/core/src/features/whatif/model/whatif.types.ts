@@ -22,6 +22,21 @@ import type { GoalProjection } from '#/features/goals/model/goal-projection.type
  */
 export type WhatIfResultType = 'comfortable' | 'tight' | 'not_covered'
 
+/**
+ * The optional second step: selling part of an asset to fund the spend.
+ *
+ * A hypothesis, never a transaction — no `asset_sale` money event is created.
+ * A market asset is sold in its own unit (6 chỉ, not "86,4tr of gold"); the
+ * proceeds land in a wallet the household names, as a real sale would.
+ */
+export type WhatIfAssetSale = {
+  assetId: string
+  /** Gross proceeds. A hypothetical carries no fee. */
+  amount: number
+  /** The wallet the proceeds land in. Must be `usable_now`. */
+  toAssetId: string
+}
+
 export type WhatIfRequest = {
   /** Must be positive. */
   amount: number
@@ -36,6 +51,8 @@ export type WhatIfRequest = {
    */
   takeFromGoal?: boolean
   horizonDays?: number
+  /** Optional step 2. Absent = the simulation behaves exactly as before. */
+  assetSale?: WhatIfAssetSale
 }
 
 export type WhatIfSideResult = {
@@ -83,10 +100,15 @@ export type WhatIfGoalImpact = {
 export type WhatIfWalletDraw = {
   assetId: string
   name: string
-  /** What the wallet held before the spend. */
+  /**
+   * What the wallet held on its OWN before the spend — sale proceeds excluded,
+   * so a 13tr wallet never reads as having paid 100tr.
+   */
   before: number
   /** Taken from this wallet. Always > 0 — untouched wallets are not listed. */
   taken: number
+  /** How much of `taken` was money the simulated sale put here. */
+  fromSale?: number
 }
 
 /**
@@ -95,13 +117,18 @@ export type WhatIfWalletDraw = {
  * The semantic split (`free` / `fromPace` / `fromSetAside`) leads: it answers
  * "did this cost me anything that was promised", which is what decides whether
  * a purchase feels affordable. The wallet list is literal and secondary — the
- * household named no wallet, the simulation chose — so it belongs behind a
- * disclosure, never in the headline.
+ * household names no wallet for the SPEND, the simulation chooses — so it
+ * belongs behind a disclosure, never in the headline.
  *
  * The three amounts sum to the COVERED part of the spend. A shortfall stays in
  * `goalImpact.uncovered`, which is a different fact with its own line.
  */
 export type WhatIfFundingSource = {
+  /**
+   * Proceeds of the simulated sale. Its own category: folding it into `free`
+   * would report a wallet as covering a spend it could not have.
+   */
+  fromSale?: number
   /** Money no goal had claimed. Spent first, everywhere. */
   free: number
   fromPace: number
@@ -122,6 +149,46 @@ export type WhatIfAtRisk = {
   shortfall: number
 }
 
+/**
+ * What the spend needs, against money usable TODAY.
+ *
+ * `shortfall` is not `goalImpact.uncovered` rephrased, even though the two
+ * carry the same figure: this one is the trigger for the funding step ("the
+ * money is not there yet"), while `uncovered` is a statement about the spend
+ * having outrun every wallet. Both render, side by side, in the safety block.
+ */
+export type WhatIfLiquidity = {
+  /** Immediately-usable money, after the horizon's outflows. */
+  liquidAvailable: number
+  /** What the spend needs beyond that. 0 when it fits. */
+  shortfall: number
+}
+
+/** An asset that could be sold to close a shortfall. Offered, never advised. */
+export type WhatIfFundingOption = {
+  assetId: string
+  name: string
+  type: string
+  value: number
+  liquidity: 'not_immediately_usable' | 'long_term'
+  /** What the goals hold of it — the cost of selling, before committing. */
+  goalClaimedAmount: number
+}
+
+/** The sale as applied, echoing the choices the engine made. */
+export type WhatIfAppliedSale = {
+  assetId: string
+  name: string
+  amount: number
+  /** What lands in the wallet. Equal to `amount` — a hypothetical has no fee. */
+  netProceeds: number
+  assetValueBefore: number
+  assetValueAfter: number
+  /** The wallet the household chose to receive the proceeds. */
+  receivingAssetId: string
+  receivingName: string
+}
+
 export type WhatIfResult = {
   householdId: string
   asOfDate: string
@@ -130,6 +197,16 @@ export type WhatIfResult = {
   obligationsCovered: boolean
   before: WhatIfSideResult
   after: WhatIfSideResult
+  /** Optional so a client on an older backend degrades to "no funding step". */
+  liquidity?: WhatIfLiquidity
+  fundingOptions?: WhatIfFundingOption[]
+  assetSale?: WhatIfAppliedSale | null
+  /** After the sale AND the spend. `null` when no sale was applied. */
+  afterSale?: WhatIfSideResult | null
+  deltaWithSale?: {
+    flexibleMoneyToday: number
+    lowestProjectedBalance: number
+  } | null
   /**
    * What every goal gives up, in money AND in time.
    *

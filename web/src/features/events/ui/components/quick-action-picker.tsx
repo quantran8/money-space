@@ -1,3 +1,10 @@
+import {
+  ArrowDownLeft,
+  ArrowLeftRight,
+  ArrowUpRight,
+  ChevronRight,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import type { QuickAction } from '@money-space/core/features/events/model/events-form'
@@ -17,23 +24,35 @@ type QuickActionPickerProps = {
   onPlanUpcoming: () => void
 }
 
-const ACTIONS: PickerKey[] = [
-  'upcoming',
-  'expense',
-  'income',
-  'transfer',
-  'debt_borrow',
-  'buy_asset',
-  'sell_asset',
+const ACTION_GROUPS: Array<{
+  labelKey: string
+  actions: Array<{ key: PickerKey; icon: LucideIcon }>
+}> = [
+  {
+    labelKey: 'events.form.actionGroup.cashflow',
+    actions: [
+      // Temporarily hidden from this picker:
+      // { key: 'upcoming', icon: CalendarClock },
+      { key: 'expense', icon: ArrowUpRight },
+      { key: 'income', icon: ArrowDownLeft },
+      { key: 'transfer', icon: ArrowLeftRight },
+    ],
+  },
+  // Temporarily hidden from this picker:
+  // {
+  //   labelKey: 'events.form.actionGroup.assetsDebts',
+  //   actions: [
+  //     { key: 'debt_borrow', icon: Landmark },
+  //     { key: 'buy_asset', icon: PackagePlus },
+  //     { key: 'sell_asset', icon: PackageMinus },
+  //   ],
+  // },
 ]
 
 /**
- * A plain list of labels on `--sunk`.
- *
- * This was a seven-card grid, each card carrying an icon tile and a subtitle.
- * Two rules ruled that out: §18 allows icons only in the sidebar and on
- * buttons — never in list rows — and §22.0 counts a helper line under every
- * entry as an admin-form signal. The label alone says what each one does.
+ * Two short action groups: cash flow first, then balance-sheet changes. Each
+ * row is a button, so its icon and chevron communicate the kind of update and
+ * that choosing it advances to the next step without adding helper copy.
  */
 export function QuickActionPicker({
   onSelect,
@@ -44,35 +63,56 @@ export function QuickActionPicker({
 }: QuickActionPickerProps) {
   const { t } = useTranslation()
 
+  function handleAction(action: PickerKey) {
+    if (action === 'debt_borrow') {
+      onBorrowMoney()
+      return
+    }
+    if (action === 'sell_asset') {
+      onSellAsset()
+      return
+    }
+    if (action === 'buy_asset') {
+      onBuyAsset()
+      return
+    }
+    if (action === 'upcoming') {
+      onPlanUpcoming()
+      return
+    }
+    onSelect(action)
+  }
+
   return (
-    <div className="flex flex-col gap-1.5">
-      {ACTIONS.map((action) => (
-        <button
-          key={action}
-          type="button"
-          onClick={() => {
-            if (action === 'debt_borrow') {
-              onBorrowMoney()
-              return
-            }
-            if (action === 'sell_asset') {
-              onSellAsset()
-              return
-            }
-            if (action === 'buy_asset') {
-              onBuyAsset()
-              return
-            }
-            if (action === 'upcoming') {
-              onPlanUpcoming()
-              return
-            }
-            onSelect(action)
-          }}
-          className="flex min-h-[46px] items-center rounded-[10px] bg-wash px-4 text-left t-body-sm text-ink transition-colors hover:bg-accent-soft"
-        >
-          {t(`events.form.action.${action}`)}
-        </button>
+    <div>
+      {ACTION_GROUPS.map((group, groupIndex) => (
+        <section key={group.labelKey} aria-labelledby={`event-action-group-${groupIndex}`}>
+          {groupIndex > 0 ? <div className="mx-3 my-2 h-px bg-divider" /> : null}
+          <h3
+            id={`event-action-group-${groupIndex}`}
+            className="px-3 pb-2 pt-1 t-caption font-medium text-ink3"
+          >
+            {t(group.labelKey)}
+          </h3>
+
+          {group.actions.map(({ key, icon: Icon }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleAction(key)}
+              className="group flex h-12 w-full items-center gap-3 rounded-control px-3 text-left t-body font-normal text-ink outline-none transition-colors hover:bg-wash focus-visible:bg-wash focus-visible:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]"
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-pill bg-canvas text-ink2">
+                <Icon className="size-[18px]" strokeWidth={1.75} />
+              </span>
+              <span className="min-w-0 flex-1 truncate">{t(`events.form.action.${key}`)}</span>
+              <ChevronRight
+                className="size-4 shrink-0 text-ink3 transition-transform group-hover:translate-x-0.5"
+                strokeWidth={1.75}
+              />
+            </button>
+          ))}
+        </section>
       ))}
     </div>
   )

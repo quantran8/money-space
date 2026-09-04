@@ -37,8 +37,8 @@ export function DataCard() {
 
 /**
  * Sign-out lives on this page because the mobile drawer that used to hold it is
- * gone — the bottom tab bar covers navigation, and `/household` is the tab a
- * household already opens to manage who they are.
+ * gone — the bottom tab bar covers navigation, and `/settings` is where a
+ * household already manages who they are.
  *
  * Shaped like `DataCard`, deliberately NOT like `DangerCard`: signing out is
  * reversible and costs nothing, so it must not borrow the one bordered card's

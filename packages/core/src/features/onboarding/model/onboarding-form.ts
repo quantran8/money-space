@@ -12,8 +12,8 @@ export const currencyOptions: HouseholdCurrency[] = ['VND', 'USD', 'THB']
  * Name and currency only.
  *
  * The optional `inviteEmail` field is gone: inviting is a QR code shown from
- * `/household` once the household exists, so asking for a partner's address here
- * collected something nothing would ever read.
+ * household settings once the household exists, so asking for a partner's
+ * address here collected something nothing would ever read.
  */
 export type OnboardingForm = {
   name: string

@@ -17,7 +17,7 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog'
 import { TODAY } from '@money-space/core/features/events/model/events-form'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 
 export type {
   DebtBalanceIntent,
@@ -46,8 +46,16 @@ const LENDER_TYPE_LABELS: Record<string, string> = {
   other: 'Khác',
 }
 
+/**
+ * Exact đồng, not the compact scale: every row here is a before → after pair the
+ * user is confirming before a write that can rewrite the debt's history, and
+ * `PreviewRow` hides a row whose two sides render identically. Compact, a
+ * 70.000đ correction formatted both sides as "84,1 tr", so the row vanished
+ * while the footnote still said only changed rows are listed — the one edit
+ * being confirmed was the one thing not shown.
+ */
 function money(value?: number) {
-  return value === undefined ? '—' : formatVndShort(value)
+  return value === undefined ? '—' : formatVndExact(value)
 }
 
 /** One before → after row; only rendered when the value actually changed. */

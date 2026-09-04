@@ -27,7 +27,7 @@ import {
 } from '@money-space/core/features/assets/model/assets'
 import { isWholeQuantityType } from '@money-space/core/features/assets/model/assets-form'
 import { useMarketQuote } from '@money-space/core/features/assets/hooks/use-market-quote'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 import { parseRawDecimal, parseRawMoney } from '@money-space/core/shared/lib/number-format'
 
 type WalletOption = { value: string; label: string; balance?: number }
@@ -277,7 +277,7 @@ export function AssetPurchaseDialog({
                                 here, rather than by trial and error on save. */}
                             {option.balance === undefined
                               ? option.label
-                              : `${option.label} · ${formatMoney(option.balance)}`}
+                              : `${option.label} · ${formatVndExact(option.balance)}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -352,7 +352,7 @@ function PurchaseSummary({
     <section className="border-t border-divider pt-4" aria-live="polite">
       <div className="flex items-baseline justify-between gap-5">
         <span className="t-body-sm text-ink2">{t('assets.purchase.total')}</span>
-        <span className="num t-subhead font-medium">{formatMoney(total)}</span>
+        <span className="num t-subhead font-medium">{formatVndExact(total)}</span>
       </div>
 
       <div className="mt-3 flex items-baseline justify-between gap-5">
@@ -363,7 +363,7 @@ function PurchaseSummary({
       <div className="mt-3 flex items-baseline justify-between gap-5">
         <span className="t-body-sm text-ink2">{t('assets.purchase.estimatedCost')}</span>
         <span className="num t-body-sm font-medium">
-          {formatMoney(Math.round(nextCostBasis))}
+          {formatVndExact(nextCostBasis)}
         </span>
       </div>
 

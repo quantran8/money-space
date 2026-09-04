@@ -39,7 +39,7 @@ import {
   type Asset,
 } from '@money-space/core/features/assets/model/assets'
 import { useMarketQuote } from '@money-space/core/features/assets/hooks/use-market-quote'
-import { formatMoney, formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { formatDecimalDisplay, parseRawMoney } from '@money-space/core/shared/lib/number-format'
 
 type Option = { value: string; label: string }
@@ -181,17 +181,21 @@ export function AssetSaleDialog({
         })
     : ''
 
-  // Mirrors the figure: what the number above is made of, in full precision.
+  // Mirrors the figure: what the number above is made of, in full precision —
+  // which means exact đồng, not the compact scale. Every part here is a number
+  // the user just typed, and the net above is quantity x price − fee; rounding
+  // let a fee smaller than the rounding step vanish from a sale the user was
+  // about to commit.
   const breakdown = isMarketAsset
     ? t('assets.sale.breakdownMarket', {
         quantity: formatDecimalDisplay(sellAll ? String(currentQuantity) : quantity) || '0',
         unit,
-        price: formatMoney(parseRawMoney(unitPrice) || 0),
-        fee: formatMoney(parseRawMoney(fee) || 0),
+        price: formatVndExact(parseRawMoney(unitPrice) || 0),
+        fee: formatVndExact(parseRawMoney(fee) || 0),
       })
     : t('assets.sale.breakdownManual', {
-        proceeds: formatMoney(parseRawMoney(proceeds) || 0),
-        fee: formatMoney(parseRawMoney(fee) || 0),
+        proceeds: formatVndExact(parseRawMoney(proceeds) || 0),
+        fee: formatVndExact(parseRawMoney(fee) || 0),
       })
 
   const title = asset
@@ -393,7 +397,7 @@ export function AssetSaleDialog({
                 what you get. */}
             <div className="border-t border-divider pt-6" aria-live="polite">
               <p className="t-body-sm text-ink2">{t('assets.sale.expectedNet')}</p>
-              <p className="money-number t-figure text-ink">{formatVndShort(previewNet)}</p>
+              <p className="money-number t-figure text-ink">{formatVndExact(previewNet)}</p>
               <p className="mt-1 t-caption text-ink3">{breakdown}</p>
             </div>
           </div>

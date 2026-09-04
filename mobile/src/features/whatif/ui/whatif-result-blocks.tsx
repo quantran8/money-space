@@ -20,10 +20,10 @@ import {
   type WhatIfResult,
   type WhatIfResultType,
 } from '@money-space/core/features/whatif/model/whatif.types'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatMonthYear, formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
-import { Disclosure, Panel } from '@/components/ui'
+import { Button, Disclosure, Panel, Sunk } from '@/components/ui'
 import { AssumptionsNote, formatFullDate } from '@/features/forecast'
 import { colors } from '@/theme/tokens'
 
@@ -62,9 +62,28 @@ import type { ReactNode } from 'react'
  * argument, and it survives without the choreography. Rows stack instead of
  * gridding, because money must never truncate at 335pt.
  */
-export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
+export function WhatIfResultBlocks({
+  result,
+  onTryAssetSale,
+  shortfallNote,
+}: {
+  result: WhatIfResult
+  /** Offered only when there is a shortfall and something to sell. */
+  onTryAssetSale?: () => void
+  /**
+   * Replaces the standard shortfall line when selling could not close the gap
+   * either. The sheet computes it: only the client knows what the holdings add
+   * up to, and "còn thiếu" with no way out reads as a dead end without it.
+   */
+  shortfallNote?: string
+}) {
   const { t } = useTranslation()
-  const { before, after, goalImpact, fundingSource } = result
+  const { before, goalImpact, fundingSource } = result
+  /**
+   * With a sale applied, the after-sale side IS the answer — the household is
+   * asking about the world where they sold.
+   */
+  const after = result.afterSale ?? result.after
 
   /**
    * The spend is the same figure on both sides of the question, so it is read
@@ -133,13 +152,19 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
 
       {/* 3 — What the goals give up: money AND time, per goal. Measured across
           every flexible wallet, since what-if names no single one. */}
-      {goals.length > 0 ? <GoalsBlock goals={goals} /> : null}
+      {goals.length > 0 ? (
+        <GoalsBlock goals={goals} showTotals={Boolean(result.assetSale)} />
+      ) : null}
 
       {/* 4 — Where the money comes from. The evidence behind blocks 2 and 3. */}
       <FundingSourceBlock
         spend={spend}
         fundingSource={fundingSource}
         uncovered={goalImpact.uncovered}
+        liquidity={result.liquidity}
+        appliedSale={result.assetSale}
+        onTryAssetSale={onTryAssetSale}
+        shortfallNote={shortfallNote}
       />
 
       {/* 5 — The arithmetic underneath: balance before → after, and where it
@@ -166,7 +191,20 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           share={100}
         />
 
-        <Text className="mt-3 t-body-sm font-medium text-ink2" style={{ fontVariant: ['tabular-nums'] }}>
+        {/* Both movements, so the arithmetic closes: without the sale the
+            column read as a bare "−100tr" against a 13tr opening balance. */}
+        {result.assetSale ? (
+          <Text
+            className="mt-3 t-body-sm font-medium text-positive-ink"
+            style={{ fontVariant: ['tabular-nums'] }}
+          >
+            {`+ ${formatVndShort(result.assetSale.netProceeds)}`}
+          </Text>
+        ) : null}
+        <Text
+          className={cn('t-body-sm font-medium text-ink2', result.assetSale ? 'mt-1' : 'mt-3')}
+          style={{ fontVariant: ['tabular-nums'] }}
+        >
           {`− ${formatVndShort(spend)}`}
         </Text>
 
@@ -184,6 +222,22 @@ export function WhatIfResultBlocks({ result }: { result: WhatIfResult }) {
           share={barShare(after.lowestProjectedBalance, before.lowestProjectedBalance)}
           tone={RESULT_TYPE_COLOR[result.resultType]}
         />
+
+        {/* The other half of the sale: cash went up because THIS went down.
+            The bars above only ever draw money, so without this row the asset
+            side of the conversion is invisible. */}
+        {result.assetSale ? (
+          <View className="mt-4 flex-row flex-wrap items-baseline justify-between gap-2.5 border-t border-divider pt-3.5">
+            <Text className="shrink t-caption-sm text-ink3" numberOfLines={1}>
+              {t('whatif.cashflow.assetSold', { name: result.assetSale.name })}
+            </Text>
+            <Text className="t-body-sm text-ink" style={{ fontVariant: ['tabular-nums'] }}>
+              {`${formatVndShort(result.assetSale.assetValueBefore)} → ${formatVndShort(
+                result.assetSale.assetValueAfter,
+              )}`}
+            </Text>
+          </View>
+        ) : null}
 
         <View className="mt-4 flex-row flex-wrap items-baseline gap-2.5 border-t border-divider pt-3.5">
           <Text className="t-caption-sm text-ink3">{t('whatif.cashflow.lowest')}</Text>
@@ -391,7 +445,19 @@ function BillsBlock({ bills }: { bills: WhatIfAtRisk[] }) {
  * rather than showing a fabricated figure — there is no honest way to turn
  * money into time without a rate.
  */
-function GoalsBlock({ goals }: { goals: WhatIfGoalCost[] }) {
+function GoalsBlock({
+  goals,
+  showTotals,
+}: {
+  goals: WhatIfGoalCost[]
+  /**
+   * Only with a sale applied. Then the goal's backing asset genuinely shrank,
+   * so its TOTAL moved and the before → after pair is the fact. Without one the
+   * cost is a pace/set-aside displacement, and a same-size pair would put the
+   * subtraction back on the reader.
+   */
+  showTotals?: boolean
+}) {
   const { t } = useTranslation()
 
   const measurable = goals.filter((goal) => goal.delayDays !== null)
@@ -439,6 +505,24 @@ function GoalsBlock({ goals }: { goals: WhatIfGoalCost[] }) {
             <Text className="t-body-sm font-medium text-ink" numberOfLines={1}>
               {goal.goalName ?? '—'}
             </Text>
+            {showTotals ? (
+              <View className="mt-0.5 gap-0.5">
+                <Text
+                  className="t-caption-sm text-ink2"
+                  style={{ fontVariant: ['tabular-nums'] }}
+                >
+                  {formatVndShort(goal.before)} → {formatVndShort(goal.after)}
+                </Text>
+                {goal.completionDateBefore && goal.completionDateAfter ? (
+                  <Text className="t-caption-sm text-ink3">
+                    {t('whatif.blocks.goalDateRow', {
+                      before: formatMonthYear(goal.completionDateBefore),
+                      after: formatMonthYear(goal.completionDateAfter),
+                    })}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
 
             {goal.delayDays !== null ? (
               <View className="mt-1.5 flex-row items-center gap-1.5">
@@ -509,10 +593,18 @@ function FundingSourceBlock({
   spend,
   fundingSource,
   uncovered,
+  liquidity,
+  appliedSale,
+  onTryAssetSale,
+  shortfallNote,
 }: {
   spend: number
   fundingSource: WhatIfResult['fundingSource']
   uncovered: number
+  liquidity?: WhatIfResult['liquidity']
+  appliedSale?: WhatIfResult['assetSale']
+  onTryAssetSale?: () => void
+  shortfallNote?: string
 }) {
   const { t } = useTranslation()
   const [showWallets, setShowWallets] = useState(false)
@@ -549,6 +641,63 @@ function FundingSourceBlock({
         <Text className="mb-3 t-body-sm leading-5 text-alert-ink">
           {t('whatif.blocks.uncovered', { amount: formatVndShort(uncovered) })}
         </Text>
+      ) : null}
+
+      {/* The sale that funded this, when there was one. Both rows together net
+          to zero: a sale moves value, it does not create it. */}
+      {appliedSale ? (
+        <View className="mb-4">
+          <Sunk>
+            <Text className="t-caption-sm text-ink3">
+              {t('whatif.assetSale.appliedTitle')}
+            </Text>
+            <View className="mt-1.5 gap-1">
+              <View className="flex-row items-baseline justify-between gap-4">
+                <Text className="shrink t-body-sm text-ink" numberOfLines={1}>
+                  {appliedSale.name}
+                </Text>
+                <Text
+                  className="t-body-sm text-ink"
+                  style={{ fontVariant: ['tabular-nums'] }}
+                >
+                  {/* Exact: this pair and the cash row below must net to
+                      zero — a sale moves value, it does not create it. */}
+                  {formatVndExact(appliedSale.assetValueBefore)} →{' '}
+                  {formatVndExact(appliedSale.assetValueAfter)}
+                </Text>
+              </View>
+              <View className="flex-row items-baseline justify-between gap-4">
+                <Text className="shrink t-body-sm text-ink2" numberOfLines={1}>
+                  {t('whatif.assetSale.appliedCash')}
+                </Text>
+                <Text
+                  className="t-body-sm text-ink2"
+                  style={{ fontVariant: ['tabular-nums'] }}
+                >
+                  +{formatVndExact(appliedSale.netProceeds)}
+                </Text>
+              </View>
+            </View>
+          </Sunk>
+        </View>
+      ) : null}
+
+      {/* Short of money usable TODAY — a different sentence from `uncovered`,
+          and the one with a way out. The CTA offers it, never urges it. */}
+      {liquidity && liquidity.shortfall > 0 ? (
+        <View className="mb-4 gap-2.5">
+          <Text className="t-body-sm leading-5 text-alert-ink">
+            {shortfallNote ??
+              t('whatif.shortfall.line', {
+                amount: formatVndShort(liquidity.shortfall),
+              })}
+          </Text>
+          {onTryAssetSale ? (
+            <Button variant="secondary" onPress={onTryAssetSale}>
+              {t('whatif.assetSale.cta')}
+            </Button>
+          ) : null}
+        </View>
       ) : null}
 
       {total > 0 ? (
@@ -619,12 +768,24 @@ function FundingSourceBlock({
           <View className="gap-2.5 pb-0.5 pt-1.5">
             {fundingSource.wallets.map((wallet) => (
               <View key={wallet.assetId} className="flex-row items-center gap-3">
-                <Text className="w-24 t-caption text-ink2" numberOfLines={1}>
-                  {wallet.name}
-                </Text>
-                {/* How much of this wallet the spend took, against what it
-                    held — a wallet emptied outright and one barely touched are
-                    different facts about the same number. */}
+                <View className="w-24">
+                  <Text className="t-caption text-ink2" numberOfLines={1}>
+                    {wallet.name}
+                  </Text>
+                  {/* Names the part that only existed because of the sale, so
+                      the wallet is not credited with money it did not hold. */}
+                  {wallet.fromSale && wallet.fromSale > 0 ? (
+                    <Text className="t-caption-sm text-ink3" numberOfLines={1}>
+                      {t('whatif.source.walletFromSale', {
+                        amount: formatVndShort(wallet.fromSale),
+                      })}
+                    </Text>
+                  ) : null}
+                </View>
+                {/* How much of this wallet the spend took, against what it held
+                    plus anything the sale added — a wallet emptied outright and
+                    one barely touched are different facts about the same
+                    number. */}
                 <View
                   className="h-2.5 flex-1 overflow-hidden rounded-full"
                   style={{ backgroundColor: colors.actionSoft }}
@@ -632,11 +793,10 @@ function FundingSourceBlock({
                   <View
                     className="h-full rounded-full"
                     style={{
-                      width: `${
-                        wallet.before > 0
-                          ? Math.min(100, (wallet.taken / wallet.before) * 100)
-                          : 100
-                      }%`,
+                      width: `${(() => {
+                        const held = wallet.before + (wallet.fromSale ?? 0)
+                        return held > 0 ? Math.min(100, (wallet.taken / held) * 100) : 100
+                      })()}%`,
                       backgroundColor: colors.dataPrimary,
                     }}
                   />

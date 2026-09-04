@@ -49,6 +49,9 @@ export type ForecastOccurrence = {
   isSynthetic: boolean
   date: string
   name: string
+  /** The source event's category (FK), when it has one. Resolved client-side
+   *  against the household's category list for the row's disc. */
+  categoryId?: string | null
   direction: CashflowDirection
   amount: number
   requirement: CashflowRequirement

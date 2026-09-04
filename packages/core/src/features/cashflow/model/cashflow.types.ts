@@ -42,6 +42,10 @@ export type CashflowEvent = {
   id: string
   householdId: string
   name: string
+  /** FK to `money_event_categories.id`, same as a recorded money event's
+   *  `categoryId` — completing this event carries it onto the money event it
+   *  records. */
+  categoryId: string
   /** Raw VND. The client formats it. */
   amount: number
   direction: CashflowDirection

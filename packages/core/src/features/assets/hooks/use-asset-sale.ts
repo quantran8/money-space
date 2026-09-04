@@ -8,6 +8,7 @@ import { useAssets } from '#/features/assets/hooks/use-assets'
 import { AS_OF } from '#/features/assets/model/assets-form'
 import {
   buildAssetSaleSchema,
+  seedUnitPrice,
   computeNet,
   defaultAssetSaleValues,
   effectiveHeldQuantity,
@@ -17,6 +18,7 @@ import {
   type AssetSaleForm,
 } from '#/features/assets/model/asset-sale-form'
 import type { Asset } from '#/features/assets/model/assets'
+import { useEventCategories } from '#/features/events/hooks/use-event-categories'
 import { useEvents } from '#/features/events/hooks/use-events'
 import type { MoneyEventItem } from '#/features/events/model/events.types'
 import { getErrorMessage } from '#/shared/lib/get-error-message'
@@ -32,41 +34,19 @@ const FALLBACK_ASSET: Asset = {
   note: '',
 }
 
-/**
- * The price to open a sale at: what one unit is worth TODAY.
- *
- * `marketPrice` (today's cached quote) leads, because a sale is agreed at the
- * current price — `lastPrice` is only what was last RECORDED, and cost basis
- * (`purchasePrice`) is what the position was bought at, so seeding from either
- * opens the form at a stale number the user must notice and overwrite.
- *
- * Only a VND figure may be seeded: the field is đồng, and `marketPrice` carries
- * the instrument's own currency. A foreign quote is left for the dialog to
- * convert and fill.
- */
-function seedUnitPrice(asset: Asset | null): string {
-  const position = asset?.marketPosition
-  if (position) {
-    const currency = position.marketPriceCurrency ?? position.quoteCurrency
-    if (position.marketPrice !== undefined && currency === 'VND') {
-      return String(Math.round(position.marketPrice))
-    }
-    const fallback = position.lastPrice ?? position.purchasePrice
-    if (fallback !== undefined && position.quoteCurrency === 'VND') {
-      return String(Math.round(fallback))
-    }
-    return ''
-  }
-  if (asset?.type === 'real_estate' && asset.areaSqm) {
-    return String(Math.round((asset.manualValue ?? 0) / asset.areaSqm))
-  }
-  return ''
-}
-
 export function useAssetSale() {
   const { t } = useTranslation()
   const { assets, asOf } = useAssets()
   const { createEvent, updateEvent } = useEvents()
+  const { categories } = useEventCategories()
+  // A sale is classified as `investment`. That used to be a literal code on the
+  // payload; with a real FK the id has to be resolved from the household's
+  // visible categories (its own row wins over the shared system one).
+  const investmentCategoryId = useMemo(() => {
+    const matches = categories.filter((category) => category.code === 'investment')
+    const own = matches.find((category) => category.householdId !== null)
+    return (own ?? matches[0])?.id ?? ''
+  }, [categories])
 
   const [saleOpen, setSaleOpen] = useState(false)
   const [sellingAsset, setSellingAsset] = useState<Asset | null>(null)
@@ -170,6 +150,7 @@ export function useAssetSale() {
         sellingAsset,
         values,
         asOf || AS_OF,
+        investmentCategoryId,
         editingEvent ?? undefined,
       )
       if (editingEvent?.id) {

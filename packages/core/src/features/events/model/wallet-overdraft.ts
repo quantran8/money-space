@@ -1,5 +1,5 @@
 import type { EventWalletImpact } from '#/features/events/api/events.repository'
-import { formatMoney } from '#/shared/lib/format-money'
+import { formatVndExact } from '#/shared/lib/format-money'
 
 type Translate = (key: string, values?: Record<string, unknown>) => string
 
@@ -35,7 +35,9 @@ export function describeOverdraft(
       wallet: wallet.assetName,
       // The balance is negative; the sentence already says "âm"/"negative", so
       // show the magnitude rather than repeating the sign.
-      amount: formatMoney(Math.abs(wallet.lowestBalance)),
+      // Exact: the next thing the household does is hunt for the missing
+    // transaction, and "âm 0,1 tr" names no receipt they can search for.
+    amount: formatVndExact(Math.abs(wallet.lowestBalance)),
       date: formatDay(wallet.firstOverdraftDate, locale),
     })
   }

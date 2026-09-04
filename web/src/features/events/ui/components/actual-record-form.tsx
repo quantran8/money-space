@@ -25,7 +25,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
+import {
+  CategoryCombobox,
+  type CategoryComboboxOption,
+} from '@/features/events/ui/components/category-combobox'
 import { EventEffect } from '@/features/events/ui/components/event-effect'
 import type {
   ActualRecordForm as ActualRecordFormValues,
@@ -45,7 +48,7 @@ type ActualRecordFormProps = {
   isRevaluation?: boolean
   isEditing?: boolean
   sourceAssetOptions: Option[]
-  categoryOptions: Option[]
+  categoryOptions: CategoryComboboxOption[]
   showMoreDetails: boolean
   onToggleMoreDetails: () => void
   isSaving: boolean
@@ -125,18 +128,13 @@ export function ActualRecordForm({
               control={control}
               name="category"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className={fieldControlReset}>
-                    <SelectValue placeholder={t('events.form.categoryPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categoryOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategoryCombobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={categoryOptions}
+                  placeholder={t('events.form.categoryPlaceholder')}
+                  className={fieldControlReset}
+                />
               )}
             />
           </div>
@@ -234,19 +232,6 @@ export function ActualRecordForm({
               </div>
             </Field>
 
-
-            {!isRevaluation ? (
-              <div className="flex items-center justify-between gap-4 rounded-[10px] bg-wash px-4 py-3">
-                <span className="t-body-sm text-ink2">{t('events.form.attention')}</span>
-                <Controller
-                  control={control}
-                  name="isAttentionNeeded"
-                  render={({ field }) => (
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                  )}
-                />
-              </div>
-            ) : null}
 
             <TextareaField
               id="event-note"

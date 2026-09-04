@@ -6,6 +6,7 @@ import { notify } from '#/shared/notify'
 
 import type { CashflowEventPayload } from '#/features/cashflow/api/cashflow-events.repository'
 import { useCashflowEvents } from '#/features/cashflow/hooks/use-cashflow-events'
+import { useEventCategories } from '#/features/events/hooks/use-event-categories'
 import {
   buildCashflowSchema,
   cashflowAmountToRaw,
@@ -25,6 +26,29 @@ export function useCashflowForm() {
   const { t } = useTranslation()
   const { cashflowEvents, createCashflowEvent, updateCashflowEvent, deleteCashflowEvent } =
     useCashflowEvents()
+  const { categories } = useEventCategories()
+  // Mirrors the money-event form's own default-category prefill: the
+  // household's default category leads the picker and seeds a new event.
+  const defaultCategoryId = useMemo(
+    () => categories.find((category) => category.isDefault)?.id ?? '',
+    [categories],
+  )
+  // Same shape as the money-event form's `categoryOptions` (value/label plus
+  // the disc's glyph+fill) — the code → i18n label resolution stays here
+  // rather than in the UI so both forms translate a category the same way.
+  const categoryOptions = useMemo(
+    () =>
+      [...categories]
+        .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
+        .map((category) => ({
+          // The ID is the value — an event carries a real FK, not a code.
+          value: category.id,
+          label: t(`options.eventCategory.${category.code}`, { defaultValue: category.label }),
+          iconKey: category.iconKey,
+          iconColor: category.iconColor,
+        })),
+    [categories, t],
+  )
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -51,6 +75,7 @@ export function useCashflowForm() {
     if (editingEvent) {
       reset({
         name: editingEvent.name,
+        category: editingEvent.categoryId,
         amount: cashflowAmountToRaw(editingEvent.amount),
         direction: editingEvent.direction,
         expectedDate: editingEvent.expectedDate,
@@ -63,12 +88,12 @@ export function useCashflowForm() {
       })
       return
     }
-    reset(defaultCashflowFormValues())
-  }, [editingEvent, formOpen, reset])
+    reset({ ...defaultCashflowFormValues(), category: defaultCategoryId })
+  }, [defaultCategoryId, editingEvent, formOpen, reset])
 
   function openCreate(direction: 'incoming' | 'outgoing' = 'outgoing') {
     setEditingId(null)
-    reset(defaultCashflowFormValues(direction))
+    reset({ ...defaultCashflowFormValues(direction), category: defaultCategoryId })
     setFormOpen(true)
   }
 
@@ -86,6 +111,7 @@ export function useCashflowForm() {
     try {
       const payload: CashflowEventPayload = {
         name: values.name.trim(),
+        categoryId: values.category,
         amount: cashflowAmountToVnd(values.amount),
         direction: values.direction,
         expectedDate: values.expectedDate,
@@ -128,6 +154,7 @@ export function useCashflowForm() {
   return {
     form,
     formOpen,
+    categoryOptions,
     /**
      * The event being edited, or null when creating.
      *

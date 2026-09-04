@@ -1,4 +1,4 @@
-import { ArrowUpRight, Loader2, MoreHorizontal, Pencil, Trash2, TriangleAlert } from 'lucide-react'
+import { ArrowUpRight, Loader2, MoreHorizontal, Pencil, Trash2, TriangleAlert, UserRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -8,7 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Label, Panel, PanelHeader } from '@/components/ui/panel'
+import { Panel, PanelHeader } from '@/components/ui/panel'
+import {
+  CATEGORY_ICON_DEFAULT_COLOR,
+  CATEGORY_ICON_FALLBACK,
+  CATEGORY_ICONS,
+} from '@/features/events/ui/components/category-icon'
+import type { ForecastCategoryVisual } from '@/features/forecast/ui/components/forecast-timeline'
 import type { OverdueSummary } from '@money-space/core/features/forecast/model/forecast-overdue'
 import { formatVndCellSigned } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -41,6 +47,8 @@ export function OverdueSection({
   onDelete,
   pendingId,
   showViewAll = true,
+  ownerNameByEventId = {},
+  categoryVisualByEventId = {},
 }: {
   overdue: OverdueSummary
   /** Marks one occurrence resolved. The ONLY way an item leaves this list (§18). */
@@ -58,6 +66,8 @@ export function OverdueSection({
    * turns the link off rather than pointing the reader at the page they are on.
    */
   showViewAll?: boolean
+  ownerNameByEventId?: Record<string, string | undefined>
+  categoryVisualByEventId?: Record<string, ForecastCategoryVisual | undefined>
 }) {
   const { t } = useTranslation()
 
@@ -67,6 +77,11 @@ export function OverdueSection({
     <Panel>
       <PanelHeader
         title={t('home.upcoming.overdue.title')}
+        meta={
+          showViewAll
+            ? undefined
+            : t('upcoming.timeline.count', { count: overdue.totalCount })
+        }
         action={
           showViewAll ? (
             <Link
@@ -83,14 +98,14 @@ export function OverdueSection({
       {/* The summary line, stated once at the top: how many, how old, and that
           the figures below already count them. Everything under it is the same
           facts per item, so this is the only place the totals appear (§2.10). */}
-      <div className="mt-5 flex items-start gap-3 rounded-control bg-alert-tint p-4">
-        <TriangleAlert
-          className="mt-[2px] size-5 shrink-0 text-alert-ink"
-          strokeWidth={1.7}
-          aria-hidden
-        />
-        <div className="min-w-0">
-          <p className="t-body-sm font-medium text-alert-ink">
+      <div className="mt-4 rounded-control bg-alert-tint px-4 py-3.5">
+        <div className="flex items-center gap-2 text-alert-ink">
+          <TriangleAlert
+            className="size-4 shrink-0"
+            strokeWidth={1.7}
+            aria-hidden
+          />
+          <p className="t-body-sm font-medium">
             {overdue.oldestDays === undefined
               ? t('home.upcoming.overdue.count', { count: overdue.totalCount })
               : t('home.upcoming.overdue.summary', {
@@ -98,16 +113,14 @@ export function OverdueSection({
                   days: overdue.oldestDays,
                 })}
           </p>
-          <p className="mt-1 t-caption leading-5 text-ink2">
-            {t('home.upcoming.overdue.note')}
-          </p>
         </div>
+        <p className="mt-2 max-w-[760px] t-body-sm leading-5 text-ink2">
+          {t('home.upcoming.overdue.note')}
+        </p>
       </div>
 
-      <div className="mt-5">
-        <Label>{t('home.upcoming.overdue.listLabel')}</Label>
-
-        <ul className="mt-2">
+      <div className="mt-3">
+        <ul className="space-y-1">
           {overdue.rows.map((row) => (
             <OverdueRowItem
               key={row.key}
@@ -116,6 +129,8 @@ export function OverdueSection({
               onEdit={onEdit}
               onDelete={onDelete}
               pending={pendingId === row.sourceEventId}
+              ownerName={ownerNameByEventId[row.sourceEventId]}
+              categoryVisual={categoryVisualByEventId[row.sourceEventId]}
             />
           ))}
         </ul>
@@ -146,43 +161,64 @@ function OverdueRowItem({
   onEdit,
   onDelete,
   pending,
+  ownerName,
+  categoryVisual,
 }: {
   row: OverdueSummary['rows'][number]
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
   pending: boolean
+  ownerName?: string
+  categoryVisual?: ForecastCategoryVisual
 }) {
   const { t } = useTranslation()
   // Generated from its debt and regenerated on every schedule change, so a hand
   // edit here would be undone. "Đã xong" stays: recording a payment is not an
   // edit of the plan.
   const isDebtDerived = Boolean(row.debtId)
+  const CategoryIcon =
+    (categoryVisual?.iconKey && CATEGORY_ICONS[categoryVisual.iconKey]) ||
+    CATEGORY_ICON_FALLBACK
 
   return (
-    <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-t border-divider py-3 first:border-t-0 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_32px] sm:gap-x-6">
-      <div className="flex min-w-0 items-baseline gap-3">
-        {/* When it FELL DUE, not the day the forecast lists it under. Absent
-            when the source event is not loaded — better no date than today's. */}
-        <span className="num shrink-0 font-mono t-caption-sm text-ink3">
-          {row.dueDate ? formatDayMonth(row.dueDate) : ''}
-        </span>
-        <span className="truncate t-body-sm font-medium">{row.name}</span>
-      </div>
+    <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-control px-3 py-3 transition-colors hover:bg-wash sm:grid-cols-[72px_minmax(0,1fr)_170px_auto]">
+      <span className="num t-body-sm text-ink2">
+        {row.dueDate ? formatDayMonth(row.dueDate) : ''}
+      </span>
 
-      {row.daysOverdue === undefined ? (
-        <span className="hidden sm:block" />
-      ) : (
-        <span className="col-start-1 row-start-2 flex items-center gap-2 t-caption whitespace-nowrap text-ink2 sm:col-start-2 sm:row-start-1">
-          <span className="size-1.5 shrink-0 rounded-full bg-alert" aria-hidden />
-          {t('home.upcoming.overdue.age', { count: row.daysOverdue })}
+      <div className="col-span-2 flex min-w-0 items-center gap-3 sm:col-span-1">
+        <span
+          className="grid size-10 shrink-0 place-items-center rounded-pill text-white"
+          style={{
+            backgroundColor:
+              categoryVisual?.iconColor ?? CATEGORY_ICON_DEFAULT_COLOR,
+          }}
+          title={categoryVisual?.label}
+        >
+          <CategoryIcon className="size-4" strokeWidth={1.75} aria-hidden />
         </span>
-      )}
+        <div className="min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <span className="truncate t-body font-medium">{row.name}</span>
+            {row.daysOverdue === undefined ? null : (
+              <span className="shrink-0 rounded-pill bg-alert-tint px-2 py-0.5 t-caption-sm font-medium text-alert-ink">
+                {t('home.upcoming.overdue.age', { count: row.daysOverdue })}
+              </span>
+            )}
+          </div>
+          <span className="mt-0.5 flex min-w-0 items-center gap-1.5 t-caption text-ink3">
+            <UserRound className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span className="truncate">
+              {ownerName ?? t('upcoming.timeline.householdOwner')}
+            </span>
+          </span>
+        </div>
+      </div>
 
       <span
         className={cn(
-          'num col-start-2 row-start-2 justify-self-end t-body-sm font-medium whitespace-nowrap sm:col-start-3 sm:row-start-1',
-          row.signedAmount > 0 ? 'text-positive-ink' : 'text-alert-ink',
+          'num col-start-1 row-start-3 t-subtitle whitespace-nowrap text-ink sm:col-start-3 sm:row-start-1 sm:justify-self-end',
         )}
       >
         {formatVndCellSigned(row.signedAmount)}{' '}
@@ -192,56 +228,53 @@ function OverdueRowItem({
         </span>
       </span>
 
-      {onComplete ? (
-        <button
-          type="button"
-          // `row.date` — day 0 — is the idempotency key the API expects, NOT
-          // `row.dueDate`, which is only what we show (§18).
-          onClick={() => onComplete(row.sourceEventId, row.date)}
-          disabled={pending}
-          className="col-span-2 col-start-1 row-start-3 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-control bg-action px-4 t-body font-medium text-action-inverse transition-opacity hover:opacity-90 disabled:opacity-60 sm:col-span-1 sm:col-start-4 sm:row-start-1 sm:justify-self-end"
-        >
-          {pending ? (
-            <>
-              <Loader2 className="size-3.5 animate-spin" />
-              {t('home.upcoming.overdue.marking')}
-            </>
-          ) : (
-            t('home.upcoming.overdue.markDone')
-          )}
-        </button>
-      ) : null}
-
-      {/* "Đã xong" ở lại là nút riêng — nó là hành động duy nhất đưa khoản này
-          ra khỏi danh sách, nên không giấu sau menu. Sửa và xoá thì vào ⋯,
-          giống hệt hàng trên dòng thời gian (§12.2). */}
-      {(onEdit || onDelete) && !isDebtDerived ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={t('upcoming.rowActions.label')}
-            className="col-start-2 row-start-1 flex size-8 items-center justify-center justify-self-end rounded-full text-ink3 outline-none transition hover:bg-card hover:text-ink sm:col-start-5 sm:row-start-1"
+      <div className="col-start-2 row-start-3 flex items-center justify-self-end sm:col-start-4 sm:row-start-1">
+        {onComplete ? (
+          <button
+            type="button"
+            onClick={() => onComplete(row.sourceEventId, row.date)}
+            disabled={pending}
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-control bg-action px-4 t-body-sm font-medium text-action-inverse transition-opacity hover:opacity-90 disabled:opacity-60"
           >
-            <MoreHorizontal className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {onEdit ? (
-              <DropdownMenuItem onClick={() => onEdit(row.sourceEventId)}>
-                <Pencil className="mr-2 size-4" />
-                {t('upcoming.rowActions.edit')}
-              </DropdownMenuItem>
-            ) : null}
-            {onDelete ? (
-              <DropdownMenuItem
-                className="text-alert-ink focus:text-alert-ink"
-                onClick={() => onDelete(row.sourceEventId)}
-              >
-                <Trash2 className="mr-2 size-4" />
-                {t('upcoming.rowActions.delete')}
-              </DropdownMenuItem>
-            ) : null}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : null}
+            {pending ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" />
+                {t('home.upcoming.overdue.marking')}
+              </>
+            ) : (
+              t('home.upcoming.overdue.markDone')
+            )}
+          </button>
+        ) : null}
+
+        {(onEdit || onDelete) && !isDebtDerived ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label={t('upcoming.rowActions.label')}
+              className="flex size-11 items-center justify-center rounded-control text-ink2 outline-none transition-colors hover:bg-wash hover:text-ink"
+            >
+              <MoreHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onEdit ? (
+                <DropdownMenuItem onClick={() => onEdit(row.sourceEventId)}>
+                  <Pencil className="mr-2 size-4" />
+                  {t('upcoming.rowActions.edit')}
+                </DropdownMenuItem>
+              ) : null}
+              {onDelete ? (
+                <DropdownMenuItem
+                  className="text-alert-ink focus:text-alert-ink"
+                  onClick={() => onDelete(row.sourceEventId)}
+                >
+                  <Trash2 className="mr-2 size-4" />
+                  {t('upcoming.rowActions.delete')}
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+      </div>
     </li>
   )
 }

@@ -10,7 +10,10 @@ type Translate = (key: string, params?: Record<string, unknown>) => string
  * scenario. It reports consequence only, matching the on-screen blocks.
  */
 export function buildShareSummary(result: WhatIfResult, t: Translate): string {
-  const { input, before, after, delta } = result
+  const { input, before, delta } = result
+  // With a sale applied, the after-sale side is what the screen shows — sharing
+  // the sale-less figures would paste numbers nobody is looking at.
+  const after = result.afterSale ?? result.after
 
   const lines = [
     t('whatif.share.heading', {
@@ -22,6 +25,15 @@ export function buildShareSummary(result: WhatIfResult, t: Translate): string {
       after: formatVndShort(after.lowestProjectedBalance),
     }),
   ]
+
+  if (result.assetSale) {
+    lines.push(
+      t('whatif.share.sale', {
+        name: result.assetSale.name,
+        amount: formatVndShort(result.assetSale.amount),
+      }),
+    )
+  }
 
   if (!after.obligationsCovered) {
     lines.push(t('whatif.obligations.notCovered'))

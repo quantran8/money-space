@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Plus, Trash2, UserRound } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -12,13 +12,10 @@ import {
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  CATEGORY_ICON_DEFAULT_COLOR,
+  CATEGORY_ICON_FALLBACK,
+  CATEGORY_ICONS,
+} from '@/features/events/ui/components/category-icon'
 import type {
   ForecastDay,
   ForecastOccurrence,
@@ -36,6 +33,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
 type ForecastTimelineProps = {
   days: ForecastDay[]
   ownerNameByEventId?: Record<string, string | undefined>
+  categoryVisualByEventId?: Record<string, ForecastCategoryVisual | undefined>
   isLoading?: boolean
   isEmpty?: boolean
   /** Gates the running-balance column — see `canProjectBalance`. */
@@ -46,6 +44,12 @@ type ForecastTimelineProps = {
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
+}
+
+export type ForecastCategoryVisual = {
+  label: string
+  iconKey?: string | null
+  iconColor?: string | null
 }
 
 type TimelineRow = {
@@ -87,6 +91,7 @@ function groupByMonth(rows: TimelineRow[]): MonthGroup[] {
 export function ForecastTimeline({
   days,
   ownerNameByEventId = {},
+  categoryVisualByEventId = {},
   isLoading = false,
   isEmpty = false,
   usableNowAssetCount,
@@ -157,78 +162,31 @@ export function ForecastTimeline({
         meta={t('upcoming.timeline.count', { count: rows.length })}
       />
 
-      {/* A real table from `lg` up, where the five columns fit: the header row
-          then labels the columns once instead of every row restating them.
-          Below `lg` the same data stacks (see `OccurrenceRow`) rather than
-          scrolling sideways — `Còn lại` is the column this screen exists for,
-          and a horizontal scroll is exactly what hides it on a phone. */}
-      <div className="mt-7">
-        <Table className="lg:table-fixed">
-          <TableHeader className="hidden lg:table-header-group">
-            {/* `.label-vi`: the headings are accented Vietnamese, which mono
-                renders poorly (§10.1) — so they keep the size and tracking but
-                fall back through the font stack. */}
-            <TableRow className="label-vi hover:bg-transparent">
-              <TableHead scope="col" className="label-vi h-auto w-[84px] px-0 pb-3 font-normal">
-                {t('upcoming.timeline.columns.date')}
-              </TableHead>
-              <TableHead scope="col" className="label-vi h-auto px-0 pb-3 pr-8 font-normal">
-                {t('upcoming.timeline.columns.item')}
-              </TableHead>
-              <TableHead scope="col" className="label-vi h-auto w-[116px] px-0 pb-3 pr-8 font-normal">
-                {t('upcoming.timeline.columns.owner')}
-              </TableHead>
-              <TableHead
-                scope="col"
-                className="label-vi h-auto w-[128px] px-0 pb-3 pr-8 text-right font-normal"
-              >
-                {t('upcoming.timeline.columns.amount')}
-              </TableHead>
-              <TableHead
-                scope="col"
-                className="label-vi h-auto w-[128px] px-0 pb-3 pr-5 text-right font-normal"
-              >
-                {t('upcoming.timeline.columns.remaining')}
-              </TableHead>
-              <TableHead scope="col" className="h-auto w-[32px] px-0 pb-3">
-                <span className="sr-only">{t('upcoming.rowActions.label')}</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-
-          {/* One `<tbody>` per month so the group heading is a real
-              `scope="colgroup"` header rather than a styled row (§24). */}
-          {groups.map((group) => {
-            const [year, month] = group.key.split('-')
-            return (
-              <TableBody key={group.key} className="block lg:table-row-group">
-                <TableRow className="block hover:bg-transparent lg:table-row">
-                  <TableHead
-                    scope="colgroup"
-                    colSpan={6}
-                    className="label block h-auto px-3 pb-2 pt-5 font-normal lg:table-cell"
-                  >
-                    {t('upcoming.timeline.monthGroup', {
-                      month: Number(month),
-                      year,
-                    })}
-                  </TableHead>
-                </TableRow>
+      <div className="mt-5 space-y-5">
+        {groups.map((group) => {
+          const [year, month] = group.key.split('-')
+          return (
+            <section key={group.key} aria-labelledby={`forecast-month-${group.key}`}>
+              <h3 id={`forecast-month-${group.key}`} className="px-3 t-caption font-medium text-ink3">
+                {t('upcoming.timeline.monthGroup', { month: Number(month), year })}
+              </h3>
+              <div className="mt-2 space-y-1">
                 {group.rows.map(({ occurrence, runningBalance }) => (
                   <OccurrenceRow
                     key={occurrence.occurrenceKey}
                     occurrence={occurrence}
                     runningBalance={runningBalance}
                     ownerName={ownerNameByEventId[occurrence.sourceEventId]}
+                    categoryVisual={categoryVisualByEventId[occurrence.sourceEventId]}
                     onComplete={onComplete}
                     onEdit={onEdit}
                     onDelete={onDelete}
                   />
                 ))}
-              </TableBody>
-            )
-          })}
-        </Table>
+              </div>
+            </section>
+          )
+        })}
       </div>
 
       {rows.length > PAGE_SIZE ? (
@@ -293,6 +251,7 @@ function OccurrenceRow({
   occurrence,
   runningBalance,
   ownerName,
+  categoryVisual,
   onComplete,
   onEdit,
   onDelete,
@@ -300,12 +259,12 @@ function OccurrenceRow({
   occurrence: ForecastOccurrence
   runningBalance?: number
   ownerName?: string
+  categoryVisual?: ForecastCategoryVisual
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
 }) {
   const { t } = useTranslation()
-  const isIncoming = occurrence.direction === 'incoming'
   const tone = balanceTone(runningBalance ?? 0)
   // A repayment reminder is generated from its debt and regenerated whenever the
   // debt's schedule changes, so editing or deleting it here would be undone by
@@ -315,67 +274,78 @@ function OccurrenceRow({
   const markers = occurrenceMarkers(occurrence).filter(
     (marker) => marker !== 'confirmed' && marker !== 'required',
   )
+  const CategoryIcon =
+    (categoryVisual?.iconKey && CATEGORY_ICONS[categoryVisual.iconKey]) ||
+    CATEGORY_ICON_FALLBACK
 
   return (
-    // Each cell owns its own padding — the row is a grid below `lg` and a real
-    // table row above it, so `TableCell`'s uniform `px-4 py-3` is overridden.
-    <TableRow className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 rounded-control px-3 py-3 lg:table-row lg:px-0 lg:py-0">
-      <TableCell className="col-start-1 row-start-1 px-0 py-0 font-mono t-caption text-ink3 lg:rounded-l-[8px] lg:py-3 lg:pl-3">
-        {/* An overdue occurrence is pulled onto today so it still weighs on
-            today's cash, but the date column states when the event happens —
-            so it shows the real one. The clamp stays in `occurrence.date`,
-            which is what the running balance and day grouping use, and the
-            `overdue` marker is what tells the user it is being counted now. */}
+    <article className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-control px-3 py-3 transition-colors hover:bg-wash sm:grid-cols-[72px_minmax(0,1fr)_160px_auto]">
+      <div className="num t-body-sm text-ink2">
         {formatDayMonth(occurrence.originalDate ?? occurrence.date)}
-      </TableCell>
+      </div>
 
-      <TableCell className="col-start-1 row-start-2 mt-1 min-w-0 px-0 py-0 lg:mt-0 lg:py-3 lg:pr-8">
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-          <span className="truncate t-body-sm font-medium">
-            {occurrence.name}
-          </span>
-          {/* A filled chip, not bare text: a marker is a state the row is IN,
-              and at 10px unfilled it read as an afterthought trailing the name
-              rather than as something qualifying it. */}
-          {markers.map((marker) => (
-            <span
-              key={marker}
-              className="inline-flex shrink-0 items-center rounded-[6px] bg-attention-tint px-2 py-1 t-caption-sm font-medium text-attention-ink"
-            >
-              {t(`upcoming.markers.${marker}`)}
+      <div className="col-span-2 flex min-w-0 items-center gap-3 sm:col-span-1">
+        <span
+          className="grid size-10 shrink-0 place-items-center rounded-pill text-white"
+          style={{
+            backgroundColor:
+              categoryVisual?.iconColor ?? CATEGORY_ICON_DEFAULT_COLOR,
+          }}
+          title={categoryVisual?.label}
+        >
+          <CategoryIcon className="size-4" strokeWidth={1.75} aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <span className="truncate t-body font-medium">{occurrence.name}</span>
+            {markers.map((marker) => (
+              <span
+                key={marker}
+                className="inline-flex shrink-0 items-center rounded-pill bg-attention-tint px-2 py-0.5 t-caption-sm font-medium text-attention-ink"
+              >
+                {t(`upcoming.markers.${marker}`)}
+              </span>
+            ))}
+          </div>
+          <span className="mt-0.5 flex min-w-0 items-center gap-1.5 t-caption text-ink3">
+            <UserRound className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+            <span className="truncate">
+              {ownerName ?? t('upcoming.timeline.householdOwner')}
             </span>
-          ))}
+          </span>
         </div>
-      </TableCell>
+      </div>
 
-      <TableCell className="col-start-1 row-start-3 mt-2 px-0 py-0 t-caption text-ink2 lg:mt-0 lg:py-3 lg:pr-8 lg:t-body-sm">
-        {ownerName ?? t('upcoming.timeline.householdOwner')}
-      </TableCell>
+      <div className="col-start-1 row-start-3 text-left sm:col-start-3 sm:row-start-1 sm:text-right">
+        <div className="num t-body font-medium">
+          {formatVndCellSigned(
+            occurrence.direction === 'incoming' ? occurrence.amount : -occurrence.amount,
+          )}{' '}
+          <span className="t-caption text-ink3">{t('units.million')}</span>
+        </div>
+        <div
+          className={cn(
+            'num mt-1 t-caption text-ink3',
+            runningBalance !== undefined && BALANCE_TONE_CLASS[tone],
+          )}
+        >
+          {runningBalance === undefined
+            ? '—'
+            : (
+              <>
+                {t('upcoming.timeline.columns.remaining').toLocaleLowerCase()}{' '}
+                {formatVndCell(runningBalance)} {t('units.million')}
+              </>
+            )}
+        </div>
+      </div>
 
-      <TableCell
-        className={cn(
-          'num col-start-2 row-start-2 mt-1 px-0 py-0 text-right t-body-sm font-medium lg:mt-0 lg:py-3 lg:pr-8',
-          isIncoming && 'text-action',
-        )}
-      >
-        {formatVndCellSigned(isIncoming ? occurrence.amount : -occurrence.amount)}
-      </TableCell>
-
-      <TableCell
-        className={cn(
-          'num col-start-2 row-start-3 mt-2 px-0 py-0 text-right t-caption text-ink2 lg:mt-0 lg:py-3 lg:pr-5 lg:t-body-sm',
-          runningBalance !== undefined && BALANCE_TONE_CLASS[tone],
-        )}
-      >
-        {runningBalance === undefined ? '—' : formatVndCell(runningBalance)}
-      </TableCell>
-
-      <TableCell className="col-start-2 row-start-1 justify-self-end px-0 py-0 lg:rounded-r-[8px] lg:py-3 lg:pr-3 lg:text-right">
+      <div className="col-start-2 row-start-3 justify-self-end sm:col-start-4 sm:row-start-1">
         {onComplete || ((onEdit || onDelete) && !isDebtDerived) ? (
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label={t('upcoming.rowActions.label')}
-              className="flex size-8 items-center justify-center rounded-full text-ink3 outline-none transition hover:bg-card hover:text-ink lg:ml-auto"
+              className="flex size-11 items-center justify-center rounded-control text-ink2 outline-none transition-colors hover:bg-wash hover:text-ink"
             >
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>
@@ -406,8 +376,8 @@ function OccurrenceRow({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
-      </TableCell>
-    </TableRow>
+      </div>
+    </article>
   )
 }
 

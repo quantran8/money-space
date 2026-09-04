@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import { useGoalProgressChange } from '@money-space/core/features/goals/hooks/use-goal-progress-change'
-import { formatAmount } from '@money-space/core/features/goals/model/goals-form'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
@@ -43,8 +43,12 @@ export function GoalProgressChange({ goalId }: { goalId: string }) {
     <p className="mt-3 t-body-sm leading-relaxed text-ink2">
       {t('goals.detail.change.line', {
         since,
-        previous: formatAmount(change.previousAmount),
-        current: formatAmount(change.currentAmount),
+        // Exact: the sentence is "yesterday X → today Y · asset fell Z", so the
+        // reader subtracts on screen. Compact, a 70.000đ move printed the same
+        // number on both sides of the arrow while the clause beside it insisted
+        // something changed — the explanation this line exists to give.
+        previous: formatVndExact(change.previousAmount),
+        current: formatVndExact(change.currentAmount),
       })}
       {change.reasons.length > 0 ? (
         <>
@@ -58,7 +62,7 @@ export function GoalProgressChange({ goalId }: { goalId: string }) {
                     : 'goals.detail.change.reasonUp',
                   {
                     asset: reason.assetName,
-                    amount: formatAmount(Math.abs(reason.delta)),
+                    amount: formatVndExact(Math.abs(reason.delta)),
                   },
                 ),
               )

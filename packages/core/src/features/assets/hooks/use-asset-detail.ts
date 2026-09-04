@@ -117,9 +117,10 @@ export function useAssetDetail(assetId: string | undefined) {
     return events
       .filter((event) => touchesAsset(event, assetId))
       .map((event) => {
-        // `title` was dropped from money events; the note now labels the entry,
-        // falling back to the category code when empty.
-        const label = event.note?.trim() || event.category
+        // `title` was dropped from money events; the note now labels the entry.
+        // The category is an id, not a human-readable code, so a note-less entry
+        // falls back to its date rather than printing a UUID.
+        const label = event.note?.trim() || event.isoDate
         return {
           id: event.id ?? `${event.isoDate}-${label}`,
           title: label,

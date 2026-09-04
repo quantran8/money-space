@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { HouseholdOverviewCard } from '@/features/household/ui/components/household-overview-card'
+import { HouseholdOverviewCard } from '@/features/settings/ui/components/household-overview-card'
 import { useHouseholdInvite } from '@money-space/core/features/invites/hooks/use-household-invite'
 import { useMembersPage } from '@money-space/core/features/members/hooks/use-members-page'
 import { useSettingsPage } from '@money-space/core/features/settings/hooks/use-settings-page'
@@ -19,14 +19,14 @@ import { InviteQrDialog } from '@/features/invites/ui/components/invite-qr-dialo
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
 
 /**
- * `/household` — "Gia đình" (Phase 10).
+ * `/settings` — all household-level settings in one place.
  *
  * A **composition slice**: it owns no data logic of its own. It mounts the
- * existing members components beside the reserve card, an assets summary and
- * freshness, so the household's shared setup lives in one place instead of
- * being split across `/members` and `/settings`. `/members` redirects here.
+ * existing members and household components beside category and data controls,
+ * so the shared setup lives in one place. The legacy `/household` and
+ * `/members` routes redirect here.
  */
-export function HouseholdPage() {
+export function SettingsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { activeHouseholdId, activeHousehold } = useActiveHousehold()
@@ -54,7 +54,7 @@ export function HouseholdPage() {
    */
   const invite = useHouseholdInvite()
 
-  // Sharing defaults + reminders moved here from /settings (Phase 10).
+  // Household-level defaults and reminders are saved with the rest of this page.
   const {
     isLoading: isSettingsLoading,
     form: settingsForm,

@@ -25,6 +25,10 @@ import {
   RECURRENCE_OPTIONS,
   type CashflowEventForm,
 } from '@money-space/core/features/cashflow/model/cashflow-form'
+import {
+  CategoryCombobox,
+  type CategoryComboboxOption,
+} from '@/features/events/ui/components/category-combobox'
 import { GoalImpactNotice } from '@/features/cashflow/ui/components/goal-impact-notice'
 import { cashflowAmountToVnd } from '@money-space/core/features/cashflow/model/cashflow-form'
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
@@ -35,6 +39,7 @@ type CashflowEventFormDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   form: UseFormReturn<CashflowEventForm>
+  categoryOptions: CategoryComboboxOption[]
   isEditing: boolean
   /** The event being edited, so its own amount is not double-counted. */
   editingId?: string | null
@@ -80,6 +85,7 @@ export function CashflowEventFormDialog({
   open,
   onOpenChange,
   form,
+  categoryOptions,
   isEditing,
   editingId,
   isSubmitting,
@@ -271,6 +277,27 @@ export function CashflowEventFormDialog({
                         : t('upcoming.form.namePlaceholderIncoming')
                     }
                     {...register('name')}
+                  />
+                </div>
+              </CashflowField>
+
+              <CashflowField
+                label={t('upcoming.form.category')}
+                error={errors.category?.message}
+              >
+                <div className={cn(controlClass, errors.category && 'border-alert-ink')}>
+                  <Controller
+                    control={control}
+                    name="category"
+                    render={({ field }) => (
+                      <CategoryCombobox
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        options={categoryOptions}
+                        placeholder={t('upcoming.form.categoryPlaceholder')}
+                        className={selectClass}
+                      />
+                    )}
                   />
                 </div>
               </CashflowField>

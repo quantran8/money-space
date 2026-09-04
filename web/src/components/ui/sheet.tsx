@@ -58,8 +58,10 @@ SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
  */
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content> & {
+    closeButtonClassName?: string
+  }
+>(({ className, closeButtonClassName, children, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <SheetPrimitive.Content
@@ -74,7 +76,10 @@ const SheetContent = React.forwardRef<
       <div className="mx-auto -mt-2 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-committed" />
       {children}
       <SheetPrimitive.Close
-        className="absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-canvas hover:opacity-100"
+        className={cn(
+          'absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-canvas hover:opacity-100',
+          closeButtonClassName,
+        )}
         aria-label="Close"
       >
         <X className="size-4" />
@@ -104,14 +109,24 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
+const sheetTitleClasses = {
+  default: 't-page-tracking t-subhead',
+  title: 't-title',
+} as const
+
 const SheetTitle = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title> & {
+    size?: 'default' | 'title'
+  }
+>(({ className, size = 'default', ...props }, ref) => (
   <SheetPrimitive.Title
     ref={ref}
     data-slot="sheet-title"
-    className={cn('t-page-tracking t-subhead', className)}
+    className={cn(
+      size === 'title' ? sheetTitleClasses.title : sheetTitleClasses.default,
+      className,
+    )}
     {...props}
   />
 ))

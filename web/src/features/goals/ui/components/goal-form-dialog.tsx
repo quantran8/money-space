@@ -23,7 +23,7 @@ import {
 import { GoalAllocationsField } from '@/features/goals/ui/components/goal-allocations-field'
 import type { AllocationAssetOption } from '@/features/goals/ui/components/goal-allocations-section'
 import type { GoalAllocationDraft, GoalForm } from '@money-space/core/features/goals/model/goals-form'
-import { formatVndScale } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndScale } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type GoalFormDialogProps = {
@@ -378,9 +378,12 @@ export function GoalFormDialog({
                             />
                           )}
                         />
+                        {/* A read-back of the field directly above it: its
+                            one job is to confirm the digits went in, which the
+                            compact scale cannot do. */}
                         {target > 0 ? (
                           <p className="num -mt-3 t-caption text-ink3">
-                            {formatVndScale(target)}
+                            {formatVndExact(target)}
                           </p>
                         ) : null}
 
@@ -785,8 +788,11 @@ function GoalSummary({
       <p className="t-caption-sm font-medium text-ink3">{t('goals.builder.goalPicture')}</p>
       <div className="mt-6">
         <p className="t-caption text-ink3">{t('goals.form.target')}</p>
+        {/* Target, "counting now" and "remaining" below form one
+            subtraction the reader checks against the progress bar, so all
+            three are exact đồng. */}
         <p className="num mt-1 t-metric">
-          {target ? formatVndScale(target) : '—'}
+          {target ? formatVndExact(target) : '—'}
         </p>
       </div>
       {/* No wash: a read-only summary is content (§2.4), and the accent-soft
@@ -795,14 +801,14 @@ function GoalSummary({
       <div className="mt-6 border-t border-divider pt-4">
         <div className="flex items-baseline justify-between gap-3">
           <span className="t-caption text-ink2">{t('goals.builder.countingNow')}</span>
-          <span className="num t-body-sm font-medium">{formatVndScale(current)}</span>
+          <span className="num t-body-sm font-medium">{formatVndExact(current)}</span>
         </div>
         <div className="mt-3 flex items-center gap-3">
           <ProgressBar value={progress} className="mt-0 flex-1" />
           <span className="num shrink-0 t-body-sm font-medium">{Math.round(progress)}%</span>
         </div>
         <p className="num mt-3 t-caption text-ink3">
-          {target ? t('goals.builder.remainingAmount', { amount: formatVndScale(remaining) }) : t('goals.builder.noTarget')}
+          {target ? t('goals.builder.remainingAmount', { amount: formatVndExact(remaining) }) : t('goals.builder.noTarget')}
         </p>
       </div>
       <p className="mt-5 rounded-[14px] bg-accent-soft p-4 t-body-sm leading-6 text-ink2">
@@ -819,16 +825,17 @@ function GoalSummary({
           {isEditing ? (
             <div className="flex items-center justify-between gap-3 t-caption">
               <span className="text-ink2">{t('goals.builder.savedAllocations')}</span>
-              <span className="num font-medium">{formatVndScale(plannedMonthly)}/{t('goals.builder.perMonth')}</span>
+              {/* The total, above the per-source parts that sum to it. */}
+              <span className="num font-medium">{formatVndExact(plannedMonthly)}/{t('goals.builder.perMonth')}</span>
             </div>
           ) : allocations.length > 0 ? (
             allocations.map((row) => {
               const asset = assetOptions.find((option) => option.value === row.assetId)
               const detail = row.role === 'contribution'
-                ? `${formatVndScale(toNumber(row.monthlyContribution))}/${t('goals.builder.perMonth')}`
+                ? `${formatVndExact(toNumber(row.monthlyContribution))}/${t('goals.builder.perMonth')}`
                 : row.kind === 'percent'
                   ? `${row.percent || 0}%`
-                  : formatVndScale(toNumber(row.amount))
+                  : formatVndExact(toNumber(row.amount))
               return (
                 <div key={row.assetId} className="flex items-center justify-between gap-3 t-caption">
                   <span className="min-w-0 truncate text-ink2">{asset?.name ?? row.assetId}</span>
@@ -922,15 +929,15 @@ function GoalReview({
               const detail = row.role === 'contribution'
                 ? row.amount
                   ? t('goals.builder.reviewContributionSaved', {
-                      amount: formatVndScale(toNumber(row.monthlyContribution)),
-                      saved: formatVndScale(toNumber(row.amount)),
+                      amount: formatVndExact(toNumber(row.monthlyContribution)),
+                      saved: formatVndExact(toNumber(row.amount)),
                     })
                   : t('goals.builder.reviewContribution', {
-                      amount: formatVndScale(toNumber(row.monthlyContribution)),
+                      amount: formatVndExact(toNumber(row.monthlyContribution)),
                     })
                 : row.kind === 'percent'
                   ? t('goals.builder.reviewPercent', { percent: row.percent })
-                  : t('goals.builder.reviewFixed', { amount: formatVndScale(toNumber(row.amount)) })
+                  : t('goals.builder.reviewFixed', { amount: formatVndExact(toNumber(row.amount)) })
               return (
                 <div key={row.assetId} className="py-2.5">
                   <p className="t-caption font-medium">{asset?.name ?? row.assetId}</p>

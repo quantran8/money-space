@@ -27,7 +27,7 @@ import { EVENT_TYPE_ICONS } from '@/features/events/ui/components/event-type-ico
 import { formatDate } from '@money-space/core/features/debts/model/debts-form'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type ChartRange = 1 | 6 | 12
@@ -337,7 +337,11 @@ export function AssetDetailPage() {
       ? [
           {
             label: t('assets.detail.hero.costBasis'),
-            value: formatVndShort(costBasis),
+            // Exact, not compact: this sits beside the profit/loss computed
+            // FROM it, and at the compact scale a 70.000đ loss rounds both
+            // figures to the same "15,1 tr" — the card then reads as a loss
+            // between two identical numbers. See `formatVndExact`.
+            value: formatVndExact(costBasis),
             note: null as string | null,
             tone: undefined as string | undefined,
           },
@@ -347,7 +351,7 @@ export function AssetDetailPage() {
                 ? 'assets.detail.hero.estimatedLoss'
                 : 'assets.detail.hero.estimatedProfit',
             ),
-            value: `${profitLoss > 0 ? '+' : profitLoss < 0 ? '−' : ''}${formatVndShort(Math.abs(profitLoss))}`,
+            value: `${profitLoss > 0 ? '+' : profitLoss < 0 ? '−' : ''}${formatVndExact(Math.abs(profitLoss))}`,
             note: percentText(profitLossPercent),
             // Colour marks what needs a look (§5.2). A loss does; a gain is the
             // expected case and stays ink.
@@ -440,10 +444,25 @@ export function AssetDetailPage() {
               <p className="t-body-sm text-ink2">
                 {t(isBalanceAsset ? 'assets.detail.hero.balance' : 'assets.detail.hero.currentValue')}
               </p>
-              <p className="money-number mt-2 t-figure lg:t-hero">{formatVndShort(currentValue)}</p>
+              {/* Exact for a market holding and a balance: the first is the
+                  product of the quantity and unit price stated right below it,
+                  the second is a real account balance — both are known to the
+                  đồng and both sit beside figures derived FROM them (cost basis,
+                  profit/loss), so a rounded hero is the one number in the set
+                  that cannot be reconciled. A manual estimate keeps the compact
+                  scale: §6 forbids showing more precision than the input. */}
+              <p className="money-number mt-2 t-figure lg:t-hero">
+                {isAutoPriced || isBalanceAsset
+                  ? formatVndExact(currentValue)
+                  : formatVndShort(currentValue)}
+              </p>
               {/* Quantity and unit price on one line: for a market asset the
                   headline figure is a product of the two, and stating them
-                  together is what makes it checkable. */}
+                  together is what makes it checkable — so the unit price is
+                  exact. Compact, "1 chỉ · 15,1 tr / chỉ" sat under a hero of
+                  "15,1 tr" while the real value was 15.050.000đ, and the one
+                  line meant to let the reader verify the total was the line
+                  that could not be multiplied back. */}
               {isMarketPriced && position && quantity > 0 ? (
                 <p className="mt-2 t-caption text-ink3">
                   <Trans
@@ -451,7 +470,7 @@ export function AssetDetailPage() {
                     values={{
                       quantity: position.quantity.toLocaleString(locale),
                       unit: position.unit,
-                      price: formatVndShort(currentUnitPrice),
+                      price: formatVndExact(currentUnitPrice),
                     }}
                     components={{ 1: <span className="num" /> }}
                   />
@@ -588,7 +607,8 @@ export function AssetDetailPage() {
                     {position.purchasePrice ? (
                       <InfoRow
                         label={t('assets.detail.info.averagePurchasePrice')}
-                        value={formatVndShort(position.purchasePrice)}
+                        // A stored per-unit price, exact to the đồng.
+                        value={formatVndExact(position.purchasePrice)}
                       />
                     ) : null}
                   </>

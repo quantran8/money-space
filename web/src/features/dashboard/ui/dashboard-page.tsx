@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { useCashflowForm } from '@money-space/core/features/cashflow/hooks/use-cashflow-form'
+import { useCategoryVisuals } from '@money-space/core/features/events/hooks/use-category-visuals'
 import { CashflowEventFormDialog } from '@/features/cashflow/ui/components/cashflow-event-form-dialog'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
 import { useDashboardPage } from '@money-space/core/features/dashboard/hooks/use-dashboard-page'
@@ -58,6 +59,7 @@ export function DashboardPage() {
   // an overdue row is more often wrong (sai ngày, sai số) than simply unpaid,
   // and sending the reader to /upcoming to fix it is a detour.
   const cashflowForm = useCashflowForm()
+  const categoryVisualById = useCategoryVisuals()
   /**
    * The occurrence awaiting a wallet choice. Confirming MOVES MONEY, so it
    * cannot fire straight from the row — without a wallet the API has nothing
@@ -139,7 +141,7 @@ export function DashboardPage() {
         />
       ) : null}
 
-      <UpcomingSection forecast={forecast} />
+      <UpcomingSection forecast={forecast} categoryVisualById={categoryVisualById} />
 
       {/* Spending and goals share one row: the month that happened beside the
           money already pointed somewhere. Both are narrower than a full-width
@@ -148,6 +150,7 @@ export function DashboardPage() {
         <SpendingSection
           summary={eventsSummary}
           recentEvents={recentEvents}
+          categoryVisualById={categoryVisualById}
           asOfDate={forecast?.asOfDate ?? ''}
         />
 
@@ -193,6 +196,7 @@ export function DashboardPage() {
         open={cashflowForm.formOpen}
         onOpenChange={cashflowForm.handleFormOpenChange}
         form={cashflowForm.form}
+        categoryOptions={cashflowForm.categoryOptions}
         isEditing={cashflowForm.isEditing}
         editingId={cashflowForm.editingId}
         isSubmitting={cashflowForm.isSubmitting}

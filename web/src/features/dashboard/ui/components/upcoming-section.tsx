@@ -14,6 +14,12 @@ import {
 
 import { Label, Panel, PanelHeader, PanelSplit } from '@/components/ui/panel'
 import {
+  CATEGORY_ICON_DEFAULT_COLOR,
+  CATEGORY_ICON_FALLBACK,
+  CATEGORY_ICONS,
+} from '@/features/events/ui/components/category-icon'
+import type { CategoryVisual } from '@money-space/core/features/events/hooks/use-category-visuals'
+import {
   buildDeltaSeries,
   buildTimelineRows,
   type DeltaPoint,
@@ -44,7 +50,15 @@ const MIN_EVENTS_FOR_CHART = 6
  * whether the next month works. The table's `Còn lại` column carries the
  * running balance — that column is what turns a list of events into a sequence.
  */
-export function UpcomingSection({ forecast }: { forecast?: ForecastResult }) {
+export function UpcomingSection({
+  forecast,
+  categoryVisualById,
+}: {
+  forecast?: ForecastResult
+  /** Category id → its label and disc, so a row here draws the same mark the
+   *  Events timeline draws. An occurrence carries only the FK. */
+  categoryVisualById?: Record<string, CategoryVisual>
+}) {
   const { t } = useTranslation()
 
   // The card holds its place when the forecast could not be computed. It states
@@ -207,16 +221,25 @@ export function UpcomingSection({ forecast }: { forecast?: ForecastResult }) {
                for its name and keeps "còn lại" on its own line underneath,
                where it stays readable — and the connecting line does the work
                the date column used to do, showing these as one sequence rather
-               than four unrelated rows. */
-            <ol className="relative mt-3 space-y-0 pl-5">
+               than four unrelated rows.
+
+               `pl-8` is the gutter the 32px category disc sits in; the disc is
+               pulled 4px further left for air beside the text, and the thread
+               runs down its centre (12px). */
+            <ol className="relative mt-3 space-y-0 pl-8">
               {/* The thread. Inset top and bottom so it runs BETWEEN the first
-                  and last dots rather than past them. */}
+                  and last discs rather than past them. */}
               <span
-                className="absolute top-2 bottom-4 left-[5px] w-px bg-divider"
+                className="absolute top-7 bottom-7 left-3 w-px bg-divider"
                 aria-hidden
               />
               {rows.map((row) => (
-                <TimelineRailRow key={row.key} row={row} canProject={canProject} />
+                <TimelineRailRow
+                  key={row.key}
+                  row={row}
+                  canProject={canProject}
+                  visual={row.categoryId ? categoryVisualById?.[row.categoryId] : undefined}
+                />
               ))}
             </ol>
           )}
@@ -362,29 +385,47 @@ function HorizonTotal({
 function TimelineRailRow({
   row,
   canProject,
+  visual,
 }: {
   row: TimelineRow
   /** Without a wallet there is no running balance to state (§23). */
   canProject: boolean
+  /** The occurrence's category, when it has one. */
+  visual?: CategoryVisual
 }) {
   const { t } = useTranslation()
 
   const isInflow = row.signedAmount > 0
+  // Member access, not a helper call — see record-card.tsx for why the lookup
+  // is written this way.
+  const CategoryIcon = (visual?.iconKey && CATEGORY_ICONS[visual.iconKey]) || CATEGORY_ICON_FALLBACK
 
   return (
-    <li className="relative grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 pb-6 last:pb-0">
-      {/* The node. Ringed in the card colour so the thread appears to pass
-          behind it rather than stopping at its edge. */}
+    <li className="relative grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 pb-7 last:pb-0">
+      {/* The node, now the category's own disc — the same mark the Events
+          timeline draws, so an expected bill and the record it becomes are
+          recognisably the same thing. Ringed in the card colour so the thread
+          appears to pass behind it rather than stopping at its edge.
+
+          Direction moved OFF this mark and onto the amount, which already
+          carries it in both sign and tone. The dot could only encode one of the
+          two, and category is the one the household cannot read anywhere else
+          on the row. */}
       <span
-        className={cn(
-          'absolute top-[5px] -left-5 size-[11px] rounded-full border-[3px] border-card',
-          isInflow ? 'bg-positive' : 'bg-data-primary',
-        )}
-        aria-hidden
-      />
+        className="absolute top-[1px] -left-9 grid size-8 place-items-center rounded-pill border-[3px] border-card text-white"
+        style={{ backgroundColor: visual?.iconColor ?? CATEGORY_ICON_DEFAULT_COLOR }}
+        role="img"
+        aria-label={visual?.label ?? undefined}
+        title={visual?.label ?? undefined}
+      >
+        <CategoryIcon className="size-4" strokeWidth={1.9} />
+      </span>
 
       <div className="min-w-0">
-        <p className="font-mono t-caption-sm text-ink3">{formatDayMonth(row.date)}</p>
+        <p className="font-mono t-caption-sm text-ink3">
+          {formatDayMonth(row.date)}
+          {visual?.label ? <span className="label-vi"> · {visual.label}</span> : null}
+        </p>
         <p className="mt-0.5 t-body-sm font-medium">{row.name}</p>
         {row.unconfirmed ? (
           <p className="mt-0.5 t-caption text-attention-ink">
