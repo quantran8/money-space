@@ -28,9 +28,15 @@ export function UpcomingPage() {
       event.ownerMemberId ? memberNameById.get(event.ownerMemberId) : undefined,
     ]),
   )
+  const categoryVisualById = new Map(
+    cashflowForm.categoryOptions.map((category) => [category.value, category]),
+  )
+  const categoryVisualByEventId = Object.fromEntries(
+    cashflowEvents.map((event) => [event.id, categoryVisualById.get(event.categoryId)]),
+  )
 
   return (
-    <div className="space-y-4 pb-3">
+    <div className="space-y-3 pb-3">
       <CompactPageHeader
         title={t('upcoming.title')}
         scope={<RangePicker range={range} onChange={setRange} bounds={bounds} />}
@@ -67,12 +73,15 @@ export function UpcomingPage() {
           }
           onEdit={cashflowForm.openEdit}
           onDelete={cashflowForm.handleDelete}
+          ownerNameByEventId={ownerNameByEventId}
+          categoryVisualByEventId={categoryVisualByEventId}
         />
       ) : null}
 
       <ForecastTimeline
         days={days}
         ownerNameByEventId={ownerNameByEventId}
+        categoryVisualByEventId={categoryVisualByEventId}
         isLoading={isLoading}
         isEmpty={isEmpty}
         usableNowAssetCount={forecast?.usableNowAssetCount}
@@ -93,6 +102,7 @@ export function UpcomingPage() {
         open={cashflowForm.formOpen}
         onOpenChange={cashflowForm.handleFormOpenChange}
         form={cashflowForm.form}
+        categoryOptions={cashflowForm.categoryOptions}
         isEditing={cashflowForm.isEditing}
         editingId={cashflowForm.editingId}
         isSubmitting={cashflowForm.isSubmitting}

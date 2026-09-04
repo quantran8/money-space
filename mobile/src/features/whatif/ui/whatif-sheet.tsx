@@ -77,13 +77,33 @@ function WhatIfSheetForm({
   const [label, setLabel] = useState('')
   const [amountError, setAmountError] = useState<string | undefined>()
   const [saleStepOpen, setSaleStepOpen] = useState(false)
+  /** True when the step opened on its own, rather than from the result's CTA. */
+  const [saleWasOffered, setSaleWasOffered] = useState(false)
   const sale = useWhatIfAssetSale(result?.fundingOptions)
 
   const amountValue = parseRawMoney(amount)
   const shortfall = result?.liquidity?.shortfall ?? 0
+  /** Selling could close the gap — the only case where the step is worth opening. */
+  const saleCouldCover =
+    shortfall > 0 && sale.options.length > 0 && sale.sellableTotal >= shortfall
+  /**
+   * The gap is beyond the holdings, so `còn thiếu` needs the reason attached —
+   * otherwise the household is left looking for a funding step that will never
+   * appear. Stated, never advised: it says the spend is out of reach today, not
+   * what to do about it.
+   */
+  const shortfallNote =
+    shortfall > 0 && !result?.assetSale && !saleCouldCover
+      ? sale.options.length === 0
+        ? t('whatif.shortfall.noAssets', { amount: formatVndShort(shortfall) })
+        : t('whatif.shortfall.beyondAssets', {
+            amount: formatVndShort(shortfall),
+            sellable: formatVndShort(sale.sellableTotal),
+          })
+      : undefined
 
   async function runWith(assetSale?: WhatIfAssetSale) {
-    await run({
+    return await run({
       amount: amountValue,
       plannedDate,
       goalId: prefill.goalId,
@@ -103,15 +123,36 @@ function WhatIfSheetForm({
     }
     setAmountError(undefined)
     try {
-      await runWith()
+      /*
+        Not enough usable money means the household has one thing left to
+        decide — whether to sell something — so `Xem thử` lands them on THAT
+        question rather than on five blocks of consequence they have to scroll
+        to find the CTA in. The original answer is one tap away
+        (`assetSale.skip`).
+
+        Not opened when selling could not close the gap anyway: the funding
+        step would be a form with no completable answer. That case is stated on
+        the result instead, from figures this client already has.
+      */
+      const next = await runWith()
+      const gap = next?.liquidity?.shortfall ?? 0
+      if (gap > 0 && sale.options.length > 0 && sale.sellableTotal >= gap) {
+        setSaleWasOffered(true)
+        openSaleStep(gap)
+      }
     } catch (caught) {
       notify.error(getErrorMessage(caught, t('whatif.error')))
     }
   }
 
-  function handleOpenSaleStep() {
-    sale.seedFromShortfall(shortfall)
+  function openSaleStep(gap: number) {
+    sale.seedFromShortfall(gap)
     setSaleStepOpen(true)
+  }
+
+  function handleOpenSaleStep() {
+    setSaleWasOffered(false)
+    openSaleStep(shortfall)
   }
 
   /** Same rule as the amount field: press, then hear what is missing. */
@@ -142,6 +183,7 @@ function WhatIfSheetForm({
   function handleTryAnother() {
     sale.clear()
     setSaleStepOpen(false)
+    setSaleWasOffered(false)
     reset()
   }
 
@@ -207,16 +249,17 @@ function WhatIfSheetForm({
 
       <View className="mt-5 gap-4">
         {showSaleStep ? (
-          <WhatIfAssetSaleFields sale={sale} />
+          <WhatIfAssetSaleFields sale={sale} shortfall={shortfall} />
         ) : showResult ? (
           /* Consequence renders only after the household asks for it (§2.9). */
           <WhatIfResultBlocks
             result={result!}
             onTryAssetSale={
-              shortfall > 0 && !result!.assetSale && sale.options.length > 0
-                ? handleOpenSaleStep
-                : undefined
+              // Offered only when selling could actually close the gap — a
+              // picker whose every option leaves them short is not an offer.
+              saleCouldCover && !result!.assetSale ? handleOpenSaleStep : undefined
             }
+            shortfallNote={shortfallNote}
           />
         ) : (
           <>
@@ -269,10 +312,15 @@ function WhatIfSheetForm({
             <Button onPress={handleApplySale} loading={isRunning}>
               {isRunning ? t('whatif.actions.running') : t('whatif.assetSale.apply')}
             </Button>
-            {/* The previous answer is still cached, so going back re-runs
-                nothing. */}
+            {/*
+              The step is reached two ways now, and each needs its own way out.
+              Arrived automatically (nobody asked to sell), the exit is a
+              decision — "show me the answer without selling" — so it says so.
+              Arrived from the result's CTA, it is a plain Back. Either way the
+              previous answer is still cached, so leaving re-runs nothing.
+            */}
             <Button variant="ghost" onPress={() => setSaleStepOpen(false)}>
-              {t('whatif.assetSale.back')}
+              {t(saleWasOffered ? 'whatif.assetSale.skip' : 'whatif.assetSale.back')}
             </Button>
           </>
         ) : result ? (

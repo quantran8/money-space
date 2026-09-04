@@ -64,7 +64,7 @@ export type LocalMoneyEvent = {
   isAttentionNeeded: boolean
   eventType: RecordType
   direction: RecordDirection
-  category: string
+  categoryId: string
   fromAssetId?: string
   fromAssetName?: string
   toAssetId?: string
@@ -79,6 +79,9 @@ export type LocalMoneyEvent = {
   soldQuantity?: number
   soldValue?: number
   debtId?: string
+  /** Profile id of whoever recorded it, carried from the API for the timeline to
+   *  resolve against the household's members. See `MoneyEventItem.createdById`. */
+  createdById?: string
 }
 
 /**
@@ -95,6 +98,10 @@ export type FinancialRecordItem = {
    *  back to a translated category label when the note is empty. Derived — not a
    *  stored field on the event. */
   title: string
+  /** True when `title` fell back to the category label because the record has no
+   *  note. A row that draws the category as a subtitle must skip it then — the
+   *  same name twice, stacked, reads as a rendering fault, not as detail. */
+  titleIsCategory?: boolean
   amount: number
   currency: string
   date: string
@@ -104,7 +111,7 @@ export type FinancialRecordItem = {
   isAttentionNeeded: boolean
   eventType?: RecordType
   direction?: RecordDirection
-  category?: string
+  categoryId?: string
   fromAssetId?: string
   fromAssetName?: string
   toAssetId?: string
@@ -124,6 +131,8 @@ export type ActualRecordForm = {
   amount: string
   eventDate: string
   eventType: RecordType
+  /** Holds the category's ID (`money_event_categories.id`), not its code —
+   *  the picker's option values are ids. */
   category: string
   direction: RecordDirection
   fromAssetId: string
@@ -281,6 +290,152 @@ export function summarizeRecords(records: FinancialRecordItem[]): PeriodSummary 
   }
 }
 
+/** One category's share of a month's spending (or income). */
+export type CategoryBreakdownSlice = {
+  categoryId: string
+  /** Translated category label, resolved by the caller from its id. */
+  label: string
+  /** The household's chosen fill for the category, or null for the default. */
+  color: string | null
+  /** Glyph key the view resolves to an icon, or null for the fallback. */
+  iconKey: string | null
+  /** Absolute total in VND — always positive; `direction` carries the sense. */
+  total: number
+  /** Share of the direction's total, 0–1. Not rounded — the view formats it. */
+  share: number
+  recordCount: number
+}
+
+export type CategoryBreakdown = {
+  direction: 'inflow' | 'outflow'
+  /** Sum of every slice — the denominator behind each share. */
+  total: number
+  /** Slices, largest first. */
+  slices: CategoryBreakdownSlice[]
+}
+
+/**
+ * What a month's money was made of, grouped by category.
+ *
+ * Composition, never a verdict: this says a month's spending was 42% sinh hoạt,
+ * and it never says that is too much, compares it to a budget, or names who
+ * recorded it (§0.2, §16.4 — the product is not a budgeting or monitoring tool).
+ *
+ * Only settled records count, for the same reason `summarizeRecords` skips the
+ * rest: money that has not moved cannot be part of what a month was made of.
+ * `direction` picks the bucket rather than the sign, so a transfer between the
+ * household's own wallets — neutral, netting to zero — lands in neither.
+ *
+ * A record whose category the client cannot resolve is kept under its own id
+ * with a null label; the caller decides what to call it. Dropping it would make
+ * the slices sum to less than the total the summary strip above already states.
+ */
+export function summarizeByCategory(
+  records: FinancialRecordItem[],
+  direction: 'inflow' | 'outflow',
+  labelFor: (
+    categoryId: string,
+  ) => { label: string; color: string | null; iconKey: string | null } | undefined,
+): CategoryBreakdown {
+  const totals = new Map<string, { total: number; recordCount: number }>()
+  let total = 0
+
+  for (const record of records) {
+    if (!hasHappened(record)) continue
+    if (record.direction !== direction) continue
+    const categoryId = record.categoryId
+    if (!categoryId) continue
+    const value = Math.abs(record.amount)
+    if (value === 0) continue
+    const current = totals.get(categoryId) ?? { total: 0, recordCount: 0 }
+    current.total += value
+    current.recordCount += 1
+    totals.set(categoryId, current)
+    total += value
+  }
+
+  const slices = [...totals.entries()]
+    .map(([categoryId, entry]) => {
+      const visual = labelFor(categoryId)
+      return {
+        categoryId,
+        label: visual?.label ?? '',
+        color: visual?.color ?? null,
+        iconKey: visual?.iconKey ?? null,
+        total: entry.total,
+        // Guarded rather than assumed: every slice is > 0 so a zero total means
+        // there are no slices at all, but a 0/0 here would print "NaN%".
+        share: total > 0 ? entry.total / total : 0,
+        recordCount: entry.recordCount,
+      }
+    })
+    // Largest first, then by label so two equal categories keep a stable order
+    // instead of swapping places between renders.
+    .sort((left, right) => right.total - left.total || left.label.localeCompare(right.label))
+
+  return { direction, total, slices }
+}
+
+/** One member's totals for a month. */
+export type MemberBreakdownRow = {
+  /** Member id, or null for records nobody in the household is named on. */
+  memberId: string | null
+  /** The member's name; empty for the unassigned row, which the view names. */
+  name: string
+  totalIncome: number
+  totalOutcome: number
+  recordCount: number
+}
+
+/**
+ * A month's money in and out, per person responsible.
+ *
+ * This names WHO IS RESPONSIBLE for a record, never who spent it (§0.2, §16.4,
+ * and the spec's §2/§3 vocabulary: "người phụ trách", never "ai tiêu"). The
+ * distinction is the product's, not a wording preference — a household ledger
+ * that reports what each partner spent is the monitoring tool this explicitly
+ * is not.
+ *
+ * So: no net figure, no ranking by who spent more, no share-of-total. Two
+ * plain totals per person, in the household's own member order.
+ *
+ * Records nobody is named on — a system-generated accrual, or one whose creator
+ * has left the household — collect under a single `null` row rather than being
+ * dropped, so the rows still add up to the month the summary strip states.
+ */
+export function summarizeByMember(records: FinancialRecordItem[]): MemberBreakdownRow[] {
+  const rows = new Map<string | null, MemberBreakdownRow>()
+
+  for (const record of records) {
+    if (!hasHappened(record)) continue
+    // Only money that actually moved in or out. A transfer between the
+    // household's own wallets is neutral and belongs to neither total.
+    if (record.direction !== 'inflow' && record.direction !== 'outflow') continue
+
+    const memberId = record.ownerMemberId ?? null
+    const current = rows.get(memberId) ?? {
+      memberId,
+      name: record.ownerName ?? '',
+      totalIncome: 0,
+      totalOutcome: 0,
+      recordCount: 0,
+    }
+    const value = Math.abs(record.amount)
+    if (record.direction === 'inflow') current.totalIncome += value
+    else current.totalOutcome += value
+    current.recordCount += 1
+    rows.set(memberId, current)
+  }
+
+  // Named members first, alphabetically; the unassigned row always last — it is
+  // the remainder, not a person, so it never sorts among them.
+  return [...rows.values()].sort((left, right) => {
+    if (left.memberId === null) return 1
+    if (right.memberId === null) return -1
+    return left.name.localeCompare(right.name)
+  })
+}
+
 export function isAttentionRecord(record: FinancialRecordItem) {
   return (
     record.isAttentionNeeded ||
@@ -357,7 +512,7 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
         ? 'adjustment'
         : event.type,
     direction: event.direction,
-    category: event.category,
+    categoryId: event.categoryId,
     // Prefer the explicit from/to on the event (a transfer sets both); fall back
     // to the direction-derived single `assetId` for legacy single-sided events.
     fromAssetId: event.fromAssetId ?? (event.direction !== 'inflow' ? event.assetId : undefined),
@@ -370,6 +525,9 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
     soldQuantity: event.soldQuantity,
     soldValue: event.soldValue,
     debtId: event.debtId,
+    // Who recorded it. Carried as the raw profile id — naming the person is the
+    // timeline's job, against the member list it already holds.
+    createdById: event.createdById,
   }
 }
 

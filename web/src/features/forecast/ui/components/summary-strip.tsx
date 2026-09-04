@@ -41,56 +41,48 @@ export function SummaryStrip({
 
   return (
     <Panel>
-      <h2 className="t-subhead">{t('upcoming.summary.title')}</h2>
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="t-subtitle">{t('upcoming.summary.title')}</h2>
+        <span className="t-caption text-ink3">
+          {t('upcoming.timeline.count', {
+            count: summary.incomingCount + summary.outgoingCount,
+          })}
+        </span>
+      </div>
 
       {/* No divider under the heading: the 28px gap is the hierarchy (§9). */}
-      <div className="mt-7 grid grid-cols-2 items-baseline gap-x-6 gap-y-1 sm:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)_minmax(0,1fr)] sm:gap-x-12">
+      <div className="mt-7 grid gap-6 sm:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)_minmax(0,1fr)] sm:gap-8">
         {/* Row 1 — labels. Each sits in a fixed-height box so a one-line and a
             two-line label still leave their values on the same baseline. */}
-        <p className="col-span-2 flex min-h-[22px] items-center t-body-sm text-ink2 sm:col-span-1">
-          {t('upcoming.summary.lowest')}
-        </p>
-        <p className="col-start-1 mt-5 flex min-h-[22px] items-center gap-2 t-body-sm text-ink2 sm:col-start-2 sm:mt-0">
-          <ArrowDownLeft className="size-4 shrink-0 text-data-primary" strokeWidth={1.75} aria-hidden />
-          {t('upcoming.summary.incoming')}
-        </p>
-        <p className="mt-5 flex min-h-[22px] items-center gap-2 t-body-sm text-ink2 sm:mt-0">
-          <ArrowUpRight className="size-4 shrink-0 text-data-primary" strokeWidth={1.75} aria-hidden />
-          {t('upcoming.summary.outgoing')}
-        </p>
+        <div>
+          <p className="mb-2 t-body-sm text-ink2">{t('upcoming.summary.lowest')}</p>
+          <p
+            className={cn(
+              'num t-figure',
+              hasLiquidSource ? BALANCE_TONE_CLASS[lowestTone] : 'text-ink',
+            )}
+          >
+            {hasLiquidSource ? formatVndScale(summary.lowest) : '—'}
+          </p>
+          <p className="num mt-1 t-caption text-ink3">
+            {hasLiquidSource
+              ? formatDayMonth(summary.lowestDate)
+              : t('upcoming.summary.lowestNoSource')}
+          </p>
+        </div>
 
-        {/* Row 2 — values, all on one grid row so they share a baseline. */}
-        <p
-          className={cn(
-            'col-span-2 num t-figure sm:col-span-1',
-            hasLiquidSource ? BALANCE_TONE_CLASS[lowestTone] : 'text-ink',
-          )}
-        >
-          {hasLiquidSource ? formatVndScale(summary.lowest) : '—'}
-        </p>
-        <p className="col-start-1 num t-metric sm:col-start-2">
-          {formatVndScale(summary.incoming)}
-        </p>
-        <p className="num t-metric">{formatVndScale(summary.outgoing)}</p>
-
-        {/* Row 3 — metadata. Every metric gets one, so no column drifts. */}
-        <p className="col-span-2 num t-caption text-ink3 sm:col-span-1">
-          {hasLiquidSource
-            ? t('upcoming.summary.lowestNote', {
-                date: formatDayMonth(summary.lowestDate),
-              })
-            : t('upcoming.summary.lowestNoSource')}
-        </p>
-        <p className="col-start-1 t-caption text-ink3 sm:col-start-2">
-          {summary.incomingCount === 0
-            ? t('upcoming.summary.noneKnown')
-            : t('upcoming.summary.knownCount', { count: summary.incomingCount })}
-        </p>
-        <p className="t-caption text-ink3">
-          {summary.outgoingCount === 0
-            ? t('upcoming.summary.noneKnown')
-            : t('upcoming.summary.knownCount', { count: summary.outgoingCount })}
-        </p>
+        <SummaryFlow
+          icon={ArrowDownLeft}
+          label={t('upcoming.summary.incoming')}
+          value={summary.incoming}
+          count={summary.incomingCount}
+        />
+        <SummaryFlow
+          icon={ArrowUpRight}
+          label={t('upcoming.summary.outgoing')}
+          value={summary.outgoing}
+          count={summary.outgoingCount}
+        />
       </div>
 
       {/* The window asked for runs past what can be projected, so the figures
@@ -104,6 +96,35 @@ export function SummaryStrip({
         </p>
       ) : null}
     </Panel>
+  )
+}
+
+function SummaryFlow({
+  icon: Icon,
+  label,
+  value,
+  count,
+}: {
+  icon: typeof ArrowDownLeft
+  label: string
+  value: number
+  count: number
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <div>
+      <p className="mb-2 flex items-center gap-2 t-body-sm text-ink2">
+        <Icon className="size-4 shrink-0 text-data-primary" strokeWidth={1.75} aria-hidden />
+        {label}
+      </p>
+      <p className="num t-metric">{formatVndScale(value)}</p>
+      <p className="mt-1 t-caption text-ink3">
+        {count === 0
+          ? t('upcoming.summary.noneKnown')
+          : t('upcoming.summary.knownCount', { count })}
+      </p>
+    </div>
   )
 }
 

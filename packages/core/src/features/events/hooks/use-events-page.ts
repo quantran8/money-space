@@ -7,6 +7,7 @@ import { notify } from '#/shared/notify'
 
 import { useAssets } from '#/features/assets/hooks/use-assets'
 import { useAssetSale } from '#/features/assets/hooks/use-asset-sale'
+import { useCategoryVisuals } from '#/features/events/hooks/use-category-visuals'
 import { useEventCategories } from '#/features/events/hooks/use-event-categories'
 import { useEvents } from '#/features/events/hooks/use-events'
 import { useEventsSummary } from '#/features/events/hooks/use-events-summary'
@@ -24,10 +25,14 @@ import {
   matchesRecordTab,
   isQuickActualAction,
   parseAmountInput,
+  summarizeByCategory,
+  summarizeByMember,
   summarizeRecords,
   toMoneyEventSeed,
   type ActualRecordForm,
+  type CategoryBreakdown,
   type FinancialRecordItem,
+  type MemberBreakdownRow,
   type LocalMoneyEvent,
   type QuickAction,
   type RecordTab,
@@ -107,9 +112,9 @@ export function useEventsPage() {
     [members],
   )
   // Category options come from the money_event_categories table (system +
-  // household rows). The value is the stable CODE; the label follows the user's
-  // language via i18n keyed by that code, falling back to the row's DB label for
-  // custom categories that have no translation key.
+  // household rows). The value is the row's ID (what an event stores); the
+  // label follows the user's language via i18n keyed by its CODE, falling back
+  // to the row's DB label for custom categories with no translation key.
   // The household's default leads the picker — it is the one the form
   // pre-selects, so it should not sit mid-list where the reader has to scroll
   // past it to confirm what is already chosen. Everything after keeps the
@@ -119,19 +124,40 @@ export function useEventsPage() {
       [...categories]
         .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
         .map((category) => ({
-          value: category.code,
+          // The ID is the value now — events carry a real FK, not a code. The
+          // code survives only as the i18n key for the label.
+          value: category.id,
           label: t(`options.eventCategory.${category.code}`, {
             defaultValue: category.label,
           }),
+          // Carried through so any category picker can draw the same disc the
+          // timeline row does — resolving the key to a component stays a UI
+          // concern (web app's `category-icon.tsx`).
+          iconKey: category.iconKey,
+          iconColor: category.iconColor,
         })),
     [categories, t],
   )
 
-  // The household's default category code (at most one is flagged). Auto-selected
+  // The household's default category id (at most one is flagged). Auto-selected
   // in the create form so a new expense/income starts with a category filled in.
-  const defaultCategoryCode = useMemo(
-    () => categories.find((category) => category.isDefault)?.code ?? '',
+  const defaultCategoryId = useMemo(
+    () => categories.find((category) => category.isDefault)?.id ?? '',
     [categories],
+  )
+
+  // Category id → its label and disc. Shared with every other surface that
+  // renders a category (the dashboard's spending rows, the upcoming list).
+  const categoryVisualById = useCategoryVisuals()
+
+  // Auth profile id → the household member, so a row can name whoever recorded
+  // it. The event carries only `createdById` (a PROFILE id) — the member id the
+  // person filter works in is a different id, so both are resolved here. A
+  // creator who has since left the household resolves to nothing and the row
+  // falls back to the household, rather than being reported under a stale name.
+  const memberByProfileId = useMemo(
+    () => new Map(members.map((member) => [member.profileId, member])),
+    [members],
   )
 
   const actualSchema = useMemo(() => buildActualSchema(), [])
@@ -159,12 +185,20 @@ export function useEventsPage() {
   const timelineRecords = useMemo<FinancialRecordItem[]>(() => {
     const actualRecords = events.map((event) => ({
       id: event.id,
-      // Display label: the note now stands in for the dropped title; when a
-      // record has no note, fall back to its translated category label so the
-      // row is never blank.
+      // Display label: the note stands in for the dropped title; when a record
+      // has no note, fall back to its translated category label so the row is
+      // never blank. The label is resolved through the id map — an event carries
+      // only the FK, not the code the i18n key is built from.
+      //
+      // A row that falls back here shows the category as its TITLE, so the row
+      // must not also print it as the subtitle underneath — see `titleIsCategory`.
       title:
         event.note?.trim() ||
-        t(`options.eventCategory.${event.category}`, { defaultValue: event.category }),
+        categoryVisualById[event.categoryId]?.label ||
+        '',
+      /** True when `title` is the category label standing in for a missing note.
+       *  The row reads it to drop the now-duplicate category subtitle. */
+      titleIsCategory: !event.note?.trim(),
       // Editability is decided on the RAW event type (the local model downgrades
       // asset_update → adjustment). asset_sale edits via its dedicated dialog;
       // asset_update edits via a simplified generic form (value/date/name/note);
@@ -182,7 +216,7 @@ export function useEventsPage() {
       isAttentionNeeded: event.isAttentionNeeded,
       eventType: event.eventType,
       direction: event.direction,
-      category: event.category,
+      categoryId: event.categoryId,
       fromAssetId: event.fromAssetId,
       fromAssetName: event.fromAssetName,
       toAssetId: event.toAssetId,
@@ -190,6 +224,11 @@ export function useEventsPage() {
       cashflowEventId: event.cashflowEventId,
       debtId: event.debtId,
       note: event.note,
+      // Who recorded it. Left unset when the creator is not a current member —
+      // the row then reads as the household's, which is also what a
+      // system-generated event (saving interest) correctly shows.
+      ownerMemberId: event.createdById ? memberByProfileId.get(event.createdById)?.id : undefined,
+      ownerName: event.createdById ? memberByProfileId.get(event.createdById)?.name : undefined,
     }))
 
     return actualRecords.sort((left, right) => {
@@ -201,7 +240,7 @@ export function useEventsPage() {
       // Newest first — a ledger reads backwards from now.
       return right.date.localeCompare(left.date)
     })
-  }, [events, seedEvents, t])
+  }, [categoryVisualById, events, memberByProfileId, seedEvents])
 
   const filteredRecords = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -269,6 +308,52 @@ export function useEventsPage() {
     return summarizeRecords(filteredRecords)
   }, [eventsSummary, filteredRecords, query, selectedMember, tab])
 
+  /**
+   * What the browsed month's money was made of, by category — both directions.
+   *
+   * Deliberately reads the MONTH, not `filteredRecords`: unlike the summary
+   * strip this is not a headline over the list, it is a separate reading of the
+   * month, and narrowing it to one person would turn a composition into a
+   * report on what one member spent (§0.2, §16.4). The card says which month it
+   * covers so it can never be mistaken for a description of the rows below.
+   */
+  const monthRecords = useMemo(
+    () => timelineRecords.filter((record) => record.date.slice(0, 7) === selectedMonth),
+    [selectedMonth, timelineRecords],
+  )
+
+  const categoryLabelFor = useMemo(
+    () => (categoryId: string) => {
+      const visual = categoryVisualById[categoryId]
+      return visual
+        ? { label: visual.label, color: visual.iconColor, iconKey: visual.iconKey }
+        : undefined
+    },
+    [categoryVisualById],
+  )
+
+  const spendingByCategory = useMemo<CategoryBreakdown>(
+    () => summarizeByCategory(monthRecords, 'outflow', categoryLabelFor),
+    [categoryLabelFor, monthRecords],
+  )
+
+  const incomeByCategory = useMemo<CategoryBreakdown>(
+    () => summarizeByCategory(monthRecords, 'inflow', categoryLabelFor),
+    [categoryLabelFor, monthRecords],
+  )
+
+  /**
+   * The same month, split by who is responsible rather than by category.
+   *
+   * Reads the month for the same reason the category breakdown does — and here
+   * it matters more: narrowing this to one person would turn it into a report on
+   * that person, which is the one thing this product does not do (§0.2, §16.4).
+   */
+  const byMember = useMemo<MemberBreakdownRow[]>(
+    () => summarizeByMember(monthRecords),
+    [monthRecords],
+  )
+
   const summary = useMemo(() => {
     const attentionCount = timelineRecords.filter(isAttentionRecord).length
     // thu/chi/net + recorded count come from the backend summary (source of
@@ -318,7 +403,8 @@ export function useEventsPage() {
         amount: formatAmountInput(prefillAmount),
         eventDate: event.date,
         eventType: event.eventType,
-        category: event.category,
+        // The form field is named `category` but holds the category's ID.
+        category: event.categoryId,
         direction: event.direction,
         fromAssetId: event.fromAssetId ?? '',
         toAssetId: event.toAssetId ?? '',
@@ -343,7 +429,7 @@ export function useEventsPage() {
       ...actualDefaults,
       eventType: createEventType,
       direction: getDirectionFromEventType(createEventType),
-      category: defaultCategoryCode,
+      category: defaultCategoryId,
       fromAssetId: createEventType === 'income' ? '' : sourceAssetOptions[0]?.value ?? '',
       toAssetId: createEventType === 'income' ? sourceAssetOptions[0]?.value ?? '' : '',
     })
@@ -351,7 +437,7 @@ export function useEventsPage() {
     assetOptions,
     assets,
     creatorMemberId,
-    defaultCategoryCode,
+    defaultCategoryId,
     editingEventId,
     events,
     formOpen,
@@ -473,9 +559,11 @@ export function useEventsPage() {
         isoDate: values.eventDate,
         type: 'asset_update' as const,
         direction: 'neutral' as const,
-        category: editingRaw.category || 'other',
+        categoryId: editingRaw.categoryId,
         toAssetId: editingRaw.toAssetId || undefined,
-        note: values.note.trim() || t('common.noAdditionalNote'),
+        // Empty stays empty — the timeline falls back to the category label
+        // when there is no note, so there is nothing here to placeholder.
+        note: values.note.trim(),
       }
       try {
         await updateEvent.mutateAsync({ eventId: editingEventId, payload: revaluationPayload })
@@ -496,26 +584,18 @@ export function useEventsPage() {
             ? 'transfer'
               : 'payment_paid'
     const amount = Math.abs(parseAmountInput(values.amount))
-    const fromAsset = assets.find((item) => item.id === values.fromAssetId)
-    const toAsset = assets.find((item) => item.id === values.toAssetId)
-    // `title` was dropped; the note now carries the event's description. When the
-    // user leaves the note blank, auto-generate a descriptive one for the types
-    // that used to get an auto-title (transfer).
-    // Expense/income keep the user's note (or the empty-note placeholder). On
-    // edit, the user's note wins; only create auto-generates.
-    const userNote = values.note.trim()
-    const autoNote = editingEvent
-      ? userNote || editingEvent.note || t('common.noAdditionalNote')
-      : userNote ||
-        (resolvedAction === 'transfer' && fromAsset && toAsset
-          ? `Chuyển từ ${fromAsset.name} sang ${toAsset.name}`
-            : t('common.noAdditionalNote'))
+    // `title` was dropped; the note now carries the event's description, and an
+    // empty one is a real, displayable state — the timeline falls back to the
+    // category label when there is no note (see `timelineRecords` above), so
+    // this must NOT synthesize placeholder text (transfer's auto-generated
+    // "Chuyen tu X sang Y" note, or the noAdditionalNote filler).
+    const resolvedNote = values.note.trim()
     const payload = {
       amount,
       isoDate: values.eventDate,
       type: resolvedEventType,
       direction: getDirectionFromEventType(resolvedEventType),
-      category: values.category.trim() || 'other',
+      categoryId: values.category.trim(),
       fromAssetId: values.fromAssetId || undefined,
       toAssetId: values.toAssetId || undefined,
       // Carry the linked debt through so the backend still reduces the right
@@ -529,7 +609,7 @@ export function useEventsPage() {
       // `null`, not `undefined`, when the household clears the picker: the
       // payload goes through JSON.stringify, which DROPS undefined keys — so an
       // undefined here reached the API as "field absent" and the old link
-      note: autoNote,
+      note: resolvedNote,
     }
 
     try {
@@ -572,7 +652,7 @@ export function useEventsPage() {
         isoDate: event.date,
         type: event.eventType,
         direction: event.direction,
-        category: event.category,
+        categoryId: event.categoryId,
         fromAssetId: event.fromAssetId,
         toAssetId: event.toAssetId,
         // The cashflow link is deliberately NOT copied: it records which expected
@@ -609,6 +689,10 @@ export function useEventsPage() {
     recordCounts,
     isLoading,
     periodSummary,
+    // Composition of the browsed MONTH, unaffected by the toolbar filters.
+    spendingByCategory,
+    incomeByCategory,
+    byMember,
     // toolbar state
     tab,
     setTab,
@@ -635,6 +719,7 @@ export function useEventsPage() {
     sourceAssetOptions,
     memberOptions,
     categoryOptions,
+    categoryVisualById,
     // forms
     actualControl,
     registerActual,

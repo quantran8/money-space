@@ -20,8 +20,11 @@ import { DecimalInput, MoneyInput, Select, Sunk } from '@/components/ui'
  */
 export function WhatIfAssetSaleFields({
   sale,
+  shortfall,
 }: {
   sale: ReturnType<typeof useWhatIfAssetSale>
+  /** The gap these fields were opened to close. 0 hides the lead line. */
+  shortfall: number
 }) {
   const { t } = useTranslation()
   const { options, walletOptions, selected, draft, errors, remainingAfterSale } = sale
@@ -36,6 +39,15 @@ export function WhatIfAssetSaleFields({
 
   return (
     <View className="gap-4">
+      {/* The step now opens straight off `Xem thử`, so it has to say WHY it is
+          on screen — otherwise the household lands on a pre-filled quantity
+          with no statement of the gap it was filled to cover. */}
+      {shortfall > 0 ? (
+        <Text className="t-body-sm leading-5 text-alert-ink">
+          {t('whatif.shortfall.lead', { amount: formatVndShort(shortfall) })}
+        </Text>
+      ) : null}
+
       <Select
         label={t('whatif.assetSale.asset')}
         value={draft.assetId || null}

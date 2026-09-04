@@ -26,20 +26,33 @@ import { cn } from '@money-space/core/shared/lib/utils'
 import { useEventCategories } from '@money-space/core/features/events/hooks/use-event-categories'
 import type { EventCategoryItem } from '@money-space/core/features/events/api/event-categories.repository'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
+import {
+  CATEGORY_ICON_FALLBACK,
+  CATEGORY_ICON_DEFAULT_COLOR,
+  CATEGORY_ICONS,
+} from '@/features/events/ui/components/category-icon'
+import {
+  CategoryColorPicker,
+  CategoryIconPicker,
+} from '@/features/events/ui/components/category-icon-picker'
 
-// Mirror the backend CODE_PATTERN so the UI rejects bad codes before the request.
-const CODE_PATTERN = /^[a-z][a-z0-9_]*$/
+const NEW_CATEGORY_ICON = 'circle-dashed'
+const NEW_CATEGORY_COLOR = '#73a4d7'
+const CATEGORY_NAME_MAX_LENGTH = 30
 
 export function CategoriesCard() {
   const { t } = useTranslation()
   const { categories, createCategory, updateCategory, deleteCategory, setDefaultCategory } =
     useEventCategories()
 
-  const [newCode, setNewCode] = useState('')
   const [newLabel, setNewLabel] = useState('')
+  const [newIconKey, setNewIconKey] = useState<string | null>(NEW_CATEGORY_ICON)
+  const [newIconColor, setNewIconColor] = useState<string | null>(NEW_CATEGORY_COLOR)
   const [addOpen, setAddOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingLabel, setEditingLabel] = useState('')
+  const [editingIconKey, setEditingIconKey] = useState<string | null>(null)
+  const [editingIconColor, setEditingIconColor] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<EventCategoryItem | null>(null)
   const [tab, setTab] = useState<'system' | 'custom'>('system')
 
@@ -64,20 +77,20 @@ export function CategoriesCard() {
   )
   const visible = tab === 'system' ? systemCategories : customCategories
 
-  const canAdd = useMemo(
-    () => CODE_PATTERN.test(newCode.trim().toLowerCase()) && newLabel.trim().length > 0,
-    [newCode, newLabel],
-  )
+  const canAdd = useMemo(() => newLabel.trim().length > 0, [newLabel])
+  const NewCategoryIcon = (newIconKey && CATEGORY_ICONS[newIconKey]) || CATEGORY_ICON_FALLBACK
 
   async function handleAdd() {
     if (!canAdd) return
     try {
       await createCategory.mutateAsync({
-        code: newCode.trim().toLowerCase(),
         label: newLabel.trim(),
+        iconKey: newIconKey,
+        iconColor: newIconColor,
       })
-      setNewCode('')
       setNewLabel('')
+      setNewIconKey(NEW_CATEGORY_ICON)
+      setNewIconColor(NEW_CATEGORY_COLOR)
       setAddOpen(false)
       toast.success(t('settings.categories.created'))
     } catch (error) {
@@ -88,21 +101,27 @@ export function CategoriesCard() {
   function handleAddOpenChange(open: boolean) {
     setAddOpen(open)
     if (!open) {
-      setNewCode('')
       setNewLabel('')
+      setNewIconKey(NEW_CATEGORY_ICON)
+      setNewIconColor(NEW_CATEGORY_COLOR)
     }
   }
 
   function startEdit(category: EventCategoryItem) {
     setEditingId(category.id)
     setEditingLabel(category.label)
+    setEditingIconKey(category.iconKey)
+    setEditingIconColor(category.iconColor)
   }
 
   async function handleSaveEdit(category: EventCategoryItem) {
     const label = editingLabel.trim()
     if (!label) return
     try {
-      await updateCategory.mutateAsync({ categoryId: category.id, payload: { label } })
+      await updateCategory.mutateAsync({
+        categoryId: category.id,
+        payload: { label, iconKey: editingIconKey, iconColor: editingIconColor },
+      })
       setEditingId(null)
       toast.success(t('settings.categories.updated'))
     } catch (error) {
@@ -114,7 +133,7 @@ export function CategoriesCard() {
     try {
       // Toggle: clicking the current default clears it; otherwise make this the
       // household's (single) default.
-      await setDefaultCategory.mutateAsync(category.isDefault ? null : category.code)
+      await setDefaultCategory.mutateAsync(category.isDefault ? null : category.id)
       toast.success(
         category.isDefault
           ? t('settings.categories.defaultCleared')
@@ -203,8 +222,36 @@ export function CategoriesCard() {
               return (
                 <li
                   key={category.id}
-                  className="group flex min-h-[52px] items-center gap-1 rounded-control py-1 pl-3 pr-1 transition-colors hover:bg-canvas"
+                  className="group flex min-h-[52px] items-center gap-2.5 rounded-control py-1 pl-3 pr-1 transition-colors hover:bg-canvas"
                 >
+                  {/* Editable only for a custom row: a system row's glyph is
+                      seeded and shared, same as its code — see the backend's
+                      `ensureCustomCategory`. */}
+                  {isEditing && !category.isSystem ? (
+                    <CategoryIconPicker
+                      iconKey={editingIconKey}
+                      onIconKeyChange={setEditingIconKey}
+                      iconColor={editingIconColor}
+                      onIconColorChange={setEditingIconColor}
+                    />
+                  ) : (
+                    (() => {
+                      const Icon = (category.iconKey && CATEGORY_ICONS[category.iconKey]) || CATEGORY_ICON_FALLBACK
+                      return (
+                        <span
+                          aria-hidden
+                          className="flex size-9 shrink-0 items-center justify-center rounded-pill text-white"
+                          style={{
+                            backgroundColor:
+                              category.iconColor ?? CATEGORY_ICON_DEFAULT_COLOR,
+                          }}
+                        >
+                          <Icon className="size-4" strokeWidth={1.75} />
+                        </span>
+                      )
+                    })()
+                  )}
+
                   {isEditing ? (
                     <Input
                       value={editingLabel}
@@ -317,47 +364,99 @@ export function CategoriesCard() {
       )}
 
       <Dialog open={addOpen} onOpenChange={handleAddOpenChange}>
-        <DialogContent className="max-w-md gap-5">
+        <DialogContent className="max-w-[560px] gap-0 p-5 sm:p-6">
           <DialogHeader>
             <DialogTitle>{t('settings.categories.addTitle')}</DialogTitle>
-            <DialogDescription>{t('settings.categories.codeHint')}</DialogDescription>
+            <DialogDescription className="mt-1 max-w-[460px] leading-6">
+              {t('settings.categories.addDescription')}
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <form
+            className="mt-6"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void handleAdd()
+            }}
+          >
+            <div className="grid gap-5 sm:grid-cols-[148px_1fr]">
+              <div>
+                <p className="label mb-2">{t('settings.categories.iconLabel')}</p>
+                {/* Inside a Dialog: the popover must render in-place, or the
+                    dialog's focus trap pulls focus back out of it — see
+                    `unportalled` on PopoverContent. */}
+                <CategoryIconPicker
+                  iconKey={newIconKey}
+                  onIconKeyChange={setNewIconKey}
+                  iconColor={newIconColor}
+                  onIconColorChange={setNewIconColor}
+                  unportalled
+                  variant="field"
+                />
+              </div>
+
+              <fieldset>
+                <legend className="label mb-2">{t('settings.categories.colorLabel')}</legend>
+                <CategoryColorPicker
+                  iconColor={newIconColor}
+                  onIconColorChange={setNewIconColor}
+                />
+              </fieldset>
+            </div>
+
+            <div className="my-6 h-px bg-divider" />
+
             <label className="block">
-              <span className="label">{t('settings.categories.nameLabel')}</span>
+              <span className="mb-2 flex items-center justify-between gap-4">
+                <span className="label">{t('settings.categories.nameLabel')}</span>
+                <span className="num t-caption text-ink3">
+                  {newLabel.length}/{CATEGORY_NAME_MAX_LENGTH}
+                </span>
+              </span>
               <Input
                 value={newLabel}
                 onChange={(event) => setNewLabel(event.target.value)}
                 placeholder={t('settings.categories.namePlaceholder')}
-                className="mt-2"
+                maxLength={CATEGORY_NAME_MAX_LENGTH}
+                autoComplete="off"
                 autoFocus
               />
+              <span className="mt-2 block t-caption text-ink3">
+                {t('settings.categories.nameHint')}
+              </span>
             </label>
-            <label className="block">
-              <span className="label">{t('settings.categories.codeLabel')}</span>
-              <Input
-                value={newCode}
-                onChange={(event) => setNewCode(event.target.value)}
-                placeholder={t('settings.categories.codePlaceholder')}
-                className="mt-2"
-              />
-            </label>
-          </div>
 
-          <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => handleAddOpenChange(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleAdd}
-              disabled={!canAdd || createCategory.isPending}
-            >
-              <Plus className="size-4" />
-              {t('settings.categories.addAction')}
-            </Button>
-          </DialogFooter>
+            <div className="mt-5 flex items-center gap-3">
+              <span
+                aria-hidden
+                className="flex size-10 shrink-0 items-center justify-center rounded-pill text-white"
+                style={{
+                  backgroundColor: newIconColor ?? CATEGORY_ICON_DEFAULT_COLOR,
+                }}
+              >
+                <NewCategoryIcon className="size-5" strokeWidth={1.75} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate t-body-sm font-medium text-ink">
+                  {newLabel.trim() || t('settings.categories.newCategory')}
+                </p>
+                <p className="t-caption text-ink3">{t('settings.categories.preview')}</p>
+              </div>
+            </div>
+
+            <DialogFooter className="mt-7">
+              <Button type="button" variant="secondary" onClick={() => handleAddOpenChange(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button
+                type="submit"
+                disabled={!canAdd || createCategory.isPending}
+              >
+                <Plus className="size-[18px]" />
+                {t('settings.categories.addAction')}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

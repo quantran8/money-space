@@ -19,6 +19,10 @@ export type CashflowEventForm = {
   direction: CashflowDirection
   expectedDate: string
   recurrence: CashflowRecurrence
+  /** The category's ID (`money_event_categories.id`) — the picker's option
+   *  values are ids. Completing this event carries it onto the money event it
+   *  records (see backend cashflow-events.service). */
+  category: string
   /**
    * Outgoing only. The backend forces `null` for incoming — you don't "have to"
    * receive money — so the field is hidden rather than disabled when incoming.
@@ -51,6 +55,10 @@ export function defaultCashflowFormValues(
     direction,
     expectedDate: new Date().toISOString().slice(0, 10),
     recurrence: 'once',
+    // Empty until categories load: the create form fills in the household's
+    // default category id (mirrors the money-event form's own prefill), and
+    // the backend falls back to the system `other` category if none is sent.
+    category: '',
     // `required` is the conservative default: assuming an obligation is
     // optional would understate what the household must cover.
     requirement: 'required',
@@ -69,6 +77,7 @@ export function buildCashflowSchema(t: (key: string, params?: Record<string, unk
     direction: z.enum(['incoming', 'outgoing']),
     expectedDate: localizedIsoDate(t),
     recurrence: z.enum(['once', 'weekly', 'monthly', 'quarterly', 'yearly']),
+    category: localizedRequiredText(t, t('upcoming.form.category')),
     requirement: z.enum(['required', 'planned']),
     certainty: z.enum(['confirmed', 'estimated']),
     // Required for OUTGOING, optional for incoming — see the superRefine below.

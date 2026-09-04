@@ -1,8 +1,13 @@
-import { ArrowDownLeft, ArrowUpRight, History } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { Panel, PanelHeader } from '@/components/ui/panel'
+import {
+  CATEGORY_ICON_DEFAULT_COLOR,
+  CATEGORY_ICON_FALLBACK,
+  CATEGORY_ICONS,
+} from '@/features/events/ui/components/category-icon'
 import type { EventsSummaryResponse } from '@money-space/core/features/events/api/events.repository'
 import type { MoneyEventItem } from '@money-space/core/features/events/model/events.types'
 import { formatVndCellSigned, formatVndScale } from '@money-space/core/shared/lib/format-money'
@@ -31,12 +36,20 @@ import { cn } from '@money-space/core/shared/lib/utils'
 export function SpendingSection({
   summary,
   recentEvents,
+  categoryVisualById,
   asOfDate,
 }: {
   /** Backend aggregate for the month. Omitted → the card renders nothing. */
   summary?: EventsSummaryResponse
   /** The newest recorded movements, already sorted and capped by the hook. */
   recentEvents: MoneyEventItem[]
+  /** Category id → its label and disc, so a row here draws the same mark the
+   *  Events timeline draws. An event carries only the FK, so the caller
+   *  resolves it. */
+  categoryVisualById?: Record<
+    string,
+    { label: string; iconKey: string | null; iconColor: string | null }
+  >
   /** Today, per the forecast — the month is only recorded up to here. */
   asOfDate: string
 }) {
@@ -80,55 +93,19 @@ export function SpendingSection({
 
       {recentEvents.length > 0 ? (
         <div className="mt-8">
-          <h3 className="flex items-center gap-2 t-subtitle">
-            <History className="size-4 shrink-0 text-ink2" strokeWidth={1.7} aria-hidden />
-            {t('home.spending.recent')}
-          </h3>
+          {/* No glyph beside the heading: the rows below now carry category
+              discs, and a second icon on the heading competes with them for
+              the same reading. */}
+          <h3 className="t-subtitle">{t('home.spending.recent')}</h3>
 
           <ul className="mt-2">
             {recentEvents.map((event, index) => (
-              <li
+              <RecentEventRow
                 key={event.id ?? `${event.isoDate}-${index}`}
-                className={cn(
-                  'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3',
-                  index > 0 && 'border-t border-divider',
-                )}
-              >
-                <span className="num w-10 shrink-0 font-mono t-caption-sm text-ink3">
-                  {formatDayMonth(event.isoDate)}
-                </span>
-                <div className="min-w-0">
-                  {/* The note is what the household actually wrote; the type is
-                      the fallback when they wrote nothing, so a row is never
-                      blank. */}
-                  <p className="truncate t-body-sm font-medium">
-                    {event.note || t(`options.eventType.${event.type}`)}
-                  </p>
-                  {event.category ? (
-                    <p className="truncate t-caption text-ink2">
-                      {/* Categories are enum-like, so they resolve through a
-                          keyed lookup and fall back to the raw value for a
-                          household's own custom category. */}
-                      {t(`options.eventCategory.${event.category}`, {
-                        defaultValue: event.category,
-                      })}
-                    </p>
-                  ) : null}
-                </div>
-                {/* `amount` arrives already signed (inflow > 0), so the sign is
-                    the data's, not something re-derived from `direction`. */}
-                <span
-                  className={cn(
-                    'num shrink-0 t-body-sm font-medium',
-                    event.amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
-                  )}
-                >
-                  {formatVndCellSigned(event.amount)}{' '}
-                  <span className="font-mono t-caption-sm text-ink3">
-                    {t('units.million')}
-                  </span>
-                </span>
-              </li>
+                event={event}
+                visual={categoryVisualById?.[event.categoryId]}
+                isFirst={index === 0}
+              />
             ))}
           </ul>
 
@@ -186,6 +163,79 @@ function SpendingTotal({
         </p>
       </div>
     </div>
+  )
+}
+
+/**
+ * One recorded movement, drawn the way the Events timeline draws it
+ * (`record-card.tsx`): a category disc, the note over its category, and the
+ * signed amount. The two surfaces list the same events, so a row that named a
+ * category one way here and another way there would read as two different
+ * kinds of record.
+ *
+ * The date moves into the meta line under the title. As a fixed left column it
+ * took the position the disc needs, and on three rows a column of dates earns
+ * less than the category identity does.
+ */
+function RecentEventRow({
+  event,
+  visual,
+  isFirst,
+}: {
+  event: MoneyEventItem
+  visual?: { label: string; iconKey: string | null; iconColor: string | null }
+  isFirst: boolean
+}) {
+  const { t } = useTranslation()
+  // Member access, not a helper call — see record-card.tsx for why the lookup
+  // is written this way.
+  const CategoryIcon = (visual?.iconKey && CATEGORY_ICONS[visual.iconKey]) || CATEGORY_ICON_FALLBACK
+
+  return (
+    <li
+      className={cn(
+        'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3',
+        !isFirst && 'border-t border-divider',
+      )}
+    >
+      {/* Category identity lives in the disc fill; the glyph stays white for
+          every category, including the fallback state. */}
+      <span
+        className="grid size-11 shrink-0 place-items-center rounded-pill text-white"
+        style={{ backgroundColor: visual?.iconColor ?? CATEGORY_ICON_DEFAULT_COLOR }}
+        role="img"
+        aria-label={visual?.label ?? undefined}
+        title={visual?.label ?? undefined}
+      >
+        <CategoryIcon className="size-5" strokeWidth={1.75} />
+      </span>
+
+      <div className="min-w-0">
+        {/* The note is what the household actually wrote; the category label is
+            the fallback when they wrote nothing, so a row is never blank — and
+            the subtitle then drops rather than printing the same name twice. */}
+        <p className="truncate t-body-sm font-medium">
+          {event.note || visual?.label || t(`options.eventType.${event.type}`)}
+        </p>
+        <p className="truncate t-caption text-ink3">
+          {event.note && visual?.label
+            ? `${formatDayMonth(event.isoDate)} · ${visual.label}`
+            : formatDayMonth(event.isoDate)}
+        </p>
+      </div>
+
+      {/* `amount` arrives already signed (inflow > 0), so the sign is the
+          data's, not something re-derived from `direction`. */}
+      <span
+        className={cn(
+          'num shrink-0 t-body-sm font-medium',
+          event.amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
+        )}
+      >
+        {formatVndCellSigned(event.amount)}{' '}
+        <span className="font-mono t-caption-sm text-ink3">{t('units.million')}</span>
+      </span>
+    </li>
   )
 }
 

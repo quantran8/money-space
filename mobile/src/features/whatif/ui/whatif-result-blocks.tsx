@@ -65,10 +65,17 @@ import type { ReactNode } from 'react'
 export function WhatIfResultBlocks({
   result,
   onTryAssetSale,
+  shortfallNote,
 }: {
   result: WhatIfResult
   /** Offered only when there is a shortfall and something to sell. */
   onTryAssetSale?: () => void
+  /**
+   * Replaces the standard shortfall line when selling could not close the gap
+   * either. The sheet computes it: only the client knows what the holdings add
+   * up to, and "còn thiếu" with no way out reads as a dead end without it.
+   */
+  shortfallNote?: string
 }) {
   const { t } = useTranslation()
   const { before, goalImpact, fundingSource } = result
@@ -157,6 +164,7 @@ export function WhatIfResultBlocks({
         liquidity={result.liquidity}
         appliedSale={result.assetSale}
         onTryAssetSale={onTryAssetSale}
+        shortfallNote={shortfallNote}
       />
 
       {/* 5 — The arithmetic underneath: balance before → after, and where it
@@ -588,6 +596,7 @@ function FundingSourceBlock({
   liquidity,
   appliedSale,
   onTryAssetSale,
+  shortfallNote,
 }: {
   spend: number
   fundingSource: WhatIfResult['fundingSource']
@@ -595,6 +604,7 @@ function FundingSourceBlock({
   liquidity?: WhatIfResult['liquidity']
   appliedSale?: WhatIfResult['assetSale']
   onTryAssetSale?: () => void
+  shortfallNote?: string
 }) {
   const { t } = useTranslation()
   const [showWallets, setShowWallets] = useState(false)
@@ -675,9 +685,10 @@ function FundingSourceBlock({
       {liquidity && liquidity.shortfall > 0 ? (
         <View className="mb-4 gap-2.5">
           <Text className="t-body-sm leading-5 text-alert-ink">
-            {t('whatif.shortfall.line', {
-              amount: formatVndShort(liquidity.shortfall),
-            })}
+            {shortfallNote ??
+              t('whatif.shortfall.line', {
+                amount: formatVndShort(liquidity.shortfall),
+              })}
           </Text>
           {onTryAssetSale ? (
             <Button variant="secondary" onPress={onTryAssetSale}>

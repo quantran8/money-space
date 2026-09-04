@@ -178,6 +178,19 @@ export function sellableAssetOptions(
     .map(({ type: _type, ...option }) => option)
 }
 
+/**
+ * The most these holdings could raise — every sellable asset, sold whole.
+ *
+ * Read at the moment the answer lands, to decide which of three things the
+ * household is told: usable money covers it, selling could cover it, or the
+ * gap is out of reach even after selling everything. That last case must not
+ * open the funding step: an asset picker whose every option leaves them short
+ * is a form that cannot be completed.
+ */
+export function totalSellableValue(options: SellableAssetOption[]): number {
+  return options.reduce((sum, option) => sum + option.currentValue, 0)
+}
+
 /** What a draft's quantity is worth, or its typed value for a manual asset. */
 export function saleProceeds(
   draft: WhatIfAssetSaleDraft,

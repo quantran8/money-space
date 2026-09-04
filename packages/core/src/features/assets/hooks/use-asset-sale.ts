@@ -18,6 +18,7 @@ import {
   type AssetSaleForm,
 } from '#/features/assets/model/asset-sale-form'
 import type { Asset } from '#/features/assets/model/assets'
+import { useEventCategories } from '#/features/events/hooks/use-event-categories'
 import { useEvents } from '#/features/events/hooks/use-events'
 import type { MoneyEventItem } from '#/features/events/model/events.types'
 import { getErrorMessage } from '#/shared/lib/get-error-message'
@@ -37,6 +38,15 @@ export function useAssetSale() {
   const { t } = useTranslation()
   const { assets, asOf } = useAssets()
   const { createEvent, updateEvent } = useEvents()
+  const { categories } = useEventCategories()
+  // A sale is classified as `investment`. That used to be a literal code on the
+  // payload; with a real FK the id has to be resolved from the household's
+  // visible categories (its own row wins over the shared system one).
+  const investmentCategoryId = useMemo(() => {
+    const matches = categories.filter((category) => category.code === 'investment')
+    const own = matches.find((category) => category.householdId !== null)
+    return (own ?? matches[0])?.id ?? ''
+  }, [categories])
 
   const [saleOpen, setSaleOpen] = useState(false)
   const [sellingAsset, setSellingAsset] = useState<Asset | null>(null)
@@ -140,6 +150,7 @@ export function useAssetSale() {
         sellingAsset,
         values,
         asOf || AS_OF,
+        investmentCategoryId,
         editingEvent ?? undefined,
       )
       if (editingEvent?.id) {

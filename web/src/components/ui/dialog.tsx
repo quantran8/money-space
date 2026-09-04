@@ -59,8 +59,10 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
  */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    closeButtonClassName?: string
+  }
+>(({ className, closeButtonClassName, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -74,7 +76,10 @@ const DialogContent = React.forwardRef<
     >
       {children}
       <DialogPrimitive.Close
-        className="absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-canvas hover:opacity-100"
+        className={cn(
+          'absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-canvas hover:opacity-100',
+          closeButtonClassName,
+        )}
         aria-label="Close"
       >
         <X className="size-4" />
@@ -104,14 +109,24 @@ function DialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
+const dialogTitleClasses = {
+  default: 't-page-tracking t-subhead',
+  title: 't-title',
+} as const
+
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title> & {
+    size?: 'default' | 'title'
+  }
+>(({ className, size = 'default', ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
     data-slot="dialog-title"
-    className={cn('t-page-tracking t-subhead', className)}
+    className={cn(
+      size === 'title' ? dialogTitleClasses.title : dialogTitleClasses.default,
+      className,
+    )}
     {...props}
   />
 ))

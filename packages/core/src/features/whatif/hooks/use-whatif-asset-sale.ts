@@ -9,6 +9,7 @@ import {
   saleProceeds,
   sellableAssetOptions,
   toWhatIfAssetSale,
+  totalSellableValue,
   validateWhatIfAssetSale,
   type SellableAssetOption,
   type WhatIfAssetSaleDraft,
@@ -55,6 +56,7 @@ export function useWhatIfAssetSale(fundingOptions?: WhatIfFundingOption[]) {
     () => receivingWalletOptions(assets, asOf),
     [assets, asOf],
   )
+  const sellableTotal = useMemo(() => totalSellableValue(options), [options])
   const selected = options.find((option) => option.value === draft.assetId) ?? null
 
   /** Fill in how much of THIS asset would cover the gap. */
@@ -148,6 +150,12 @@ export function useWhatIfAssetSale(fundingOptions?: WhatIfFundingOption[]) {
   return {
     options,
     walletOptions,
+    /**
+     * The ceiling on what selling could raise. The sheet compares it against
+     * the shortfall BEFORE opening the funding step, so a gap nothing can
+     * close is stated as such instead of becoming an unfillable form.
+     */
+    sellableTotal,
     selected,
     draft,
     errors,

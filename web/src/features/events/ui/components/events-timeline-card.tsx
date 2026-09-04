@@ -49,14 +49,25 @@ type EventsTimelineCardProps = {
    * input it takes.
    */
   overdrafts?: Record<string, number>
+  /** Category id → its translated label and disc, for the row RecordCard draws.
+   *  Keyed by ID: a record carries a real FK, not a code. */
+  categoryVisualById?: Record<
+    string,
+    { label: string; iconKey: string | null; iconColor: string | null }
+  >
   onEditEvent: (id: string) => void
   onDuplicateEvent: (id: string) => void
   onToggleEventAttention: (id: string) => void
   onDeleteEvent: (id: string) => void
 }
 
-/** Stable identity so a card with no overdrafts does not re-render on every pass. */
+/** Stable identity so a card with no overdrafts/categories does not re-render
+ *  on every pass. */
 const NO_OVERDRAFTS: Record<string, number> = {}
+const NO_CATEGORY_VISUALS: Record<
+  string,
+  { label: string; iconKey: string | null; iconColor: string | null }
+> = {}
 
 export function EventsTimelineCard({
   tab,
@@ -70,6 +81,7 @@ export function EventsTimelineCard({
   onQueryChange,
   isLoading = false,
   overdrafts = NO_OVERDRAFTS,
+  categoryVisualById = NO_CATEGORY_VISUALS,
   onEditEvent,
   onDuplicateEvent,
   onToggleEventAttention,
@@ -215,6 +227,11 @@ export function EventsTimelineCard({
                       key={record.id}
                       record={record}
                       overdraftBalance={overdrafts[record.id]}
+                      categoryVisual={
+                        record.categoryId
+                          ? categoryVisualById[record.categoryId]
+                          : undefined
+                      }
                       {...recordProps}
                     />
                   ))}

@@ -209,6 +209,9 @@ export function toSalePayload(
   asset: Asset,
   values: AssetSaleForm,
   asOf: string,
+  /** The `investment` category's id — `category` is a real FK now, so the
+   *  caller resolves it from the household's category list. */
+  categoryId: string,
   editingEvent?: MoneyEventItem,
 ): EventPayload {
   const market = isMarketSale(asset)
@@ -221,7 +224,7 @@ export function toSalePayload(
     amount,
     feeAmount,
     type: 'asset_sale',
-    category: 'investment',
+    categoryId,
     isoDate: values.date,
     fromAssetId: asset.id,
     toAssetId: values.toAssetId,

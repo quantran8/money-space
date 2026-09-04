@@ -196,6 +196,9 @@ export type TimelineRow = {
    */
   date: string
   name: string
+  /** The event's category, for the row's disc. Undefined for an event with no
+   *  category (a what-if, a synthetic occurrence). */
+  categoryId?: string | null
   amount: number
   /** Signed for display: outgoing is negative. */
   signedAmount: number
@@ -238,6 +241,7 @@ export function buildTimelineRows(
       key: occurrence.occurrenceKey,
       date: occurrence.originalDate ?? occurrence.date,
       name: occurrence.name,
+      categoryId: occurrence.categoryId ?? null,
       amount: occurrence.amount,
       signedAmount,
       unconfirmed: !occurrence.countedInBalance || isUnconfirmed(occurrence),

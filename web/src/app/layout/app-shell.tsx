@@ -13,7 +13,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 
 import { MobileBottomNav } from '@/app/layout/mobile-bottom-nav'
 import { WhatIfSheet } from '@/features/whatif/ui/whatif-sheet'
@@ -72,7 +72,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/networth', labelKey: 'nav.assetsDebts', icon: Wallet, alsoActiveOn: ['/assets', '/debts'] },
   { to: '/goals', labelKey: 'nav.goals', icon: Target },
   { to: '/events', labelKey: 'nav.events', icon: Timeline },
-  { to: '/household', labelKey: 'nav.household', icon: Settings },
+  { to: '/settings', labelKey: 'nav.settings', icon: Settings },
 ]
 
 /**
@@ -131,6 +131,78 @@ function initialsOf(name: string) {
 }
 
 /**
+ * Who is signed in, resolved once for both places that show it — the sidebar
+ * foot on desktop, the header row on mobile. A shared household picture should
+ * never leave the "whose account is this" question ambiguous, and it must not
+ * answer it differently per breakpoint.
+ */
+function useAccountIdentity() {
+  const { t } = useTranslation()
+  const { user } = useSession()
+
+  const name = user?.displayName ?? user?.fullName ?? user?.email?.split('@')[0] ?? t('shell.guest')
+
+  return { name, email: user?.email ?? '', avatarUrl: user?.avatarUrl ?? null }
+}
+
+/**
+ * The avatar disc: the picture when there is one, initials when there is not.
+ *
+ * Both wear a `--protect` ring. The disc used to have no edge and an
+ * `--accent-soft` fill (#eef1f2) that is a hair off `--canvas` (#edf3f8) —
+ * 1.01:1 — so on the mobile header, which sits directly on canvas, it
+ * dissolved into the row and a photo bled into the background. `--divider` is
+ * no fix at that size: it measures 1.01:1 on canvas too. `--protect` is the
+ * strongest neutral structural token (1.68:1 on canvas, 1.88:1 on card) and
+ * the sanctioned tone for a boundary, and `--committed` under the initials
+ * gives the disc a body of its own on every surface. Both are defined per
+ * theme, so the edge follows Archive's warm register too.
+ *
+ * `data-account-avatar` is not decoration — the collapsed sidebar button hides
+ * every child that is not an icon, and this is a `span`/`img`, so it is
+ * exempted by that attribute rather than by guessing which child is the
+ * picture.
+ */
+function AccountAvatar({
+  name,
+  avatarUrl,
+  className,
+}: {
+  name: string
+  avatarUrl: string | null
+  className?: string
+}) {
+  // `ring` rather than `border`: it draws outside the box, so the disc keeps
+  // its size and the initials stay centred in it.
+  const ring = 'ring-1 ring-protect'
+
+  if (avatarUrl) {
+    return (
+      <img
+        data-account-avatar
+        src={avatarUrl}
+        alt=""
+        className={cn('size-8 shrink-0 rounded-pill object-cover', ring, className)}
+      />
+    )
+  }
+
+  return (
+    <span
+      data-account-avatar
+      aria-hidden
+      className={cn(
+        'flex size-8 shrink-0 items-center justify-center rounded-pill bg-committed t-caption text-ink',
+        ring,
+        className,
+      )}
+    >
+      {initialsOf(name)}
+    </span>
+  )
+}
+
+/**
  * The account row at the sidebar foot: avatar, name, email — click for the
  * menu that holds sign-out.
  *
@@ -139,32 +211,15 @@ function initialsOf(name: string) {
  * mis-click from ending the session. Behind an account menu it is where people
  * already look for it, and the row earns its space by showing WHO is signed in
  * — the one thing a shared household picture should never leave ambiguous.
+ *
+ * The identity and the avatar disc are shared with the mobile header, which
+ * shows them WITHOUT a menu: sign-out lives on the Settings page there, and a
+ * destructive action does not belong in the chrome.
  */
 function SidebarAccount() {
   const { t } = useTranslation()
   const logout = useLogout()
-  const { user } = useSession()
-
-  const name = user?.displayName ?? user?.fullName ?? user?.email?.split('@')[0] ?? t('shell.guest')
-  const email = user?.email ?? ''
-  const initials = initialsOf(name)
-
-  const avatar = user?.avatarUrl ? (
-    <img
-      data-account-avatar
-      src={user.avatarUrl}
-      alt=""
-      className="size-8 shrink-0 rounded-pill object-cover"
-    />
-  ) : (
-    <span
-      data-account-avatar
-      aria-hidden
-      className="flex size-8 shrink-0 items-center justify-center rounded-pill bg-accent-soft t-caption text-ink"
-    >
-      {initials}
-    </span>
-  )
+  const { name, email, avatarUrl } = useAccountIdentity()
 
   return (
     <SidebarMenu>
@@ -187,7 +242,7 @@ function SidebarAccount() {
                 "[&_img[data-account-avatar]]:!block [&_span[data-account-avatar]]:!flex",
               )}
             >
-              {avatar}
+              <AccountAvatar name={name} avatarUrl={avatarUrl} />
               {/* min-w-0 so a long email truncates rather than pushing the
                   chevron out of the row. */}
               <span className="flex min-w-0 flex-1 flex-col text-left">
@@ -210,14 +265,9 @@ function SidebarAccount() {
               column, sitting on the nav it was launched from; the panel is
               240px and the menu 224px, so it covered the rail almost exactly
               and read as part of it rather than as something on top. */}
-          <DropdownMenuContent
-            align="end"
-            side="right"
-            sideOffset={12}
-            className="w-56"
-          >
+          <DropdownMenuContent align="end" side="right" sideOffset={12} className="w-56">
             <DropdownMenuLabel className="flex items-center gap-2.5 font-normal">
-              {avatar}
+              <AccountAvatar name={name} avatarUrl={avatarUrl} />
               <span className="flex min-w-0 flex-col">
                 <span className="t-body-sm truncate">{name}</span>
                 {email && <span className="t-caption truncate text-ink3">{email}</span>}
@@ -346,6 +396,8 @@ function AppSidebar() {
 export function AppShell() {
   const { t } = useTranslation()
   const location = useLocation()
+  const { pathname } = location
+  const account = useAccountIdentity()
   const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
   const scrollRef = useRef<HTMLElement>(null)
 
@@ -365,14 +417,40 @@ export function AppShell() {
       <AppSidebar />
 
       <main ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto bg-canvas">
-        {/* Mobile identity only. The hamburger and its drawer are gone: the
-            bottom tab bar already carries navigation, and two nav affordances
-            on one screen make the reader choose between them. Everything the
-            drawer alone used to hold has moved — sign-out to /household,
-            what-if to the bar's floating button. */}
-        <header className="flex items-center gap-3 px-5 py-3 lg:hidden">
-          <AppLogo className="size-7 rounded-[9px]" />
-          <p className="t-body-sm font-medium">Oursight</p>
+        {/* Mobile header: WHO is signed in, and the way to settings.
+            The mark and wordmark used to sit here. On a phone that is a row
+            spent telling the reader which app they just opened — the avatar
+            and name answer the one question a shared household picture must
+            never leave ambiguous, in the same space.
+
+            Settings moved here out of the tab bar: a once-a-month errand was
+            competing for one of five daily slots, and as a header icon it is
+            still one tap from every screen. Sign-out stays inside Settings,
+            where it already lives — a destructive action does not belong in
+            the chrome, one mis-tap from ending the session.
+
+            The hamburger and its drawer are gone: the bottom tab bar carries
+            navigation, and two nav affordances on one screen make the reader
+            choose between them. */}
+        <header className="flex items-center gap-2.5 px-5 py-3 lg:hidden">
+          <AccountAvatar name={account.name} avatarUrl={account.avatarUrl} className="size-7" />
+          {/* min-w-0 so a long name truncates instead of pushing the settings
+              icon off the row. */}
+          <p className="min-w-0 flex-1 truncate t-body-sm font-medium">{account.name}</p>
+
+          <Link
+            to="/settings"
+            aria-label={t('nav.settings')}
+            title={t('nav.settings')}
+            className={cn(
+              // 44px touch target (§24), pulled flush with the page gutter so
+              // the icon still lines up with the content below it.
+              '-mr-3 flex size-11 shrink-0 items-center justify-center rounded-pill transition-colors',
+              pathname === '/settings' ? 'text-ink' : 'text-ink2',
+            )}
+          >
+            <Settings className="size-5" strokeWidth={1.75} />
+          </Link>
         </header>
 
         {/* What-if is a GLOBAL action, not a page one: it is available from

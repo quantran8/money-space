@@ -1,4 +1,4 @@
-import { Calculator, CalendarClock, House, Settings, Target, Wallet } from 'lucide-react'
+import { Calculator, CalendarClock, House, Target, Timeline, Wallet } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, useLocation } from 'react-router-dom'
@@ -15,9 +15,13 @@ type BottomNavItem = {
 }
 
 /**
- * Mobile bottom nav — the FIVE primary destinations only (Phase 10). The three
- * secondary ones stay in the drawer: a bottom bar with eight targets is a bar
- * nobody can hit.
+ * Mobile bottom nav — the FIVE primary destinations only (Phase 10). The rest
+ * live elsewhere: a bottom bar with eight targets is a bar nobody can hit.
+ *
+ * The fifth tab is the money-events record, not Settings. Settings is a
+ * once-a-month errand and it now has its own icon in the mobile header; the
+ * shared record is what the household opens daily, and it was the one
+ * destination reachable on desktop but not here.
  */
 const items: BottomNavItem[] = [
   { to: '/', labelKey: 'nav.dashboard', icon: House },
@@ -30,7 +34,7 @@ const items: BottomNavItem[] = [
     // The asset/debt detail routes belong to this destination too.
     alsoActiveOn: ['/assets', '/debts'],
   },
-  { to: '/household', labelKey: 'nav.household', icon: Settings },
+  { to: '/events', labelKey: 'nav.events', icon: Timeline },
 ]
 
 export function MobileBottomNav() {

@@ -61,14 +61,34 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
     prefill.plannedDate ?? new Date().toISOString().slice(0, 10),
   )
   const [saleStepOpen, setSaleStepOpen] = useState(false)
+  /** True when the step opened on its own, rather than from the result's CTA. */
+  const [saleWasOffered, setSaleWasOffered] = useState(false)
   const sale = useWhatIfAssetSale(result?.fundingOptions)
 
   const amountValue = parseRawMoney(amount)
   const canRun = Number.isFinite(amountValue) && amountValue > 0 && !!plannedDate
   const shortfall = result?.liquidity?.shortfall ?? 0
+  /** Selling could close the gap — the only case where the step is worth opening. */
+  const saleCouldCover =
+    shortfall > 0 && sale.options.length > 0 && sale.sellableTotal >= shortfall
+  /**
+   * The gap is beyond the holdings, so `còn thiếu` needs the reason attached —
+   * otherwise the household is left looking for a funding step that will never
+   * appear. Stated, never advised: it says the spend is out of reach today, not
+   * what to do about it.
+   */
+  const shortfallNote =
+    shortfall > 0 && !result?.assetSale && !saleCouldCover
+      ? sale.options.length === 0
+        ? t('whatif.shortfall.noAssets', { amount: formatVndShort(shortfall) })
+        : t('whatif.shortfall.beyondAssets', {
+            amount: formatVndShort(shortfall),
+            sellable: formatVndShort(sale.sellableTotal),
+          })
+      : undefined
 
   async function runWith(assetSale?: WhatIfAssetSale) {
-    await run({
+    return await run({
       amount: amountValue,
       plannedDate,
       goalId: prefill.goalId,
@@ -76,18 +96,38 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
     })
   }
 
+  /**
+   * Not enough usable money means the household has one thing left to decide —
+   * whether to sell something — so `Xem thử` lands them on THAT question
+   * rather than on five blocks of consequence they have to scroll to find the
+   * CTA in. The original answer is one button away (`assetSale.skip`).
+   *
+   * Not opened when selling could not close the gap anyway: the funding step
+   * would be a form with no completable answer. That case is stated on the
+   * result instead, from figures this client already has.
+   */
   async function handleRun() {
     if (!canRun) return
     try {
-      await runWith()
+      const next = await runWith()
+      const gap = next?.liquidity?.shortfall ?? 0
+      if (gap > 0 && sale.options.length > 0 && sale.sellableTotal >= gap) {
+        setSaleWasOffered(true)
+        openSaleStep(gap)
+      }
     } catch (error) {
       toast.error(getErrorMessage(error, t('whatif.error')))
     }
   }
 
-  function handleOpenSaleStep() {
-    sale.seedFromShortfall(shortfall)
+  function openSaleStep(gap: number) {
+    sale.seedFromShortfall(gap)
     setSaleStepOpen(true)
+  }
+
+  function handleOpenSaleStep() {
+    setSaleWasOffered(false)
+    openSaleStep(shortfall)
   }
 
   /** Re-run with the sale included; stay on the step if it does not validate. */
@@ -119,6 +159,7 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   function handleTryAnother() {
     sale.clear()
     setSaleStepOpen(false)
+    setSaleWasOffered(false)
     reset()
   }
 
@@ -182,11 +223,13 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
             // feel unsmooth. At a fixed height each section fills space that is
             // already there and nothing moves but the section itself.
             'flex h-[92dvh] max-w-[56rem] flex-col overflow-hidden'
-          : undefined
+          : showSaleStep
+            ? 'max-w-[38.75rem] p-5 sm:p-7 md:rounded-[28px] md:shadow-[0_28px_90px_rgba(15,16,17,0.20)] [&>button]:size-11 [&>button]:p-0 [&>button]:hover:bg-wash [&>button>svg]:size-5'
+            : undefined
       }
     >
       <ResponsiveDialogHeader>
-        <ResponsiveDialogTitle>
+        <ResponsiveDialogTitle className={showSaleStep ? 't-title' : undefined}>
           {showSaleStep ? t('whatif.assetSale.title') : t('whatif.title')}
         </ResponsiveDialogTitle>
         {/*
@@ -232,22 +275,24 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
         className={
           showResult
             ? '-mx-6 min-h-0 flex-1 overflow-y-auto bg-canvas px-6 py-4'
-            : 'mt-2 max-h-[60vh] overflow-y-auto'
+            : showSaleStep
+              ? 'mt-1 max-h-[60vh] overflow-y-auto'
+              : 'mt-2 max-h-[60vh] overflow-y-auto'
         }
       >
         {showSaleStep ? (
-          <div className="mt-2">
-            <WhatIfAssetSaleStep sale={sale} />
+          <div>
+            <WhatIfAssetSaleStep sale={sale} shortfall={shortfall} />
           </div>
         ) : showResult ? (
           <WhatIfResultBlocks
             result={result!}
             onTryAssetSale={
-              // Offered only when there is a shortfall AND something to sell.
-              shortfall > 0 && !result!.assetSale && sale.options.length > 0
-                ? handleOpenSaleStep
-                : undefined
+              // Offered only when selling could actually close the gap — a
+              // picker whose every option leaves them short is not an offer.
+              saleCouldCover && !result!.assetSale ? handleOpenSaleStep : undefined
             }
+            shortfallNote={shortfallNote}
           />
         ) : (
           <div className="space-y-5">
@@ -280,10 +325,16 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
       <ResponsiveDialogFooter>
         {showSaleStep ? (
           <>
-            {/* The previous answer is still in the mutation cache, so going
-                back costs nothing and re-runs nothing. */}
+            {/*
+              The step is reached two ways now, and each needs its own way out.
+              Arrived automatically (nobody asked to sell), the exit is a
+              decision — "show me the answer without selling" — so it says so.
+              Arrived from the result's CTA, it is a plain Back. Either way the
+              previous answer is still in the mutation cache, so leaving
+              re-runs nothing.
+            */}
             <Button variant="ghost" onClick={() => setSaleStepOpen(false)}>
-              {t('whatif.assetSale.back')}
+              {t(saleWasOffered ? 'whatif.assetSale.skip' : 'whatif.assetSale.back')}
             </Button>
             <Button onClick={handleApplySale} disabled={isRunning}>
               {isRunning ? t('whatif.actions.running') : t('whatif.assetSale.apply')}

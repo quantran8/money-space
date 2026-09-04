@@ -17,7 +17,7 @@ type HouseholdOverviewCardProps = {
 
 /**
  * The space itself: what it is called, and the two choices that apply to
- * everything inside it. Saving lives beside the page title — see `HouseholdPage`.
+ * everything inside it. Saving lives beside the page title — see `SettingsPage`.
  *
  * The name is not a heading with a field under it — it IS the field. Showing it
  * twice made the panel restate one fact in two places and needed a label to
