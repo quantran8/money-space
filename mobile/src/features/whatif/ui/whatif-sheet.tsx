@@ -2,8 +2,13 @@ import { useState } from 'react'
 import { Share, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
+import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useWhatIf } from '@money-space/core/features/whatif/hooks/use-whatif'
 import { useWhatIfAssetSale } from '@money-space/core/features/whatif/hooks/use-whatif-asset-sale'
+import {
+  exceedsEverything,
+  fundingVerdict,
+} from '@money-space/core/features/whatif/model/whatif-asset-sale'
 import type { WhatIfAssetSale } from '@money-space/core/features/whatif/model/whatif.types'
 import { buildShareSummary } from '@money-space/core/features/whatif/model/whatif-share'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
@@ -71,6 +76,7 @@ function WhatIfSheetForm({
 }) {
   const { t } = useTranslation()
   const { result, run, reset, isRunning } = useWhatIf()
+  const { flexibleMoney } = useFlexibleMoney()
 
   const [amount, setAmount] = useState(prefill.amount ? String(prefill.amount) : '')
   const [plannedDate, setPlannedDate] = useState(prefill.plannedDate ?? todayIso())
@@ -83,9 +89,14 @@ function WhatIfSheetForm({
 
   const amountValue = parseRawMoney(amount)
   const shortfall = result?.liquidity?.shortfall ?? 0
+  const verdict = fundingVerdict(
+    shortfall,
+    sale.sellableTotal,
+    sale.options.length,
+    sale.isSellableTotalKnown,
+  )
   /** Selling could close the gap — the only case where the step is worth opening. */
-  const saleCouldCover =
-    shortfall > 0 && sale.options.length > 0 && sale.sellableTotal >= shortfall
+  const saleCouldCover = verdict.kind === 'canCover'
   /**
    * The gap is beyond the holdings, so `còn thiếu` needs the reason attached —
    * otherwise the household is left looking for a funding step that will never
@@ -93,14 +104,14 @@ function WhatIfSheetForm({
    * what to do about it.
    */
   const shortfallNote =
-    shortfall > 0 && !result?.assetSale && !saleCouldCover
-      ? sale.options.length === 0
+    result?.assetSale || verdict.kind === 'canCover' || verdict.kind === 'none'
+      ? undefined
+      : verdict.kind === 'noAssets'
         ? t('whatif.shortfall.noAssets', { amount: formatVndShort(shortfall) })
         : t('whatif.shortfall.beyondAssets', {
             amount: formatVndShort(shortfall),
-            sellable: formatVndShort(sale.sellableTotal),
+            sellable: formatVndShort(verdict.sellable),
           })
-      : undefined
 
   async function runWith(assetSale?: WhatIfAssetSale) {
     return await run({
@@ -121,6 +132,26 @@ function WhatIfSheetForm({
       setAmountError(t('whatif.form.amountRequired'))
       return
     }
+    /**
+     * Beyond usable money AND every holding — said HERE rather than after a
+     * round-trip and a screen. No forecast is needed to know a spend is larger
+     * than everything that exists.
+     */
+    const beyondEverything = exceedsEverything(
+      amountValue,
+      flexibleMoney?.currentSharedLiquidMoney,
+      sale.sellableTotal,
+      sale.isSellableTotalKnown,
+    )
+    if (beyondEverything) {
+      setAmountError(
+        t('whatif.form.beyondEverything', {
+          total: formatVndShort(beyondEverything.total),
+          amount: formatVndShort(beyondEverything.short),
+        }),
+      )
+      return
+    }
     setAmountError(undefined)
     try {
       /*
@@ -136,7 +167,14 @@ function WhatIfSheetForm({
       */
       const next = await runWith()
       const gap = next?.liquidity?.shortfall ?? 0
-      if (gap > 0 && sale.options.length > 0 && sale.sellableTotal >= gap) {
+      if (
+        fundingVerdict(
+          gap,
+          sale.sellableTotal,
+          sale.options.length,
+          sale.isSellableTotalKnown,
+        ).kind === 'canCover'
+      ) {
         setSaleWasOffered(true)
         openSaleStep(gap)
       }

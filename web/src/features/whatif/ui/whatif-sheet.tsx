@@ -14,8 +14,13 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog'
+import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useWhatIf } from '@money-space/core/features/whatif/hooks/use-whatif'
 import { useWhatIfAssetSale } from '@money-space/core/features/whatif/hooks/use-whatif-asset-sale'
+import {
+  exceedsEverything,
+  fundingVerdict,
+} from '@money-space/core/features/whatif/model/whatif-asset-sale'
 import type { WhatIfAssetSale } from '@money-space/core/features/whatif/model/whatif.types'
 import { WhatIfResultBlocks } from '@/features/whatif/ui/components/whatif-result-blocks'
 import { WhatIfAssetSaleStep } from '@/features/whatif/ui/components/whatif-asset-sale-step'
@@ -55,6 +60,7 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   const { t } = useTranslation()
   const close = useWhatIfStore((state) => state.close)
   const { result, run, reset, isRunning } = useWhatIf()
+  const { flexibleMoney } = useFlexibleMoney()
 
   const [amount, setAmount] = useState(prefill.amount ? String(prefill.amount) : '')
   const [plannedDate, setPlannedDate] = useState(
@@ -66,11 +72,37 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   const sale = useWhatIfAssetSale(result?.fundingOptions)
 
   const amountValue = parseRawMoney(amount)
-  const canRun = Number.isFinite(amountValue) && amountValue > 0 && !!plannedDate
+  /**
+   * Beyond usable money AND every holding — said HERE, on the field, rather
+   * than after a round-trip and a screen. No forecast is needed to know a spend
+   * is larger than everything that exists.
+   */
+  const beyondEverything = exceedsEverything(
+    amountValue,
+    flexibleMoney?.currentSharedLiquidMoney,
+    sale.sellableTotal,
+    sale.isSellableTotalKnown,
+  )
+  const amountError = beyondEverything
+    ? t('whatif.form.beyondEverything', {
+        total: formatVndShort(beyondEverything.total),
+        amount: formatVndShort(beyondEverything.short),
+      })
+    : undefined
+  const canRun =
+    Number.isFinite(amountValue) &&
+    amountValue > 0 &&
+    !!plannedDate &&
+    !beyondEverything
   const shortfall = result?.liquidity?.shortfall ?? 0
+  const verdict = fundingVerdict(
+    shortfall,
+    sale.sellableTotal,
+    sale.options.length,
+    sale.isSellableTotalKnown,
+  )
   /** Selling could close the gap — the only case where the step is worth opening. */
-  const saleCouldCover =
-    shortfall > 0 && sale.options.length > 0 && sale.sellableTotal >= shortfall
+  const saleCouldCover = verdict.kind === 'canCover'
   /**
    * The gap is beyond the holdings, so `còn thiếu` needs the reason attached —
    * otherwise the household is left looking for a funding step that will never
@@ -78,14 +110,14 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
    * what to do about it.
    */
   const shortfallNote =
-    shortfall > 0 && !result?.assetSale && !saleCouldCover
-      ? sale.options.length === 0
+    result?.assetSale || verdict.kind === 'canCover' || verdict.kind === 'none'
+      ? undefined
+      : verdict.kind === 'noAssets'
         ? t('whatif.shortfall.noAssets', { amount: formatVndShort(shortfall) })
         : t('whatif.shortfall.beyondAssets', {
             amount: formatVndShort(shortfall),
-            sellable: formatVndShort(sale.sellableTotal),
+            sellable: formatVndShort(verdict.sellable),
           })
-      : undefined
 
   async function runWith(assetSale?: WhatIfAssetSale) {
     return await run({
@@ -111,7 +143,19 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
     try {
       const next = await runWith()
       const gap = next?.liquidity?.shortfall ?? 0
-      if (gap > 0 && sale.options.length > 0 && sale.sellableTotal >= gap) {
+      const gapVerdict = fundingVerdict(
+        gap,
+        sale.sellableTotal,
+        sale.options.length,
+        sale.isSellableTotalKnown,
+      )
+      /**
+       * Only when selling could actually close the gap. Out of reach even
+       * after selling everything, the household is not sent to a form with no
+       * completable answer — the result leads with the reason instead
+       * (`shortfallNote`, rendered above the blocks rather than inside them).
+       */
+      if (gapVerdict.kind === 'canCover') {
         setSaleWasOffered(true)
         openSaleStep(gap)
       }
@@ -276,7 +320,10 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
           showResult
             ? '-mx-6 min-h-0 flex-1 overflow-y-auto bg-canvas px-6 py-4'
             : showSaleStep
-              ? 'mt-1 max-h-[60vh] overflow-y-auto'
+              // `pr-*` + matching `-mr-*`: the scrollbar rides in a gutter of
+              // its own instead of sitting flush against the cards, while the
+              // content keeps the dialog's own padding grid.
+              ? 'mt-1 -mr-2 max-h-[60vh] overflow-y-auto pr-3'
               : 'mt-2 max-h-[60vh] overflow-y-auto'
         }
       >
@@ -300,6 +347,7 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
               label={t('whatif.form.amount')}
               htmlFor="whatif-amount"
               trailing={<span className="shrink-0 t-body-sm text-ink2">đ</span>}
+              error={amountError}
             >
               <EventMoneyInput
                 id="whatif-amount"

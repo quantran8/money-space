@@ -1,4 +1,5 @@
 import type { WhatIfResult } from '#/features/whatif/model/whatif.types'
+import { soldAssetNames } from '#/features/whatif/model/whatif-asset-sale'
 import { formatVndShort } from '#/shared/lib/format-money'
 
 type Translate = (key: string, params?: Record<string, unknown>) => string
@@ -29,7 +30,7 @@ export function buildShareSummary(result: WhatIfResult, t: Translate): string {
   if (result.assetSale) {
     lines.push(
       t('whatif.share.sale', {
-        name: result.assetSale.name,
+        name: soldAssetNames(result.assetSale),
         amount: formatVndShort(result.assetSale.amount),
       }),
     )

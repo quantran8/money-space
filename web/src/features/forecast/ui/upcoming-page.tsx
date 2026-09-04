@@ -1,9 +1,12 @@
 import { Plus } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { CashflowEventFormDialog } from '@/features/cashflow/ui/components/cashflow-event-form-dialog'
+import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
+import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { useCashflowForm } from '@money-space/core/features/cashflow/hooks/use-cashflow-form'
 import { useUpcomingPage } from '@money-space/core/features/forecast/hooks/use-upcoming-page'
@@ -19,7 +22,15 @@ export function UpcomingPage() {
     useUpcomingPage()
   const cashflowForm = useCashflowForm()
   const { cashflowEvents, completeCashflowEvent } = useCashflowEvents()
+  const { assets } = useAssets()
   const { members } = useMembers()
+  const [completing, setCompleting] = useState<{
+    eventId: string
+    occurrenceDate: string
+    name: string
+    amount: number
+    direction: 'incoming' | 'outgoing'
+  } | null>(null)
 
   const memberNameById = new Map(members.map((member) => [member.id, member.name]))
   const ownerNameByEventId = Object.fromEntries(
@@ -65,12 +76,26 @@ export function UpcomingPage() {
               ? completeCashflowEvent.variables?.eventId
               : null
           }
-          onComplete={(sourceEventId, occurrenceDate) =>
-            completeCashflowEvent.mutate({
-              eventId: sourceEventId,
-              payload: { occurrenceDate },
+          onComplete={(eventId, occurrenceDate) => {
+            const source = cashflowEvents.find((event) => event.id === eventId)
+            if (!source) return
+
+            if (source.settlementAssetId) {
+              completeCashflowEvent.mutate({
+                eventId,
+                payload: { occurrenceDate, assetId: source.settlementAssetId },
+              })
+              return
+            }
+
+            setCompleting({
+              eventId,
+              occurrenceDate,
+              name: source.name,
+              amount: source.amount,
+              direction: source.direction,
             })
-          }
+          }}
           onEdit={cashflowForm.openEdit}
           onDelete={cashflowForm.handleDelete}
           ownerNameByEventId={ownerNameByEventId}
@@ -97,6 +122,29 @@ export function UpcomingPage() {
         onEdit={cashflowForm.openEdit}
         onDelete={cashflowForm.handleDelete}
       />
+
+      {completing ? (
+        <CompleteCashflowDialog
+          open
+          onOpenChange={(next) => {
+            if (!next) setCompleting(null)
+          }}
+          eventName={completing.name}
+          amount={completing.amount}
+          direction={completing.direction}
+          assets={assets}
+          isSubmitting={completeCashflowEvent.isPending}
+          onConfirm={(assetId) => {
+            completeCashflowEvent.mutate(
+              {
+                eventId: completing.eventId,
+                payload: { occurrenceDate: completing.occurrenceDate, assetId },
+              },
+              { onSuccess: () => setCompleting(null) },
+            )
+          }}
+        />
+      ) : null}
 
       <CashflowEventFormDialog
         open={cashflowForm.formOpen}

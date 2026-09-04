@@ -28,6 +28,7 @@ type CategoryComboboxProps = {
   options: CategoryComboboxOption[]
   placeholder: string
   className?: string
+  listClassName?: string
 }
 
 function normalizeSearch(value: string) {
@@ -50,6 +51,7 @@ export function CategoryCombobox({
   options,
   placeholder,
   className,
+  listClassName,
 }: CategoryComboboxProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
@@ -121,7 +123,7 @@ export function CategoryCombobox({
             placeholder={t('common.searchCategories')}
             autoFocus
           />
-          <CommandList className="max-h-44">
+          <CommandList className={cn('max-h-44', listClassName)}>
             <CommandEmpty>{t('common.noCategoriesFound')}</CommandEmpty>
             {groups.map((group) =>
               group.options.length > 0 ? (
