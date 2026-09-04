@@ -32,7 +32,7 @@ import {
   withDayOfMonth,
 } from '@money-space/core/features/debts/model/debts-interest'
 import { isFixedScheduleLender, type LenderType } from '@money-space/core/features/debts/model/debts.types'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type Option = { value: string; label: string }
@@ -76,10 +76,17 @@ const CALC_OPTIONS: Array<{ value: DebtForm['interestCalc']; labelKey: string; h
   { value: 'fixed', labelKey: 'fixed', hintKey: 'fixedHint' },
 ]
 
+/**
+ * Exact đồng: every figure this formats was typed digit-by-digit moments
+ * earlier and is being echoed back on the review step so the user can check it
+ * went in. Outstanding and original sit as sibling rows whose difference is the
+ * repayment history, and the payment amount is a per-instalment figure people
+ * reconcile against a bank statement — none survives rounding.
+ */
 function formatVnd(value: number | string) {
   const amount = typeof value === 'string' ? Number(value) : value
   if (!amount || !Number.isFinite(amount)) return '—'
-  return formatMoney(amount)
+  return formatVndExact(amount)
 }
 
 // Mirrors input.tsx: h-11, white fill, 1px committed stroke, rounded-control,

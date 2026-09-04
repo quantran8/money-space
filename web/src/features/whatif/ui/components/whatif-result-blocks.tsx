@@ -32,7 +32,7 @@ import {
   easeOut,
   useRevealed,
 } from '@/components/ui/motion'
-import { formatMonthYear, formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatMonthYear, formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
@@ -734,7 +734,9 @@ function FundingSourceBlock({
 
       {/* The sale that funded this, when there was one: the conversion, stated
           before the split below — it is where that money came from. Both rows
-          together net to zero; a sale moves value, it does not create it. */}
+          together net to zero; a sale moves value, it does not create it — which
+          is a subtraction the reader is invited to perform, so these are exact
+          đồng rather than the compact scale. */}
       {appliedSale ? (
         <div className="mb-4 rounded-control bg-accent-soft px-4 py-3">
           <p className="t-caption-sm text-ink3">{t('whatif.assetSale.appliedTitle')}</p>
@@ -742,8 +744,8 @@ function FundingSourceBlock({
             <div className="flex items-baseline justify-between gap-4">
               <span className="truncate t-body-sm">{appliedSale.name}</span>
               <span className="money-number shrink-0 t-body-sm">
-                {formatVndShort(appliedSale.assetValueBefore)} →{' '}
-                {formatVndShort(appliedSale.assetValueAfter)}
+                {formatVndExact(appliedSale.assetValueBefore)} →{' '}
+                {formatVndExact(appliedSale.assetValueAfter)}
               </span>
             </div>
             <div className="flex items-baseline justify-between gap-4">
@@ -751,7 +753,7 @@ function FundingSourceBlock({
                 {t('whatif.assetSale.appliedCash')}
               </span>
               <span className="money-number shrink-0 t-body-sm text-ink2">
-                +{formatVndShort(appliedSale.netProceeds)}
+                +{formatVndExact(appliedSale.netProceeds)}
               </span>
             </div>
           </div>

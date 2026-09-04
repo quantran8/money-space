@@ -2,7 +2,7 @@ import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
 import { useAssetGoalUsage } from '@money-space/core/features/goals/hooks/use-asset-goal-usage'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import {
   EmptyState,
@@ -109,8 +109,9 @@ export function AssetGoalUsage({
             },
           ]}
           ariaLabel={t('assets.detail.goals.aria', {
-            claimed: formatVndShort(committedAmount),
-            free: formatVndShort(unassignedAmount),
+            // Matches the two exact figures the panel now shows below.
+            claimed: formatVndExact(committedAmount),
+            free: formatVndExact(unassignedAmount),
           })}
           centerLabel={t('assets.detail.goals.ringCenter')}
           formatAmount={formatVndShort}
@@ -119,15 +120,16 @@ export function AssetGoalUsage({
       )}
 
       {/* The two figures the ring is a picture OF. They carry the panel on
-          their own when the asset is overdrawn and the ring cannot draw. */}
+          their own when the asset is overdrawn and the ring cannot draw — and
+          they sum to the asset's value, so they are exact đồng. */}
       <View className="mt-6 gap-5">
         <View>
           <Label>{t('assets.detail.goals.allocationFree')}</Label>
-          <Money className="mt-1 text-data-ink">{formatVndShort(unassignedAmount)}</Money>
+          <Money className="mt-1 text-data-ink">{formatVndExact(unassignedAmount)}</Money>
         </View>
         <View className="border-t border-divider pt-4">
           <Label>{t('assets.detail.goals.allocationCommitted')}</Label>
-          <Money className="mt-1">{formatVndShort(committedAmount)}</Money>
+          <Money className="mt-1">{formatVndExact(committedAmount)}</Money>
         </View>
       </View>
 
@@ -135,7 +137,8 @@ export function AssetGoalUsage({
         <View className="mt-6 border-t border-divider pt-4">
           <Text className="t-body-sm text-attention-ink">
             {t('assets.detail.goals.overdrawnWarning', {
-              value: formatVndShort(Math.abs(assetValue)),
+              // What the household must free up — actionable, so exact.
+              value: formatVndExact(Math.abs(assetValue)),
             })}
           </Text>
         </View>

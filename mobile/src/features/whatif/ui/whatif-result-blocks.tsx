@@ -20,7 +20,7 @@ import {
   type WhatIfResult,
   type WhatIfResultType,
 } from '@money-space/core/features/whatif/model/whatif.types'
-import { formatMonthYear, formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatMonthYear, formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 import { Button, Disclosure, Panel, Sunk } from '@/components/ui'
@@ -660,8 +660,10 @@ function FundingSourceBlock({
                   className="t-body-sm text-ink"
                   style={{ fontVariant: ['tabular-nums'] }}
                 >
-                  {formatVndShort(appliedSale.assetValueBefore)} →{' '}
-                  {formatVndShort(appliedSale.assetValueAfter)}
+                  {/* Exact: this pair and the cash row below must net to
+                      zero — a sale moves value, it does not create it. */}
+                  {formatVndExact(appliedSale.assetValueBefore)} →{' '}
+                  {formatVndExact(appliedSale.assetValueAfter)}
                 </Text>
               </View>
               <View className="flex-row items-baseline justify-between gap-4">
@@ -672,7 +674,7 @@ function FundingSourceBlock({
                   className="t-body-sm text-ink2"
                   style={{ fontVariant: ['tabular-nums'] }}
                 >
-                  +{formatVndShort(appliedSale.netProceeds)}
+                  +{formatVndExact(appliedSale.netProceeds)}
                 </Text>
               </View>
             </View>

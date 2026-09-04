@@ -11,7 +11,7 @@ import {
   type AssetType,
   type ValuationMode,
 } from '#/features/assets/model/assets'
-import { formatMoney } from '#/shared/lib/format-money'
+import { formatVndExact } from '#/shared/lib/format-money'
 import { parseRawDecimal, parseRawMoney } from '#/shared/lib/number-format'
 import { localizedOptionalText } from '#/shared/lib/validation'
 
@@ -553,7 +553,10 @@ export function buildAssetSchema(
             path: ['fundingAssetId'],
             code: 'custom',
             message: t('assets.form.payFromInsufficient', {
-              balance: formatMoney(balance),
+              // Exact: the check is exact, so this fires on a one-đồng shortfall. The
+      // compact scale printed the same figure as the total it rejected, leaving
+      // the user no way to see how much they are short.
+      balance: formatVndExact(balance),
             }),
           })
         }

@@ -2,7 +2,7 @@ import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
 import type { useWhatIfAssetSale } from '@money-space/core/features/whatif/hooks/use-whatif-asset-sale'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { DecimalInput, MoneyInput, Select, Sunk } from '@/components/ui'
 
@@ -147,9 +147,12 @@ export function WhatIfAssetSaleFields({
           <Text className="t-body-sm leading-5">
             {t('whatif.assetSale.preview', {
               name: selected.label,
-              before: formatVndShort(selected.currentValue),
-              after: formatVndShort(remainingAfterSale),
-              amount: formatVndShort(selected.currentValue - remainingAfterSale),
+              // Exact: the line reads "X → Y · +Z" where Z is X − Y, so the
+              // three must reconcile. Compact printed the same figure on both
+              // sides of the arrow for any sale under the rounding step.
+              before: formatVndExact(selected.currentValue),
+              after: formatVndExact(remainingAfterSale),
+              amount: formatVndExact(selected.currentValue - remainingAfterSale),
             })}
           </Text>
         </Sunk>

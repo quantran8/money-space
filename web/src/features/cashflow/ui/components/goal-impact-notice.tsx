@@ -7,7 +7,7 @@ import { useAssetGoalUsage } from '@money-space/core/features/goals/hooks/use-as
 import { computeSpendImpact } from '@money-space/core/features/goals/model/spend-impact'
 import { computeSpendAftermath } from '@money-space/core/features/cashflow/model/spend-aftermath'
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
@@ -191,12 +191,16 @@ export function GoalImpactNotice({
         ) : null}
       </div>
 
-      {/* Only the consequences that actually moved. */}
+      {/* Only the consequences that actually moved. Exact đồng: `after` is
+          `before` minus the spend being confirmed, and the reduction is printed
+          beside it — at the compact scale a spend smaller than the rounding step
+          renders an arrow between two identical numbers, so the consequence the
+          user is about to accept becomes invisible. */}
       <div className="mt-6 space-y-5">
         <ChangeRow
           label={t('upcoming.complete.goalImpact.paceRemainingLabel')}
-          before={formatVndShort(impact.totalPaceBefore)}
-          after={formatVndShort(
+          before={formatVndExact(impact.totalPaceBefore)}
+          after={formatVndExact(
             Math.max(0, impact.totalPaceBefore - impact.totalPaceReduction),
           )}
         />
@@ -204,9 +208,9 @@ export function GoalImpactNotice({
         {reachesSetAside ? (
           <ChangeRow
             label={t('upcoming.complete.goalImpact.goalTotalLabel')}
-            before={formatVndShort(goalTotalBefore)}
-            after={formatVndShort(Math.max(0, goalTotalBefore - impact.totalSetAsideReduction))}
-            delta={`−${formatVndShort(impact.totalSetAsideReduction)}`}
+            before={formatVndExact(goalTotalBefore)}
+            after={formatVndExact(Math.max(0, goalTotalBefore - impact.totalSetAsideReduction))}
+            delta={`−${formatVndExact(impact.totalSetAsideReduction)}`}
           />
         ) : null}
       </div>

@@ -9,7 +9,7 @@ import {
   termMonthsOf,
   type CalculationTerm,
 } from '@money-space/core/features/assets/model/assets'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 
 import { CaveatNote, GroupedRow, Panel, PanelHeader, RowMetaMono, Sunk } from '@/components/ui'
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
@@ -118,9 +118,10 @@ export function SavingWithdrawalPanel({ term }: { term: CalculationTerm }) {
 
       {/* The consequence of withdrawing early, in money. Attention, not alert:
           this is a cost to weigh, not a mistake — the product never tells a
-          household what it should do. */}
+          household what it should do. Exact đồng, because it is the difference
+          between the two totals printed above and must agree with them. */}
       <CaveatNote className="mt-4">
-        {`${t('assets.detail.withdrawal.difference')}: −${formatVndShort(Math.abs(difference))}`}
+        {`${t('assets.detail.withdrawal.difference')}: −${formatVndExact(Math.abs(difference))}`}
       </CaveatNote>
     </Panel>
   )
@@ -169,7 +170,7 @@ function Amount({
       style={{ fontVariant: ['tabular-nums'] }}
     >
       {value < 0 ? '−' : ''}
-      {formatVndShort(Math.abs(value))}
+      {formatVndExact(Math.abs(value))}
     </Text>
   )
 }

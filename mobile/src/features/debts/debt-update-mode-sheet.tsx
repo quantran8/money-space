@@ -8,7 +8,7 @@ import type {
   DebtUpdateSnapshot,
 } from '@money-space/core/features/debts/model/debts.types'
 import { TODAY } from '@money-space/core/features/events/model/events-form'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 import { BottomSheet, Button, CaveatNote, DateField, Sunk } from '@/components/ui'
@@ -291,8 +291,13 @@ export function DebtUpdateModeSheet({
   )
 }
 
+/**
+ * Exact đồng: `PreviewRow` below hides a row whose two sides render the same
+ * string, so at the compact scale a correction smaller than the rounding step
+ * vanished from the preview while the write still went through.
+ */
 function money(value?: number) {
-  return value === undefined ? '—' : formatVndShort(value)
+  return value === undefined ? '—' : formatVndExact(value)
 }
 
 /**

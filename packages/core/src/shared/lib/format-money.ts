@@ -126,6 +126,41 @@ export function formatVndScale(value: number, currency: DisplayCurrency = displa
 }
 
 /**
+ * Exact đồng, in full — "15.120.000đ".
+ *
+ * §6 caps the decimal at one place **"khi nguồn là manual estimate"**, and also
+ * forbids showing *more* precision than the input — but the compact scale can
+ * show *less*, and that is a problem wherever two exact figures sit beside a
+ * delta between them. A gold holding at 15.120.000đ cost and 15.050.000đ today
+ * renders as "15,1 tr" **twice**, next to a −70.000đ loss: three readings that
+ * contradict each other, and the one that looks wrong is the correct one.
+ *
+ * **When to use which.** The test is not "is this money important" — all of it
+ * is. It is whether rounding can make the screen contradict itself:
+ *
+ *  - EXACT when the figure is known to the đồng AND the reader is meant to
+ *    reconcile it — a cost basis beside the profit computed from it, a unit
+ *    price beside quantity and a total, an amount the user typed and is
+ *    confirming, a balance a transaction is about to move, anything on a
+ *    receipt or a form they are about to commit.
+ *  - COMPACT (`formatVndScale`) for a figure read at a glance and never
+ *    reconciled on screen — a projection, a chart axis, a category total, a
+ *    net-worth headline, anything §6 calls a manual estimate.
+ *
+ * Compact stays the default: full đồng everywhere is noise, and §6 asks for the
+ * scale. This is the exception for figures that must add up in the reader's
+ * head.
+ */
+export function formatVndExact(
+  value: number,
+  currency: DisplayCurrency = displayCurrency,
+): string {
+  if (currency !== 'VND') return formatMoney(value, currency)
+  const amount = Number.isFinite(value) ? value : 0
+  return `${new Intl.NumberFormat('vi-VN').format(Math.round(amount))}đ`
+}
+
+/**
  * The same scale as `formatVndScale`, split into number and unit.
  *
  * The v11 hero sets the figure at 64px and its unit at 28px, so the two need to

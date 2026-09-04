@@ -25,7 +25,7 @@ import {
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import { currentMemberId } from '@money-space/core/features/members/model/members.types'
-import { formatMoney, formatVndShort, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
+import { formatMoney, formatVndExact, formatVndShort, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
 import { useAuthStore } from '@money-space/core/shared/stores/auth-store'
 
 import {
@@ -355,8 +355,10 @@ function AssetEffect({
     if (hasAmount && Math.round(amount) !== Math.round(storedValue)) {
       changes.push(
         t('assets.form.changeValue', {
-          from: formatVndShort(storedValue),
-          to: formatVndShort(amount),
+          // Exact: the guard fires on a one-đồng difference, so compact could
+          // render "đổi từ 15,1 tr thành 15,1 tr" — a change the user cannot see.
+          from: formatVndExact(storedValue),
+          to: formatVndExact(amount),
         }),
       )
     }

@@ -16,7 +16,7 @@ import {
   CATEGORY_ICON_FALLBACK,
   CATEGORY_ICONS,
 } from '@/features/events/ui/components/category-icon'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type RecordCardProps = {
@@ -65,7 +65,9 @@ export function RecordCard({
     overdraftBalance === undefined
       ? null
       : t('events.history.overdraftBadgeHint', {
-          amount: formatVndShort(Math.abs(overdraftBalance)),
+          // Exact: the copy tells the reader to go find a missing or
+          // mis-entered transaction, which needs a matchable figure.
+          amount: formatVndExact(Math.abs(overdraftBalance)),
         })
   // Member access, not a helper call: read as `CATEGORY_ICONS[key] ?? FALLBACK`
   // directly — see category-icon.tsx. A capitalized binding assigned from a

@@ -63,7 +63,7 @@ import {
   type AssetForm,
 } from '@money-space/core/features/assets/model/assets-form'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
-import { formatMoney, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
+import { formatMoney, formatVndExact, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type WalletOption = { value: string; label: string; balance?: number }
@@ -400,8 +400,12 @@ function AssetEffect({
     if (hasAmount && Math.round(amount) !== Math.round(storedValue)) {
       changes.push(
         t('assets.form.changeValue', {
-          from: formatMoney(storedValue),
-          to: formatMoney(amount),
+          // Exact: the guard above fires on a one-đồng difference, so the
+          // compact scale could render "đổi từ 15,1 triệu thành 15,1 triệu" —
+          // a sentence asserting a change while showing none, on a form the
+          // user is about to submit.
+          from: formatVndExact(storedValue),
+          to: formatVndExact(amount),
         }),
       )
     }

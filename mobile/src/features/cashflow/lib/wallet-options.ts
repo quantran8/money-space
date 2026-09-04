@@ -1,6 +1,6 @@
 import { canSettleCashflow, computeCurrentValue } from '@money-space/core/features/assets/model/assets'
 import type { Asset } from '@money-space/core/features/assets/model/assets.types'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatMoney, formatVndExact } from '@money-space/core/shared/lib/format-money'
 
 import type { SelectOption } from '@/components/ui'
 
@@ -25,7 +25,9 @@ export function settlementWalletOptions(
     value: asset.id,
     label: labelWithValue({
       name: asset.name,
-      value: formatMoney(computeCurrentValue(asset, asOf) ?? 0),
+      // Exact: this balance answers "can this wallet carry the spend", and the
+    // spend sits on the same sheet — rounding can invert the comparison.
+    value: formatVndExact(computeCurrentValue(asset, asOf) ?? 0),
     }),
   }))
 }

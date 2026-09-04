@@ -8,7 +8,7 @@ import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { AssetGoalClaim } from '@money-space/core/features/goals/api/goals.repository'
 import { useAssetGoalUsage } from '@money-space/core/features/goals/hooks/use-asset-goal-usage'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 const TICK_BACKGROUND =
@@ -76,8 +76,10 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
                 },
               ]}
               ariaLabel={t('assets.detail.goals.aria', {
-                claimed: formatVndShort(committedAmount),
-                free: formatVndShort(unassignedAmount),
+                // Same figures the metrics below now state exactly, so the
+                // screen-reader label and the visible card agree.
+                claimed: formatVndExact(committedAmount),
+                free: formatVndExact(unassignedAmount),
               })}
               centerLabel={t('assets.detail.goals.ringCenter')}
               formatAmount={formatVndShort}
@@ -86,16 +88,20 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
           )}
         </div>
 
+        {/* Free + committed = the asset's value, and the ring beside them
+            draws its percentages from the same two numbers — so they are exact
+            đồng; rounded, two visibly different figures carried equal
+            percentages and neither could be checked against the other. */}
         <div className="grid gap-5 md:grid-cols-2">
           <AllocationMetric
             label={t('assets.detail.goals.allocationFree')}
-            value={formatVndShort(unassignedAmount)}
+            value={formatVndExact(unassignedAmount)}
             tone="data"
           />
           <AllocationMetric
             className="border-t border-divider pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"
             label={t('assets.detail.goals.allocationCommitted')}
-            value={formatVndShort(committedAmount)}
+            value={formatVndExact(committedAmount)}
             tone="committed"
           />
         </div>
@@ -105,7 +111,9 @@ export function AssetGoalUsageSection({ assetId }: { assetId: string }) {
         <div className="mt-7 border-t border-divider pt-4">
           <p className="t-body-sm text-attention-ink">
             {t('assets.detail.goals.overdrawnWarning', {
-              value: formatVndShort(Math.abs(assetValue)),
+              // The warning claims commitments exceed the asset; the amount
+              // is what the household must free up, so it must be actionable.
+              value: formatVndExact(Math.abs(assetValue)),
             })}
           </p>
         </div>
@@ -194,19 +202,19 @@ function GoalContribution({ item, onOpen }: { item: AssetGoalClaim; onOpen: () =
 
         <div className="shrink-0 text-right">
           <p className="t-caption text-ink3">{t('assets.detail.goals.totalHeld')}</p>
-          <p className="num mt-1 t-metric">{formatVndShort(item.countedValue)}</p>
+          <p className="num mt-1 t-metric">{formatVndExact(item.countedValue)}</p>
         </div>
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-[.8fr_.8fr_1.4fr]">
         <GoalMetric
           label={t('assets.detail.goals.initial')}
-          value={formatVndShort(item.currentValue)}
+          value={formatVndExact(item.currentValue)}
         />
         <GoalMetric
           className="border-t border-divider pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"
           label={t('assets.detail.goals.monthlyPlan')}
-          value={formatVndShort(monthlyPlan)}
+          value={formatVndExact(monthlyPlan)}
         />
 
         <div className="border-t border-divider pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
@@ -214,8 +222,11 @@ function GoalContribution({ item, onOpen }: { item: AssetGoalClaim; onOpen: () =
             <div>
               <p className="t-caption text-ink3">{t('assets.detail.goals.thisMonth')}</p>
               <p className="mt-1 flex items-baseline gap-1.5">
-                <span className="num t-subhead">{formatVndShort(contributedThisMonth)}</span>
-                <span className="num t-caption text-ink3">/ {formatVndShort(monthlyPlan)}</span>
+                {/* contributed = countedValue − currentValue, both printed
+                    above; remaining = plan − contributed. Exact, or the card
+                    shows a contribution appearing out of two equal figures. */}
+                <span className="num t-subhead">{formatVndExact(contributedThisMonth)}</span>
+                <span className="num t-caption text-ink3">/ {formatVndExact(monthlyPlan)}</span>
               </p>
             </div>
 
@@ -224,7 +235,7 @@ function GoalContribution({ item, onOpen }: { item: AssetGoalClaim; onOpen: () =
               <p className="num mt-1 t-caption text-ink3">
                 {remaining > 0
                   ? t('assets.detail.goals.remainingContribution', {
-                      value: formatVndShort(remaining),
+                      value: formatVndExact(remaining),
                     })
                   : t('assets.detail.goals.planComplete')}
               </p>

@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react-native'
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useAssetGoalUsage } from '@money-space/core/features/goals/hooks/use-asset-goal-usage'
 import { computeSpendImpact } from '@money-space/core/features/goals/model/spend-impact'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { Sunk } from '@/components/ui'
 import { SpendImpactBar } from '@/features/cashflow/ui/spend-impact-bar'
@@ -159,21 +159,24 @@ export function GoalImpactNotice({
 
       {/* Only what actually moved. A spend inside this month's contribution
           leaves the goal's own total untouched, and "303,6 → 303,6" would
-          manufacture a consequence. */}
+          manufacture a consequence. `reachesSetAside` covers the case where
+          nothing moved; exact đồng covers the case where something did but the
+          compact scale rounded it away — the same twin-number arrow, reached
+          from the other side. */}
       <View className="mt-4 gap-3">
         <ChangeRow
           label={t('upcoming.complete.goalImpact.paceRemainingLabel')}
-          before={formatVndShort(impact.totalPaceBefore)}
-          after={formatVndShort(Math.max(0, impact.totalPaceBefore - impact.totalPaceReduction))}
+          before={formatVndExact(impact.totalPaceBefore)}
+          after={formatVndExact(Math.max(0, impact.totalPaceBefore - impact.totalPaceReduction))}
         />
         {reachesSetAside ? (
           <ChangeRow
             label={t('upcoming.complete.goalImpact.goalTotalLabel')}
-            before={formatVndShort(impact.totalSetAsideBefore)}
-            after={formatVndShort(
+            before={formatVndExact(impact.totalSetAsideBefore)}
+            after={formatVndExact(
               Math.max(0, impact.totalSetAsideBefore - impact.totalSetAsideReduction),
             )}
-            delta={`−${formatVndShort(impact.totalSetAsideReduction)}`}
+            delta={`−${formatVndExact(impact.totalSetAsideReduction)}`}
           />
         ) : null}
       </View>
