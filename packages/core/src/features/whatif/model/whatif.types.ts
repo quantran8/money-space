@@ -23,17 +23,43 @@ import type { GoalProjection } from '#/features/goals/model/goal-projection.type
 export type WhatIfResultType = 'comfortable' | 'tight' | 'not_covered'
 
 /**
- * The optional second step: selling part of an asset to fund the spend.
+ * The wallet a household without one names as the destination.
+ *
+ * A household that tracks gold and stocks but no bank account has no
+ * `usable_now` asset to receive proceeds — and used to hit a form it could not
+ * complete. This sentinel says "the cash exists but sits in no account yet",
+ * which is the truth of a sale that has only been imagined: it raises usable
+ * money that no goal is standing in front of.
+ */
+export const UNASSIGNED_WALLET_ID = '__unassigned__'
+
+/**
+ * One line of the optional second step: selling part of an asset.
  *
  * A hypothesis, never a transaction — no `asset_sale` money event is created.
- * A market asset is sold in its own unit (6 chỉ, not "86,4tr of gold"); the
- * proceeds land in a wallet the household names, as a real sale would.
+ * A market asset is sold in its own unit (6 chỉ, not "86,4tr of gold").
  */
-export type WhatIfAssetSale = {
+export type WhatIfAssetSaleLine = {
   assetId: string
   /** Gross proceeds. A hypothetical carries no fee. */
   amount: number
-  /** The wallet the proceeds land in. Must be `usable_now`. */
+}
+
+/**
+ * The funding step: sell parts of one or more assets to cover the spend.
+ *
+ * Several lines, because one holding often is not enough: short 500tr with
+ * 300tr of gold and 250tr of stocks, a single-asset step is a form with no
+ * completable answer. The proceeds share ONE destination — a household selling
+ * two things to pay for one thing banks the cash together — so `toAssetId`
+ * sits at this level rather than on each line.
+ */
+export type WhatIfAssetSale = {
+  lines: WhatIfAssetSaleLine[]
+  /**
+   * The wallet the proceeds land in. Must be `usable_now`, or
+   * `UNASSIGNED_WALLET_ID` when the household holds no such wallet.
+   */
   toAssetId: string
 }
 
@@ -175,17 +201,29 @@ export type WhatIfFundingOption = {
   goalClaimedAmount: number
 }
 
-/** The sale as applied, echoing the choices the engine made. */
-export type WhatIfAppliedSale = {
+/** One sold holding, as applied. */
+export type WhatIfAppliedSaleLine = {
   assetId: string
   name: string
   amount: number
-  /** What lands in the wallet. Equal to `amount` — a hypothetical has no fee. */
-  netProceeds: number
   assetValueBefore: number
   assetValueAfter: number
+}
+
+/** The sale as applied, echoing the choices the engine made. */
+export type WhatIfAppliedSale = {
+  /** Every holding sold, in the order the household listed them. */
+  lines: WhatIfAppliedSaleLine[]
+  /** Gross proceeds across all lines. */
+  amount: number
+  /** What lands in the wallet. Equal to `amount` — a hypothetical has no fee. */
+  netProceeds: number
   /** The wallet the household chose to receive the proceeds. */
   receivingAssetId: string
+  /**
+   * The receiving wallet's name, or the label for money that sits in no
+   * account yet when `receivingAssetId` is `UNASSIGNED_WALLET_ID`.
+   */
   receivingName: string
 }
 

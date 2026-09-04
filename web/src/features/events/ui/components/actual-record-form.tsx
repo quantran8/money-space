@@ -134,6 +134,7 @@ export function ActualRecordForm({
                   options={categoryOptions}
                   placeholder={t('events.form.categoryPlaceholder')}
                   className={fieldControlReset}
+                  listClassName="max-h-64"
                 />
               )}
             />

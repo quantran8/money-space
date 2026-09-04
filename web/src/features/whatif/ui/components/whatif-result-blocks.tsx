@@ -70,8 +70,8 @@ export function WhatIfResultBlocks({
   /** Offered only when there is a shortfall and something to sell. */
   onTryAssetSale?: () => void
   /**
-   * Replaces the standard shortfall line when selling could not close the gap
-   * either. The sheet computes it: only the client knows what the holdings add
+   * Why selling cannot close the gap either — rendered as the answer's FIRST
+   * line. The sheet computes it: only the client knows what the holdings add
    * up to, and "còn thiếu" with no way out reads as a dead end without it.
    */
   shortfallNote?: string
@@ -109,6 +109,22 @@ export function WhatIfResultBlocks({
       came from), so it is worth the seconds.
     */
     <RevealSequence className="s-card-gap flex flex-col" stepMs={1900}>
+      {/*
+        0 — The spend is out of reach even after selling everything.
+
+        Stated FIRST and outside the reveal's pacing: it is the one fact that
+        changes what the rest of the answer means, and the household asked for
+        it. Left to its place inside block 4 it arrived several seconds and a
+        scroll later, so a spend nothing could fund read as an ordinary answer
+        until they went looking. It reports the shortage; it never says what to
+        do about it.
+      */}
+      {shortfallNote ? (
+        <Panel>
+          <p className="t-body-sm text-alert-ink">{shortfallNote}</p>
+        </Panel>
+      ) : null}
+
       {/* 1 — How much is at stake, before any detail. Two counts, because a
           bill and a goal are different kinds of consequence and summing them
           into one number would flatten that. */}
@@ -170,7 +186,6 @@ export function WhatIfResultBlocks({
         liquidity={result.liquidity}
         appliedSale={result.assetSale}
         onTryAssetSale={onTryAssetSale}
-        shortfallNote={shortfallNote}
       />
 
       {/* 5 — The arithmetic underneath: balance before → after, and where it
@@ -229,18 +244,23 @@ export function WhatIfResultBlocks({
         {/* The other half of the sale: cash went up because THIS went down.
             The bars above only ever draw money, so without this row the asset
             side of the conversion is invisible. */}
-        {result.assetSale ? (
-          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2.5 border-t border-divider pt-3.5">
-            <span className="t-caption-sm text-ink3">
-              {t('whatif.cashflow.assetSold', { name: result.assetSale.name })}
-            </span>
-            <span className="money-number t-body-sm">
-              {formatVndShort(result.assetSale.assetValueBefore)}{' '}
-              <span className="text-ink3">→</span>{' '}
-              {formatVndShort(result.assetSale.assetValueAfter)}
-            </span>
-          </div>
-        ) : null}
+        {result.assetSale
+          ? result.assetSale.lines.map((line) => (
+              <div
+                key={line.assetId}
+                className="mt-4 flex flex-wrap items-baseline justify-between gap-2.5 border-t border-divider pt-3.5"
+              >
+                <span className="t-caption-sm text-ink3">
+                  {t('whatif.cashflow.assetSold', { name: line.name })}
+                </span>
+                <span className="money-number t-body-sm">
+                  {formatVndShort(line.assetValueBefore)}{' '}
+                  <span className="text-ink3">→</span>{' '}
+                  {formatVndShort(line.assetValueAfter)}
+                </span>
+              </div>
+            ))
+          : null}
 
         <div className="mt-4 flex flex-wrap items-baseline gap-2.5 border-t border-divider pt-3.5">
           <span className="t-caption-sm text-ink3">{t('whatif.cashflow.lowest')}</span>
@@ -461,23 +481,22 @@ function BillsBlock({ bills }: { bills: WhatIfAtRisk[] }) {
               <p className="truncate t-body-sm font-medium">{bill.name}</p>
               <p className="money-number mt-0.5 t-caption-sm text-ink3">{bill.date}</p>
             </div>
-            <div className="grid grid-cols-[1fr_auto] items-center gap-3.5">
-              <div className="flex items-baseline gap-1.5 whitespace-nowrap">
-                {/* The balance when it comes due — negative is never hidden,
-                    it is what put the item at risk. */}
-                <span className="money-number t-subhead text-alert-ink">
-                  {formatVndShort(bill.balanceAfter)}
-                </span>
-                <span className="money-number t-caption-sm text-ink3">
-                  {t('whatif.bills.need', { amount: formatVndShort(bill.amount) })}
-                </span>
-              </div>
-              <div className="whitespace-nowrap text-right">
-                <p className="money-number t-body-sm text-alert-ink">
-                  −{formatVndShort(bill.shortfall)}
-                </p>
-                <p className="t-caption-sm text-ink3">{t('whatif.bills.short')}</p>
-              </div>
+            {/*
+              What the household needs to know is whether this item can still be
+              paid — not the running balance behind it. A bare "−174,0 tr" was
+              the row's loudest element and read as the bill's own figure, so
+              the row now SAYS the money is not there, and names the gap.
+            */}
+            <div className="whitespace-nowrap text-right">
+              <p className="t-body-sm text-alert-ink">
+                {t('whatif.bills.cannotCover')}
+              </p>
+              <p className="money-number mt-0.5 t-caption-sm text-ink3">
+                {t('whatif.bills.shortOf', {
+                  short: formatVndShort(bill.shortfall),
+                  amount: formatVndShort(bill.amount),
+                })}
+              </p>
             </div>
           </>
         )}
@@ -674,7 +693,6 @@ function FundingSourceBlock({
   liquidity,
   appliedSale,
   onTryAssetSale,
-  shortfallNote,
 }: {
   spend: number
   fundingSource: WhatIfResult['fundingSource']
@@ -682,7 +700,6 @@ function FundingSourceBlock({
   liquidity?: WhatIfResult['liquidity']
   appliedSale?: WhatIfResult['assetSale']
   onTryAssetSale?: () => void
-  shortfallNote?: string
 }) {
   const { t } = useTranslation()
   const revealed = useRevealed()
@@ -741,13 +758,18 @@ function FundingSourceBlock({
         <div className="mb-4 rounded-control bg-accent-soft px-4 py-3">
           <p className="t-caption-sm text-ink3">{t('whatif.assetSale.appliedTitle')}</p>
           <div className="mt-1.5 space-y-1">
-            <div className="flex items-baseline justify-between gap-4">
-              <span className="truncate t-body-sm">{appliedSale.name}</span>
-              <span className="money-number shrink-0 t-body-sm">
-                {formatVndExact(appliedSale.assetValueBefore)} →{' '}
-                {formatVndExact(appliedSale.assetValueAfter)}
-              </span>
-            </div>
+            {appliedSale.lines.map((line) => (
+              <div
+                key={line.assetId}
+                className="flex items-baseline justify-between gap-4"
+              >
+                <span className="truncate t-body-sm">{line.name}</span>
+                <span className="money-number shrink-0 t-body-sm">
+                  {formatVndExact(line.assetValueBefore)} →{' '}
+                  {formatVndExact(line.assetValueAfter)}
+                </span>
+              </div>
+            ))}
             <div className="flex items-baseline justify-between gap-4">
               <span className="truncate t-body-sm text-ink2">
                 {t('whatif.assetSale.appliedCash')}
@@ -765,11 +787,12 @@ function FundingSourceBlock({
           says to take it. */}
       {liquidity && liquidity.shortfall > 0 ? (
         <div className="mb-4">
+          {/* The plain line: the reason selling cannot close it already led the
+              answer, so repeating it here would say the same thing twice. */}
           <p className="t-body-sm text-alert-ink">
-            {shortfallNote ??
-              t('whatif.shortfall.line', {
-                amount: formatVndShort(liquidity.shortfall),
-              })}
+            {t('whatif.shortfall.line', {
+              amount: formatVndShort(liquidity.shortfall),
+            })}
           </p>
           {onTryAssetSale ? (
             <Button

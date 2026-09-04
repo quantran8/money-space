@@ -85,9 +85,38 @@ the real sale form uses (moved to `asset-sale-form.ts` so the what-if hook can
 read it without importing `useEvents`). With no quote it falls back to the
 position's own average, which keeps a priceless holding sellable in a hypothesis.
 
+**Several holdings, one destination.** The step was single-asset at first, and
+that made it unfillable for the household it exists for: short 500tr against
+300tr of gold and 250tr of stocks, no single option closes the gap, yet
+`sellableTotal >= shortfall` opened the step anyway. So the draft is a LIST of
+lines (`assetSale.lines: {assetId, amount}[]`), each with its own asset and its
+own quantity/value field, and `Bán thêm tài sản khác` adds one. Each new line is
+estimated against what the earlier lines still leave open, not the whole
+shortfall — otherwise the second asset pre-fills to cover a gap the first has
+already closed. The same asset twice is refused on both sides: two lines each
+passing their own bound would sell 200% of one holding.
+
+The receiving wallet stays SHARED across the lines rather than per line. A
+household selling gold and stocks to pay for one thing banks the proceeds
+together, and asking twice would double the fields on a phone for a choice
+nobody makes differently.
+
 The proceeds land in a wallet the household names (`assetSale.toAssetId`),
-validated `usable_now` and different from the asset being sold — the same two
+validated `usable_now` and different from every asset being sold — the same two
 rules the real sale enforces.
+
+**A household with no wallet can still sell.** `receivingWalletOptions` filters
+on `canSettleCashflow`, so a household tracking only gold and stocks has an
+empty list — and used to hit a required picker with nothing in it, with no way
+forward. The list then carries one option instead: `UNASSIGNED_WALLET_ID`, "tiền
+mặt chưa gửi vào tài khoản". The backend treats it as a `usable_now` source of
+its own (`unassignedProceeds`) rather than crediting an account, which is the
+truth of an imagined sale: usable money that no goal is standing in front of.
+
+It is offered **only** when there is no real wallet, and the backend rejects it
+whenever the household holds one. Otherwise it becomes a way to park imagined
+money outside the reach of the goals sitting in front of a real account — which
+is exactly the fact point 4 above exists to preserve.
 
 Still no fee and no sale date: nobody knows the brokerage fee while exploring,
 and a sale dated after the spend cannot fund it. `real_estate` is hidden because

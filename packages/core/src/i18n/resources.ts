@@ -1120,6 +1120,10 @@ export const resources = {
           label: 'Ghi chú',
           labelPlaceholder: 'Ví dụ: đổi laptop',
           amountRequired: 'Nhập số tiền lớn hơn 0.',
+          // Nói ngay tại ô nhập: chạy mô phỏng rồi mới báo là tốn thêm một
+          // bước cho một sự thật hai con số đã đủ trả lời.
+          beyondEverything:
+            'Vượt quá tất cả tài sản đang có ({{total}}) — còn thiếu {{amount}}.',
         },
         // Câu hỏi thu lại thành một dòng khi đã có kết quả — chỗ của phần thân
         // lúc đó là câu trả lời, không phải mấy ô vừa điền xong.
@@ -1153,8 +1157,10 @@ export const resources = {
           affected: 'bị ảnh hưởng',
           shortTotal: 'thiếu tổng',
           shortMax: 'thiếu nhiều nhất',
-          need: '/ cần {{amount}}',
-          short: 'thiếu',
+          // Nói thẳng khoản này không trả nổi, thay vì bày số dư âm để người
+          // đọc tự suy ra — và tự đọc nhầm nó thành số tiền của hoá đơn.
+          cannotCover: 'Không đủ tiền chi trả',
+          shortOf: 'thiếu {{short}} / {{amount}}',
         },
         goals: {
           title: 'Mục tiêu',
@@ -1246,6 +1252,15 @@ export const resources = {
           remaining: '{{name}} còn lại',
           coversShortfall: 'Đủ bù khoản còn thiếu.',
           doesNotCoverShortfall: 'Chưa đủ bù khoản còn thiếu.',
+          stillShort: 'Còn thiếu {{amount}} nữa. Có thể bán thêm tài sản khác.',
+          addLine: 'Bán thêm tài sản khác',
+          removeLine: 'Bỏ tài sản thứ {{index}}',
+          lineLabel: 'Tài sản {{index}}',
+          assetDuplicate: 'Tài sản này đã có ở dòng trên.',
+          lineRemaining: '{{name}} còn {{remaining}} · thu về {{raised}}',
+          // Nhà chưa có ví tiền mặt/ngân hàng nào: tiền bán ra vẫn dùng được,
+          // chỉ là chưa nằm ở tài khoản nào.
+          unassignedWallet: 'Tiền mặt chưa gửi vào tài khoản',
           holdingValue: 'Đang có {{value}}',
           goalClaimed: 'Mục tiêu đang giữ {{amount}}',
           optionValue: '{{name}} · {{value}}',
@@ -4235,6 +4250,8 @@ export const resources = {
           label: 'Note',
           labelPlaceholder: 'e.g. new laptop',
           amountRequired: 'Enter an amount greater than 0.',
+          beyondEverything:
+            'More than everything held ({{total}}) — {{amount}} short.',
         },
         summary: '{{context}} · {{amount}} · {{date}}',
         summaryNoLabel: 'A trial spend',
@@ -4264,8 +4281,8 @@ export const resources = {
           affected: 'affected',
           shortTotal: 'short in total',
           shortMax: 'largest shortfall',
-          need: '/ needs {{amount}}',
-          short: 'short',
+          cannotCover: 'Not enough to pay this',
+          shortOf: '{{short}} short of {{amount}}',
         },
         goals: {
           title: 'Goals',
@@ -4347,6 +4364,13 @@ export const resources = {
           remaining: '{{name}} remaining',
           coversShortfall: 'Enough to cover the shortfall.',
           doesNotCoverShortfall: 'Not enough to cover the shortfall.',
+          stillShort: 'Still {{amount}} short. You can sell another asset too.',
+          addLine: 'Sell another asset',
+          removeLine: 'Remove asset {{index}}',
+          lineLabel: 'Asset {{index}}',
+          assetDuplicate: 'This asset is already on a line above.',
+          lineRemaining: '{{name}} keeps {{remaining}} · raises {{raised}}',
+          unassignedWallet: 'Cash not yet in an account',
           holdingValue: 'Holding {{value}}',
           goalClaimed: 'Goals hold {{amount}}',
           optionValue: '{{name}} · {{value}}',

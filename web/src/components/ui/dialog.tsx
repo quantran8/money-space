@@ -77,7 +77,10 @@ const DialogContent = React.forwardRef<
       {children}
       <DialogPrimitive.Close
         className={cn(
-          'absolute right-5 top-5 rounded-full p-1 text-ink3 opacity-70 transition hover:bg-canvas hover:opacity-100',
+          // Centred rather than padded: the hover circle grows with the button
+          // (a sheet may size it up), and only flex centring keeps the glyph in
+          // the middle of it at every size.
+          'absolute right-5 top-5 flex items-center justify-center rounded-full p-1 text-ink3 opacity-70 transition hover:bg-canvas hover:opacity-100',
           closeButtonClassName,
         )}
         aria-label="Close"

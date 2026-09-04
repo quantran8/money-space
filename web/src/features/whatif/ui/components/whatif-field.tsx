@@ -19,11 +19,14 @@ export function WhatIfField({
   htmlFor,
   children,
   trailing,
+  error,
 }: {
   label: string
   htmlFor?: string
   children: ReactNode
   trailing?: ReactNode
+  /** Shown under the box, and reddens its border. */
+  error?: string
 }) {
   return (
     <div>
@@ -36,16 +39,21 @@ export function WhatIfField({
       */}
       <div
         className={cn(
-          'mt-2 flex h-11 items-center gap-3 rounded-control border border-committed bg-card px-4',
+          'mt-2 flex h-11 items-center gap-3 rounded-control border bg-card px-4',
           'transition-[border-color,box-shadow] duration-150',
-          // The same focus signal the `Input` primitive draws, so this field is
-          // not a second opinion about what a focused control looks like.
-          'focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
+          error
+            ? 'border-alert-ink shadow-[0_0_0_3px_var(--alert-tint)]'
+            : // The same focus signal the `Input` primitive draws, so this field
+              // is not a second opinion about what a focused control looks like.
+              'border-committed focus-within:border-data-primary focus-within:shadow-[0_0_0_3px_rgba(115,164,215,0.16)]',
         )}
       >
         {children}
         {trailing}
       </div>
+      {error ? (
+        <p className="mt-2 px-1 t-body-sm font-medium text-alert-ink">{error}</p>
+      ) : null}
     </div>
   )
 }
