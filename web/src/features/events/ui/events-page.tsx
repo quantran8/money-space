@@ -2,6 +2,7 @@ import { RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
+import { AppearGroup, AppearItem } from '@/components/ui/motion'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
@@ -65,8 +66,6 @@ export function EventsPage() {
     openEditEvent,
     handleFormOpenChange,
     onSubmitActual,
-    toggleEventAttention,
-    duplicateEvent,
     handleDeleteEvent,
   } = useEventsPage()
   // What deleting this event would do to its wallets — read while the dialog is
@@ -98,38 +97,42 @@ export function EventsPage() {
       {/* The summary and the list are two readings of the SAME month, so they
           sit at card-gap rather than section-gap — a wider gap would read as
           two unrelated sections and invite the month to be named twice. */}
-      <div className="s-card-gap flex flex-col">
-        <EventsSummaryStrip summary={periodSummary} />
+      <AppearGroup className="s-card-gap flex flex-col">
+        <AppearItem>
+          <EventsSummaryStrip summary={periodSummary} />
+        </AppearItem>
 
         {/* Between the month's totals and the rows that make them up: it
             breaks the same month down one level, which is the step between
             "what did the month come to" and "what was each change". */}
-        <EventsCategoryCard
-          spending={spendingByCategory}
-          income={incomeByCategory}
-          byMember={byMember}
-          isLoading={isLoading}
-        />
+        <AppearItem>
+          <EventsCategoryCard
+            spending={spendingByCategory}
+            income={incomeByCategory}
+            byMember={byMember}
+            isLoading={isLoading}
+          />
+        </AppearItem>
 
-        <EventsTimelineCard
-          tab={tab}
-          onTabChange={setTab}
-          groupedRecords={groupedRecords}
-          overdrafts={overdrafts}
-          categoryVisualById={categoryVisualById}
-          memberOptions={memberOptions}
-          selectedMonth={selectedMonth}
-          selectedMember={selectedMember}
-          onMemberChange={setSelectedMember}
-          query={query}
-          onQueryChange={setQuery}
-          isLoading={isLoading}
-          onEditEvent={openEditEvent}
-          onDuplicateEvent={duplicateEvent}
-          onToggleEventAttention={toggleEventAttention}
-          onDeleteEvent={setDeleteEventId}
-        />
-      </div>
+        <AppearItem>
+          <EventsTimelineCard
+            tab={tab}
+            onTabChange={setTab}
+            groupedRecords={groupedRecords}
+            overdrafts={overdrafts}
+            categoryVisualById={categoryVisualById}
+            memberOptions={memberOptions}
+            selectedMonth={selectedMonth}
+            selectedMember={selectedMember}
+            onMemberChange={setSelectedMember}
+            query={query}
+            onQueryChange={setQuery}
+            isLoading={isLoading}
+            onEditEvent={openEditEvent}
+            onDeleteEvent={setDeleteEventId}
+          />
+        </AppearItem>
+      </AppearGroup>
 
       <Button className="w-full sm:hidden" onClick={openCreate}>
         <RefreshCw className="size-4" strokeWidth={1.75} />

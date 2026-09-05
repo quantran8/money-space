@@ -104,9 +104,8 @@ export function useAssets() {
     }),
     deleteAsset: useMutation({
       // `cascade` is the household's confirmation, taken in the delete dialog
-      // after `useAssetDeleteImpact` has told them what the asset still backs.
-      // Never defaulted on: the links it clears are what a goal's progress is
-      // made of.
+      // after it has stated what a delete can take with it. Never defaulted on:
+      // the links it clears are what a goal's progress is made of.
       mutationFn: ({ assetId, cascade }: { assetId: string; cascade?: boolean }) =>
         deleteAsset(activeHouseholdId!, assetId, cascade),
       onSuccess: invalidate,

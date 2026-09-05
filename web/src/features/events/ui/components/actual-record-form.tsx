@@ -36,6 +36,8 @@ import type {
 } from '@money-space/core/features/events/model/events-form'
 import { cn } from '@money-space/core/shared/lib/utils'
 
+import { Collapse } from '@/components/ui/motion'
+
 type Option = { value: string; label: string }
 
 type ActualRecordFormProps = {
@@ -212,37 +214,35 @@ export function ActualRecordForm({
           {showMoreDetails ? t('events.form.less') : t('events.form.more')}
         </button>
 
-        {showMoreDetails ? (
-          <div className="mt-4 space-y-4">
-            <Field
-              label={t('events.form.shortDate')}
-              error={errors.eventDate?.message}
-            >
-              <div className={cn(fieldShell, errors.eventDate && 'border-alert-ink')}>
-                <Controller
-                  control={control}
-                  name="eventDate"
-                  render={({ field }) => (
-                    <DatePicker
-                      value={field.value}
-                      onChange={field.onChange}
-                      className={cn(fieldControlReset, 'justify-start [&_svg]:hidden')}
-                    />
-                  )}
-                />
-              </div>
-            </Field>
+        <Collapse open={showMoreDetails} className="mt-4 space-y-4">
+          <Field
+            label={t('events.form.shortDate')}
+            error={errors.eventDate?.message}
+          >
+            <div className={cn(fieldShell, errors.eventDate && 'border-alert-ink')}>
+              <Controller
+                control={control}
+                name="eventDate"
+                render={({ field }) => (
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    className={cn(fieldControlReset, 'justify-start [&_svg]:hidden')}
+                  />
+                )}
+              />
+            </div>
+          </Field>
 
 
-            <TextareaField
-              id="event-note"
-              label={t('events.form.note')}
-              placeholder={t('events.form.shortNotePlaceholder')}
-              error={errors.note?.message}
-              {...register('note')}
-            />
-          </div>
-        ) : null}
+          <TextareaField
+            id="event-note"
+            label={t('events.form.note')}
+            placeholder={t('events.form.shortNotePlaceholder')}
+            error={errors.note?.message}
+            {...register('note')}
+          />
+        </Collapse>
       </div>
 
       {/* No divider: spacing separates the action row (§2.2, §2.4). */}

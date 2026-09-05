@@ -10,6 +10,8 @@ import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use
 import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
+import { Collapse } from '@/components/ui/motion'
+
 /**
  * What this outflow takes from the goals saving into the chosen wallet.
  *
@@ -216,7 +218,7 @@ export function GoalImpactNotice({
       </div>
 
       {/* Which goal pays what, when the wallet feeds more than one. */}
-      {showPerGoal ? (
+      <Collapse open={showPerGoal}>
         <ul className="mt-5 space-y-1 border-t border-divider pt-4">
           {impact.goals.map((goal) => (
             <li
@@ -240,7 +242,7 @@ export function GoalImpactNotice({
             </li>
           ))}
         </ul>
-      ) : null}
+      </Collapse>
 
       {/* The sentence that explains the whole thing, sized to be read. */}
       <p className="mt-4 t-caption leading-5 text-ink2">

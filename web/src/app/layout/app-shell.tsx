@@ -416,7 +416,16 @@ export function AppShell() {
     <SidebarProvider defaultOpen={false} className="shell-backdrop h-dvh overflow-hidden">
       <AppSidebar />
 
-      <main ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto bg-canvas">
+      {/* `scrollbar-gutter: stable` reserves the scrollbar's track whether or
+          not it is showing. Without it a short page paints no scrollbar and a
+          tall one does, so the content box changes width between routes and the
+          centred column under it shifts sideways — the layout jumping on every
+          tab change. Reserving the gutter costs the width permanently and in
+          exchange nothing moves. */}
+      <main
+        ref={scrollRef}
+        className="min-w-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] bg-canvas"
+      >
         {/* Mobile header: WHO is signed in, and the way to settings.
             The mark and wordmark used to sit here. On a phone that is a row
             spent telling the reader which app they just opened — the avatar

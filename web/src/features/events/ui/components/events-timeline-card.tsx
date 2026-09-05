@@ -56,8 +56,6 @@ type EventsTimelineCardProps = {
     { label: string; iconKey: string | null; iconColor: string | null }
   >
   onEditEvent: (id: string) => void
-  onDuplicateEvent: (id: string) => void
-  onToggleEventAttention: (id: string) => void
   onDeleteEvent: (id: string) => void
 }
 
@@ -83,8 +81,6 @@ export function EventsTimelineCard({
   overdrafts = NO_OVERDRAFTS,
   categoryVisualById = NO_CATEGORY_VISUALS,
   onEditEvent,
-  onDuplicateEvent,
-  onToggleEventAttention,
   onDeleteEvent,
 }: EventsTimelineCardProps) {
   const { t, i18n } = useTranslation()
@@ -127,8 +123,6 @@ export function EventsTimelineCard({
 
   const recordProps = {
     onEditEvent,
-    onDuplicateEvent,
-    onToggleEventAttention,
     onDeleteEvent,
   }
 

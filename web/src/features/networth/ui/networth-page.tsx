@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
+import { SwitchPane } from '@/components/ui/motion'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { useAssetDeleteImpact } from '@money-space/core/features/assets/hooks/use-asset-delete-impact'
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
 import { AssetPurchaseDialog } from '@/features/assets/ui/components/asset-purchase-dialog'
@@ -90,7 +90,6 @@ export function NetWorthPage() {
   // Fetched as soon as the delete dialog has a target, so the confirmation can
   // say what the delete would detach rather than the household meeting the
   // server's refusal as a bare error.
-  const deleteImpact = useAssetDeleteImpact(deleteId)
 
   // "Mua tài sản" on the events page hands over to here. It arrives as a
   // purchase, so the form opens already set to "vừa mua" rather than making the
@@ -139,45 +138,47 @@ export function NetWorthPage() {
         asOf={asOf || AS_OF}
       />
 
-      {onAssets ? (
-        <AssetsListSection
-          assets={filteredAssets}
-          isLoading={isLoading}
-          asOf={asOf || AS_OF}
-          total={total}
-          query={query}
-          onQueryChange={setQuery}
-          liquidityFilter={liquidityFilter}
-          onLiquidityFilterChange={setLiquidityFilter}
-          members={members}
-          onOpen={(assetId) => navigate(`/assets/${assetId}`)}
-          onEdit={openEdit}
-          onSell={openSale}
-          onBuyMore={openPurchase}
-          onDelete={setDeleteId}
-        />
-      ) : (
-        <>
-          <DebtsSummaryStrip
-            summary={debtsPage.summary}
-            debts={debtsPage.debts}
-            payments={debtsPage.payments}
+      <SwitchPane activeKey={onAssets ? 'assets' : 'debts'} className="space-y-4">
+        {onAssets ? (
+          <AssetsListSection
+            assets={filteredAssets}
+            isLoading={isLoading}
+            asOf={asOf || AS_OF}
+            total={total}
+            query={query}
+            onQueryChange={setQuery}
+            liquidityFilter={liquidityFilter}
+            onLiquidityFilterChange={setLiquidityFilter}
+            members={members}
+            onOpen={(assetId) => navigate(`/assets/${assetId}`)}
+            onEdit={openEdit}
+            onSell={openSale}
+            onBuyMore={openPurchase}
+            onDelete={setDeleteId}
           />
+        ) : (
+          <>
+            <DebtsSummaryStrip
+              summary={debtsPage.summary}
+              debts={debtsPage.debts}
+              payments={debtsPage.payments}
+            />
 
-          <DebtsListSection
-            debts={debtsPage.debts}
-            members={debtsPage.members}
-            assets={debtsPage.assets}
-            payments={debtsPage.payments}
-            isLoading={debtsPage.isLoading}
-            isUpdating={debtsPage.isUpdating}
-            onEdit={debtsPage.openEdit}
-            onMarkPaidOff={debtsPage.markPaidOff}
-            onViewDetail={debtsPage.openDetail}
-            onDelete={debtsPage.requestDelete}
-          />
-        </>
-      )}
+            <DebtsListSection
+              debts={debtsPage.debts}
+              members={debtsPage.members}
+              assets={debtsPage.assets}
+              payments={debtsPage.payments}
+              isLoading={debtsPage.isLoading}
+              isUpdating={debtsPage.isUpdating}
+              onEdit={debtsPage.openEdit}
+              onMarkPaidOff={debtsPage.markPaidOff}
+              onViewDetail={debtsPage.openDetail}
+              onDelete={debtsPage.requestDelete}
+            />
+          </>
+        )}
+      </SwitchPane>
 
       <AssetFormDialog
         key={formOpen ? (isEditing ? 'edit-open' : 'create-open') : 'closed'}
@@ -231,47 +232,20 @@ export function NetWorthPage() {
               deletingAsset ? (computeCurrentValue(deletingAsset, asOf || AS_OF) ?? 0) : 0,
             ),
           }),
-          // What else goes with it. Nothing cascades in the database — assets
-          // are soft-deleted — so these links would otherwise be left pointing
-          // at a row nothing returns, which is what used to leave goals showing
-          // a wallet the household had already removed. These are DETACHED and
-          // survive; the line below covers what is destroyed outright.
-          deleteImpact.impact && !deleteImpact.isClear
-            ? t('assets.form.removeAlsoDetaches', {
-                goals: deleteImpact.impact.goals.map((goal) => goal.name).join(', '),
-                goalCount: deleteImpact.impact.goals.length,
-                eventCount: deleteImpact.impact.cashflowEvents.length,
-                debtCount: deleteImpact.impact.debts.length,
-              })
-            : null,
-          // The one irreversible line, so it comes before the detach notice: the
-          // movements recorded through this wallet are DESTROYED, not detached,
-          // and past months' thu/chi move with them.
-          deleteImpact.impact && deleteImpact.impact.moneyEventCount > 0
-            ? t('assets.form.removeDeletesMoneyEvents', {
-                count: deleteImpact.impact.moneyEventCount,
-              })
-            : null,
-          // Stated separately and last: a goal losing its last wallet still
-          // exists and still has a target, but has nothing left to be saved
-          // into — the one consequence the household is most likely to regret.
-          deleteImpact.impact && deleteImpact.impact.goalsLosingLastWallet.length > 0
-            ? t('assets.form.removeLeavesGoalsWithoutWallet', {
-                goals: deleteImpact.impact.goalsLosingLastWallet
-                  .map((goal) => goal.name)
-                  .join(', '),
-              })
-            : null,
-        ]
-          .filter(Boolean)
-          .join('\n\n')}
+          // Stated for every asset rather than counted per asset. Reading the
+          // exact links back first cost a round-trip on every delete dialog,
+          // and the household's decision is the same either way: this is what
+          // a delete can take with it.
+          t('assets.form.removeImpactNotice'),
+        ].join('\n\n')}
         confirmLabel={t('assets.form.removeConfirm')}
-        confirmDisabled={isDeleting || deleteImpact.isLoading}
+        confirmDisabled={isDeleting}
         confirmLoadingLabel={t('assets.form.removing')}
         onConfirm={() =>
-          // `cascade` is exactly what this dialog was for: the household has now
-          // been shown what the delete detaches and has said yes to it.
-          deleteId ? handleDeleteAsset(deleteId, !deleteImpact.isClear) : undefined
+          // Always cascading. The server refuses a delete that still has links
+          // unless it is told the household confirmed, and this dialog IS that
+          // confirmation — it states what a delete can take before asking.
+          deleteId ? handleDeleteAsset(deleteId, true) : undefined
         }
       />
 

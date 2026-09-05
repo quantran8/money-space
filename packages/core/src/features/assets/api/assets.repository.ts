@@ -2,7 +2,6 @@ import { apiRequest } from '#/shared/api/http'
 import type {
   Asset,
   AssetClass,
-  AssetDeleteImpact,
   AssetSnapshotPoint,
   MarketQuote,
 } from '#/features/assets/model/assets.types'
@@ -148,20 +147,6 @@ export function purchaseIntoPosition(
     method: 'POST',
     body: JSON.stringify(payload),
   })
-}
-
-/**
- * What deleting this asset would detach — goals whose claims would go, events
- * and debts that would lose their wallet pointer.
- *
- * Read BEFORE the delete, so the confirmation can say what it costs. The server
- * refuses a delete while any of these exist unless `cascade` is passed, and this
- * is where the household gets what it needs to decide.
- */
-export function assetDeleteImpact(householdId: string, assetId: string) {
-  return apiRequest<AssetDeleteImpact>(
-    `/households/${householdId}/assets/${assetId}/delete-impact`,
-  )
 }
 
 export function deleteAsset(householdId: string, assetId: string, cascade = false) {

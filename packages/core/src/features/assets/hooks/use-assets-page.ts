@@ -210,8 +210,8 @@ export function useAssetsPage() {
   /**
    * `cascade` carries the household's confirmation through to the server, which
    * refuses the delete without it while the asset still backs a goal, an event
-   * or a debt. The dialog asks for it only after `useAssetDeleteImpact` has
-   * said what those are.
+   * or a debt. The delete dialog states what a delete can take with it in
+   * general terms and asks; the answer is what arrives here.
    */
   async function handleDeleteAsset(assetId: string, cascade = false) {
     try {

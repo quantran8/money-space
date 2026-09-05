@@ -597,12 +597,8 @@ export const resources = {
           // §22.11 — the right verb, and the consequence stated in money.
           removeTitle: 'Gỡ nguồn tiền này?',
           removeBody: '{{amount}} sẽ không còn được tính vào bức tranh tài chính của gia đình.',
-          removeAlsoDetaches:
-            'Tài sản này đang gắn với {{goalCount}} mục tiêu ({{goals}}), {{eventCount}} khoản dự chi và {{debtCount}} khoản nợ. Xoá sẽ gỡ các liên kết đó — mục tiêu, khoản dự chi và khoản nợ vẫn còn, nhưng không còn trỏ tới tài sản này nữa.',
-          removeDeletesMoneyEvents:
-            'Xoá cũng sẽ xoá luôn {{count}} giao dịch đã ghi qua nguồn tiền này. Các giao dịch đó biến mất khỏi lịch sử, nên tổng thu chi của những tháng đã qua sẽ thay đổi theo. Không thể hoàn tác.',
-          removeLeavesGoalsWithoutWallet:
-            'Sau khi xoá, {{goals}} sẽ không còn ví nào để góp tiền mỗi tháng. Mục tiêu vẫn còn nhưng phần theo dõi tiến độ hằng tháng sẽ trống cho tới khi bạn thêm ví khác.',
+          removeImpactNotice:
+            'Nếu nguồn tiền này đang gắn với mục tiêu, khoản dự chi hay khoản nợ, các liên kết đó sẽ được gỡ. Những giao dịch đã ghi qua nguồn tiền này cũng bị xoá, nên tổng thu chi của các tháng đã qua sẽ thay đổi theo. Không thể hoàn tác.',
           removeConfirm: 'Gỡ nguồn tiền',
           removing: 'Đang gỡ...',
           incomplete: 'Còn thiếu thông tin để lưu khoản này.',
@@ -3735,12 +3731,8 @@ export const resources = {
           changeFlexibleOff: 'This one will no longer count towards flexible money.',
           removeTitle: 'Remove this money source?',
           removeBody: "{{amount}} will no longer count towards your household's picture.",
-          removeAlsoDetaches:
-            'This asset backs {{goalCount}} goal(s) ({{goals}}), {{eventCount}} scheduled event(s) and {{debtCount}} debt(s). Deleting it detaches those links — the goals, scheduled events and debts stay, but they will no longer point at this asset.',
-          removeDeletesMoneyEvents:
-            'Deleting also deletes the {{count}} movement(s) recorded through this money source. They leave your history for good, so past months\' totals will change with them. This cannot be undone.',
-          removeLeavesGoalsWithoutWallet:
-            'After this, {{goals}} will have no wallet left to be saved into each month. The goal stays, but its monthly pace panel will be empty until you add another wallet.',
+          removeImpactNotice:
+            "If this money source backs any goals, scheduled events or debts, those links will be detached. Movements recorded through it are deleted too, so past months' totals will change with them. This cannot be undone.",
           removeConfirm: 'Remove',
           removing: 'Removing...',
           incomplete: 'Some details are still missing.',

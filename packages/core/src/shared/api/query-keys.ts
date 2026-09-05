@@ -54,15 +54,6 @@ export const queryKeys = {
       excludeEventId ?? null,
       asOfDate ?? null,
     ] as const,
-  /**
-   * What deleting one asset would detach.
-   *
-   * Under the goals prefix for the same reason as `assetGoalUsage`: most of the
-   * answer is goal claims, which change on allocation writes. Event and debt
-   * links change on their own writes, and those invalidate the whole household.
-   */
-  assetDeleteImpact: (householdId: string, assetId: string) =>
-    ['households', householdId, 'goals', 'asset-delete-impact', assetId] as const,
   /** One goal's month-by-month history, frozen into snapshots. */
   goalMonthlyProgress: (householdId: string, goalId: string) =>
     ['households', householdId, 'goals', goalId, 'monthly-progress'] as const,

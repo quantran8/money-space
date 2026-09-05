@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { useCashflowForm } from '@money-space/core/features/cashflow/hooks/use-cashflow-form'
 import { useCategoryVisuals } from '@money-space/core/features/events/hooks/use-category-visuals'
+import { AppearGroup, AppearItem } from '@/components/ui/motion'
 import { CashflowEventFormDialog } from '@/features/cashflow/ui/components/cashflow-event-form-dialog'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
 import { useDashboardPage } from '@money-space/core/features/dashboard/hooks/use-dashboard-page'
@@ -100,17 +101,19 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <AppearGroup className="space-y-3">
       {/* No hero card. It carried the household name and "Tình hình hiện tại"
           over a coverage line that §12.1 already states beside the figure it
           qualifies — a full-width blue band to say what the first card says
           better, and it pushed the one number the page exists for below the
           fold. The page now opens on the answer. */}
-      <FinancialPictureSection
-        flexibleMoney={flexibleMoney}
-        freshness={freshness}
-        onQuickUpdate={handleQuickUpdate}
-      />
+      <AppearItem>
+        <FinancialPictureSection
+          flexibleMoney={flexibleMoney}
+          freshness={freshness}
+          onQuickUpdate={handleQuickUpdate}
+        />
+      </AppearItem>
 
       {/* Second, and above the forecast that already counts these: the only
           thing on Home waiting on a person, and every figure in §12.2 is
@@ -121,32 +124,36 @@ export function DashboardPage() {
           one is a call to act, and an empty "nothing is overdue" card would be
           a permanent reminder of a problem nobody has. */}
       {forecast ? (
-        <OverdueSection
-          overdue={buildOverdue(forecast, cashflowEvents)}
-          pendingId={completeCashflowEvent.isPending ? completing?.eventId : null}
-          onComplete={(eventId, occurrenceDate) => {
-            const source = cashflowEvents.find((event) => event.id === eventId)
-            if (!source) return
-            setCompleting({
-              eventId,
-              occurrenceDate,
-              name: source.name,
-              amount: source.amount,
-              direction: source.direction,
-              settlementAssetId: source.settlementAssetId,
-            })
-          }}
-          onEdit={cashflowForm.openEdit}
-          onDelete={cashflowForm.handleDelete}
-        />
+        <AppearItem>
+          <OverdueSection
+            overdue={buildOverdue(forecast, cashflowEvents)}
+            pendingId={completeCashflowEvent.isPending ? completing?.eventId : null}
+            onComplete={(eventId, occurrenceDate) => {
+              const source = cashflowEvents.find((event) => event.id === eventId)
+              if (!source) return
+              setCompleting({
+                eventId,
+                occurrenceDate,
+                name: source.name,
+                amount: source.amount,
+                direction: source.direction,
+                settlementAssetId: source.settlementAssetId,
+              })
+            }}
+            onEdit={cashflowForm.openEdit}
+            onDelete={cashflowForm.handleDelete}
+          />
+        </AppearItem>
       ) : null}
 
-      <UpcomingSection forecast={forecast} categoryVisualById={categoryVisualById} />
+      <AppearItem>
+        <UpcomingSection forecast={forecast} categoryVisualById={categoryVisualById} />
+      </AppearItem>
 
       {/* Spending and goals share one row: the month that happened beside the
           money already pointed somewhere. Both are narrower than a full-width
           section needs, and neither is the page's primary answer. */}
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,.82fr)_minmax(0,1.18fr)] xl:items-stretch">
+      <AppearItem className="grid gap-3 xl:grid-cols-[minmax(0,.82fr)_minmax(0,1.18fr)] xl:items-stretch">
         <SpendingSection
           summary={eventsSummary}
           recentEvents={recentEvents}
@@ -159,12 +166,14 @@ export function DashboardPage() {
           goalCount={goals.length}
           earmarkedForGoals={earmarkedForGoals}
         />
-      </div>
+      </AppearItem>
 
       {/* Full width, and last: this is a table of where money sits, not an
           answer to today's question — the ranking only reads as a comparison
           when every bar has the same full width to run in (§12.4). */}
-      <MoneySourcesSection map={moneyLocation} holderGroups={holderGroups} />
+      <AppearItem>
+        <MoneySourcesSection map={moneyLocation} holderGroups={holderGroups} />
+      </AppearItem>
 
       {completing ? (
         <CompleteCashflowDialog
@@ -202,6 +211,6 @@ export function DashboardPage() {
         isSubmitting={cashflowForm.isSubmitting}
         onSubmit={cashflowForm.submit}
       />
-    </div>
+    </AppearGroup>
   )
 }

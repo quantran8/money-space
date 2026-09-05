@@ -39,8 +39,6 @@ type RecordCardProps = {
    */
   overdraftBalance?: number
   onEditEvent: (id: string) => void
-  onDuplicateEvent: (id: string) => void
-  onToggleEventAttention: (id: string) => void
   onDeleteEvent: (id: string) => void
 }
 
@@ -49,8 +47,6 @@ export function RecordCard({
   categoryVisual,
   overdraftBalance,
   onEditEvent,
-  onDuplicateEvent,
-  onToggleEventAttention,
   onDeleteEvent,
 }: RecordCardProps) {
   const { t } = useTranslation()
@@ -143,8 +139,6 @@ export function RecordCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {record.canEdit !== false ? <DropdownMenuItem onSelect={() => onEditEvent(record.id)}>{t('common.edit')}</DropdownMenuItem> : null}
-            <DropdownMenuItem onSelect={() => onDuplicateEvent(record.id)}>{t('events.redesign.actions.duplicate')}</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onToggleEventAttention(record.id)}>{t('events.redesign.actions.attention')}</DropdownMenuItem>
             <DropdownMenuItem className="text-alert-ink focus:text-alert-ink" onSelect={() => onDeleteEvent(record.id)}>{t('common.delete')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
