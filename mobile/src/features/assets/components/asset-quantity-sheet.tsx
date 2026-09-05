@@ -1,6 +1,9 @@
 import { Text, View } from 'react-native'
-import { Controller, type UseFormReturn } from 'react-hook-form'
+import { Controller, useWatch, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
+import { buildPurchaseSummary } from '@money-space/core/features/assets/model/asset-quantity-form'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 
 import { BottomSheet, Button, DecimalInput, Field, MoneyInput, Select } from '@/components/ui'
 import type {
@@ -128,6 +131,13 @@ export function AssetQuantitySheet({
                 </Field>
               )}
             />
+
+            <PurchaseSummary
+              control={purchaseControl}
+              asset={asset}
+              currentQuantity={currentQuantity}
+              unit={unit}
+            />
           </>
         ) : (
           <>
@@ -155,5 +165,79 @@ export function AssetQuantitySheet({
         )}
       </View>
     </BottomSheet>
+  )
+}
+
+/**
+ * What the household is about to spend, and what the position looks like after.
+ *
+ * Mobile had no purchase summary at all: a purchase was committed without the
+ * total or the new cost basis ever being shown. Both matter — the total is the
+ * money actually leaving a wallet, and the re-averaged basis is what every
+ * future gain or loss on this holding is measured against.
+ *
+ * Inline rows under a divider rather than a nested card (§8 — nothing floats):
+ * the answer belongs to the fields above it, so it shares their surface. The
+ * arithmetic is core's, so this and the web dialog cannot drift apart.
+ */
+function PurchaseSummary({
+  control,
+  asset,
+  currentQuantity,
+  unit,
+}: {
+  control: UseFormReturn<AssetPurchaseForm>['control']
+  asset: Asset | null
+  currentQuantity: number
+  unit: string
+}) {
+  const { t } = useTranslation()
+  const rawQuantity = useWatch({ control, name: 'quantity' })
+  const rawUnitPrice = useWatch({ control, name: 'unitPrice' })
+
+  const summary = buildPurchaseSummary({
+    rawQuantity: rawQuantity ?? '',
+    rawUnitPrice: rawUnitPrice ?? '',
+    currentQuantity,
+    heldCostBasis: asset?.marketPosition?.purchasePrice ?? 0,
+  })
+
+  // Nothing until both numbers are real — a total of "0 đ" mid-typing states
+  // something false.
+  if (!asset || !summary) return null
+
+  return (
+    <View className="border-t border-divider pt-4" accessibilityLiveRegion="polite">
+      <SummaryRow
+        label={t('assets.purchase.total')}
+        value={formatVndExact(summary.total)}
+        lead
+      />
+      <SummaryRow
+        label={t('assets.purchase.afterPurchase')}
+        value={`${summary.nextQuantity} ${unit}`.trim()}
+      />
+      <SummaryRow
+        label={t('assets.purchase.estimatedCost')}
+        value={formatVndExact(summary.nextCostBasis)}
+      />
+
+      <Text className="mt-3 t-caption text-ink3">{t('assets.purchase.costBasisHint')}</Text>
+    </View>
+  )
+}
+
+/** One label/value line of the summary. `lead` is the figure being agreed to. */
+function SummaryRow({ label, value, lead = false }: { label: string; value: string; lead?: boolean }) {
+  return (
+    <View className={lead ? 'flex-row items-baseline justify-between gap-5' : 'mt-3 flex-row items-baseline justify-between gap-5'}>
+      <Text className="t-body-sm text-ink2">{label}</Text>
+      <Text
+        className={lead ? 't-subtitle text-ink' : 't-body-sm font-medium text-ink'}
+        style={{ fontVariant: ['tabular-nums'] }}
+      >
+        {value}
+      </Text>
+    </View>
   )
 }

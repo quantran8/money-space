@@ -128,7 +128,8 @@ export function SettingsPage() {
 
         <DataCard />
 
-        {/* Above the danger card, not below it: signing out is the ordinary way
+        {/* Mobile only — above `lg` the sidebar's account menu holds sign-out.
+            Above the danger card, not below it: signing out is the ordinary way
             to leave, and it should be reachable without scrolling past the one
             action that cannot be undone. */}
         <SignOutCard />

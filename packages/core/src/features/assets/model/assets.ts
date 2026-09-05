@@ -44,7 +44,15 @@ export type {
  * every other type — a stock or a gold bar is valued from a price, not from a
  * stored balance — so pointing a settlement at one moves nothing.
  */
-const WALLET_ASSET_TYPES: AssetType[] = ['cash', 'bank_account']
+export const WALLET_ASSET_TYPES: readonly AssetType[] = ['cash', 'bank_account']
+
+/**
+ * Is this a wallet type? The single answer to "cash or bank account", so a new
+ * wallet type is one edit here rather than a hunt through every picker.
+ */
+export function isWalletAssetType(type: string | undefined | null): boolean {
+  return !!type && (WALLET_ASSET_TYPES as readonly string[]).includes(type)
+}
 
 /**
  * Can this asset settle a cashflow event — i.e. does confirming against it
@@ -63,7 +71,7 @@ export function canSettleCashflow(asset: {
   return (
     (!asset.status || asset.status === 'active') &&
     asset.liquidity === 'usable_now' &&
-    WALLET_ASSET_TYPES.includes(asset.type)
+    isWalletAssetType(asset.type)
   )
 }
 

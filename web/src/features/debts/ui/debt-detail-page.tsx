@@ -14,7 +14,7 @@ import { calcFromBackendEnum } from '@money-space/core/features/debts/model/debt
 import { DebtFormDialog } from '@/features/debts/ui/components/debt-form-dialog'
 import { DebtUpdateModeDialog } from '@/features/debts/ui/components/debt-update-mode-dialog'
 import type { CashflowEvent } from '@money-space/core/features/cashflow/model/cashflow.types'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /** Where one instalment sits in the run: settled, the one due next, or later. */
@@ -291,7 +291,7 @@ export function DebtDetailPage() {
             <div className="min-w-0">
               <p className="t-body-sm text-ink2">{t('debts.detail.overview.outstanding')}</p>
               <p className="money-number mt-1 t-figure lg:t-hero">
-                {formatVndShort(debt.outstandingAmountValue)}
+                {formatVndExact(debt.outstandingAmountValue)}
               </p>
             </div>
 
@@ -315,7 +315,7 @@ export function DebtDetailPage() {
                       done: paidPeriods.length,
                       total: schedule.length,
                     })
-                  : `${t('debts.detail.overview.repaid')} ${formatVndShort(repaid)}`}
+                  : `${t('debts.detail.overview.repaid')} ${formatVndExact(repaid)}`}
               </p>
             </div>
           </div>
@@ -424,7 +424,7 @@ export function DebtDetailPage() {
             />
             <Detail
               label={t('debts.detail.loan.originalAmount')}
-              value={formatVndShort(debt.originalAmountValue)}
+              value={formatVndExact(debt.originalAmountValue)}
               num
             />
             {paymentDay ? (
@@ -524,7 +524,7 @@ function PeriodGroup({
                 {displayDate(period.isoDate, locale, t('debts.detail.noValue'))}
               </span>
             </div>
-            <span className="money-number t-subhead">{formatVndShort(period.amount)}</span>
+            <span className="money-number t-subhead">{formatVndExact(period.amount)}</span>
             <span
               className={cn(
                 'inline-flex items-center gap-2 t-caption font-medium',

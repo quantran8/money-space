@@ -16,7 +16,10 @@ import {
 } from '@/components/ui/table'
 import { useAssetDetail, type AssetEventEntry } from '@money-space/core/features/assets/hooks/use-asset-detail'
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
-import { canUpdatePriceManually } from '@money-space/core/features/assets/model/assets'
+import {
+  canUpdatePriceManually,
+  isWalletAssetType,
+} from '@money-space/core/features/assets/model/assets'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
 import { AssetPurchaseDialog } from '@/features/assets/ui/components/asset-purchase-dialog'
 import { AssetGoalUsageSection } from '@/features/assets/ui/components/asset-goal-usage-section'
@@ -303,7 +306,7 @@ export function AssetDetailPage() {
   }
 
   const isMarketPriced = asset.valuationMode === 'market_priced'
-  const isBalanceAsset = asset.type === 'cash' || asset.type === 'bank_account'
+  const isBalanceAsset = isWalletAssetType(asset.type)
   const isAutoPriced = asset.valuationMode !== 'manual'
   const isSold = asset.status === 'sold'
   const canUpdatePrice = !isSold && canUpdatePriceManually(asset.type)

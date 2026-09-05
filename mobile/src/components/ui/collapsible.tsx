@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react-native'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
+import { Collapse } from '@/components/ui/motion'
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
 
 import type { ReactNode } from 'react'
@@ -65,7 +66,12 @@ export function Collapsible({
         </View>
       </Pressable>
 
-      {open ? <View className={cn('mt-5')}>{children}</View> : null}
+      {/* Unrolls rather than blinking: the breakdown is the working behind a
+          figure that stays put above it, so it should be seen to come from
+          there. Nothing here holds form state, so it can stay mounted. */}
+      <Collapse open={open}>
+        <View className={cn('mt-5')}>{children}</View>
+      </Collapse>
     </View>
   )
 }

@@ -7,8 +7,11 @@ import { formatVndCellSigned } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 import { ActionSheet, Label, Panel, PanelHeader } from '@/components/ui'
+import { CategoryDisc } from '@/features/events/ui/components/category-disc'
 import { formatDayMonth } from '@/features/forecast/lib/forecast-dates'
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
+
+import type { ForecastCategoryVisual } from '@/features/forecast/ui/forecast-timeline'
 
 /**
  * Khoản quá hạn — its own card, on Home directly under the hero and on the
@@ -33,6 +36,7 @@ export function OverdueSection({
   onEdit,
   onDelete,
   pendingId,
+  categoryVisualByEventId = {},
 }: {
   overdue: OverdueSummary
   /** Marks one occurrence resolved. The ONLY way an item leaves this list (§18). */
@@ -45,6 +49,8 @@ export function OverdueSection({
   onDelete?: (sourceEventId: string) => void
   /** The row currently being confirmed, so only ITS button shows a spinner. */
   pendingId?: string | null
+  /** Event id → the disc its category wears, the same map the timeline reads. */
+  categoryVisualByEventId?: Record<string, ForecastCategoryVisual | undefined>
 }) {
   const { t } = useTranslation()
 
@@ -86,6 +92,7 @@ export function OverdueSection({
               onEdit={onEdit}
               onDelete={onDelete}
               pending={pendingId === row.sourceEventId}
+              categoryVisual={categoryVisualByEventId[row.sourceEventId]}
             />
           ))}
         </View>
@@ -116,12 +123,14 @@ function OverdueRowItem({
   onEdit,
   onDelete,
   pending,
+  categoryVisual,
 }: {
   row: OverdueSummary['rows'][number]
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
   pending: boolean
+  categoryVisual?: ForecastCategoryVisual
 }) {
   const { t } = useTranslation()
 
@@ -154,43 +163,56 @@ function OverdueRowItem({
 
   return (
     <View className="border-t border-divider py-3 first:border-t-0">
-      <View className="flex-row items-baseline gap-3">
-        {/* When it FELL DUE, not the day the forecast lists it under. Absent
-            when the source event is not loaded — better no date than today's. */}
-        {row.dueDate ? (
-          <Text className="font-mono t-caption-sm text-ink3">{formatDayMonth(row.dueDate)}</Text>
-        ) : null}
-        <Text className="flex-1 t-body-sm font-medium text-ink" numberOfLines={1}>
-          {row.name}
-        </Text>
-        <Text
-          className={cn(
-            't-body-sm font-medium',
-            row.signedAmount > 0 ? 'text-positive-ink' : 'text-alert-ink',
-          )}
-          style={{ fontVariant: ['tabular-nums'] }}
-        >
-          {formatVndCellSigned(row.signedAmount)}{' '}
-          {/* §10.4 — the unit is stated beside the figure, never baked in. */}
-          <Text className="font-mono t-caption-sm text-ink3">{t('units.million')}</Text>
-        </Text>
-        {menuItems.length > 0 ? (
-          <ActionSheet
-            title={row.name}
-            items={menuItems}
-            accessibilityLabel={t('upcoming.rowActions.label')}
-          />
-        ) : null}
-      </View>
-
-      {row.daysOverdue === undefined ? null : (
-        <View className="mt-1 flex-row items-center gap-2">
-          <View className="size-1.5 rounded-full bg-alert" />
-          <Text className="t-caption text-ink2">
-            {t('home.upcoming.overdue.age', { count: row.daysOverdue })}
-          </Text>
+      {/* The disc leads the identity block, not the whole row: "Đã xong" is
+          full-width underneath, and indenting that behind an icon would cost
+          the 44pt target its width for nothing. */}
+      <View className="flex-row items-start gap-3">
+        <View className="pt-0.5">
+          <CategoryDisc visual={categoryVisual} size={32} />
         </View>
-      )}
+
+        <View className="min-w-0 flex-1">
+          <View className="flex-row items-baseline gap-3">
+            {/* When it FELL DUE, not the day the forecast lists it under. Absent
+                when the source event is not loaded — better no date than today's. */}
+            {row.dueDate ? (
+              <Text className="font-mono t-caption-sm text-ink3">
+                {formatDayMonth(row.dueDate)}
+              </Text>
+            ) : null}
+            <Text className="flex-1 t-body-sm font-medium text-ink" numberOfLines={1}>
+              {row.name}
+            </Text>
+            <Text
+              className={cn(
+                't-body-sm font-medium',
+                row.signedAmount > 0 ? 'text-positive-ink' : 'text-alert-ink',
+              )}
+              style={{ fontVariant: ['tabular-nums'] }}
+            >
+              {formatVndCellSigned(row.signedAmount)}{' '}
+              {/* §10.4 — the unit is stated beside the figure, never baked in. */}
+              <Text className="font-mono t-caption-sm text-ink3">{t('units.million')}</Text>
+            </Text>
+            {menuItems.length > 0 ? (
+              <ActionSheet
+                title={row.name}
+                items={menuItems}
+                accessibilityLabel={t('upcoming.rowActions.label')}
+              />
+            ) : null}
+          </View>
+
+          {row.daysOverdue === undefined ? null : (
+            <View className="mt-1 flex-row items-center gap-2">
+              <View className="size-1.5 rounded-full bg-alert" />
+              <Text className="t-caption text-ink2">
+                {t('home.upcoming.overdue.age', { count: row.daysOverdue })}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
 
       {onComplete ? (
         <Pressable

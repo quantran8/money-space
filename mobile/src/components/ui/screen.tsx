@@ -3,6 +3,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
+import { AccountHeader } from '@/components/ui/account-header'
+import { AppearGroup } from '@/components/ui/motion'
 import { colors, spacing } from '@/theme/tokens'
 
 import type { ReactNode } from 'react'
@@ -36,6 +38,7 @@ export function Screen({
   onRefresh,
   refreshing = false,
   withoutTabBar = false,
+  withAccountHeader = false,
   className,
 }: {
   title?: string
@@ -49,6 +52,12 @@ export function Screen({
    * have no bar to clear, and padding for one leaves them ending short.
    */
   withoutTabBar?: boolean
+  /**
+   * The identity row above the title. On for the five tabs — the app has no
+   * shell header of its own (`headerShown: false`), so it is drawn per screen —
+   * and off for anything pushed OVER them, which has a back link instead.
+   */
+  withAccountHeader?: boolean
   className?: string
 }) {
   const insets = useSafeAreaInsets()
@@ -73,6 +82,7 @@ export function Screen({
       }
     >
       <View style={{ paddingHorizontal: spacing.panel }}>
+        {withAccountHeader ? <AccountHeader /> : null}
         {title ? (
           <View className="mb-4 flex-row items-center justify-between gap-3">
             <Text className="flex-1 t-subtitle text-ink">{title}</Text>
@@ -90,7 +100,16 @@ export function Screen({
  *
  * Sections are separated by space, never by a divider — spacing is the first
  * tool, and a border means spacing and alignment already failed.
+ *
+ * Sections also ARRIVE, one just behind the one above it. This is the mobile
+ * counterpart of the web pages that wrap their section stack in `AppearGroup`,
+ * and it lives here rather than at each call site because every screen already
+ * routes its sections through this component — wrapping them one by one would
+ * be the same decision made fourteen times, differently.
+ *
+ * The stagger is 50ms and the drift 10px, both inside the motion budget, and
+ * both off entirely under reduced motion.
  */
 export function Sections({ children, className }: { children: ReactNode; className?: string }) {
-  return <View className={cn('gap-4', className)}>{children}</View>
+  return <AppearGroup className={cn('gap-4', className)}>{children}</AppearGroup>
 }

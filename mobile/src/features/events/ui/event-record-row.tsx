@@ -8,7 +8,9 @@ import {
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
 import { ActionSheet, GroupedRow, RowMeta } from '@/components/ui'
+import { CategoryDisc } from '@/features/events/ui/components/category-disc'
 
+import type { CategoryVisual } from '@money-space/core/features/events/hooks/use-category-visuals'
 import type { ActionSheetItem } from '@/components/ui'
 
 /**
@@ -24,18 +26,21 @@ import type { ActionSheetItem } from '@/components/ui'
  * The dropdown becomes an ActionSheet: a menu anchored to an 18pt icon opens
  * under the thumb that is covering it, and every entry here clears 44pt in a
  * sheet instead.
+ *
+ * The CATEGORY disc does lead the row, and is not the avatar in disguise: the
+ * title is a free-text note ("Đi chợ"), so without it the only thing saying
+ * what kind of spending this was is a word the household chose. It answers
+ * what the money was for, never who spent it.
  */
 export function EventRecordRow({
   record,
+  categoryVisual,
   onEdit,
-  onDuplicate,
-  onToggleAttention,
   onDelete,
 }: {
   record: FinancialRecordItem
+  categoryVisual?: CategoryVisual
   onEdit: (id: string) => void
-  onDuplicate: (id: string) => void
-  onToggleAttention: (id: string) => void
   onDelete: (id: string) => void
 }) {
   const { t } = useTranslation()
@@ -53,16 +58,6 @@ export function EventRecordRow({
       ? [{ key: 'edit', label: t('common.edit'), onPress: () => onEdit(record.id) }]
       : []),
     {
-      key: 'duplicate',
-      label: t('events.redesign.actions.duplicate'),
-      onPress: () => onDuplicate(record.id),
-    },
-    {
-      key: 'attention',
-      label: t('events.redesign.actions.attention'),
-      onPress: () => onToggleAttention(record.id),
-    },
-    {
       key: 'delete',
       label: t('common.delete'),
       onPress: () => onDelete(record.id),
@@ -73,6 +68,7 @@ export function EventRecordRow({
   return (
     <GroupedRow
       title={record.title}
+      leading={<CategoryDisc visual={categoryVisual} />}
       // Vietnamese asset names and type labels live here, so the sans face —
       // mono must never touch accented text (§5).
       meta={<RowMeta>{meta}</RowMeta>}

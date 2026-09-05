@@ -40,6 +40,10 @@ export function DataCard() {
  * gone — the bottom tab bar covers navigation, and `/settings` is where a
  * household already manages who they are.
  *
+ * Mobile only, at the same breakpoint the sidebar appears: above `lg` the
+ * account menu at the sidebar foot already holds sign-out, and two ways out of
+ * the session on one screen asks the reader to wonder whether they differ.
+ *
  * Shaped like `DataCard`, deliberately NOT like `DangerCard`: signing out is
  * reversible and costs nothing, so it must not borrow the one bordered card's
  * weight. It is also not confirmed, for the same reason.
@@ -49,7 +53,7 @@ export function SignOutCard() {
   const logout = useLogout()
 
   return (
-    <Panel>
+    <Panel className="lg:hidden">
       <PanelHeader title={t('shell.logout')} meta={t('shell.logoutMeta')} />
 
       <div className="s-head-body grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_auto]">

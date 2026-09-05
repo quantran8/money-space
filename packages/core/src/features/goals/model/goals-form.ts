@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { GoalItem, GoalPriority } from '#/features/goals/model/goals'
+import { isWalletAssetType } from '#/features/assets/model/assets'
 import { formatVndShort } from '#/shared/lib/format-money'
 import {
   localizedMoneyAmount,
@@ -8,6 +9,14 @@ import {
   localizedOptionalText,
   localizedRequiredText,
 } from '#/shared/lib/validation'
+
+/**
+ * A wallet: money the household can put in and take out at face value, with no
+ * market price in between. Only these can carry a monthly amount, and a goal
+ * needs at least one behind it — mirrors the server's rule. Re-exported from
+ * the asset model so goals keep their import path over one definition.
+ */
+export { isWalletAssetType }
 
 /** One asset's share, as the create form holds it. */
 export type GoalAllocationDraft = {
@@ -56,14 +65,7 @@ export function defaultAllocationRole(
   return isWalletAssetType(assetType) ? 'contribution' : 'holding'
 }
 
-/**
- * A wallet: money the household can put in and take out at face value, with no
- * market price in between. Only these can carry a monthly amount, and a goal
- * needs at least one behind it — mirrors the server's rule.
- */
-export function isWalletAssetType(assetType: string | undefined): boolean {
-  return assetType === 'cash' || assetType === 'bank_account'
-}
+
 
 export type GoalForm = {
   name: string

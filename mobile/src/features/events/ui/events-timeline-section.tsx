@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
+import type { CategoryVisual } from '@money-space/core/features/events/hooks/use-category-visuals'
 import type {
   FinancialRecordItem,
   RecordTab,
@@ -37,26 +38,25 @@ export function EventsTimelineSection({
   tab,
   onTabChange,
   groupedRecords,
+  categoryVisualById,
   memberOptions,
   selectedMember,
   onMemberChange,
   isLoading = false,
   onEditEvent,
-  onDuplicateEvent,
-  onToggleEventAttention,
   onDeleteEvent,
 }: {
   tab: RecordTab
   onTabChange: (tab: RecordTab) => void
   /** Already filtered by month and person upstream — core owns that. */
   groupedRecords: [string, FinancialRecordItem[]][]
+  /** Category id → label + disc glyph/fill, from core's `useCategoryVisuals`. */
+  categoryVisualById: Record<string, CategoryVisual>
   memberOptions: Option[]
   selectedMember: string
   onMemberChange: (memberId: string) => void
   isLoading?: boolean
   onEditEvent: (id: string) => void
-  onDuplicateEvent: (id: string) => void
-  onToggleEventAttention: (id: string) => void
   onDeleteEvent: (id: string) => void
 }) {
   const { t } = useTranslation()
@@ -128,9 +128,10 @@ export function EventsTimelineSection({
                     <EventRecordRow
                       key={record.id}
                       record={record}
+                      categoryVisual={
+                        record.categoryId ? categoryVisualById[record.categoryId] : undefined
+                      }
                       onEdit={onEditEvent}
-                      onDuplicate={onDuplicateEvent}
-                      onToggleAttention={onToggleEventAttention}
                       onDelete={onDeleteEvent}
                     />
                   ))}

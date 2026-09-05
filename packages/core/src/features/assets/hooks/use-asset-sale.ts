@@ -17,7 +17,7 @@ import {
   toSalePayload,
   type AssetSaleForm,
 } from '#/features/assets/model/asset-sale-form'
-import type { Asset } from '#/features/assets/model/assets'
+import { isWalletAssetType, type Asset } from '#/features/assets/model/assets'
 import { useEventCategories } from '#/features/events/hooks/use-event-categories'
 import { useEvents } from '#/features/events/hooks/use-events'
 import type { MoneyEventItem } from '#/features/events/model/events.types'
@@ -70,7 +70,7 @@ export function useAssetSale() {
   const walletOptions = useMemo(
     () =>
       assets
-        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .filter((asset) => isWalletAssetType(asset.type))
         .map((asset) => ({ value: asset.id, label: asset.name })),
     [assets],
   )
@@ -155,17 +155,17 @@ export function useAssetSale() {
       )
       if (editingEvent?.id) {
         await updateEvent.mutateAsync({ eventId: editingEvent.id, payload })
-        notify.success('Da cap nhat giao dich ban.')
+        notify.success(t('assets.toast.saleUpdated'))
       } else {
         await createEvent.mutateAsync(payload)
-        notify.success('Da ban tai san.')
+        notify.success(t('assets.toast.sold'))
       }
       closeSale()
     } catch (error) {
       notify.error(
         getErrorMessage(
           error,
-          editingEvent ? 'Khong the cap nhat giao dich ban.' : 'Khong the ban tai san.',
+          editingEvent ? t('assets.toast.saleUpdateFailed') : t('assets.toast.sellFailed'),
         ),
       )
     }

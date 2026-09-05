@@ -9,7 +9,7 @@ import { useDebts } from '@money-space/core/features/debts/hooks/use-debts'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
-import { Button, ConfirmDialog, Screen, Sections, Segmented } from '@/components/ui'
+import { Button, ConfirmDialog, Screen, Sections, Segmented, SwitchPane } from '@/components/ui'
 import { AssetFormSheet } from '@/features/assets/components/asset-form-sheet'
 import { AssetQuantitySheet } from '@/features/assets/components/asset-quantity-sheet'
 import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
@@ -83,6 +83,7 @@ export default function NetWorthScreen() {
 
   return (
     <Screen
+      withAccountHeader
       title={t('networth.header.title')}
       right={
         onAssets ? (
@@ -116,30 +117,35 @@ export default function NetWorthScreen() {
           asOf={asOf || AS_OF}
         />
 
-        {onAssets ? (
-          <AssetsListSection
-            assets={filteredAssets}
-            members={members}
-            isLoading={isLoading}
-            asOf={asOf || AS_OF}
-            total={total}
-            query={query}
-            onQueryChange={setQuery}
-            liquidityFilter={liquidityFilter}
-            onLiquidityFilterChange={setLiquidityFilter}
-            onOpen={(assetId) => router.push(`/assets/${assetId}`)}
-            onAdd={() => openCreate()}
-          />
-        ) : (
-          // ── SEAM: the debts half ──────────────────────────────────────────
-          // Owned by the debts port, not this file. `DebtsTab` is deliberately
-          // prop-less and self-contained: it reads `useDebtsPage` itself and
-          // renders its own list, sheets and add action. The only thing this
-          // screen borrows from the debts side is the outstanding total above,
-          // which comes from core's `useDebts` rather than from the component —
-          // the strip has to be right whether or not this tab is mounted.
-          <DebtsTab />
-        )}
+        {/* Tài sản ↔ Nợ is a swap in one slot, not two lists appearing: the
+            strip above stays put and only the body below it changes. */}
+        <SwitchPane activeKey={onAssets ? 'assets' : 'debts'}>
+          {onAssets ? (
+            <AssetsListSection
+              assets={filteredAssets}
+              members={members}
+              isLoading={isLoading}
+              asOf={asOf || AS_OF}
+              total={total}
+              query={query}
+              onQueryChange={setQuery}
+              liquidityFilter={liquidityFilter}
+              onLiquidityFilterChange={setLiquidityFilter}
+              onOpen={(assetId) => router.push(`/assets/${assetId}`)}
+              onAdd={() => openCreate()}
+            />
+          ) : (
+            // ── SEAM: the debts half ────────────────────────────────────────
+            // Owned by the debts port, not this file. `DebtsTab` is
+            // deliberately prop-less and self-contained: it reads
+            // `useDebtsPage` itself and renders its own list, sheets and add
+            // action. The only thing this screen borrows from the debts side is
+            // the outstanding total above, which comes from core's `useDebts`
+            // rather than from the component — the strip has to be right
+            // whether or not this tab is mounted.
+            <DebtsTab />
+          )}
+        </SwitchPane>
       </Sections>
 
       <AssetFormSheet

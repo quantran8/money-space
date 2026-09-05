@@ -505,6 +505,26 @@ export function buildAssetSchema(
             message: t('assets.form.maturityBeforeStart'),
           })
         }
+        // A saving deposit is the one formula type whose term is not optional:
+        // a passbook is sold as "gửi 12 tháng", the interest the household is
+        // promised is only defined against it, and without it the app can
+        // neither show the expected payout nor ever credit the interest
+        // (`computeSavingInterestPeriods` returns nothing without a maturity).
+        if (values.type === 'saving_deposit') {
+          if (!values.maturityDate) {
+            ctx.addIssue({
+              path: ['maturityDate'],
+              code: 'custom',
+              message: t('validation.requiredDate'),
+            })
+          } else if (values.startDate && values.maturityDate <= values.startDate) {
+            ctx.addIssue({
+              path: ['maturityDate'],
+              code: 'custom',
+              message: t('assets.form.maturityAfterStart'),
+            })
+          }
+        }
         // Non-term (early-withdrawal) rate is required for saving deposits.
         if (values.type === 'saving_deposit') {
           const nonTerm = parseRawDecimal(values.nonTermRate)

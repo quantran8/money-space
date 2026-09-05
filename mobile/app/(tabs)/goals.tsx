@@ -45,6 +45,7 @@ export default function GoalsScreen() {
 
   return (
     <Screen
+      withAccountHeader
       title={t('goals.header.title')}
       right={
         <Button className="px-4" onPress={openCreate}>

@@ -104,7 +104,7 @@ export function useSettingsPage() {
         language: previousLanguage,
         householdName: previousName,
       })
-      notify.error('Không thể lưu cài đặt.')
+      notify.error(t('settings.header.saveFailed'))
     }
   }
 

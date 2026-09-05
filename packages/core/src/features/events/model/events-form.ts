@@ -618,23 +618,6 @@ export function formatTimelineRowDate(isoDate: string) {
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
 }
 
-export function getStatusLabel(status: RecordStatus) {
-  switch (status) {
-    case 'unpaid':
-      return 'Chưa xử lý'
-    case 'paid':
-      return 'Đã trả'
-    case 'overdue':
-      return 'Quá hạn'
-    case 'recorded':
-      return 'Đã ghi nhận'
-    case 'pending_confirmation':
-      return 'Chờ xác nhận'
-    case 'postponed':
-      return 'Đã dời lại'
-  }
-}
-
 export function getStatusTone(status: RecordStatus) {
   if (status === 'overdue') {
     return 'bg-alert-tint text-alert border-none'
@@ -672,22 +655,6 @@ export function getRecordAmountTone(record: FinancialRecordItem) {
   if (record.direction === 'outflow') return 'text-attention'
   return 'text-accent'
 }
-
-export function getTimelineGroupLabel(key: TimelineGroupKey) {
-  switch (key) {
-    case 'upcoming':
-      return 'Sắp tới'
-    case 'today':
-      return 'Hôm nay'
-    case 'week':
-      return 'Tuần này'
-    case 'month':
-      return 'Tháng này'
-    case 'older':
-      return 'Cũ hơn'
-  }
-}
-
 
 export function isQuickActualAction(
   action: QuickAction | null,
@@ -733,45 +700,6 @@ export function eventRequiresFromAsset(eventType: RecordType) {
 
 export function eventRequiresToAsset(eventType: RecordType) {
   return ['income', 'transfer', 'asset_purchase', 'asset_sale'].includes(eventType)
-}
-
-export function buildUpcomingSchema() {
-  return z
-    .object({
-      name: z.string().trim().min(1, 'Vui lòng nhập tên khoản.'),
-      amount: z.string().trim().min(1, 'Vui lòng nhập số tiền dự kiến.'),
-      dueDate: z.string().min(1, 'Vui lòng chọn hạn xử lý.'),
-      frequency: z.enum(['once', 'weekly', 'monthly', 'quarterly', 'yearly']),
-      ownerMemberId: z.string(),
-      expectedFromAssetId: z.string(),
-      attentionLevel: z.enum(['normal', 'important', 'urgent']),
-      isAttentionNeeded: z.boolean(),
-      note: z.string(),
-      autoCreateNext: z.boolean(),
-    })
-    .superRefine((value, ctx) => {
-      if (parseAmountInput(value.amount) <= 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['amount'],
-          message: 'Số tiền cần lớn hơn 0.',
-        })
-      }
-      if (!value.expectedFromAssetId) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['expectedFromAssetId'],
-          message: 'Vui lòng chọn ví nguồn.',
-        })
-      }
-      if (value.autoCreateNext && value.frequency === 'once') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['autoCreateNext'],
-          message: 'Chỉ bật tự tạo kỳ tiếp theo khi khoản này lặp lại.',
-        })
-      }
-    })
 }
 
 export function buildActualSchema() {

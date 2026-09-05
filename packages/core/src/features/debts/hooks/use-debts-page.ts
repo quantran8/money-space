@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from '#/shared/navigation'
 import { notify } from '#/shared/notify'
 
 import { useAssets } from '#/features/assets/hooks/use-assets'
+import { isWalletAssetType } from '#/features/assets/model/assets'
 import { useDebts } from '#/features/debts/hooks/use-debts'
 import type { DebtPayload } from '#/features/debts/api/debts.repository'
 import type { DebtUpdateModeChoice } from '#/features/debts/model/debts.types'
@@ -112,7 +113,7 @@ export function useDebtsPage() {
   const receiveAssetOptions = useMemo(
     () =>
       assets
-        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .filter((asset) => isWalletAssetType(asset.type))
         .map((asset) => ({ value: asset.id, label: asset.name })),
     [assets],
   )
@@ -386,10 +387,10 @@ export function useDebtsPage() {
 
       if (editingId) {
         await updateDebt.mutateAsync({ debtId: editingId, payload })
-        notify.success('Cap nhat khoan no thanh cong.')
+        notify.success(t('debts.toast.updated'))
       } else {
         await createDebt.mutateAsync(payload)
-        notify.success('Tao khoan no thanh cong.')
+        notify.success(t('debts.toast.created'))
       }
 
       onOpenChange(false)
@@ -397,7 +398,7 @@ export function useDebtsPage() {
       notify.error(
         getErrorMessage(
           error,
-          editingId ? 'Khong the cap nhat khoan no.' : 'Khong the tao khoan no.',
+          editingId ? t('debts.toast.updateFailed') : t('debts.toast.createFailed'),
         ),
       )
     }
@@ -416,11 +417,11 @@ export function useDebtsPage() {
     }
     try {
       await updateDebt.mutateAsync({ debtId, payload: nextPayload })
-      notify.success('Cap nhat khoan no thanh cong.')
+      notify.success(t('debts.toast.updated'))
       setPendingUpdate(null)
       onOpenChange(false)
     } catch (error) {
-      notify.error(getErrorMessage(error, 'Khong the cap nhat khoan no.'))
+      notify.error(getErrorMessage(error, t('debts.toast.updateFailed')))
     }
   }
 
@@ -438,10 +439,10 @@ export function useDebtsPage() {
     if (!deletingId) return
     try {
       await deleteDebt.mutateAsync(deletingId)
-      notify.success('Da xoa khoan no.')
+      notify.success(t('debts.toast.deleted'))
       setDeletingId(null)
     } catch (error) {
-      notify.error(getErrorMessage(error, 'Khong the xoa khoan no.'))
+      notify.error(getErrorMessage(error, t('debts.toast.deleteFailed')))
     }
   }
 
@@ -455,9 +456,9 @@ export function useDebtsPage() {
         debtId: id,
         payload: { status: 'paid_off', outstandingAmount: 0 },
       })
-      .then(() => notify.success('Da danh dau tra xong khoan no.'))
+      .then(() => notify.success(t('debts.toast.paidOff')))
       .catch((error) =>
-        notify.error(getErrorMessage(error, 'Khong the cap nhat trang thai khoan no.')),
+        notify.error(getErrorMessage(error, t('debts.toast.statusFailed'))),
       )
   }
 

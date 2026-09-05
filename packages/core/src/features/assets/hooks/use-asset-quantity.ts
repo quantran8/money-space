@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
 import { useAssets } from '#/features/assets/hooks/use-assets'
-import type { Asset } from '#/features/assets/model/assets'
+import { isWalletAssetType, type Asset } from '#/features/assets/model/assets'
 import {
   buildAssetPurchaseSchema,
   buildAssetQuantityAdjustmentSchema,
@@ -70,7 +70,7 @@ export function useAssetQuantity() {
   const walletOptions = useMemo(
     () =>
       assets
-        .filter((item) => item.type === 'cash' || item.type === 'bank_account')
+        .filter((item) => isWalletAssetType(item.type))
         .map((item) => ({
           value: item.id,
           label: item.name,

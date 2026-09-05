@@ -16,7 +16,11 @@ import {
   type AssetForm,
   type AssetTotals,
 } from '#/features/assets/model/assets-form'
-import { valuationModeForType, type AssetLiquidity } from '#/features/assets/model/assets'
+import {
+  isWalletAssetType,
+  valuationModeForType,
+  type AssetLiquidity,
+} from '#/features/assets/model/assets'
 import { createId } from '#/shared/lib/create-id'
 import { getErrorMessage } from '#/shared/lib/get-error-message'
 
@@ -70,7 +74,7 @@ export function useAssetsPage() {
   const walletOptions = useMemo(
     () =>
       assets
-        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .filter((asset) => isWalletAssetType(asset.type))
         .map((asset) => ({
           value: asset.id,
           label: asset.name,
@@ -194,15 +198,18 @@ export function useAssetsPage() {
 
       if (editingId) {
         await updateAsset.mutateAsync({ assetId: editingId, payload })
-        notify.success('Cap nhat tai san thanh cong.')
+        notify.success(t('assets.toast.updated'))
       } else {
         await createAsset.mutateAsync(payload)
-        notify.success('Tao tai san thanh cong.')
+        notify.success(t('assets.toast.created'))
       }
       handleFormOpenChange(false)
     } catch (error) {
       notify.error(
-        getErrorMessage(error, editingId ? 'Khong the cap nhat tai san.' : 'Khong the tao tai san.'),
+        getErrorMessage(
+          error,
+          editingId ? t('assets.toast.updateFailed') : t('assets.toast.createFailed'),
+        ),
       )
     }
   }
@@ -216,11 +223,11 @@ export function useAssetsPage() {
   async function handleDeleteAsset(assetId: string, cascade = false) {
     try {
       await deleteAsset.mutateAsync({ assetId, cascade })
-      notify.success('Da xoa tai san.')
+      notify.success(t('assets.toast.deleted'))
       setDeleteId(null)
       if (editingId === assetId) handleFormOpenChange(false)
     } catch (error) {
-      notify.error(getErrorMessage(error, 'Khong the xoa tai san.'))
+      notify.error(getErrorMessage(error, t('assets.toast.deleteFailed')))
       throw error
     }
   }
