@@ -7,7 +7,7 @@ import { useDebtDetail } from '@money-space/core/features/debts/hooks/use-debt-d
 import { useDebtsPage } from '@money-space/core/features/debts/hooks/use-debts-page'
 import { calcFromBackendEnum } from '@money-space/core/features/debts/model/debts-interest'
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
-import { formatVndShort, splitVndScale } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact, splitVndScale } from '@money-space/core/shared/lib/format-money'
 
 import {
   ActionSheet,
@@ -121,7 +121,6 @@ function DebtDetailScreen() {
     submit,
     selectedLenderType,
     isSavingDebt,
-    repaymentEstimate,
     termMonths,
     dialogOpen,
     editingId,
@@ -350,7 +349,7 @@ function DebtDetailScreen() {
                     done: paidPeriods.length,
                     total: schedule.length,
                   })
-                : `${t('debts.detail.overview.repaid')} ${formatVndShort(repaid)}`}
+                : `${t('debts.detail.overview.repaid')} ${formatVndExact(repaid)}`}
             </Text>
           </View>
         </Panel>
@@ -407,7 +406,7 @@ function DebtDetailScreen() {
               />
               <LoanFact
                 label={t('debts.detail.loan.originalAmount')}
-                value={formatVndShort(debt.originalAmountValue)}
+                value={formatVndExact(debt.originalAmountValue)}
                 numeric
               />
               <LoanFact
@@ -481,7 +480,6 @@ function DebtDetailScreen() {
         setShowMoreDetails={setShowMoreDetails}
         receiveAssetOptions={receiveAssetOptions}
         memberOptions={memberOptions}
-        repaymentEstimate={repaymentEstimate}
         termMonths={termMonths}
         submit={submit}
       />
@@ -575,7 +573,7 @@ function PeriodGroup({
                 ].join(' · ')}
               </RowMeta>
             }
-            value={formatVndShort(item.amount)}
+            value={formatVndExact(item.amount)}
             valueTone={item.paid ? 'muted' : 'default'}
           />
         ))}

@@ -2,11 +2,11 @@ import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Collapse } from '@/components/ui/motion'
 import { Panel } from '@/components/ui/panel'
 import type { ScheduledOutflowImpact } from '@money-space/core/features/goals/api/goals.repository'
 import { formatAmount } from '@money-space/core/features/goals/model/goals-form'
 import { goalPercent } from '@money-space/core/features/goals/model/goals'
-
 /**
  * What money already scheduled to leave this goal's wallets will cost it.
  *
@@ -114,74 +114,72 @@ export function GoalScheduledOutflowsSection({
         </span>
       </button>
 
-      {open ? (
-        <div className="mt-7">
-          <p className="t-body-sm leading-5 text-ink2">
-            {t('goals.scheduledOutflows.description')}
-          </p>
+      <Collapse open={open} className="mt-7">
+        <p className="t-body-sm leading-5 text-ink2">
+          {t('goals.scheduledOutflows.description')}
+        </p>
 
-          {/* Before and after, side by side. Stating both in full beats a
-              strikethrough pair: the household reads two complete pictures
-              rather than reconstructing one from edits to the other. */}
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            {/* Only the "after" half is tinted. Wash here was making the pair
-                look symmetrical, which is decoration — the contrast IS the
-                message, so the unchanged side stays on the panel (§2.4). */}
-            <div className="p-4">
-              <p className="label-vi">{t('goals.scheduledOutflows.beforeLabel')}</p>
-              <ImpactFigures
-                held={impact.currentAmount}
-                pace={impact.currentPace}
-                target={target}
-                percent={percent}
-              />
-            </div>
-
-            <div className="rounded-control bg-attention-soft p-4">
-              <div className="flex items-baseline justify-between gap-4">
-                <p className="label-vi text-attention-ink">{t('goals.scheduledOutflows.afterLabel')}</p>
-                <span className="num t-caption-sm font-medium text-attention-ink">
-                  −{formatAmount(impact.outflowAmount)}
-                </span>
-              </div>
-              <ImpactFigures
-                held={impact.projectedAmount}
-                pace={impact.projectedPace}
-                target={target}
-                percent={percent}
-              />
-            </div>
+        {/* Before and after, side by side. Stating both in full beats a
+            strikethrough pair: the household reads two complete pictures
+            rather than reconstructing one from edits to the other. */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {/* Only the "after" half is tinted. Wash here was making the pair
+              look symmetrical, which is decoration — the contrast IS the
+              message, so the unchanged side stays on the panel (§2.4). */}
+          <div className="p-4">
+            <p className="label-vi">{t('goals.scheduledOutflows.beforeLabel')}</p>
+            <ImpactFigures
+              held={impact.currentAmount}
+              pace={impact.currentPace}
+              target={target}
+              percent={percent}
+            />
           </div>
 
-          {/* The bills themselves. Naming them is what makes the block explain
-              rather than merely assert — the household can recognise the spend
-              and go change it if the trade is not one they want. */}
-          <ul className="mt-4 space-y-2 border-t border-divider pt-4">
-            {impact.events.map((event) => (
-              <li
-                key={event.id}
-                className="flex items-baseline justify-between gap-4 t-caption leading-5"
-              >
-                <span className="min-w-0 truncate text-ink2">
-                  <span className="font-mono t-caption-sm text-ink3">
-                    {dayMonth(event.expectedDate)}
-                  </span>{' '}
-                  {event.name}
-                  <span className="text-ink3">
-                    {' · '}
-                    {t('goals.scheduledOutflows.fromWallet', { wallet: event.assetName })}
-                  </span>
-                </span>
-                <span className="num shrink-0 text-ink2">{formatAmount(event.amount)}</span>
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-3 t-caption leading-5 text-ink3">
-            {t('goals.scheduledOutflows.paceNote')}
-          </p>
+          <div className="rounded-control bg-attention-soft p-4">
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="label-vi text-attention-ink">{t('goals.scheduledOutflows.afterLabel')}</p>
+              <span className="num t-caption-sm font-medium text-attention-ink">
+                −{formatAmount(impact.outflowAmount)}
+              </span>
+            </div>
+            <ImpactFigures
+              held={impact.projectedAmount}
+              pace={impact.projectedPace}
+              target={target}
+              percent={percent}
+            />
+          </div>
         </div>
-      ) : null}
+
+        {/* The bills themselves. Naming them is what makes the block explain
+            rather than merely assert — the household can recognise the spend
+            and go change it if the trade is not one they want. */}
+        <ul className="mt-4 space-y-2 border-t border-divider pt-4">
+          {impact.events.map((event) => (
+            <li
+              key={event.id}
+              className="flex items-baseline justify-between gap-4 t-caption leading-5"
+            >
+              <span className="min-w-0 truncate text-ink2">
+                <span className="font-mono t-caption-sm text-ink3">
+                  {dayMonth(event.expectedDate)}
+                </span>{' '}
+                {event.name}
+                <span className="text-ink3">
+                  {' · '}
+                  {t('goals.scheduledOutflows.fromWallet', { wallet: event.assetName })}
+                </span>
+              </span>
+              <span className="num shrink-0 text-ink2">{formatAmount(event.amount)}</span>
+            </li>
+          ))}
+        </ul>
+
+        <p className="mt-3 t-caption leading-5 text-ink3">
+          {t('goals.scheduledOutflows.paceNote')}
+        </p>
+      </Collapse>
     </Panel>
   )
 }

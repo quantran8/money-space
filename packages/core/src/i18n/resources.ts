@@ -333,6 +333,18 @@ export const resources = {
         },
       },
       assets: {
+        toast: {
+          created: 'Đã tạo tài sản.',
+          updated: 'Đã cập nhật tài sản.',
+          deleted: 'Đã xóa tài sản.',
+          createFailed: 'Chưa tạo được tài sản.',
+          updateFailed: 'Chưa cập nhật được tài sản.',
+          deleteFailed: 'Chưa xóa được tài sản.',
+          sold: 'Đã bán tài sản.',
+          saleUpdated: 'Đã cập nhật giao dịch bán.',
+          sellFailed: 'Chưa bán được tài sản.',
+          saleUpdateFailed: 'Chưa cập nhật được giao dịch bán.',
+        },
         // Shared by the buy and sell dialogs — the live quote reads the same in
         // both, so the copy lives once.
         marketPrice: {
@@ -557,9 +569,76 @@ export const resources = {
           loanStartDate: 'Ngày cho vay',
           maturityDate: 'Ngày đáo hạn',
           maturityBeforeStart: 'Ngày đáo hạn phải sau ngày cho vay',
+          maturityAfterStart: 'Ngày đáo hạn phải sau ngày gửi',
           hasInterest: 'Khoản này có lãi',
           interestPayment: 'Kỳ trả lãi',
           nonTermRate: 'Lãi suất không kỳ hạn (%/năm)',
+          // --- Sổ tiết kiệm: kỳ hạn + khối dự kiến ------------------------
+          savingStartDate: 'Ngày gửi',
+          savingTerm: 'Kỳ hạn',
+          savingTermMonths: '{{count}} tháng',
+          savingTermCustom: 'Khác',
+          savingTermMaturity: 'Đáo hạn {{date}}',
+          savingTermPickDate: 'Chọn ngày đáo hạn',
+          nonTermRateHint: 'Lãi suất ngân hàng áp dụng nếu rút trước hạn.',
+          preview: {
+            title: 'Dự kiến khi đáo hạn',
+            principal: 'Gốc',
+            interest: 'Lãi',
+            interestMeta: '{{rate}}%/năm · {{months}} tháng',
+            // Tiền lãi mỗi tháng: khoản thực sự về ví với kỳ trả lãi hàng
+            // tháng, còn cuối kỳ thì chỉ là mức lãi trung bình đang tích luỹ.
+            monthlyInterest: 'Lãi mỗi tháng',
+            monthlyAccrual: 'Lãi trung bình mỗi tháng',
+            total: 'Thực nhận',
+            // §31 — con số lớn phải có nghĩa đi kèm, không đứng một mình.
+            totalCaption: 'Số tiền nhận về khi giữ đủ kỳ hạn',
+            // Vì sao form bắt nhập lãi suất không kỳ hạn — nói bằng tiền.
+            early: 'Rút trước hạn ở tháng {{month}}: thực nhận {{total}}, ít hơn {{penalty}}.',
+            monthlyToWallet: 'Mỗi tháng nhận {{amount}} vào {{wallet}}, {{count}} kỳ.',
+            monthlyToPrincipal: 'Mỗi tháng cộng {{amount}} vào gốc, {{count}} kỳ.',
+            endOfTermToWallet: 'Toàn bộ tiền lãi về {{wallet}} khi đáo hạn.',
+            endOfTermToPrincipal: 'Toàn bộ tiền lãi cộng vào gốc khi đáo hạn.',
+            // Khi chưa đủ dữ kiện, nói rõ còn thiếu gì thay vì để khối trống.
+            needsInput: 'Nhập số tiền gốc, lãi suất và kỳ hạn để xem tiền lãi dự kiến.',
+          },
+          // Sổ tiết kiệm dùng form nhiều bước riêng (giống form khoản nợ).
+          deposit: {
+            createTitle: 'Khoản tiết kiệm mới',
+            editTitle: 'Sửa khoản tiết kiệm',
+            namePlaceholder: 'Ví dụ: Sổ tiết kiệm ACB',
+            steps: {
+              account: 'Sổ tiết kiệm',
+              amount: 'Số tiền & kỳ hạn',
+              interest: 'Lãi suất',
+              review: 'Xem lại',
+            },
+            sections: {
+              account: 'Sổ này là khoản nào?',
+              amount: 'Gửi bao nhiêu, trong bao lâu?',
+              interest: 'Lãi suất thế nào?',
+              reviewCreate: 'Xem lại trước khi thêm',
+              reviewEdit: 'Xem lại thay đổi',
+            },
+            rail: {
+              stepOf: 'Bước {{step}}/{{total}}',
+              empty: 'Chưa điền',
+              reviewAll: 'Xem lại toàn bộ',
+            },
+            actions: {
+              back: 'Quay lại',
+              continue: 'Tiếp tục',
+              review: 'Xem lại',
+            },
+            flexibleYes: 'Có',
+            flexibleNo: 'Không',
+            // Mở sổ là tiền rời khỏi ví, không phải tài sản tự sinh ra.
+            acquisition: 'Khoản này',
+            acquisitionOwned: 'Đã có sẵn',
+            acquisitionDeposited: 'Vừa gửi',
+            payFrom: 'Gửi từ tài khoản nào',
+            payFromPlaceholder: 'Chọn tài khoản đã trích tiền',
+          },
           nonTermRatePlaceholder: 'Ví dụ: 0,2',
           nonTermRateTooHigh: 'Lãi suất không kỳ hạn không được cao hơn lãi suất kỳ hạn',
           interestDestination: 'Tiền lãi nhận vào',
@@ -597,15 +676,28 @@ export const resources = {
           // §22.11 — the right verb, and the consequence stated in money.
           removeTitle: 'Gỡ nguồn tiền này?',
           removeBody: '{{amount}} sẽ không còn được tính vào bức tranh tài chính của gia đình.',
-          removeAlsoDetaches:
-            'Tài sản này đang gắn với {{goalCount}} mục tiêu ({{goals}}), {{eventCount}} khoản dự chi và {{debtCount}} khoản nợ. Xoá sẽ gỡ các liên kết đó — mục tiêu, khoản dự chi và khoản nợ vẫn còn, nhưng không còn trỏ tới tài sản này nữa.',
-          removeDeletesMoneyEvents:
-            'Xoá cũng sẽ xoá luôn {{count}} giao dịch đã ghi qua nguồn tiền này. Các giao dịch đó biến mất khỏi lịch sử, nên tổng thu chi của những tháng đã qua sẽ thay đổi theo. Không thể hoàn tác.',
-          removeLeavesGoalsWithoutWallet:
-            'Sau khi xoá, {{goals}} sẽ không còn ví nào để góp tiền mỗi tháng. Mục tiêu vẫn còn nhưng phần theo dõi tiến độ hằng tháng sẽ trống cho tới khi bạn thêm ví khác.',
+          removeImpactNotice:
+            'Nếu nguồn tiền này đang gắn với mục tiêu, khoản dự chi hay khoản nợ, các liên kết đó sẽ được gỡ. Những giao dịch đã ghi qua nguồn tiền này cũng bị xoá, nên tổng thu chi của các tháng đã qua sẽ thay đổi theo. Không thể hoàn tác.',
           removeConfirm: 'Gỡ nguồn tiền',
           removing: 'Đang gỡ...',
           incomplete: 'Còn thiếu thông tin để lưu khoản này.',
+        },
+        withdraw: {
+          action: 'Tất toán',
+          titleMatured: 'Tất toán sổ đã đáo hạn?',
+          titleEarly: 'Rút trước hạn?',
+          description: '{{name}} sẽ trở thành một tài khoản dùng được ngay.',
+          payoutLabel: 'Số tiền nhận về',
+          principal: 'Gốc',
+          interest: 'Lãi',
+          clawback: 'Lãi bị truy thu',
+          // §22.11 — nói hệ quả bằng tiền, trước khi bấm.
+          forgone: 'Giữ đến hết kỳ hạn sẽ nhận thêm {{amount}}.',
+          becomesAccount:
+            'Sổ này không mất đi: nó trở thành tài khoản giữ số tiền trên, giữ nguyên lịch sử giá trị.',
+          confirm: 'Tất toán',
+          submitting: 'Đang tất toán...',
+          done: 'Đã tất toán, tiền đã vào tài khoản.',
         },
         sale: {
           action: 'Bán',
@@ -835,6 +927,16 @@ export const resources = {
         },
       },
       debts: {
+        toast: {
+          created: 'Đã tạo khoản nợ.',
+          updated: 'Đã cập nhật khoản nợ.',
+          deleted: 'Đã xóa khoản nợ.',
+          paidOff: 'Đã đánh dấu trả xong khoản nợ.',
+          createFailed: 'Chưa tạo được khoản nợ.',
+          updateFailed: 'Chưa cập nhật được khoản nợ.',
+          deleteFailed: 'Chưa xóa được khoản nợ.',
+          statusFailed: 'Chưa cập nhật được trạng thái khoản nợ.',
+        },
         remove: {
           title: 'Gỡ khoản nợ?',
           body: 'Khoản "{{name}}" sẽ không còn trong danh sách. Không thể hoàn tác.',
@@ -976,6 +1078,7 @@ export const resources = {
           actions: {
             back: 'Quay lại',
             confirm: 'Xác nhận',
+            saving: 'Đang lưu...',
           },
         },
         form: {
@@ -2359,6 +2462,18 @@ export const resources = {
         },
       },
       events: {
+        toast: {
+          created: 'Đã ghi nhận sự kiện.',
+          updated: 'Đã cập nhật sự kiện.',
+          deleted: 'Đã xóa sự kiện.',
+          createFailed: 'Chưa ghi nhận được sự kiện.',
+          updateFailed: 'Chưa cập nhật được sự kiện.',
+          deleteFailed: 'Chưa xóa được sự kiện.',
+          revaluationUpdated: 'Đã cập nhật định giá lại.',
+          revaluationFailed: 'Chưa cập nhật được định giá lại.',
+          saleAssetMissing: 'Không tìm thấy tài sản của giao dịch bán này.',
+          notDirectlyEditable: 'Loại sự kiện này không sửa trực tiếp được. Hãy xóa và tạo lại qua đúng luồng.',
+        },
         header: {
           eyebrow: 'Sự kiện tài chính',
           title: 'Tiền đã thay đổi như thế nào?',
@@ -2459,10 +2574,6 @@ export const resources = {
               total: 'Tổng {{value}}',
               net: 'Dòng tiền ròng {{sign}}{{value}}',
             },
-          },
-          actions: {
-            attention: 'Cần chú ý',
-            duplicate: 'Nhân bản',
           },
         },
         strip: {
@@ -2760,9 +2871,18 @@ export const resources = {
             'Quản lý thông tin chung, nhịp cập nhật và thông báo.',
           save: 'Lưu thay đổi',
           saved: 'Đã lưu cài đặt.',
+          saveFailed: 'Chưa lưu được cài đặt.',
           pageTitle: 'Cài đặt',
           manageSpace: 'Quản lý không gian <1>{{name}}</1>',
           savedState: 'Đã lưu',
+        },
+        spaces: {
+          title: 'Không gian của bạn',
+          label: 'Không gian đang mở',
+          placeholder: 'Chọn không gian',
+          count: '{{count}} không gian',
+          description:
+            'Bạn đang ở trong nhiều không gian. Chọn không gian muốn xem — mọi số liệu, thành viên và mục tiêu bên dưới đều thuộc về không gian đang mở.',
         },
         household: {
           eyebrow: 'Thông tin chung',
@@ -2800,6 +2920,13 @@ export const resources = {
             'Việc này xóa hẳn không gian chung: {{members}} thành viên và {{sources}} nguồn tiền. Không khôi phục lại được.',
           deleteAction: 'Xóa không gian',
           dangerMeta: 'Không thể hoàn tác',
+          // Người không tạo nhà không xóa được không gian chung — thứ duy nhất
+          // họ kết thúc được là quyền truy cập của chính mình.
+          leave: 'Rời không gian gia đình',
+          leaveMeta: 'Quyền truy cập của bạn',
+          leaveDescription:
+            'Bạn sẽ không còn xem được số liệu của nhà này. Dữ liệu chung vẫn giữ nguyên cho những người còn lại.',
+          leaveAction: 'Rời không gian',
         },
         categories: {
           eyebrow: 'Phân loại',
@@ -3482,6 +3609,18 @@ export const resources = {
         footerNote: 'These figures reflect everything your household has recorded in Oursight.',
       },
       assets: {
+        toast: {
+          created: 'Asset created.',
+          updated: 'Asset updated.',
+          deleted: 'Asset deleted.',
+          createFailed: 'Could not create the asset.',
+          updateFailed: 'Could not update the asset.',
+          deleteFailed: 'Could not delete the asset.',
+          sold: 'Asset sold.',
+          saleUpdated: 'Sale updated.',
+          sellFailed: 'Could not sell the asset.',
+          saleUpdateFailed: 'Could not update the sale.',
+        },
         marketPrice: {
           label: 'Market price',
           observedAt: 'Updated {{time}} · {{date}}',
@@ -3698,9 +3837,70 @@ export const resources = {
           loanStartDate: 'Lending date',
           maturityDate: 'Maturity date',
           maturityBeforeStart: 'The maturity date must come after the lending date',
+          maturityAfterStart: 'The maturity date must come after the deposit date',
           hasInterest: 'This one earns interest',
           interestPayment: 'Interest payment',
           nonTermRate: 'Non-term rate (%/yr)',
+          // --- Saving deposit: term + expected-payout block ---------------
+          savingStartDate: 'Deposit date',
+          savingTerm: 'Term',
+          savingTermMonths: '{{count}} months',
+          savingTermCustom: 'Other',
+          savingTermMaturity: 'Matures {{date}}',
+          savingTermPickDate: 'Pick a maturity date',
+          nonTermRateHint: 'The rate the bank pays if you withdraw early.',
+          preview: {
+            title: 'Expected at maturity',
+            principal: 'Principal',
+            interest: 'Interest',
+            interestMeta: '{{rate}}%/yr · {{months}} months',
+            monthlyInterest: 'Interest each month',
+            monthlyAccrual: 'Average interest per month',
+            total: 'Take-home',
+            totalCaption: 'What you get back if you hold to maturity',
+            early: 'Withdraw early at month {{month}}: take home {{total}}, {{penalty}} less.',
+            monthlyToWallet: '{{amount}} into {{wallet}} every month, {{count}} payouts.',
+            monthlyToPrincipal: '{{amount}} added to the principal every month, {{count}} payouts.',
+            endOfTermToWallet: 'All the interest lands in {{wallet}} at maturity.',
+            endOfTermToPrincipal: 'All the interest is added to the principal at maturity.',
+            needsInput: 'Enter the principal, rate and term to see the expected interest.',
+          },
+          // A saving deposit uses its own stepped form (like the debt form).
+          deposit: {
+            createTitle: 'New saving deposit',
+            editTitle: 'Edit saving deposit',
+            namePlaceholder: 'Example: ACB passbook',
+            steps: {
+              account: 'Deposit',
+              amount: 'Amount & term',
+              interest: 'Interest',
+              review: 'Review',
+            },
+            sections: {
+              account: 'Which deposit is this?',
+              amount: 'How much, and for how long?',
+              interest: 'What does it pay?',
+              reviewCreate: 'Review before adding',
+              reviewEdit: 'Review your changes',
+            },
+            rail: {
+              stepOf: 'Step {{step}}/{{total}}',
+              empty: 'Not filled in',
+              reviewAll: 'Review everything',
+            },
+            actions: {
+              back: 'Back',
+              continue: 'Continue',
+              review: 'Review',
+            },
+            flexibleYes: 'Yes',
+            flexibleNo: 'No',
+            acquisition: 'This deposit is',
+            acquisitionOwned: 'Already open',
+            acquisitionDeposited: 'Just deposited',
+            payFrom: 'Paid from',
+            payFromPlaceholder: 'Choose the account it came from',
+          },
           nonTermRatePlaceholder: 'Example: 0,2',
           nonTermRateTooHigh: 'The non-term rate cannot exceed the contracted rate',
           interestDestination: 'Interest goes to',
@@ -3735,15 +3935,27 @@ export const resources = {
           changeFlexibleOff: 'This one will no longer count towards flexible money.',
           removeTitle: 'Remove this money source?',
           removeBody: "{{amount}} will no longer count towards your household's picture.",
-          removeAlsoDetaches:
-            'This asset backs {{goalCount}} goal(s) ({{goals}}), {{eventCount}} scheduled event(s) and {{debtCount}} debt(s). Deleting it detaches those links — the goals, scheduled events and debts stay, but they will no longer point at this asset.',
-          removeDeletesMoneyEvents:
-            'Deleting also deletes the {{count}} movement(s) recorded through this money source. They leave your history for good, so past months\' totals will change with them. This cannot be undone.',
-          removeLeavesGoalsWithoutWallet:
-            'After this, {{goals}} will have no wallet left to be saved into each month. The goal stays, but its monthly pace panel will be empty until you add another wallet.',
+          removeImpactNotice:
+            "If this money source backs any goals, scheduled events or debts, those links will be detached. Movements recorded through it are deleted too, so past months' totals will change with them. This cannot be undone.",
           removeConfirm: 'Remove',
           removing: 'Removing...',
           incomplete: 'Some details are still missing.',
+        },
+        withdraw: {
+          action: 'Settle',
+          titleMatured: 'Settle this matured deposit?',
+          titleEarly: 'Withdraw before maturity?',
+          description: '{{name}} becomes an account you can spend from.',
+          payoutLabel: 'You receive',
+          principal: 'Principal',
+          interest: 'Interest',
+          clawback: 'Interest clawed back',
+          forgone: 'Holding to maturity would pay {{amount}} more.',
+          becomesAccount:
+            'The deposit is not lost: it becomes the account holding this money, keeping its value history.',
+          confirm: 'Settle',
+          submitting: 'Settling...',
+          done: 'Settled — the money is in the account.',
         },
         sale: {
           action: 'Sell',
@@ -3965,6 +4177,16 @@ export const resources = {
         },
       },
       debts: {
+        toast: {
+          created: 'Debt created.',
+          updated: 'Debt updated.',
+          deleted: 'Debt deleted.',
+          paidOff: 'Debt marked as paid off.',
+          createFailed: 'Could not create the debt.',
+          updateFailed: 'Could not update the debt.',
+          deleteFailed: 'Could not delete the debt.',
+          statusFailed: 'Could not update the debt status.',
+        },
         remove: {
           title: 'Remove this debt?',
           body: '"{{name}}" will no longer be in the list. This cannot be undone.',
@@ -4106,6 +4328,7 @@ export const resources = {
           actions: {
             back: 'Back',
             confirm: 'Confirm',
+            saving: 'Saving...',
           },
         },
         form: {
@@ -4398,6 +4621,7 @@ export const resources = {
         actions: {
           run: 'See what happens',
           running: 'Working it out...',
+          cancel: 'Cancel',
           update: 'Update',
           tryAnother: 'Try another number',
           share: 'Share',
@@ -5403,6 +5627,18 @@ export const resources = {
         },
       },
       events: {
+        toast: {
+          created: 'Event recorded.',
+          updated: 'Event updated.',
+          deleted: 'Event deleted.',
+          createFailed: 'Could not record the event.',
+          updateFailed: 'Could not update the event.',
+          deleteFailed: 'Could not delete the event.',
+          revaluationUpdated: 'Revaluation updated.',
+          revaluationFailed: 'Could not update the revaluation.',
+          saleAssetMissing: 'Could not find the asset behind this sale.',
+          notDirectlyEditable: 'This event type cannot be edited directly. Delete it and record it again through its own flow.',
+        },
         header: {
           eyebrow: 'Financial events',
           title: 'How has your money changed?',
@@ -5500,10 +5736,6 @@ export const resources = {
               total: 'Total {{value}}',
               net: 'Net cash flow {{sign}}{{value}}',
             },
-          },
-          actions: {
-            attention: 'Needs attention',
-            duplicate: 'Duplicate',
           },
         },
         strip: {
@@ -5790,9 +6022,18 @@ export const resources = {
             'Manage general information, update rhythm, and notifications.',
           save: 'Save changes',
           saved: 'Settings saved.',
+          saveFailed: 'Could not save settings.',
           pageTitle: 'Settings',
           manageSpace: 'Managing <1>{{name}}</1>',
           savedState: 'Saved',
+        },
+        spaces: {
+          title: 'Your spaces',
+          label: 'Current space',
+          placeholder: 'Choose a space',
+          count: '{{count}} spaces',
+          description:
+            'You belong to more than one space. Choose which one to look at — every figure, member and goal below belongs to the space that is open.',
         },
         household: {
           eyebrow: 'General information',
@@ -5829,6 +6070,13 @@ export const resources = {
             'This permanently deletes the shared space: {{members}} members and {{sources}} money sources. It cannot be undone.',
           deleteAction: 'Delete space',
           dangerMeta: 'Cannot be undone',
+          // Someone who did not create the household cannot delete the shared
+          // space — the only thing they can end is their own access.
+          leave: 'Leave household space',
+          leaveMeta: 'Your access',
+          leaveDescription:
+            'You will no longer see this household’s numbers. The shared data stays as it is for everyone else.',
+          leaveAction: 'Leave space',
         },
         categories: {
           eyebrow: 'Categories',

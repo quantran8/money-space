@@ -8,6 +8,7 @@ import {
   listAssets,
   purchaseIntoPosition,
   updateAsset,
+  withdrawSavingDeposit,
   type AssetPayload,
 } from '#/features/assets/api/assets.repository'
 import type { Asset, AssetSnapshotPoint } from '#/features/assets/model/assets.types'
@@ -102,11 +103,19 @@ export function useAssets() {
       }) => purchaseIntoPosition(activeHouseholdId!, assetId, payload),
       onSuccess: invalidate,
     }),
+    // Tất toán a saving deposit. Invalidates the same prefix as every other
+    // asset write, which matters more here than usual: the deposit BECOMES a
+    // wallet, so the wallet pickers, the flexible-money figure and the deposit's
+    // own chart all change in one go.
+    withdrawSavingDeposit: useMutation({
+      mutationFn: (assetId: string) =>
+        withdrawSavingDeposit(activeHouseholdId!, assetId),
+      onSuccess: invalidate,
+    }),
     deleteAsset: useMutation({
       // `cascade` is the household's confirmation, taken in the delete dialog
-      // after `useAssetDeleteImpact` has told them what the asset still backs.
-      // Never defaulted on: the links it clears are what a goal's progress is
-      // made of.
+      // after it has stated what a delete can take with it. Never defaulted on:
+      // the links it clears are what a goal's progress is made of.
       mutationFn: ({ assetId, cascade }: { assetId: string; cascade?: boolean }) =>
         deleteAsset(activeHouseholdId!, assetId, cascade),
       onSuccess: invalidate,

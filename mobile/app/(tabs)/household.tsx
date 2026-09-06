@@ -16,6 +16,7 @@ import { notify } from '@money-space/core/shared/notify'
 
 import { ConfirmDialog, Panel, Screen, Sections, Skeleton } from '@/components/ui'
 import { HouseholdIdentitySection } from '@/features/household/ui/household-identity-section'
+import { SpaceSwitcherSection } from '@/features/household/ui/space-switcher-section'
 import { InviteQrSheet } from '@/features/invites/ui/invite-qr-sheet'
 import { MembersSection } from '@/features/members/ui/members-section'
 import { HouseholdDataSection } from '@/features/settings/ui/household-data-section'
@@ -106,11 +107,15 @@ export default function HouseholdScreen() {
 
   return (
     <Screen
+      withAccountHeader
       title={t('nav.household')}
       onRefresh={() => void refetchMembers()}
       refreshing={isRefetching}
     >
       <Sections>
+        {/* First: everything below it describes the space this row picks. */}
+        <SpaceSwitcherSection />
+
         {isSettingsLoading ? (
           <Panel>
             <Skeleton height={28} className="w-40" />
@@ -137,16 +142,11 @@ export default function HouseholdScreen() {
           onRemoveMember={setRemoveId}
         />
 
-        {/* The two destinations that are not tabs. Both are full screens, and
-            both are reached from here rather than from the bar, which is hard
-            capped at five (§13). */}
+        {/* The one destination that is not a tab. Sự kiện used to be listed
+            here too; it is a tab of its own now, so a second door to it would
+            just be a longer route to the same screen. */}
         <Panel>
           <HubLink label={t('activity.header.title')} onPress={() => navigate('/activity')} />
-
-          {/* ── SEAM: events ────────────────────────────────────────────────
-              `app/events.tsx` is owned by the what-if / events port. This is
-              only the way in; the screen itself is theirs. */}
-          <HubLink label={t('nav.events')} onPress={() => navigate('/events')} />
 
           {/* ── SEAM: what-if ───────────────────────────────────────────────
               The what-if sheet is owned by another port and opens from Home

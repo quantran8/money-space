@@ -18,6 +18,7 @@ import { JoinPage } from '@/features/invites/ui/join-page'
 import { GoalDetailPage } from '@/features/goals/ui/goal-detail-page'
 import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
 import { RequireHousehold } from '@/features/onboarding/ui/require-household'
+import { RequireNoHousehold } from '@/features/onboarding/ui/require-no-household'
 
 /**
  * `/assets` and `/debts` → `/networth`, carrying navigation state across.
@@ -44,11 +45,19 @@ export const router = createBrowserRouter([
     path: '/auth/callback',
     element: <AuthCallbackPage />,
   },
+  /**
+   * Create-or-join, and a dead end until one of them happens: whoever lands
+   * here has no space to be sent back to. `RequireNoHousehold` only guards the
+   * other direction — someone who already has one does not get asked to make a
+   * second.
+   */
   {
     path: '/onboarding',
     element: (
       <RequireAuth>
-        <OnboardingPage />
+        <RequireNoHousehold>
+          <OnboardingPage />
+        </RequireNoHousehold>
       </RequireAuth>
     ),
   },

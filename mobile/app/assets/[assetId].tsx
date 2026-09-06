@@ -11,6 +11,7 @@ import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-asset
 import {
   canUpdatePriceManually,
   isSellableAssetType,
+  isWalletAssetType,
 } from '@money-space/core/features/assets/model/assets'
 import { AS_OF } from '@money-space/core/features/assets/model/assets-form'
 import { formatDate } from '@money-space/core/features/debts/model/debts-form'
@@ -187,7 +188,7 @@ export default function AssetDetailScreen() {
   }
 
   const isMarketPriced = asset.valuationMode === 'market_priced'
-  const isBalanceAsset = asset.type === 'cash' || asset.type === 'bank_account'
+  const isBalanceAsset = isWalletAssetType(asset.type)
   const isAutoPriced = asset.valuationMode !== 'manual'
   const isSold = asset.status === 'sold'
   const canUpdatePrice = !isSold && canUpdatePriceManually(asset.type)

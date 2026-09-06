@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { CalendarDays, LayoutGrid, Target, Users, Wallet } from 'lucide-react-native'
+import { CalendarDays, LayoutGrid, Target, Timeline, Wallet } from 'lucide-react-native'
 
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 
@@ -14,8 +14,14 @@ import { colors } from '@/theme/tokens'
  * five). Same set, same order as the web's bottom nav: a household that uses
  * both should not have to relearn where things are.
  *
- * `Lịch sử cập nhật` and `Cài đặt` are deliberately absent — they live inside
- * Gia đình. A bar with eight targets is a bar nobody can hit.
+ * The fifth slot is **Sự kiện**, not Gia đình. The shared record of money that
+ * has already moved is opened daily; the household's settings are a
+ * once-a-month errand that was holding a daily slot. Gia đình did not lose a
+ * destination — the account header's gear reaches it from every screen, which
+ * is one tap from anywhere rather than one tap from the bar.
+ *
+ * `Lịch sử cập nhật` still lives inside Gia đình. A bar with eight targets is
+ * a bar nobody can hit.
  */
 export default function TabsLayout() {
   return (
@@ -37,11 +43,16 @@ export default function TabsLayout() {
  */
 function TabBar() {
   const { t } = useTranslation()
-  useActiveHousehold()
+  const { activeHouseholdId } = useActiveHousehold()
 
   return (
     <>
+      {/* Keyed on the space. Tab screens stay mounted on a phone, so an id held
+          in a screen's state — an event being edited, a member picked for
+          removal — would otherwise survive a switch made on the Gia đình tab
+          and act on the wrong space the next time that tab was opened. */}
       <Tabs
+        key={activeHouseholdId ?? 'none'}
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.ink,
@@ -87,12 +98,16 @@ function TabBar() {
           }}
         />
         <Tabs.Screen
-          name="household"
+          name="events"
           options={{
-            title: t('nav.household'),
-            tabBarIcon: ({ color }) => <Users size={20} color={color} strokeWidth={1.75} />,
+            title: t('nav.events'),
+            tabBarIcon: ({ color }) => <Timeline size={20} color={color} strokeWidth={1.75} />,
           }}
         />
+
+        {/* Still a route under the tabs — the header gear navigates here, and
+            `/household` deep links must keep resolving — but NOT a bar item. */}
+        <Tabs.Screen name="household" options={{ href: null }} />
       </Tabs>
 
       {/* What-if, mounted ONCE — the mobile equivalent of the web's AppShell

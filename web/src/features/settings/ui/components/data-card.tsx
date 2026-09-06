@@ -40,6 +40,10 @@ export function DataCard() {
  * gone — the bottom tab bar covers navigation, and `/settings` is where a
  * household already manages who they are.
  *
+ * Mobile only, at the same breakpoint the sidebar appears: above `lg` the
+ * account menu at the sidebar foot already holds sign-out, and two ways out of
+ * the session on one screen asks the reader to wonder whether they differ.
+ *
  * Shaped like `DataCard`, deliberately NOT like `DangerCard`: signing out is
  * reversible and costs nothing, so it must not borrow the one bordered card's
  * weight. It is also not confirmed, for the same reason.
@@ -49,7 +53,7 @@ export function SignOutCard() {
   const logout = useLogout()
 
   return (
-    <Panel>
+    <Panel className="lg:hidden">
       <PanelHeader title={t('shell.logout')} meta={t('shell.logoutMeta')} />
 
       <div className="s-head-body grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_auto]">
@@ -94,6 +98,45 @@ export function DangerCard({ onDelete }: { onDelete: () => void }) {
         >
           <Trash2 className="size-4" strokeWidth={1.75} />
           {t('settings.data.deleteAction')}
+        </Button>
+      </div>
+    </Panel>
+  )
+}
+
+/**
+ * What stands in `DangerCard`'s place for someone who did not create the space.
+ *
+ * They cannot delete it — the backend guards deletion against `createdBy`, so
+ * the button they used to see could only ever end in a 403. The one exit they
+ * do have is their own, and it now lives here rather than behind an overflow
+ * menu on their own row: it is a household-level decision, and the members list
+ * is a list of facts about people, not a place to keep the way out.
+ *
+ * Shaped like `SignOutCard`, deliberately NOT like `DangerCard`: nothing is
+ * destroyed, the shared data survives, and whoever created the space can invite
+ * them back. Borrowing the one bordered card's weight would overstate it.
+ */
+export function LeaveSpaceCard({ onLeave }: { onLeave: () => void }) {
+  const { t } = useTranslation()
+
+  return (
+    <Panel>
+      <PanelHeader title={t('settings.data.leave')} meta={t('settings.data.leaveMeta')} />
+
+      <div className="s-head-body grid items-center gap-5 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <p className="max-w-[680px] t-body-sm leading-5 text-ink2">
+          {t('settings.data.leaveDescription')}
+        </p>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="justify-self-start"
+          onClick={onLeave}
+        >
+          <LogOut className="size-4" strokeWidth={1.75} />
+          {t('settings.data.leaveAction')}
         </Button>
       </div>
     </Panel>

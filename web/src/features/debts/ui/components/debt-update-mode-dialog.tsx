@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type {
   DebtBalanceIntent,
@@ -39,12 +40,6 @@ type DebtUpdateModeDialogProps = {
 }
 
 type ModeKind = 'correction' | 'effective'
-
-const LENDER_TYPE_LABELS: Record<string, string> = {
-  relative: 'Người thân',
-  bank_institution: 'Ngân hàng / Tổ chức',
-  other: 'Khác',
-}
 
 /**
  * Exact đồng, not the compact scale: every row here is a before → after pair the
@@ -124,6 +119,7 @@ export function DebtUpdateModeDialog({
   isSubmitting,
   onConfirm,
 }: DebtUpdateModeDialogProps) {
+  const { t } = useTranslation()
   const [mode, setMode] = useState<ModeKind>('correction')
   const [effectiveDate, setEffectiveDate] = useState<string>(TODAY)
   // Only relevant when the loan amount changed. The intent both classifies the
@@ -193,10 +189,10 @@ export function DebtUpdateModeDialog({
       <ResponsiveDialogContent className="gap-0 overflow-hidden border-white bg-[#fcfcfd] p-0 shadow-[0_28px_80px_rgba(15,23,42,0.18)] sm:max-w-[480px] sm:rounded-[32px]">
         <ResponsiveDialogHeader className="gap-1.5 border-b border-[#e8e8ee] px-5 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
           <ResponsiveDialogTitle className="t-metric leading-tight text-[#1d1d1f]">
-            Cập nhật khoản nợ đã có lịch sử
+            {t('debts.updateMode.title')}
           </ResponsiveDialogTitle>
           <ResponsiveDialogDescription className="t-body-sm text-[#6e6e73]">
-            Khoản nợ này đã có giao dịch. Cho mình biết đây là loại thay đổi nào để cập nhật đúng.
+            {t('debts.updateMode.description')}
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
@@ -204,24 +200,24 @@ export function DebtUpdateModeDialog({
           {originalAmountChanged ? (
             <div className="space-y-2">
               <p className="t-body-sm font-medium text-[#6e6e73]">
-                Bạn thay đổi số tiền vay — ý bạn là:
+                {t('debts.updateMode.amountQuestion')}
               </p>
               <OptionCard
                 active={balanceIntent === 'fix_original'}
-                title="Sửa số tiền vay ban đầu"
-                hint="Trước đây nhập sai — tính lại dư nợ và lịch sử theo số đúng."
+                title={t('debts.updateMode.options.fixOriginal')}
+                hint={t('debts.updateMode.options.fixOriginalHint')}
                 onClick={() => chooseIntent('fix_original')}
               />
               <OptionCard
                 active={balanceIntent === 'additional_disbursement'}
-                title="Ghi nhận vay thêm"
-                hint="Vay thêm một khoản — tăng dư nợ và ghi vào dòng tiền."
+                title={t('debts.updateMode.options.additionalDisbursement')}
+                hint={t('debts.updateMode.options.additionalDisbursementHint')}
                 onClick={() => chooseIntent('additional_disbursement')}
               />
               <OptionCard
                 active={balanceIntent === 'reconcile_balance'}
-                title="Cập nhật dư nợ hiện tại"
-                hint="Số dư thực tế (theo sao kê) khác app — đặt lại cho khớp."
+                title={t('debts.updateMode.options.reconcileBalance')}
+                hint={t('debts.updateMode.options.reconcileBalanceHint')}
                 onClick={() => chooseIntent('reconcile_balance')}
               />
             </div>
@@ -229,14 +225,14 @@ export function DebtUpdateModeDialog({
             <div className="space-y-2">
               <OptionCard
                 active={mode === 'correction'}
-                title="Sửa thông tin đã nhập sai"
-                hint="Trước đây nhập sai — cập nhật lại lịch sử và số dư khoản nợ."
+                title={t('debts.updateMode.options.correction')}
+                hint={t('debts.updateMode.options.correctionHint')}
                 onClick={() => setMode('correction')}
               />
               <OptionCard
                 active={mode === 'effective'}
-                title="Thay đổi áp dụng từ bây giờ"
-                hint="Điều khoản mới, chỉ áp dụng cho các kỳ từ một ngày trở đi."
+                title={t('debts.updateMode.options.effective')}
+                hint={t('debts.updateMode.options.effectiveHint')}
                 onClick={() => setMode('effective')}
               />
             </div>
@@ -244,14 +240,14 @@ export function DebtUpdateModeDialog({
 
           {mode === 'correction' ? (
             <p className="rounded-[16px] bg-attention-tint px-4 py-3 t-body-sm leading-5 text-attention-ink">
-              Thay đổi này sẽ cập nhật lại lịch sử và số dư khoản nợ.
+              {t('debts.updateMode.correctionWarning')}
             </p>
           ) : null}
 
           {showEffectiveDate ? (
             <div className="space-y-1.5">
               <p className="t-body-sm font-medium text-[#6e6e73]">
-                Thay đổi này áp dụng từ ngày nào?
+                {t('debts.updateMode.effectiveDateLabel')}
               </p>
               <DatePicker
                 value={effectiveDate}
@@ -264,26 +260,26 @@ export function DebtUpdateModeDialog({
           {before && after ? (
             <div className="rounded-[20px] border border-[#e5e5ea] bg-white px-4 py-3">
               <p className="t-body-sm font-medium tracking-[-0.01em] text-[#1d1d1f]">
-                Xem trước thay đổi
+                {t('debts.updateMode.preview.title')}
               </p>
               <div className="mt-1 divide-y divide-[#f2f2f7]">
                 <PreviewRow
-                  label="Tên khoản vay"
+                  label={t('debts.updateMode.preview.name')}
                   before={before.name}
                   after={after.name}
                 />
                 <PreviewRow
-                  label="Loại nợ"
-                  before={LENDER_TYPE_LABELS[before.lenderType] ?? before.lenderType}
-                  after={LENDER_TYPE_LABELS[after.lenderType] ?? after.lenderType}
+                  label={t('debts.updateMode.preview.lenderType')}
+                  before={t(`options.lenderType.${before.lenderType}`, before.lenderType)}
+                  after={t(`options.lenderType.${after.lenderType}`, after.lenderType)}
                 />
                 <PreviewRow
-                  label="Số tiền vay"
+                  label={t('debts.updateMode.preview.originalAmount')}
                   before={money(before.originalAmount)}
                   after={money(afterOriginal)}
                 />
                 <PreviewRow
-                  label="Còn nợ"
+                  label={t('debts.updateMode.preview.outstanding')}
                   before={money(before.outstandingAmount)}
                   after={money(afterOutstanding)}
                   emphasize
@@ -295,33 +291,55 @@ export function DebtUpdateModeDialog({
                 {mode === 'correction' ? (
                   <>
                     <PreviewRow
-                      label="Trả mỗi kỳ"
+                      label={t('debts.updateMode.preview.perPayment')}
                       before={money(before.fixedPaymentAmount)}
                       after={money(after.fixedPaymentAmount)}
                     />
                     <PreviewRow
-                      label="Lãi suất"
+                      label={t('debts.updateMode.preview.interestRate')}
                       before={
-                        before.interestRate !== undefined ? `${before.interestRate}%/năm` : '—'
+                        before.interestRate !== undefined
+                          ? t('debts.updateMode.preview.interestRateValue', {
+                              rate: before.interestRate,
+                            })
+                          : '—'
                       }
-                      after={after.interestRate !== undefined ? `${after.interestRate}%/năm` : '—'}
+                      after={
+                        after.interestRate !== undefined
+                          ? t('debts.updateMode.preview.interestRateValue', {
+                              rate: after.interestRate,
+                            })
+                          : '—'
+                      }
                     />
                     <PreviewRow
-                      label="Số kỳ trả"
+                      label={t('debts.updateMode.preview.installments')}
                       before={
-                        before.installments !== undefined ? `${before.installments} kỳ` : '—'
+                        before.installments !== undefined
+                          ? t('debts.updateMode.preview.installmentsValue', {
+                              count: before.installments,
+                            })
+                          : '—'
                       }
-                      after={after.installments !== undefined ? `${after.installments} kỳ` : '—'}
+                      after={
+                        after.installments !== undefined
+                          ? t('debts.updateMode.preview.installmentsValue', {
+                              count: after.installments,
+                            })
+                          : '—'
+                      }
                     />
                   </>
                 ) : null}
               </div>
               {hasVisibleChange ? (
                 <p className="mt-2 t-caption text-[#8e8e93]">
-                  Chỉ hiển thị các mục thay đổi. Bạn có thể quay lại để chỉnh trước khi lưu.
+                  {t('debts.updateMode.preview.footnote')}
                 </p>
               ) : (
-                <p className="mt-1 t-body-sm text-[#6e6e73]">Không có thay đổi nào để áp dụng.</p>
+                <p className="mt-1 t-body-sm text-[#6e6e73]">
+                  {t('debts.updateMode.preview.noChange')}
+                </p>
               )}
             </div>
           ) : null}
@@ -329,10 +347,12 @@ export function DebtUpdateModeDialog({
 
         <ResponsiveDialogFooter className="border-t border-[#e8e8ee] bg-[#fcfcfd] px-5 py-4 sm:px-6">
           <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
-            Quay lại
+            {t('debts.updateMode.actions.back')}
           </Button>
           <Button type="button" onClick={handleConfirm} disabled={isSubmitting}>
-            {isSubmitting ? 'Đang lưu...' : 'Xác nhận'}
+            {isSubmitting
+              ? t('debts.updateMode.actions.saving')
+              : t('debts.updateMode.actions.confirm')}
           </Button>
         </ResponsiveDialogFooter>
       </ResponsiveDialogContent>

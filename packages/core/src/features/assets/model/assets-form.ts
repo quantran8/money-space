@@ -15,7 +15,28 @@ import { formatVndExact } from '#/shared/lib/format-money'
 import { parseRawDecimal, parseRawMoney } from '#/shared/lib/number-format'
 import { localizedOptionalText } from '#/shared/lib/validation'
 
+/**
+ * The fallback "as of" date for reading a value when the server has not told us
+ * one yet. A stale date beats no date for a READ — every consumer writes
+ * `asOf || AS_OF`.
+ *
+ * NEVER use it as a form default. It is a fixed day in the past, so defaulting
+ * "Ngày gửi" to it silently back-dated every new saving deposit: a 100tr
+ * passbook opened today appeared as 101.189.041đ, because `computeCurrentValue`
+ * had faithfully accrued 62 days of interest for a deposit that did not exist
+ * during them. Use `todayIso()` for anything the user is deemed to have chosen.
+ */
 export const AS_OF = '2026-07-06'
+
+/** Today, as `YYYY-MM-DD` in the viewer's own timezone. */
+export function todayIso(): string {
+  const now = new Date()
+  // Local parts, not `toISOString()`: that converts to UTC, so anyone east of
+  // Greenwich late in the evening would get tomorrow's date. VN is UTC+7.
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
 
 export type AssetTotals = {
   usable_now: number
@@ -95,6 +116,9 @@ export const defaultAssetFormValues: AssetForm = {
   principal: '',
   interestRate: '',
   hasInterest: false,
+  // Overwritten by `freshAssetFormValues()` at every open. This object is a
+  // module constant, evaluated once at import, so a date literal here would be
+  // the day the tab was loaded rather than the day the user is filling it in.
   startDate: AS_OF,
   maturityDate: '',
   interestPayment: 'end_of_term',
@@ -109,11 +133,27 @@ export const defaultAssetFormValues: AssetForm = {
 }
 
 /**
- * Asset types the household can be BUYING rather than merely declaring.
+ * Blank form values for a NEW asset, with every date resolved now.
+ *
+ * `defaultAssetFormValues` is a module constant and cannot carry "today" — it
+ * would freeze at import. Anything opening the create form uses this instead.
+ */
+export function freshAssetFormValues(): AssetForm {
+  return { ...defaultAssetFormValues, startDate: todayIso() }
+}
+
+/**
+ * Asset types the household can be ACQUIRING rather than merely declaring.
  *
  * Wallets are excluded because paying for a wallet out of a wallet is just a
- * transfer, and a saving deposit already has its own funding flow. What is left
- * is what a household actually buys with money it holds.
+ * transfer. What is left is what a household actually parts with money for.
+ *
+ * `saving_deposit` belongs here for the same reason gold does: opening a
+ * passbook takes money out of an account. Without the question every deposit
+ * read as "we already had this", so recording a 100tr passbook raised net worth
+ * by 100tr the household never gained — the exact bug this set was built to
+ * fix. (An earlier comment here claimed a deposit "already has its own funding
+ * flow"; it never did.)
  */
 const purchasableTypes: ReadonlySet<AssetType> = new Set<AssetType>([
   'gold',
@@ -121,6 +161,7 @@ const purchasableTypes: ReadonlySet<AssetType> = new Set<AssetType>([
   'stock',
   'real_estate',
   'foreign_currency',
+  'saving_deposit',
 ])
 
 export function canBePurchased(type: AssetType): boolean {
@@ -328,7 +369,7 @@ export function fromAsset(asset: Asset): AssetForm {
     interestRate: decimalToRaw(asset.calculationTerm?.interestRate),
     // A stored 0% loan reopens with the interest toggle off, the way it was saved.
     hasInterest: (asset.calculationTerm?.interestRate ?? 0) > 0,
-    startDate: asset.calculationTerm?.startDate ?? AS_OF,
+    startDate: asset.calculationTerm?.startDate ?? todayIso(),
     maturityDate: asset.calculationTerm?.maturityDate ?? '',
     interestPayment: asset.calculationTerm?.interestPayment ?? 'end_of_term',
     nonTermRate: decimalToRaw(asset.calculationTerm?.nonTermRate),
@@ -505,6 +546,26 @@ export function buildAssetSchema(
             message: t('assets.form.maturityBeforeStart'),
           })
         }
+        // A saving deposit is the one formula type whose term is not optional:
+        // a passbook is sold as "gửi 12 tháng", the interest the household is
+        // promised is only defined against it, and without it the app can
+        // neither show the expected payout nor ever credit the interest
+        // (`computeSavingInterestPeriods` returns nothing without a maturity).
+        if (values.type === 'saving_deposit') {
+          if (!values.maturityDate) {
+            ctx.addIssue({
+              path: ['maturityDate'],
+              code: 'custom',
+              message: t('validation.requiredDate'),
+            })
+          } else if (values.startDate && values.maturityDate <= values.startDate) {
+            ctx.addIssue({
+              path: ['maturityDate'],
+              code: 'custom',
+              message: t('assets.form.maturityAfterStart'),
+            })
+          }
+        }
         // Non-term (early-withdrawal) rate is required for saving deposits.
         if (values.type === 'saving_deposit') {
           const nonTerm = parseRawDecimal(values.nonTermRate)
@@ -572,13 +633,22 @@ export function buildAssetSchema(
  * takes 80tr out of the wallet; charging the market price would invent a loss
  * that never happened. Everything else has no separate basis, so its own value
  * is the price paid. Mirrors `resolvePurchaseCost` on the server.
+ *
+ * Keyed on the valuation MODE rather than the type, because that is what
+ * decides which field holds the amount: a formula asset keeps it in
+ * `principal`, and reading `value` there returned NaN — which the affordability
+ * check treats as "cannot tell", so an unaffordable deposit passed silently.
  */
 export function purchaseCostOf(values: AssetForm): number {
-  if (valuationModeForType(values.type) === 'market_priced') {
+  const mode = valuationModeForType(values.type)
+  if (mode === 'market_priced') {
     const quantity = parseRawDecimal(values.quantity)
     const unitPrice = parseMoneyToVnd(values.purchasePrice)
     if (!Number.isFinite(quantity) || !Number.isFinite(unitPrice)) return NaN
     return quantity * unitPrice
+  }
+  if (mode === 'formula_calculated') {
+    return parseMoneyToVnd(values.principal)
   }
   return parseMoneyToVnd(values.value)
 }

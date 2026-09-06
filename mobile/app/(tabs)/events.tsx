@@ -7,9 +7,8 @@ import { AS_OF } from '@money-space/core/features/assets/model/assets-form'
 import { useEventsPage } from '@money-space/core/features/events/hooks/use-events-page'
 import type { QuickAction } from '@money-space/core/features/events/model/events-form'
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
-import { useNavigate } from '@money-space/core/shared/navigation'
 
-import { BackLink, Button, ConfirmDialog, Screen, Sections } from '@/components/ui'
+import { Button, ConfirmDialog, Screen, Sections } from '@/components/ui'
 import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
 import { EventFormSheet } from '@/features/events/ui/event-form-sheet'
 import { EventsSummaryPanel } from '@/features/events/ui/events-summary-panel'
@@ -19,9 +18,11 @@ import { MonthScope } from '@/features/events/ui/month-scope'
 /**
  * `/events` — Sự kiện tài chính, the ledger of money that has ALREADY moved.
  *
- * Reached from Gia đình and deliberately not a sixth tab: the bar is capped at
- * five (§13), and this is a "what happened" question a household asks
- * occasionally rather than one of the five places it lives.
+ * One of the five tabs, and the one that replaced Cài đặt there. The shared
+ * record of money that has already moved is opened daily; settings is a
+ * once-a-month errand that was holding a daily slot. Settings loses nothing —
+ * the header gear reaches Gia đình from every screen. The bar stays at five
+ * (§13).
  *
  * The distinction this screen exists to hold: a money event is a fact about the
  * past. What is *expected* to move is a cashflow event and belongs entirely to
@@ -35,7 +36,6 @@ import { MonthScope } from '@/features/events/ui/month-scope'
  */
 export default function EventsScreen() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { activeHouseholdId } = useActiveHousehold()
   const { asOf } = useAssets()
@@ -87,6 +87,7 @@ export default function EventsScreen() {
     sourceAssetOptions,
     memberOptions,
     categoryOptions,
+    categoryVisualById,
     actualControl,
     handleActualSubmit,
     actualErrors,
@@ -98,8 +99,6 @@ export default function EventsScreen() {
     openEditEvent,
     handleFormOpenChange,
     onSubmitActual,
-    toggleEventAttention,
-    duplicateEvent,
     handleDeleteEvent,
   } = useEventsPage()
 
@@ -110,16 +109,12 @@ export default function EventsScreen() {
 
   return (
     <Screen
-      withoutTabBar
+      withAccountHeader
       title={t('events.history.title')}
       onRefresh={() => void handleRefresh()}
       refreshing={refreshing}
     >
       <Sections>
-        {/* Named in words, not left to an arrow: a deep link can land here with
-            no stack behind it, and the system gesture is invisible (§9). */}
-        <BackLink label={t('nav.household')} onPress={() => navigate('/household')} />
-
         {/* The scope sits above every figure it governs: a month control below
             the totals leaves the summary's month implied (§34). */}
         <MonthScope month={selectedMonth} onChange={setSelectedMonth} />
@@ -130,13 +125,12 @@ export default function EventsScreen() {
           tab={tab}
           onTabChange={setTab}
           groupedRecords={groupedRecords}
+          categoryVisualById={categoryVisualById}
           memberOptions={memberOptions}
           selectedMember={selectedMember}
           onMemberChange={setSelectedMember}
           isLoading={isLoading}
           onEditEvent={openEditEvent}
-          onDuplicateEvent={duplicateEvent}
-          onToggleEventAttention={toggleEventAttention}
           onDeleteEvent={setDeleteEventId}
         />
 

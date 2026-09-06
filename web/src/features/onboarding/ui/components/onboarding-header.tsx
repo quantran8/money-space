@@ -1,7 +1,14 @@
-import { Wallet } from 'lucide-react'
+import { LogOut, Wallet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import type { AuthUser } from '@money-space/core/features/auth/model/auth.types'
+import { useLogout } from '@money-space/core/features/auth/hooks/use-logout'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 function initialsOf(name: string | null, email: string | null): string {
   const source = name?.trim() || email?.trim() || '?'
@@ -20,9 +27,16 @@ type OnboardingHeaderProps = {
  * second thing to deal with. The signed-in name went with it — the avatar
  * already answers "which account is this", and it carries the full name as its
  * tooltip for the case where the initials are ambiguous.
+ *
+ * The avatar is a menu rather than a label because this screen is a dead end:
+ * there is no sidebar, no tab bar, and no household to navigate back into, so
+ * the account menu is the ONLY way off it that is not answering the question.
+ * Someone who just left a space and is not ready to create another must still
+ * be able to sign out.
  */
 export function OnboardingHeader({ user }: OnboardingHeaderProps) {
   const { t } = useTranslation()
+  const logout = useLogout()
   const displayName = user?.displayName || user?.fullName || user?.email || ''
 
   return (
@@ -36,12 +50,21 @@ export function OnboardingHeader({ user }: OnboardingHeaderProps) {
         </span>
       </div>
 
-      <div
-        className="flex size-10 items-center justify-center rounded-full bg-card t-body-sm font-medium"
-        title={displayName}
-      >
-        {initialsOf(user?.displayName ?? user?.fullName ?? null, user?.email ?? null)}
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className="flex size-10 items-center justify-center rounded-full bg-card t-body-sm font-medium transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-action focus-visible:outline-offset-2"
+          title={displayName}
+          aria-label={t('shell.accountMenu')}
+        >
+          {initialsOf(user?.displayName ?? user?.fullName ?? null, user?.email ?? null)}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => void logout()}>
+            <LogOut className="size-4" />
+            {t('shell.logout')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   )
 }

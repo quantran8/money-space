@@ -2,7 +2,6 @@ import { apiRequest } from '#/shared/api/http'
 import type {
   Asset,
   AssetClass,
-  AssetDeleteImpact,
   AssetSnapshotPoint,
   MarketQuote,
 } from '#/features/assets/model/assets.types'
@@ -151,17 +150,23 @@ export function purchaseIntoPosition(
 }
 
 /**
- * What deleting this asset would detach — goals whose claims would go, events
- * and debts that would lose their wallet pointer.
- *
- * Read BEFORE the delete, so the confirmation can say what it costs. The server
- * refuses a delete while any of these exist unless `cascade` is passed, and this
- * is where the household gets what it needs to decide.
+ * Tất toán a saving deposit: it pays out and BECOMES the account holding the
+ * money, keeping its id and its whole value history. Not a sale — a passbook is
+ * not sold, and the asset survives rather than closing. See memory/assets.md.
  */
-export function assetDeleteImpact(householdId: string, assetId: string) {
-  return apiRequest<AssetDeleteImpact>(
-    `/households/${householdId}/assets/${assetId}/delete-impact`,
-  )
+export function withdrawSavingDeposit(householdId: string, assetId: string) {
+  return apiRequest<{
+    asset: Asset
+    settlement: {
+      principal: number
+      interest: number
+      total: number
+      reason: 'matured' | 'withdrawn_early'
+      settledOn: string
+    }
+  }>(`/households/${householdId}/assets/${assetId}/withdraw`, {
+    method: 'POST',
+  })
 }
 
 export function deleteAsset(householdId: string, assetId: string, cascade = false) {

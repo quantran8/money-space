@@ -8,11 +8,19 @@ import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Field } from '@/components/ui/field'
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
 
+import type { ReactNode } from 'react'
+
 export type SelectOption<T extends string> = {
   value: T
   label: string
   /** Optional group heading — options are rendered under their group. */
   group?: string
+  /**
+   * A mark drawn before the label, in the list AND on the closed trigger — the
+   * category disc, today. A node rather than an icon name keeps the primitive
+   * ignorant of what it is drawing.
+   */
+  leading?: ReactNode
 }
 
 /**
@@ -90,6 +98,7 @@ export function Select<T extends string>({
           error ? 'border-alert-ink bg-card' : 'border-divider bg-wash',
         )}
       >
+        {selected?.leading}
         <Text
           className={cn('flex-1 t-body', selected ? 'text-ink' : 'text-ink3')}
           numberOfLines={1}
@@ -134,6 +143,7 @@ export function Select<T extends string>({
               style={{ minHeight: TOUCH_TARGET }}
               className="flex-row items-center justify-between gap-3 rounded-control px-1 active:bg-wash"
             >
+              {row.option.leading}
               <Text className="flex-1 t-body text-ink">{row.option.label}</Text>
               {row.option.value === value ? (
                 <Check size={18} color={colors.interactive} strokeWidth={2} />

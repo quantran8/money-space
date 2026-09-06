@@ -16,13 +16,19 @@ import {
 } from '@/components/ui/table'
 import { useAssetDetail, type AssetEventEntry } from '@money-space/core/features/assets/hooks/use-asset-detail'
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
-import { canUpdatePriceManually } from '@money-space/core/features/assets/model/assets'
+import {
+  canUpdatePriceManually,
+  isWalletAssetType,
+} from '@money-space/core/features/assets/model/assets'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
 import { AssetPurchaseDialog } from '@/features/assets/ui/components/asset-purchase-dialog'
 import { AssetGoalUsageSection } from '@/features/assets/ui/components/asset-goal-usage-section'
 import { AssetPriceUpdateDialog } from '@/features/assets/ui/components/asset-price-update-dialog'
 import { AssetValueChart } from '@/features/assets/ui/components/asset-value-chart'
 import { SavingWithdrawalPanel } from '@/features/assets/ui/components/saving-withdrawal-panel'
+import { SavingWithdrawDialog } from '@/features/assets/ui/components/saving-withdraw-dialog'
+import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
+import { notify } from '@money-space/core/shared/notify'
 import { EVENT_TYPE_ICONS } from '@/features/events/ui/components/event-type-icon'
 import { formatDate } from '@money-space/core/features/debts/model/debts-form'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
@@ -181,8 +187,12 @@ export function AssetDetailPage() {
   const { asset, currentValue, relatedEvents, valueHistory, isLoading } =
     useAssetDetail(assetId)
   const { members } = useMembers()
+  const [withdrawOpen, setWithdrawOpen] = useState(false)
+  const { withdrawSavingDeposit } = useAssets()
+
   const {
     total: householdAssetTotal,
+    asOf,
     form,
     setValue,
     mode,
@@ -303,11 +313,16 @@ export function AssetDetailPage() {
   }
 
   const isMarketPriced = asset.valuationMode === 'market_priced'
-  const isBalanceAsset = asset.type === 'cash' || asset.type === 'bank_account'
+  const isBalanceAsset = isWalletAssetType(asset.type)
   const isAutoPriced = asset.valuationMode !== 'manual'
   const isSold = asset.status === 'sold'
   const canUpdatePrice = !isSold && canUpdatePriceManually(asset.type)
   const canBuyMore = !isSold && !!asset.marketPosition
+  // A deposit is settled, not sold: it pays out and becomes the account holding
+  // the money. Offered from the day it exists — breaking early is a real choice
+  // a household makes, and the dialog prices it before they commit.
+  const canWithdraw =
+    !isSold && asset.type === 'saving_deposit' && !!asset.calculationTerm
   const position = asset.marketPosition
   const quantity = position?.quantity ?? 0
   const currentUnitPrice = quantity > 0 ? currentValue / quantity : 0
@@ -405,6 +420,12 @@ export function AssetDetailPage() {
               <Button onClick={() => openPurchase(asset.id)}>
                 <Plus className="size-[17px]" strokeWidth={1.75} />
                 {t('assets.purchase.title')}
+              </Button>
+            ) : null}
+            {canWithdraw ? (
+              <Button onClick={() => setWithdrawOpen(true)}>
+                <Timeline className="size-[17px]" strokeWidth={1.75} />
+                {t('assets.withdraw.action')}
               </Button>
             ) : null}
             {canUpdatePrice ? (
@@ -784,6 +805,21 @@ export function AssetDetailPage() {
           open={priceDialogOpen}
           onOpenChange={setPriceDialogOpen}
           asset={asset}
+        />
+      ) : null}
+
+      {canWithdraw && asset.calculationTerm ? (
+        <SavingWithdrawDialog
+          open={withdrawOpen}
+          onOpenChange={setWithdrawOpen}
+          assetName={asset.name}
+          term={asset.calculationTerm}
+          asOf={asOf}
+          isSubmitting={withdrawSavingDeposit.isPending}
+          onConfirm={async () => {
+            await withdrawSavingDeposit.mutateAsync(asset.id)
+            notify.success(t('assets.withdraw.done'))
+          }}
         />
       ) : null}
     </div>

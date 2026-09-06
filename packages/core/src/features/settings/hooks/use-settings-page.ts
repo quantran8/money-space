@@ -69,6 +69,11 @@ export function useSettingsPage() {
 
   async function handleSave(values: Settings) {
     if (!activeHouseholdId) return
+    // Not just "is there a space" but "is the form the one that belongs to it".
+    // `initializedHouseholdId` names the space `reset` last filled the fields
+    // from; while a switch is in flight the two disagree, and saving then would
+    // rename the space just opened with the name of the one just left.
+    if (initializedHouseholdId.current !== activeHouseholdId) return
     const previousCurrency = getDisplayCurrency()
     const previousLanguage: Settings['language'] = i18n.resolvedLanguage === 'en' ? 'en' : 'vi'
     const previousName = household?.name ?? values.householdName
@@ -104,7 +109,7 @@ export function useSettingsPage() {
         language: previousLanguage,
         householdName: previousName,
       })
-      notify.error('Không thể lưu cài đặt.')
+      notify.error(t('settings.header.saveFailed'))
     }
   }
 

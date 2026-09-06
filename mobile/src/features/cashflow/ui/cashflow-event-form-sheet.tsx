@@ -23,6 +23,7 @@ import {
   Select,
 } from '@/components/ui'
 import { settlementWalletOptions } from '@/features/cashflow/lib/wallet-options'
+import { CategoryDisc } from '@/features/events/ui/components/category-disc'
 import { GoalImpactNotice } from '@/features/cashflow/ui/goal-impact-notice'
 
 import type { UseFormReturn } from 'react-hook-form'
@@ -32,6 +33,16 @@ export type CashflowEventFormSheetProps = {
   onOpenChange: (open: boolean) => void
   /** From core's `useCashflowForm`. Never a form built here. */
   form: UseFormReturn<CashflowEventForm>
+  /**
+   * From core's `useCashflowForm`. Carries the glyph key and fill alongside the
+   * label so the picker draws the same disc the timeline does.
+   */
+  categoryOptions: {
+    value: string
+    label: string
+    iconKey?: string | null
+    iconColor?: string | null
+  }[]
   isEditing: boolean
   /** The event being edited, so its own amount is not double-counted. */
   editingId?: string | null
@@ -69,6 +80,7 @@ export function CashflowEventFormSheet({
   open,
   onOpenChange,
   form,
+  categoryOptions,
   isEditing,
   editingId,
   isSubmitting,
@@ -86,6 +98,12 @@ export function CashflowEventFormSheet({
   const settlementAssetId = useWatch({ control, name: 'settlementAssetId' })
   const amount = useWatch({ control, name: 'amount' })
   const expectedDate = useWatch({ control, name: 'expectedDate' })
+
+  const categorySelectOptions = categoryOptions.map((option) => ({
+    value: option.value,
+    label: option.label,
+    leading: <CategoryDisc visual={option} size={24} />,
+  }))
 
   const { assets, asOf } = useAssets()
   const walletOptions = settlementWalletOptions(assets, asOf || AS_OF, (params) =>
@@ -214,6 +232,25 @@ export function CashflowEventFormSheet({
               onChangeText={field.onChange}
               onBlur={field.onBlur}
               error={errors.name?.message}
+            />
+          )}
+        />
+
+        {/* Required by the schema, and until now never asked on mobile — every
+            expected item silently took the household's default. It carries onto
+            the money event when the item is completed, so it is the same
+            question the ledger asks, and wears the same disc. */}
+        <Controller
+          control={control}
+          name="category"
+          render={({ field }) => (
+            <Select
+              label={t('upcoming.form.category')}
+              placeholder={t('upcoming.form.categoryPlaceholder')}
+              value={field.value || null}
+              options={categorySelectOptions}
+              onChange={field.onChange}
+              error={errors.category?.message}
             />
           )}
         />

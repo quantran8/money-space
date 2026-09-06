@@ -10,7 +10,7 @@ import type { ActivityEntry } from '@money-space/core/features/activity/model/ac
 import { formatVndScale, formatVndSigned } from '@money-space/core/shared/lib/format-money'
 import { formatRelativeDay } from '@money-space/core/shared/lib/format-relative-day'
 
-import { EmptyState, Label, Panel, Skeleton } from '@/components/ui'
+import { EmptyState, Label, Panel, Skeleton, SwitchPane } from '@/components/ui'
 
 /**
  * The household journal, grouped by day.
@@ -41,40 +41,35 @@ export function ActivityListSection({
 }) {
   const { t } = useTranslation()
 
-  if (isLoading) {
-    return (
-      <Panel>
-        <View className="gap-2">
-          <Skeleton height={44} className="rounded-control" />
-          <Skeleton height={44} className="rounded-control" />
-          <Skeleton height={44} className="rounded-control" />
-        </View>
-      </Panel>
-    )
-  }
-
-  if (entries.length === 0) {
-    return (
-      <Panel>
-        <EmptyState message={t('activity.empty')} />
-      </Panel>
-    )
-  }
-
+  // One Panel holding a swap, rather than three panels replacing each other:
+  // skeleton → rows is the same surface answering, so the card should stay put
+  // and only its contents change.
   return (
     <Panel>
-      <View className="gap-6">
-        {groupByDay(entries).map(([day, dayEntries]) => (
-          <View key={day}>
-            <Label>{formatRelativeDay(day, t)}</Label>
-            <View className="mt-2">
-              {dayEntries.map((entry) => (
-                <ActivityRow key={entry.id} entry={entry} />
-              ))}
-            </View>
+      <SwitchPane activeKey={isLoading ? 'loading' : entries.length === 0 ? 'empty' : 'data'}>
+        {isLoading ? (
+          <View className="gap-2">
+            <Skeleton height={44} className="rounded-control" />
+            <Skeleton height={44} className="rounded-control" />
+            <Skeleton height={44} className="rounded-control" />
           </View>
-        ))}
-      </View>
+        ) : entries.length === 0 ? (
+          <EmptyState message={t('activity.empty')} />
+        ) : (
+          <View className="gap-6">
+            {groupByDay(entries).map(([day, dayEntries]) => (
+              <View key={day}>
+                <Label>{formatRelativeDay(day, t)}</Label>
+                <View className="mt-2">
+                  {dayEntries.map((entry) => (
+                    <ActivityRow key={entry.id} entry={entry} />
+                  ))}
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </SwitchPane>
     </Panel>
   )
 }

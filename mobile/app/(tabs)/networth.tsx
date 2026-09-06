@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 
-import { useAssetDeleteImpact } from '@money-space/core/features/assets/hooks/use-asset-delete-impact'
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import { AS_OF } from '@money-space/core/features/assets/model/assets-form'
 import { computeCurrentValue } from '@money-space/core/features/assets/model/assets'
@@ -10,7 +9,7 @@ import { useDebts } from '@money-space/core/features/debts/hooks/use-debts'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 
-import { Button, ConfirmDialog, Screen, Sections, Segmented } from '@/components/ui'
+import { Button, ConfirmDialog, Screen, Sections, Segmented, SwitchPane } from '@/components/ui'
 import { AssetFormSheet } from '@/features/assets/components/asset-form-sheet'
 import { AssetQuantitySheet } from '@/features/assets/components/asset-quantity-sheet'
 import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
@@ -72,7 +71,6 @@ export default function NetWorthScreen() {
   // Fetched as soon as the delete dialog has a target, so the confirmation can
   // say what the delete would detach rather than the household meeting the
   // server's refusal as a bare error.
-  const deleteImpact = useAssetDeleteImpact(deleteId)
 
   // The debt half of the shared strip. Read here, not inside `DebtsTab`: the
   // strip spans both tabs, so it cannot depend on the debts tab being mounted.
@@ -85,6 +83,7 @@ export default function NetWorthScreen() {
 
   return (
     <Screen
+      withAccountHeader
       title={t('networth.header.title')}
       right={
         onAssets ? (
@@ -118,30 +117,35 @@ export default function NetWorthScreen() {
           asOf={asOf || AS_OF}
         />
 
-        {onAssets ? (
-          <AssetsListSection
-            assets={filteredAssets}
-            members={members}
-            isLoading={isLoading}
-            asOf={asOf || AS_OF}
-            total={total}
-            query={query}
-            onQueryChange={setQuery}
-            liquidityFilter={liquidityFilter}
-            onLiquidityFilterChange={setLiquidityFilter}
-            onOpen={(assetId) => router.push(`/assets/${assetId}`)}
-            onAdd={() => openCreate()}
-          />
-        ) : (
-          // ── SEAM: the debts half ──────────────────────────────────────────
-          // Owned by the debts port, not this file. `DebtsTab` is deliberately
-          // prop-less and self-contained: it reads `useDebtsPage` itself and
-          // renders its own list, sheets and add action. The only thing this
-          // screen borrows from the debts side is the outstanding total above,
-          // which comes from core's `useDebts` rather than from the component —
-          // the strip has to be right whether or not this tab is mounted.
-          <DebtsTab />
-        )}
+        {/* Tài sản ↔ Nợ is a swap in one slot, not two lists appearing: the
+            strip above stays put and only the body below it changes. */}
+        <SwitchPane activeKey={onAssets ? 'assets' : 'debts'}>
+          {onAssets ? (
+            <AssetsListSection
+              assets={filteredAssets}
+              members={members}
+              isLoading={isLoading}
+              asOf={asOf || AS_OF}
+              total={total}
+              query={query}
+              onQueryChange={setQuery}
+              liquidityFilter={liquidityFilter}
+              onLiquidityFilterChange={setLiquidityFilter}
+              onOpen={(assetId) => router.push(`/assets/${assetId}`)}
+              onAdd={() => openCreate()}
+            />
+          ) : (
+            // ── SEAM: the debts half ────────────────────────────────────────
+            // Owned by the debts port, not this file. `DebtsTab` is
+            // deliberately prop-less and self-contained: it reads
+            // `useDebtsPage` itself and renders its own list, sheets and add
+            // action. The only thing this screen borrows from the debts side is
+            // the outstanding total above, which comes from core's `useDebts`
+            // rather than from the component — the strip has to be right
+            // whether or not this tab is mounted.
+            <DebtsTab />
+          )}
+        </SwitchPane>
       </Sections>
 
       <AssetFormSheet
@@ -200,47 +204,20 @@ export default function NetWorthScreen() {
               deletingAsset ? (computeCurrentValue(deletingAsset, asOf || AS_OF) ?? 0) : 0,
             ),
           }),
-          // What else goes with it. Nothing cascades in the database — assets
-          // are soft-deleted — so these links would otherwise point at a row
-          // nothing returns, which is what left goals showing a wallet the
-          // household had already removed. These are DETACHED and survive; the
-          // line below covers what is destroyed outright.
-          deleteImpact.impact && !deleteImpact.isClear
-            ? t('assets.form.removeAlsoDetaches', {
-                goals: deleteImpact.impact.goals.map((goal) => goal.name).join(', '),
-                goalCount: deleteImpact.impact.goals.length,
-                eventCount: deleteImpact.impact.cashflowEvents.length,
-                debtCount: deleteImpact.impact.debts.length,
-              })
-            : null,
-          // The one irreversible line, so it comes before the detach notice: the
-          // movements recorded through this wallet are DESTROYED, not detached,
-          // and past months' thu/chi move with them.
-          deleteImpact.impact && deleteImpact.impact.moneyEventCount > 0
-            ? t('assets.form.removeDeletesMoneyEvents', {
-                count: deleteImpact.impact.moneyEventCount,
-              })
-            : null,
-          // Stated separately and last: a goal losing its last wallet still
-          // exists and still has a target, but has nothing left to be saved
-          // into — the consequence a household is most likely to regret.
-          deleteImpact.impact && deleteImpact.impact.goalsLosingLastWallet.length > 0
-            ? t('assets.form.removeLeavesGoalsWithoutWallet', {
-                goals: deleteImpact.impact.goalsLosingLastWallet
-                  .map((goal) => goal.name)
-                  .join(', '),
-              })
-            : null,
-        ]
-          .filter(Boolean)
-          .join('\n\n')}
+          // Stated for every asset rather than counted per asset. Reading the
+          // exact links back first cost a round-trip on every delete dialog,
+          // and the household's decision is the same either way: this is what
+          // a delete can take with it.
+          t('assets.form.removeImpactNotice'),
+        ].join('\n\n')}
         confirmLabel={t('assets.form.removeConfirm')}
         cancelLabel={t('common.cancel')}
-        loading={isDeleting || deleteImpact.isLoading}
+        loading={isDeleting}
         onConfirm={() => {
-          // `cascade` is exactly what this dialog was for: the household has
-          // now been shown what the delete detaches and has said yes to it.
-          if (deleteId) void handleDeleteAsset(deleteId, !deleteImpact.isClear).catch(() => {})
+          // Always cascading. The server refuses a delete that still has links
+          // unless it is told the household confirmed, and this dialog IS that
+          // confirmation — it states what a delete can take before asking.
+          if (deleteId) void handleDeleteAsset(deleteId, true).catch(() => {})
         }}
       />
     </Screen>

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/responsive-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { MarketPriceSection } from '@/features/assets/ui/components/market-price-section'
+import { buildPurchaseSummary } from '@money-space/core/features/assets/model/asset-quantity-form'
 import type { AssetPurchaseForm } from '@money-space/core/features/assets/model/asset-quantity-form'
 import {
   searchableAssetClassForType,
@@ -28,7 +29,6 @@ import {
 import { isWholeQuantityType } from '@money-space/core/features/assets/model/assets-form'
 import { useMarketQuote } from '@money-space/core/features/assets/hooks/use-market-quote'
 import { formatVndExact } from '@money-space/core/shared/lib/format-money'
-import { parseRawDecimal, parseRawMoney } from '@money-space/core/shared/lib/number-format'
 
 type WalletOption = { value: string; label: string; balance?: number }
 
@@ -332,21 +332,18 @@ function PurchaseSummary({
   const rawQuantity = useWatch({ control, name: 'quantity' })
   const rawUnitPrice = useWatch({ control, name: 'unitPrice' })
 
-  const quantity = parseRawDecimal(rawQuantity ?? '')
-  const unitPrice = parseRawMoney(rawUnitPrice ?? '')
-  const hasBoth =
-    Number.isFinite(quantity) && quantity > 0 && Number.isFinite(unitPrice) && unitPrice > 0
+  // The arithmetic lives in core, so this dialog and the mobile sheet cannot
+  // state different totals for the same purchase.
+  const summary = buildPurchaseSummary({
+    rawQuantity: rawQuantity ?? '',
+    rawUnitPrice: rawUnitPrice ?? '',
+    currentQuantity,
+    heldCostBasis: asset?.marketPosition?.purchasePrice ?? 0,
+  })
 
-  if (!asset || !hasBoth) return null
+  if (!asset || !summary) return null
 
-  const total = quantity * unitPrice
-  const nextQuantity = currentQuantity + quantity
-  // The same weighted average the server will compute, shown before the user
-  // commits to it. `purchasePrice` is the cost basis P&L is measured against —
-  // never `lastPrice`, which is what the position is worth today.
-  const heldCost = asset.marketPosition?.purchasePrice ?? 0
-  const nextCostBasis =
-    nextQuantity > 0 ? (currentQuantity * heldCost + total) / nextQuantity : 0
+  const { total, nextQuantity, nextCostBasis } = summary
 
   return (
     <section className="border-t border-divider pt-4" aria-live="polite">

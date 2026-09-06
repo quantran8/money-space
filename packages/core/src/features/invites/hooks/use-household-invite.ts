@@ -72,9 +72,16 @@ export function useHouseholdInvite() {
   const requestedRef = useRef(false)
   const createMutate = create.mutate
 
+  // Also on a space change: the guard covers ONE auto-create, and the space it
+  // was raised for is not the space now open. Left latched, the sheet would sit
+  // on the previous space's token instead of minting one for this space.
   useEffect(() => {
     if (!open) requestedRef.current = false
   }, [open])
+
+  useEffect(() => {
+    requestedRef.current = false
+  }, [activeHouseholdId])
 
   useEffect(() => {
     if (!open || !activeHouseholdId) return

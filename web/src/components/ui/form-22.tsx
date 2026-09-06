@@ -7,6 +7,8 @@ import {
 } from '@money-space/core/shared/lib/number-format'
 import { cn } from '@money-space/core/shared/lib/utils'
 
+import { Collapse } from '@/components/ui/motion'
+
 /**
  * The §22 form kit.
  *
@@ -350,7 +352,9 @@ export function Disclosure({
       >
         {label}
       </button>
-      {open ? <div className="mt-4 space-y-4">{children}</div> : null}
+      <Collapse open={open} className="mt-4 space-y-4">
+        {children}
+      </Collapse>
     </div>
   )
 }

@@ -17,6 +17,8 @@ export type SymbolReference = {
   exchange: string
   currency: string
   unit: string
+  /** VN30 constituent; set only for VN equities. Drives the backend's default list. */
+  vn30?: boolean
 }
 
 /** A live market quote for one instrument. */
@@ -50,7 +52,8 @@ type QuoteResponse = { quote: MarketQuote | null }
 
 /**
  * Search symbols for the asset-create picker. An empty `query` returns the
- * curated default list; a non-empty query returns ranked matches.
+ * class's default list (VN30 for stock); a non-empty query returns ranked
+ * matches over the whole reference list.
  */
 export async function searchSymbols(
   assetClass: SymbolAssetClass,

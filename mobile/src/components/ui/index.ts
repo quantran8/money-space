@@ -6,6 +6,7 @@
  * holds if there is one Button, one Field, one way to show a status.
  */
 
+export { AccountHeader } from '@/components/ui/account-header'
 export { ActionSheet } from '@/components/ui/action-sheet'
 export { BackLink } from '@/components/ui/back-link'
 export { BottomSheet } from '@/components/ui/bottom-sheet'
@@ -19,6 +20,7 @@ export { Disclosure } from '@/components/ui/disclosure'
 export { Field } from '@/components/ui/field'
 export { GroupedRow, RowMeta, RowMetaMono } from '@/components/ui/grouped-row'
 export { MetricCell } from '@/components/ui/metric-cell'
+export { AppearGroup, AppearItem, Collapse, SwitchPane } from '@/components/ui/motion'
 export { MoneyCompositionRing } from '@/components/ui/money-composition-ring'
 export { MoneyInput } from '@/components/ui/money-input'
 export { MonthField } from '@/components/ui/month-field'

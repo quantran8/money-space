@@ -19,12 +19,16 @@ import {
   Sunk,
   Switch,
 } from '@/components/ui'
+import { CategoryDisc } from '@/features/events/ui/components/category-disc'
 import { EventEffectNote } from '@/features/events/ui/event-effect-note'
 import { QuickActionList } from '@/features/events/ui/quick-action-list'
 
 import type { Control, FieldErrors, UseFormHandleSubmit } from 'react-hook-form'
 
 type Option = { value: string; label: string }
+
+/** An `Option` that also carries what its category disc should look like. */
+type CategoryOption = Option & { iconKey?: string | null; iconColor?: string | null }
 
 export type EventFormSheetProps = {
   open: boolean
@@ -43,7 +47,7 @@ export type EventFormSheetProps = {
   onToggleMoreDetails: () => void
   /** Wallets only (cash / bank account) — core decides, never re-derived here. */
   sourceAssetOptions: Option[]
-  categoryOptions: Option[]
+  categoryOptions: CategoryOption[]
   control: Control<ActualRecordFormValues>
   errors: FieldErrors<ActualRecordFormValues>
   handleSubmit: UseFormHandleSubmit<ActualRecordFormValues>
@@ -197,7 +201,11 @@ export function EventFormSheet({
                   label={t('events.form.whatFor')}
                   placeholder={t('events.form.categoryPlaceholder')}
                   value={field.value || null}
-                  options={categoryOptions}
+                  options={categoryOptions.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                    leading: <CategoryDisc visual={option} size={24} />,
+                  }))}
                   onChange={field.onChange}
                   error={errors.category?.message}
                 />

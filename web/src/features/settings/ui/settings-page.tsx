@@ -14,9 +14,15 @@ import { deleteHousehold } from '@money-space/core/features/settings/api/setting
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
-import { DangerCard, DataCard, SignOutCard } from '@/features/settings/ui/components/data-card'
+import {
+  DangerCard,
+  DataCard,
+  LeaveSpaceCard,
+  SignOutCard,
+} from '@/features/settings/ui/components/data-card'
 import { InviteQrDialog } from '@/features/invites/ui/components/invite-qr-dialog'
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
+import { SpaceSwitcherCard } from '@/features/settings/ui/components/space-switcher-card'
 
 /**
  * `/settings` — all household-level settings in one place.
@@ -110,6 +116,11 @@ export function SettingsPage() {
       </header>
 
       <div className="s-card-gap s-head-body flex flex-col">
+        {/* First, because every panel below describes the space this row picks
+            — the header's "Quản lý không gian {name}" included. The other order
+            asks which space the name field just renamed. */}
+        <SpaceSwitcherCard />
+
         {!isSettingsLoading ? <HouseholdOverviewCard form={settingsForm} /> : null}
 
         <MembersListSection
@@ -128,12 +139,20 @@ export function SettingsPage() {
 
         <DataCard />
 
-        {/* Above the danger card, not below it: signing out is the ordinary way
+        {/* Mobile only — above `lg` the sidebar's account menu holds sign-out.
+            Above the danger card, not below it: signing out is the ordinary way
             to leave, and it should be reachable without scrolling past the one
             action that cannot be undone. */}
         <SignOutCard />
 
-        <DangerCard onDelete={() => setConfirmDeleteOpen(true)} />
+        {/* Two different endings, and which one you get is not a preference:
+            only the creator can delete the space (the backend guards it against
+            `createdBy`), and only everyone else can leave it. Nobody sees both. */}
+        {isViewerOwner ? (
+          <DangerCard onDelete={() => setConfirmDeleteOpen(true)} />
+        ) : viewerMemberId ? (
+          <LeaveSpaceCard onLeave={() => setRemoveId(viewerMemberId)} />
+        ) : null}
       </div>
 
       <InviteQrDialog
@@ -186,7 +205,12 @@ export function SettingsPage() {
           if (!removeId) return
           const leaving = isLeaving
           await removeMember(removeId)
-          if (leaving) navigate('/onboarding')
+          // `removeMember` has already refetched the household list, so the
+          // gate above this page may well redirect on its own. Navigating
+          // anyway is what makes the destination certain rather than a race,
+          // and `replace` keeps Back from returning to a space the user has
+          // left.
+          if (leaving) navigate('/onboarding', { replace: true })
         }}
       />
     </div>

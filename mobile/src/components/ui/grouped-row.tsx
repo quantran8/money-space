@@ -27,6 +27,7 @@ export function GroupedRow({
   valueMeta,
   valueTone = 'default',
   onPress,
+  leading,
   right,
   className,
 }: {
@@ -38,6 +39,12 @@ export function GroupedRow({
   valueMeta?: string
   valueTone?: 'default' | 'attention' | 'alert' | 'muted'
   onPress?: () => void
+  /**
+   * A mark before the title — the category disc, today. A slot rather than a
+   * `categoryVisual` prop, so the row stays a layout primitive that knows
+   * nothing about events.
+   */
+  leading?: ReactNode
   right?: ReactNode
   className?: string
 }) {
@@ -50,6 +57,8 @@ export function GroupedRow({
 
   const body = (
     <View className="flex-row items-center gap-3">
+      {leading}
+
       <View className="flex-1">
         <Text className="t-body-sm leading-5 text-ink" numberOfLines={2}>
           {title}

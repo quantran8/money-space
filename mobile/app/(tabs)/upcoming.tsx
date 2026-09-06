@@ -90,6 +90,18 @@ export default function UpcomingScreen() {
     ]),
   )
 
+  /**
+   * Occurrence → the disc its category wears. Built from the form's category
+   * options, which already carry the glyph key and the fill, so the screen
+   * does not fetch categories a second time just to draw a circle.
+   */
+  const categoryOptionById = new Map(
+    cashflowForm.categoryOptions.map((category) => [category.value, category]),
+  )
+  const categoryVisualByEventId = Object.fromEntries(
+    cashflowEvents.map((event) => [event.id, categoryOptionById.get(event.categoryId)]),
+  )
+
   function eventFor(occurrence: ForecastOccurrence): CashflowEvent | undefined {
     return eventById.get(occurrence.sourceEventId)
   }
@@ -140,6 +152,7 @@ export default function UpcomingScreen() {
 
   return (
     <Screen
+      withAccountHeader
       title={t('upcoming.title')}
       right={
         <Button className="px-4" onPress={() => cashflowForm.openCreate('outgoing')}>
@@ -190,12 +203,14 @@ export default function UpcomingScreen() {
             }
             onEdit={cashflowForm.openEdit}
             onDelete={setDeletingId}
+            categoryVisualByEventId={categoryVisualByEventId}
           />
         ) : null}
 
         <ForecastTimeline
           days={days}
           ownerNameByEventId={ownerNameByEventId}
+          categoryVisualByEventId={categoryVisualByEventId}
           isLoading={isLoading}
           isEmpty={isEmpty}
           usableNowAssetCount={forecast?.usableNowAssetCount}
@@ -216,6 +231,7 @@ export default function UpcomingScreen() {
         open={cashflowForm.formOpen}
         onOpenChange={cashflowForm.handleFormOpenChange}
         form={cashflowForm.form}
+        categoryOptions={cashflowForm.categoryOptions}
         isEditing={cashflowForm.isEditing}
         editingId={cashflowForm.editingId}
         isSubmitting={cashflowForm.isSubmitting}

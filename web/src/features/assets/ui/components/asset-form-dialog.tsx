@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react'
 import {
   Controller,
   useWatch,
@@ -52,6 +52,7 @@ import { SymbolCombobox } from '@/features/assets/ui/components/symbol-combobox'
 import { useMarketQuote } from '@money-space/core/features/assets/hooks/use-market-quote'
 import type { MarketQuote } from '@money-space/core/features/assets/api/symbols.repository'
 import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
+import { SavingDepositFormDialog } from '@/features/assets/ui/components/saving-deposit-form-dialog'
 import {
   canBePurchased,
   goldUnits,
@@ -77,7 +78,8 @@ type AssetFormDialogProps = {
   walletOptions: WalletOption[]
   isEditing: boolean
   isSubmitting: boolean
-  onSubmit: () => void
+  /** RHF's `handleSubmit(...)`, which takes the event when one is available. */
+  onSubmit: (event?: FormEvent<HTMLFormElement>) => void
   /** The stored asset being edited — drives the §22.8 change sentence. */
   editingAsset?: Asset
   /** §22.11 destructive action, shown in the button row on edit only. */
@@ -106,9 +108,7 @@ export function AssetFormDialog({
   } = form
 
   const selectedType = useWatch({ control, name: 'type' })
-  const interestDestination = useWatch({ control, name: 'interestDestination' })
   const hasInterest = useWatch({ control, name: 'hasInterest' })
-  const isSaving = selectedType === 'saving_deposit'
   // Interest is opt-in only where it is genuinely optional (a loan); every other
   // formula type is defined by its rate.
   const earnsInterest = !isInterestOptional(selectedType) || hasInterest
@@ -141,6 +141,26 @@ export function AssetFormDialog({
     if (next === 'gold') {
       setValue('unit', goldUnits[0], { shouldDirty: true })
     }
+  }
+
+  // A saving deposit is four decisions taken together at a bank counter, all of
+  // them required to save. It gets a stepped dialog of its own rather than this
+  // one's single column plus a disclosure that hid required fields — see
+  // `SavingDepositFormDialog`.
+  if (selectedType === 'saving_deposit') {
+    return (
+      <SavingDepositFormDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        form={form}
+        setValue={setValue}
+        walletOptions={walletOptions}
+        isEditing={isEditing}
+        isSubmitting={isSubmitting}
+        onSubmit={onSubmit}
+        onRemove={onRemove}
+      />
+    )
   }
 
   return (
@@ -300,9 +320,6 @@ export function AssetFormDialog({
                   errors={errors}
                   type={selectedType}
                   earnsInterest={earnsInterest}
-                  isSaving={isSaving}
-                  interestDestination={interestDestination}
-                  walletOptions={walletOptions}
                   t={t}
                 />
               ) : null}
@@ -930,6 +947,11 @@ function GoldUnitField({
   )
 }
 
+/**
+ * Bond, certificate of deposit and family loan. A saving deposit never reaches
+ * here: its terms are all required, so it gets its own stepped dialog
+ * (`SavingDepositFormDialog`) rather than a disclosure that hides them.
+ */
 function FormulaFields({
   control,
   errors,
@@ -1034,24 +1056,24 @@ function FormulaFields({
   )
 }
 
-/** The §22.2 disclosure half of the formula-mode fields. */
+/**
+ * The §22.2 disclosure half of the formula-mode fields.
+ *
+ * A saving deposit never reaches here: every one of its terms is required to
+ * quote a payout, so `SavingDepositFields` renders the lot in the main section
+ * and this component covers the remaining formula types (bond, CD, loan).
+ */
 function FormulaExtraFields({
   control,
   errors,
   type,
   earnsInterest,
-  isSaving,
-  interestDestination,
-  walletOptions,
   t,
 }: {
   control: Control
   errors: Errors
   type: AssetType
   earnsInterest: boolean
-  isSaving: boolean
-  interestDestination: AssetForm['interestDestination']
-  walletOptions: WalletOption[]
   t: Translate
 }) {
   // A loan already asks for its maturity date in the main section.
@@ -1101,82 +1123,7 @@ function FormulaExtraFields({
           </div>
         </Field>
       ) : null}
-
-      {isSaving ? (
-        <>
-          <Controller
-            control={control}
-            name="nonTermRate"
-            render={({ field }) => (
-              <DecimalField
-                id="asset-non-term-rate"
-                label={t('assets.form.nonTermRate')}
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                placeholder="0,2"
-                suffix="%/năm"
-                error={errors.nonTermRate?.message}
-              />
-            )}
-          />
-
-          <Field
-            label={t('assets.form.interestDestination')}
-            error={errors.interestDestination?.message}
-          >
-            <div className={fieldShell}>
-              <Controller
-                control={control}
-                name="interestDestination"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className={fieldControlReset}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="principal">
-                        {t('options.interestDestination.principal')}
-                      </SelectItem>
-                      <SelectItem value="wallet">
-                        {t('options.interestDestination.wallet')}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          </Field>
-
-          {interestDestination === 'wallet' ? (
-            <Field
-              label={t('assets.form.receivingWallet')}
-              error={errors.receivingWalletId?.message}
-            >
-              <div className={cn(fieldShell, errors.receivingWalletId && 'border-alert-ink')}>
-                <Controller
-                  control={control}
-                  name="receivingWalletId"
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className={fieldControlReset}>
-                        <SelectValue placeholder={t('assets.form.receivingWalletPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {walletOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-            </Field>
-          ) : null}
-        </>
-      ) : null}
     </>
   )
 }
+

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { CashflowEvent } from '@money-space/core/features/cashflow/model/cashflow.types'
 import type { DebtItem } from '@money-space/core/features/debts/model/debts.types'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import { formatVndExact } from '@money-space/core/shared/lib/format-money'
 
 import { ActionSheet, GroupedRow, RowMeta, RowMetaMono } from '@/components/ui'
 
@@ -73,7 +73,7 @@ export function DebtRow({
       }
       // Outstanding, in full — money never truncates, and the unit stays on
       // because this is a list, not a table with a unit in its header.
-      value={formatVndShort(debt.outstandingAmountValue)}
+      value={formatVndExact(debt.outstandingAmountValue)}
       valueTone={debt.status === 'overdue' ? 'alert' : 'default'}
       onPress={() => onViewDetail(debt.id)}
       right={

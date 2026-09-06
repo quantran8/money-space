@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
+import { AppearGroup, AppearItem } from '@/components/ui/motion'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useGoalsPage } from '@money-space/core/features/goals/hooks/use-goals-page'
@@ -37,7 +38,7 @@ export function GoalsPage() {
   } = useGoalsPage()
 
   return (
-    <div className="s-section-gap flex flex-col pb-3">
+    <AppearGroup className="s-section-gap flex flex-col pb-3">
       <CompactPageHeader
         title={t('goals.header.title')}
         actions={
@@ -48,17 +49,21 @@ export function GoalsPage() {
         }
       />
 
-      <GoalsSummaryStrip count={goals.length} stats={stats} goals={goals} />
+      <AppearItem>
+        <GoalsSummaryStrip count={goals.length} stats={stats} goals={goals} />
+      </AppearItem>
 
-      <GoalsListSection
-        goals={goals}
-        primaryGoalId={primaryGoal?.id}
-        isLoading={isLoading}
-        onCreate={openCreate}
-        onOpen={(goalId) => navigate(`/goals/${goalId}`)}
-        onEdit={openEdit}
-        onDelete={setDeleteId}
-      />
+      <AppearItem>
+        <GoalsListSection
+          goals={goals}
+          primaryGoalId={primaryGoal?.id}
+          isLoading={isLoading}
+          onCreate={openCreate}
+          onOpen={(goalId) => navigate(`/goals/${goalId}`)}
+          onEdit={openEdit}
+          onDelete={setDeleteId}
+        />
+      </AppearItem>
 
       <GoalFormDialog
         key={formOpen ? 'goal-form-open' : 'goal-form-closed'}
@@ -82,6 +87,6 @@ export function GoalsPage() {
         confirmLoadingLabel={t('common.deleting')}
         onConfirm={() => (deleteId ? handleDeleteGoal(deleteId) : undefined)}
       />
-    </div>
+    </AppearGroup>
   )
 }

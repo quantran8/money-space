@@ -15,7 +15,28 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
     - `gold` → `unit` is chosen from a fixed list (`chỉ` / `lượng` / `gram`), not typed. Free text produced "chỉ" / "Chi" / "chi vang" for one unit. A stored unit outside the list survives as an extra option when editing.
   - `formula_calculated` → requires `principal` + `startDate`, plus `interestRate ≥ 0` **unless the asset is an interest-free loan**.
     - `loan_receivable` → interest is **opt-in** (`AssetForm.hasInterest`, default **off**): money lent to family or a friend usually carries no rate. With the toggle off, no rate or payment-schedule field is shown and the term is stored as `interestRate: 0` + `interestPayment: 'end_of_term'`. Re-opening a stored 0% loan turns the toggle back off.
+    - `saving_deposit` → `maturityDate` ("Ngày đáo hạn") is **required**, and must be after `startDate`. It is the one formula type whose term is not optional: a passbook is sold as "gửi 12 tháng", the promised interest is only defined against that term, and without it `computeSavingInterestPeriods` returns `[]` — the app would never credit the interest at all. The form asks for it as a row of **tenor chips** (1/3/6/9/12/18/24/36 tháng, plus "Khác" for a date picker); the chips only compute `maturityDate`, which is still what is submitted. Moving the deposit date moves the maturity with it, because a tenor is a length rather than a fixed date.
     - `loan_receivable` → `startDate` ("Ngày cho vay") is **required**; `maturityDate` ("Ngày đáo hạn") is **optional** — money lent to family often has no agreed due date, so the form must not block on one. Both fields stay in the main form section (not the disclosure) because the due date is what people reach for next. When a due date **is** given it must satisfy `maturityDate ≥ startDate`; a loan saved without one simply has `maturityDate: null` and cannot enter the forecast. Every other formula type also keeps `maturityDate` optional, but behind the disclosure.
+- **A saving deposit gets its own stepped form**, not the shared single-column
+  dialog: `SavingDepositFormDialog` (web), four steps — sổ tiết kiệm · số tiền
+  & kỳ hạn · lãi suất · xem lại — on the same wizard pattern as the debt form.
+  - **Why:** its terms are all REQUIRED (`principal`, `startDate`,
+    `maturityDate`, `interestRate`, `nonTermRate`, and `receivingWalletId` when
+    interest goes to a wallet), but they used to live behind the §22.2
+    disclosure. A collapsed disclosure meant pressing Save reported an error
+    against a control the form was not rendering, and `shouldFocusError` had
+    nothing to focus. The disclosure is for what the app can derive or what is
+    genuinely optional — a passbook's terms are neither.
+  - **The form quotes the payout before the deposit exists**
+    (`previewSavingDeposit` in `model/saving-preview.ts`): gốc · lãi mỗi tháng ·
+    lãi cả kỳ · thực nhận, plus what breaking it early costs. It REUSES
+    `computeSavingOnTime` / `computeSavingEarly`, so what the form promises and
+    what the detail page shows afterwards cannot drift apart. All figures are
+    exact đồng — the rows have to foot on screen.
+  - The monthly row is labelled by schedule: "Lãi mỗi tháng" for a `monthly`
+    passbook (money that actually arrives) vs "Lãi trung bình mỗi tháng" for
+    `end_of_term`, where nothing arrives monthly and calling it a payout would
+    promise a cash flow that does not happen.
 - `toAsset()` converts raw form → typed `Asset`, returning `null` on incomplete inputs. `fromAsset()` does the reverse (seed the form for **edit**).
 - **Edit / create share one form** (frontend-web): the same discriminated `AssetFormDialog`; edit re-seeds via `fromAsset` and PATCHes. Rows have an Edit/Delete actions menu.
 - **Identity is fixed once the asset exists**: on edit, `type` — and for a
@@ -95,9 +116,16 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
   - **Not a column on `assets`** — it describes ONE acquisition, not the asset.
     Buying more of the same position later would have no single value to store.
     Purchase history lives in `money_events`, next to `asset_sale`.
-  - Offered only for types a household actually buys (`canBePurchased`): gold,
-    crypto, stock, real estate, foreign currency. Paying for a wallet out of a
-    wallet is a transfer, and a saving deposit has its own funding flow.
+  - Offered for types a household actually parts with money for (`canBePurchased`): gold, crypto,
+    stock, real estate, foreign currency, **and saving_deposit**. Paying for a wallet out of a wallet
+    is a transfer, so wallets stay out.
+    - `saving_deposit` was added 2026-09-05. It had been excluded on the stated grounds that a
+      deposit "already has its own funding flow" — it never did, so every passbook read as "we
+      already had this" and recording a 100tr deposit raised net worth by 100tr the household never
+      gained. The backend create path was always type-agnostic; only this client set blocked it.
+    - `purchaseCostOf` keys on the valuation MODE, not the type: a formula asset keeps its amount in
+      `principal`, and reading `value` there returned NaN — which the affordability check reads as
+      "cannot tell", so an unaffordable deposit passed silently.
   - Entry points: the asset form, and the **"Mua tài sản"** quick action on the
     events page — which opens that form already set to "vừa mua", mirroring
     "Bán tài sản". See [[money-events]].

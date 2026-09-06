@@ -10,13 +10,17 @@ import { useAssetQuantity } from '#/features/assets/hooks/use-asset-quantity'
 import {
   buildAssetSchema,
   canBePurchased,
-  defaultAssetFormValues,
+  freshAssetFormValues,
   fromAsset,
   toAsset,
   type AssetForm,
   type AssetTotals,
 } from '#/features/assets/model/assets-form'
-import { valuationModeForType, type AssetLiquidity } from '#/features/assets/model/assets'
+import {
+  isWalletAssetType,
+  valuationModeForType,
+  type AssetLiquidity,
+} from '#/features/assets/model/assets'
 import { createId } from '#/shared/lib/create-id'
 import { getErrorMessage } from '#/shared/lib/get-error-message'
 
@@ -70,7 +74,7 @@ export function useAssetsPage() {
   const walletOptions = useMemo(
     () =>
       assets
-        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .filter((asset) => isWalletAssetType(asset.type))
         .map((asset) => ({
           value: asset.id,
           label: asset.name,
@@ -94,7 +98,7 @@ export function useAssetsPage() {
   // what makes an error clear the moment the user starts fixing that field.
   const form = useForm<AssetForm>({
     resolver: zodResolver(assetSchema),
-    defaultValues: defaultAssetFormValues,
+    defaultValues: freshAssetFormValues(),
     mode: 'onSubmit',
     reValidateMode: 'onChange',
     shouldFocusError: true,
@@ -127,7 +131,11 @@ export function useAssetsPage() {
     reset(
       editingAsset
         ? fromAsset(editingAsset)
-        : { ...defaultAssetFormValues, acquisition: createAcquisition },
+        : // `freshAssetFormValues()`, not the constant: it resolves "today" at
+          // the moment the form opens. The constant carries a fixed past date,
+          // which silently back-dated every new saving deposit and had the app
+          // showing accrued interest for days the deposit did not exist.
+          { ...freshAssetFormValues(), acquisition: createAcquisition },
     )
   }, [formOpen, editingAsset, createAcquisition, reset])
 
@@ -194,15 +202,18 @@ export function useAssetsPage() {
 
       if (editingId) {
         await updateAsset.mutateAsync({ assetId: editingId, payload })
-        notify.success('Cap nhat tai san thanh cong.')
+        notify.success(t('assets.toast.updated'))
       } else {
         await createAsset.mutateAsync(payload)
-        notify.success('Tao tai san thanh cong.')
+        notify.success(t('assets.toast.created'))
       }
       handleFormOpenChange(false)
     } catch (error) {
       notify.error(
-        getErrorMessage(error, editingId ? 'Khong the cap nhat tai san.' : 'Khong the tao tai san.'),
+        getErrorMessage(
+          error,
+          editingId ? t('assets.toast.updateFailed') : t('assets.toast.createFailed'),
+        ),
       )
     }
   }
@@ -210,17 +221,17 @@ export function useAssetsPage() {
   /**
    * `cascade` carries the household's confirmation through to the server, which
    * refuses the delete without it while the asset still backs a goal, an event
-   * or a debt. The dialog asks for it only after `useAssetDeleteImpact` has
-   * said what those are.
+   * or a debt. The delete dialog states what a delete can take with it in
+   * general terms and asks; the answer is what arrives here.
    */
   async function handleDeleteAsset(assetId: string, cascade = false) {
     try {
       await deleteAsset.mutateAsync({ assetId, cascade })
-      notify.success('Da xoa tai san.')
+      notify.success(t('assets.toast.deleted'))
       setDeleteId(null)
       if (editingId === assetId) handleFormOpenChange(false)
     } catch (error) {
-      notify.error(getErrorMessage(error, 'Khong the xoa tai san.'))
+      notify.error(getErrorMessage(error, t('assets.toast.deleteFailed')))
       throw error
     }
   }

@@ -15,6 +15,7 @@ import type {
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
+import { CategoryDisc } from '@/features/events/ui/components/category-disc'
 import {
   ActionSheet,
   EmptyState,
@@ -32,6 +33,8 @@ export type ForecastTimelineProps = {
   days: ForecastDay[]
   /** Keyed by `sourceEventId`. Rendered only where an owner carries meaning. */
   ownerNameByEventId?: Record<string, string | undefined>
+  /** Event id → the disc its category wears. Absent for an uncategorised row. */
+  categoryVisualByEventId?: Record<string, ForecastCategoryVisual | undefined>
   isLoading?: boolean
   isEmpty?: boolean
   /** Gates the running-balance line — see `canProjectBalance`. */
@@ -48,6 +51,18 @@ export type ForecastTimelineProps = {
   onCancel?: (occurrence: ForecastOccurrence) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
+}
+
+/**
+ * What a forecast row needs to draw its category disc. Structurally core's
+ * `CategoryVisual`, but with the fields optional: the map is built from the
+ * cashflow form's category options, and an uncategorised event resolves to
+ * nothing at all.
+ */
+export type ForecastCategoryVisual = {
+  label: string
+  iconKey?: string | null
+  iconColor?: string | null
 }
 
 type TimelineRow = {
@@ -92,6 +107,7 @@ type TimelineRow = {
 export function ForecastTimeline({
   days,
   ownerNameByEventId = {},
+  categoryVisualByEventId = {},
   isLoading = false,
   isEmpty = false,
   usableNowAssetCount,
@@ -191,6 +207,7 @@ export function ForecastTimeline({
                 occurrence={occurrence}
                 runningBalance={runningBalance}
                 ownerName={ownerNameByEventId[occurrence.sourceEventId]}
+                categoryVisual={categoryVisualByEventId[occurrence.sourceEventId]}
                 onComplete={onComplete}
                 onPostpone={onPostpone}
                 onCancel={onCancel}
@@ -209,6 +226,7 @@ function OccurrenceRow({
   occurrence,
   runningBalance,
   ownerName,
+  categoryVisual,
   onComplete,
   onPostpone,
   onCancel,
@@ -218,6 +236,7 @@ function OccurrenceRow({
   occurrence: ForecastOccurrence
   runningBalance?: number
   ownerName?: string
+  categoryVisual?: ForecastCategoryVisual
   onComplete?: (occurrence: ForecastOccurrence) => void
   onPostpone?: (occurrence: ForecastOccurrence) => void
   onCancel?: (occurrence: ForecastOccurrence) => void
@@ -298,6 +317,12 @@ function OccurrenceRow({
 
   const body = (
     <View className="flex-row items-start gap-3">
+      {/* Full opacity even on an uncounted row: the disc says what KIND of
+          money this is, which is true either way. */}
+      <View className="pt-0.5">
+        <CategoryDisc visual={categoryVisual} size={32} />
+      </View>
+
       <View className="min-w-0 flex-1" style={{ opacity: contentOpacity }}>
         <View className="flex-row items-center gap-2">
           {/* An overdue occurrence is pulled onto today so it still weighs on

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
+import { SwitchPane } from '@/components/ui/motion'
 import { Panel } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useActivity } from '@money-space/core/features/activity/hooks/use-activity'
@@ -33,49 +34,51 @@ export function ActivityPage() {
       <CompactPageHeader title={t('activity.header.title')} />
 
       <Panel>
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-10 w-full" />
-            ))}
-          </div>
-        ) : entries.length === 0 ? (
-          <p className="py-4 t-body-sm text-ink2">{t('activity.empty')}</p>
-        ) : (
-          <div className="space-y-7">
-            {groups.map(([day, dayEntries]) => (
-              <section key={day}>
-                <p className="label">{formatRelativeDay(day, t)}</p>
-                <ul className="mt-3 -mx-2.5 t-body-sm">
-                  {dayEntries.map((entry) => {
-                    const impact = describeImpact(entry, t, formatVndSigned)
-                    return (
-                      <li
-                        key={entry.id}
-                        className="flex items-baseline gap-4 px-2.5 py-2.5"
-                      >
-                        <span className="w-6 shrink-0 font-mono t-caption-sm text-ink3">
-                          {actorInitials(entry)}
-                        </span>
-                        <span className="flex-1">{describeEntry(entry, t)}</span>
-                        {entry.amount === null ? null : (
-                          <span className="num w-24 text-right text-ink2">
-                            {formatVndScale(entry.amount)}
+        <SwitchPane activeKey={isLoading ? 'loading' : entries.length === 0 ? 'empty' : 'data'}>
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : entries.length === 0 ? (
+            <p className="py-4 t-body-sm text-ink2">{t('activity.empty')}</p>
+          ) : (
+            <div className="space-y-7">
+              {groups.map(([day, dayEntries]) => (
+                <section key={day}>
+                  <p className="label">{formatRelativeDay(day, t)}</p>
+                  <ul className="mt-3 -mx-2.5 t-body-sm">
+                    {dayEntries.map((entry) => {
+                      const impact = describeImpact(entry, t, formatVndSigned)
+                      return (
+                        <li
+                          key={entry.id}
+                          className="flex items-baseline gap-4 px-2.5 py-2.5"
+                        >
+                          <span className="w-6 shrink-0 font-mono t-caption-sm text-ink3">
+                            {actorInitials(entry)}
                           </span>
-                        )}
-                        {impact ? (
-                          <span className="hidden w-40 text-right t-caption text-ink3 sm:block">
-                            {impact}
-                          </span>
-                        ) : null}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </section>
-            ))}
-          </div>
-        )}
+                          <span className="flex-1">{describeEntry(entry, t)}</span>
+                          {entry.amount === null ? null : (
+                            <span className="num w-24 text-right text-ink2">
+                              {formatVndScale(entry.amount)}
+                            </span>
+                          )}
+                          {impact ? (
+                            <span className="hidden w-40 text-right t-caption text-ink3 sm:block">
+                              {impact}
+                            </span>
+                          ) : null}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          )}
+        </SwitchPane>
       </Panel>
     </div>
   )

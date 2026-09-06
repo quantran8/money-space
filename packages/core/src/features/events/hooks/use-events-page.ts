@@ -7,6 +7,7 @@ import { notify } from '#/shared/notify'
 
 import { useAssets } from '#/features/assets/hooks/use-assets'
 import { useAssetSale } from '#/features/assets/hooks/use-asset-sale'
+import { isWalletAssetType } from '#/features/assets/model/assets'
 import { useCategoryVisuals } from '#/features/events/hooks/use-category-visuals'
 import { useEventCategories } from '#/features/events/hooks/use-event-categories'
 import { useEvents } from '#/features/events/hooks/use-events'
@@ -99,7 +100,7 @@ export function useEventsPage() {
   const assetOptions = useMemo(
     () =>
       assets
-        .filter((asset) => asset.type === 'cash' || asset.type === 'bank_account')
+        .filter((asset) => isWalletAssetType(asset.type))
         .map((asset) => ({ value: asset.id, label: asset.name })),
     [assets],
   )
@@ -495,7 +496,7 @@ export function useEventsPage() {
     if (raw?.type === 'asset_sale') {
       const soldAsset = assets.find((item) => item.id === raw.fromAssetId)
       if (!soldAsset) {
-        notify.error('Không tìm thấy tài sản của giao dịch bán này.')
+        notify.error(t('events.toast.saleAssetMissing'))
         return
       }
       sale.openSaleForEdit(soldAsset, raw)
@@ -509,7 +510,7 @@ export function useEventsPage() {
     // backend syncs the new value back to the asset + its value-history point.
     const isRevaluation = raw?.type === 'asset_update'
     if (raw && !isRevaluation && !isEditableEventType(raw.type)) {
-      notify.error('Loại record này không sửa trực tiếp được. Hãy xóa và tạo lại qua đúng luồng.')
+      notify.error(t('events.toast.notDirectlyEditable'))
       return
     }
     const event = events.find((item) => item.id === eventId)
@@ -567,10 +568,10 @@ export function useEventsPage() {
       }
       try {
         await updateEvent.mutateAsync({ eventId: editingEventId, payload: revaluationPayload })
-        notify.success('Cap nhat dinh gia lai thanh cong.')
+        notify.success(t('events.toast.revaluationUpdated'))
         handleFormOpenChange(false)
       } catch (error) {
-        notify.error(getErrorMessage(error, 'Khong the cap nhat dinh gia lai.'))
+        notify.error(getErrorMessage(error, t('events.toast.revaluationFailed')))
       }
       return
     }
@@ -615,60 +616,28 @@ export function useEventsPage() {
     try {
       if (editingEventId) {
         await updateEvent.mutateAsync({ eventId: editingEventId, payload })
-        notify.success('Cap nhat record thanh cong.')
+        notify.success(t('events.toast.updated'))
       } else {
         await createEvent.mutateAsync(payload)
-        notify.success('Tao record thanh cong.')
+        notify.success(t('events.toast.created'))
       }
       handleFormOpenChange(false)
     } catch (error) {
-      notify.error(getErrorMessage(error, editingEventId ? 'Khong the cap nhat record.' : 'Khong the tao record.'))
+      notify.error(
+        getErrorMessage(
+          error,
+          editingEventId ? t('events.toast.updateFailed') : t('events.toast.createFailed'),
+        ),
+      )
     }
-  }
-
-  function toggleEventAttention(eventId: string) {
-    setEvents((current) =>
-      current.map((event) =>
-        event.id === eventId
-          ? {
-              ...event,
-              isAttentionNeeded: !event.isAttentionNeeded,
-              attentionLevel:
-                event.isAttentionNeeded && event.attentionLevel !== 'urgent'
-                  ? 'normal'
-                  : 'important',
-            }
-          : event,
-      ),
-    )
-  }
-
-  function duplicateEvent(eventId: string) {
-    const event = events.find((item) => item.id === eventId)
-    if (!event) return
-    void createEvent
-      .mutateAsync({
-        amount: Math.abs(event.amount),
-        isoDate: event.date,
-        type: event.eventType,
-        direction: event.direction,
-        categoryId: event.categoryId,
-        fromAssetId: event.fromAssetId,
-        toAssetId: event.toAssetId,
-        // The cashflow link is deliberately NOT copied: it records which expected
-        // movement this event settled, and only one event can settle it.
-        note: event.note ? `${event.note} (copy)` : '(copy)',
-      })
-      .then(() => notify.success('Da nhan ban record.'))
-      .catch((error) => notify.error(getErrorMessage(error, 'Khong the nhan ban record.')))
   }
 
   async function handleDeleteEvent(eventId: string) {
     try {
       await deleteEventMutation.mutateAsync(eventId)
-      notify.success('Da xoa record.')
+      notify.success(t('events.toast.deleted'))
     } catch (error) {
-      notify.error(getErrorMessage(error, 'Khong the xoa record.'))
+      notify.error(getErrorMessage(error, t('events.toast.deleteFailed')))
       throw error
     }
   }
@@ -734,8 +703,6 @@ export function useEventsPage() {
     openEditEvent,
     handleFormOpenChange,
     onSubmitActual,
-    toggleEventAttention,
-    duplicateEvent,
     handleDeleteEvent,
   }
 }

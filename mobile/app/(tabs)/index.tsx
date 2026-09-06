@@ -112,7 +112,7 @@ export default function DashboardScreen() {
 
   if (!state.isReady) {
     return (
-      <Screen title={t('nav.dashboard')}>
+      <Screen withAccountHeader title={t('nav.dashboard')}>
         <DashboardSkeleton />
       </Screen>
     )
@@ -138,6 +138,7 @@ export default function DashboardScreen() {
 
   return (
     <Screen
+      withAccountHeader
       title={t('nav.dashboard')}
       right={
         <Text className="font-mono t-caption-sm text-ink3">

@@ -34,12 +34,25 @@ Single dispatch entry point. Returns VND, or `null`/`0` when a price is unknown.
   - Frontend returns `null` if no current/purchase price **and** no known price; backend returns `0`.
   - `purchasePrice` stores the original price of 1 unit (1 BTC, 1 share, 1 chỉ gold)
     directly on the asset — the MVP path, since the pricing API is stubbed.
-- **`formula_calculated`** → **simple accrued interest** (non-compounding):
+- **`formula_calculated`** → depends on `interestPayment`. Mirrored in
+  `backend/src/common/utils/money-space.utils.ts`; the two must agree or the form and the
+  server quote different numbers.
+
+  **`end_of_term`** — worth its principal until it pays:
   ```
-  current_value = principal + principal × (rate/100) × elapsedYears
-  elapsedYears  = daysBetween(startDate, effectiveEnd) / 365
-  effectiveEnd  = min(maturityDate, asOf)   // accrual FREEZES at maturity
+  principal                                   while asOf < maturityDate
+  principal + principal × rate × termYears    once asOf ≥ maturityDate
   ```
+  Daily accrual here was wrong, not just early: breaking such a passbook pays the
+  NON-TERM rate on elapsed days, so the accrued figure never exists. Symptom: a 100tr
+  deposit opened today displayed 101.189.041đ.
+
+  **`monthly`** — steps on the deposit's own day each month:
+  ```
+  principal + (principal × rate / 12) × wholeMonthsBetween(startDate, min(maturity, asOf))
+  ```
+  Gửi ngày 06 ⇒ nothing until the 06th of the next month, then a jump. `wholeMonthsBetween`
+  counts with the same month-clamping (`31/01 → 28/02`) the backend accrual uses.
   - `computeMaturityValue(term)` = principal + full-term simple interest (for display).
 
 ## Saving-deposit interest schedule, early withdrawal & auto-crediting
@@ -74,8 +87,40 @@ Single dispatch entry point. Returns VND, or `null`/`0` when a price is unknown.
   `neutral` event + `capitalizeSavingInterest` bumps the deposit (compounds).
   **Idempotency**: a period is keyed by `(deposit, 'interest', periodEnd)`; existing dates are
   skipped, so re-running is a no-op. `accrueHouseholdInterest` loops a household's deposits.
-- Endpoints (money-events controller): `POST …/money-events/accrue-interest` (household) and
-  `POST …/money-events/assets/:assetId/accrue-interest` (one deposit). Called by an external worker.
+- **`SavingDepositCron` runs it** (01:15 Asia/Ho_Chi_Minh). The two `@Public()` endpoints that used
+  to expose accrual are GONE — an unauthenticated seam for a worker that was never built, so nothing
+  ever called them and **no interest had ever been credited**; every deposit's chart was a flat line.
+  Two passes in one job, in order: **accrue, then settle** (a capitalizing deposit needs its final
+  interest folded into the principal before that principal is paid out).
+**Settlement — a deposit BECOMES the account holding its money** (`convertDepositToWallet`):
+
+The household's model: opening a passbook creates an account; at maturity that account is simply
+money you can spend. No second asset — the SAME row converts (`saving_deposit → bank_account`,
+`formula_calculated → manual`, `manualValue = payout`), keeping its id so the value history runs
+unbroken. Not reachable through `updateAsset` (`assertIdentityUnchanged` refuses type changes and
+must keep doing so); this is the one sanctioned type change.
+
+- `computeSavingSettlement(term, asOf)` answers for BOTH the maturity cron and a manual withdrawal,
+  so the two can never disagree about the money.
+  - matured + `destination: principal` → `principalAmount` (interest already capitalized into it).
+  - matured + `destination: wallet` → `basePrincipalAmount` only; the interest already left monthly.
+  - before maturity → `computeSavingEarly` on `basePrincipalAmount`. **The clawback is deducted from
+    the principal at settlement; interest events already recorded are never rewritten.**
+  - Worked (100tr, 6%, 12 tháng, non-term 0,2%): matured+principal 106tr; matured+wallet 100tr;
+    early@6mo end_of_term 100,1tr; early@6mo monthly 97,1tr (clawback 2,9tr).
+- `basePrincipalAmount` exists because `capitalizeSavingInterest` rewrites `principalAmount` in
+  place — after the first capitalization the deposited amount is gone, and both the clawback and the
+  wallet-destination payout need it.
+- **Settled at the deposit's own maturity date, not today**, so a passbook entered late lands in the
+  month it actually matured.
+- Writes one neutral `asset_update` event, so the settlement appears in the events timeline — the
+  household sees the money arrive even with no notification system. Notifications are a designed
+  seam only: an `asset.deposit_settled` audit entry today, `DepositSettledEvent` as the payload
+  contract.
+- UI: `SavingWithdrawDialog` (web) prices the withdrawal before confirming, reusing
+  `computeSavingOnTime`/`computeSavingEarly` so the figure matches what the create form promised.
+  `saving_deposit` stays OUT of `SELLABLE_ASSET_TYPES` — a passbook is settled, not sold.
+
 - Note: `computeCurrentValue` is unchanged — it still returns the continuously-accrued value at
   `AS_OF` and ignores `interestPayment`. The accrual flow is the source of dated valuation history +
   cash movement; the two are intentionally separate (a deliberate MVP simplification).

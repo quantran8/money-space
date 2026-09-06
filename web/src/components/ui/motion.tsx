@@ -9,6 +9,7 @@ import {
 } from 'react'
 import {
   animate,
+  AnimatePresence,
   motion,
   MotionValue,
   useReducedMotion,
@@ -47,11 +48,21 @@ export const easeOut: Transition['ease'] = [0.22, 1, 0.36, 1]
  */
 export const easeCount: Transition['ease'] = [0.33, 0.35, 0.2, 1]
 
-/** Page-level enter: a soft fade + small upward drift. */
+/** Page-level enter: a soft fade + small drift. */
 export const pageTransition: Transition = { duration: 0.22, ease: easeOut }
 
+/**
+ * The drift is NEGATIVE, and that sign is load-bearing.
+ *
+ * The page wrapper is `min-h-full`, so it already stands exactly as tall as the
+ * scroll container. Offsetting it DOWN pushed those 8px past the bottom edge,
+ * which counts as scrollable overflow — so every route change flashed a
+ * scrollbar on and off for the length of the transition, on pages with nothing
+ * to scroll. Upward overflow is not scrollable, so drifting up settles into
+ * place without ever making the page scrollable.
+ */
 export const pageVariants: Variants = {
-  initial: { opacity: 0, y: 8 },
+  initial: { opacity: 0, y: -8 },
   animate: { opacity: 1, y: 0 },
 }
 
@@ -92,6 +103,80 @@ export function AppearItem({ children, ...props }: HTMLMotionProps<'div'>) {
     <motion.div variants={itemVariants} transition={itemTransition} {...props}>
       {children}
     </motion.div>
+  )
+}
+
+/**
+ * Content that unrolls from under its trigger instead of appearing outright.
+ *
+ * The one thing React cannot do alone: an unmounted child is gone on the next
+ * frame, so a disclosure written as `{open ? <div/> : null}` can only ever
+ * blink. `AnimatePresence` keeps it mounted long enough to leave.
+ *
+ * Height carries the movement and `overflow-hidden` clips it mid-transition.
+ * Opacity runs shorter than height so the text is not readable while it is
+ * still sliding.
+ */
+export function Collapse({
+  open,
+  children,
+  className,
+}: {
+  open: boolean
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <AnimatePresence initial={false}>
+      {open ? (
+        <motion.div
+          key="collapse"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{
+            height: { duration: 0.24, ease: easeOut },
+            opacity: { duration: 0.16, ease: easeOut },
+          }}
+          className="overflow-hidden"
+        >
+          <div className={className}>{children}</div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  )
+}
+
+/**
+ * One surface swapped for another in the same slot — a tab body, a step, a
+ * result replacing a form.
+ *
+ * `mode="wait"` so the outgoing pane finishes before the incoming one starts;
+ * crossfading two panes of different heights makes the container jump.
+ * Re-fires on each new `activeKey`.
+ */
+export function SwitchPane({
+  activeKey,
+  children,
+  className,
+}: {
+  activeKey: string
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={activeKey}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.18, ease: easeOut }}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   )
 }
 

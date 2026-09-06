@@ -101,3 +101,46 @@ export function toPurchasePayload(values: AssetPurchaseForm) {
     fundingAssetId: values.fundingAssetId || null,
   }
 }
+
+/**
+ * What a purchase costs, and what the position looks like once it settles.
+ *
+ * The weighted average here is the SAME one the server computes on commit —
+ * shown before the household agrees to it, because a purchase silently
+ * re-averages the cost basis every future gain or loss is measured against.
+ *
+ * Returns `null` until both numbers are real: a total of "0 đ" while someone is
+ * still typing states something false, and `null` is what the callers render
+ * nothing for.
+ *
+ * `purchasePrice` is the cost basis, never `lastPrice` — the first is what was
+ * paid, the second is what it is worth today, and averaging in today's price
+ * would quietly erase the gain.
+ */
+export function buildPurchaseSummary({
+  rawQuantity,
+  rawUnitPrice,
+  currentQuantity,
+  heldCostBasis,
+}: {
+  rawQuantity: string
+  rawUnitPrice: string
+  currentQuantity: number
+  /** The position's existing `purchasePrice`; 0 when it has none yet. */
+  heldCostBasis: number
+}): { total: number; nextQuantity: number; nextCostBasis: number } | null {
+  const quantity = parseRawDecimal(rawQuantity)
+  const unitPrice = parseRawMoney(rawUnitPrice)
+
+  if (!Number.isFinite(quantity) || quantity <= 0) return null
+  if (!Number.isFinite(unitPrice) || unitPrice <= 0) return null
+
+  const total = quantity * unitPrice
+  const nextQuantity = currentQuantity + quantity
+
+  return {
+    total,
+    nextQuantity,
+    nextCostBasis: nextQuantity > 0 ? (currentQuantity * heldCostBasis + total) / nextQuantity : 0,
+  }
+}

@@ -44,7 +44,15 @@ export type {
  * every other type — a stock or a gold bar is valued from a price, not from a
  * stored balance — so pointing a settlement at one moves nothing.
  */
-const WALLET_ASSET_TYPES: AssetType[] = ['cash', 'bank_account']
+export const WALLET_ASSET_TYPES: readonly AssetType[] = ['cash', 'bank_account']
+
+/**
+ * Is this a wallet type? The single answer to "cash or bank account", so a new
+ * wallet type is one edit here rather than a hunt through every picker.
+ */
+export function isWalletAssetType(type: string | undefined | null): boolean {
+  return !!type && (WALLET_ASSET_TYPES as readonly string[]).includes(type)
+}
 
 /**
  * Can this asset settle a cashflow event — i.e. does confirming against it
@@ -63,7 +71,7 @@ export function canSettleCashflow(asset: {
   return (
     (!asset.status || asset.status === 'active') &&
     asset.liquidity === 'usable_now' &&
-    WALLET_ASSET_TYPES.includes(asset.type)
+    isWalletAssetType(asset.type)
   )
 }
 
@@ -279,6 +287,32 @@ function daysBetween(from: string, to: string): number {
   return Math.max(0, Math.round((end - start) / (1000 * 60 * 60 * 24)))
 }
 
+/** `2026-09-06` + n months, clamped to the month's length (31/01 → 28/02). */
+function addMonthsIso(isoDate: string, months: number): string {
+  const d = new Date(`${isoDate}T00:00:00Z`)
+  if (Number.isNaN(d.getTime())) return isoDate
+  const day = d.getUTCDate()
+  const target = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + months, 1))
+  const lastDay = new Date(
+    Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0),
+  ).getUTCDate()
+  target.setUTCDate(Math.min(day, lastDay))
+  return target.toISOString().slice(0, 10)
+}
+
+/**
+ * Whole monthly anniversaries elapsed — i.e. how many monthly payouts have
+ * fallen due. Mirrors `wholeMonthsBetween` in the backend's money-space.utils.ts.
+ */
+function wholeMonthsBetween(startDate: string, asOf: string): number {
+  if (asOf < startDate) return 0
+  let months = 0
+  while (months < 1200 && addMonthsIso(startDate, months + 1) <= asOf) {
+    months += 1
+  }
+  return months
+}
+
 function computeMarketValue(position: MarketPosition): number | null {
   // A manually recorded latest price wins. Otherwise prefer the market cache;
   // the original purchase price is only the final fallback/cost basis.
@@ -300,20 +334,40 @@ function computeMarketValue(position: MarketPosition): number | null {
 }
 
 /**
- * Simple accrued-interest model for formula assets (§25).
- * current_value = principal + principal × rate × elapsedYears (capped at maturity).
+ * Accrued-interest model for formula assets (§25), by payout schedule.
+ *
+ * `end_of_term` is worth its principal until it actually pays: break such a
+ * passbook early and the bank pays the NON-TERM rate on the elapsed days, not
+ * the contracted one, so a daily-accrued figure is money that will never exist.
+ * `monthly` keeps accruing — its interest genuinely falls due each month, and a
+ * `principal` destination capitalizes it into the balance for real.
+ *
+ * Mirrors `computeCurrentValue` in the backend's money-space.utils.ts; the two
+ * must agree or the form and the server will quote different numbers.
+ * See memory/asset-valuation.md.
  */
 function computeFormulaValue(term: CalculationTerm, asOf: string): number {
   const rate = term.interestRate / 100
-  const effectiveEnd =
+
+  if (term.interestPayment === 'end_of_term') {
+    const matured = !!term.maturityDate && new Date(term.maturityDate) <= new Date(asOf)
+    if (!matured) return term.principalAmount
+    const years = daysBetween(term.startDate, term.maturityDate as string) / 365
+    return term.principalAmount + term.principalAmount * rate * years
+  }
+
+  // `monthly`: interest lands on the deposit's own day each month, so the value
+  // STEPS on each anniversary rather than sloping daily. Gửi ngày 06 means
+  // nothing is added until the 06th of the next month.
+  const horizon =
     term.maturityDate && new Date(term.maturityDate) < new Date(asOf)
       ? term.maturityDate
       : asOf
-  const elapsedDays = daysBetween(term.startDate, effectiveEnd)
-  const elapsedYears = elapsedDays / 365
-  const accrued = term.principalAmount * rate * elapsedYears
-  return term.principalAmount + accrued
+  const elapsedPayouts = wholeMonthsBetween(term.startDate, horizon)
+  const monthly = (term.principalAmount * rate) / 12
+  return term.principalAmount + monthly * elapsedPayouts
 }
+
 
 /**
  * The current value of an asset in the household currency (VND), or `null`

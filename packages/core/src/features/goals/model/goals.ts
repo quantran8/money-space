@@ -1,12 +1,4 @@
-import type { GoalPriority } from '#/features/goals/model/goals.types'
-
 export type { GoalItem, GoalPriority } from '#/features/goals/model/goals.types'
-
-export const priorityLabels: Record<GoalPriority, string> = {
-  high: 'Ưu tiên cao',
-  medium: 'Bình thường',
-  low: 'Ưu tiên thấp',
-}
 
 /** Parse a raw (separator-free) VND digit string into a number. */
 export function parseAmount(raw: string) {
