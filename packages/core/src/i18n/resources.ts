@@ -632,6 +632,12 @@ export const resources = {
             },
             flexibleYes: 'Có',
             flexibleNo: 'Không',
+            // Mở sổ là tiền rời khỏi ví, không phải tài sản tự sinh ra.
+            acquisition: 'Khoản này',
+            acquisitionOwned: 'Đã có sẵn',
+            acquisitionDeposited: 'Vừa gửi',
+            payFrom: 'Gửi từ tài khoản nào',
+            payFromPlaceholder: 'Chọn tài khoản đã trích tiền',
           },
           nonTermRatePlaceholder: 'Ví dụ: 0,2',
           nonTermRateTooHigh: 'Lãi suất không kỳ hạn không được cao hơn lãi suất kỳ hạn',
@@ -675,6 +681,23 @@ export const resources = {
           removeConfirm: 'Gỡ nguồn tiền',
           removing: 'Đang gỡ...',
           incomplete: 'Còn thiếu thông tin để lưu khoản này.',
+        },
+        withdraw: {
+          action: 'Tất toán',
+          titleMatured: 'Tất toán sổ đã đáo hạn?',
+          titleEarly: 'Rút trước hạn?',
+          description: '{{name}} sẽ trở thành một tài khoản dùng được ngay.',
+          payoutLabel: 'Số tiền nhận về',
+          principal: 'Gốc',
+          interest: 'Lãi',
+          clawback: 'Lãi bị truy thu',
+          // §22.11 — nói hệ quả bằng tiền, trước khi bấm.
+          forgone: 'Giữ đến hết kỳ hạn sẽ nhận thêm {{amount}}.',
+          becomesAccount:
+            'Sổ này không mất đi: nó trở thành tài khoản giữ số tiền trên, giữ nguyên lịch sử giá trị.',
+          confirm: 'Tất toán',
+          submitting: 'Đang tất toán...',
+          done: 'Đã tất toán, tiền đã vào tài khoản.',
         },
         sale: {
           action: 'Bán',
@@ -2853,6 +2876,14 @@ export const resources = {
           manageSpace: 'Quản lý không gian <1>{{name}}</1>',
           savedState: 'Đã lưu',
         },
+        spaces: {
+          title: 'Không gian của bạn',
+          label: 'Không gian đang mở',
+          placeholder: 'Chọn không gian',
+          count: '{{count}} không gian',
+          description:
+            'Bạn đang ở trong nhiều không gian. Chọn không gian muốn xem — mọi số liệu, thành viên và mục tiêu bên dưới đều thuộc về không gian đang mở.',
+        },
         household: {
           eyebrow: 'Thông tin chung',
           title: 'Hồ sơ gia đình',
@@ -2889,6 +2920,13 @@ export const resources = {
             'Việc này xóa hẳn không gian chung: {{members}} thành viên và {{sources}} nguồn tiền. Không khôi phục lại được.',
           deleteAction: 'Xóa không gian',
           dangerMeta: 'Không thể hoàn tác',
+          // Người không tạo nhà không xóa được không gian chung — thứ duy nhất
+          // họ kết thúc được là quyền truy cập của chính mình.
+          leave: 'Rời không gian gia đình',
+          leaveMeta: 'Quyền truy cập của bạn',
+          leaveDescription:
+            'Bạn sẽ không còn xem được số liệu của nhà này. Dữ liệu chung vẫn giữ nguyên cho những người còn lại.',
+          leaveAction: 'Rời không gian',
         },
         categories: {
           eyebrow: 'Phân loại',
@@ -3857,6 +3895,11 @@ export const resources = {
             },
             flexibleYes: 'Yes',
             flexibleNo: 'No',
+            acquisition: 'This deposit is',
+            acquisitionOwned: 'Already open',
+            acquisitionDeposited: 'Just deposited',
+            payFrom: 'Paid from',
+            payFromPlaceholder: 'Choose the account it came from',
           },
           nonTermRatePlaceholder: 'Example: 0,2',
           nonTermRateTooHigh: 'The non-term rate cannot exceed the contracted rate',
@@ -3897,6 +3940,22 @@ export const resources = {
           removeConfirm: 'Remove',
           removing: 'Removing...',
           incomplete: 'Some details are still missing.',
+        },
+        withdraw: {
+          action: 'Settle',
+          titleMatured: 'Settle this matured deposit?',
+          titleEarly: 'Withdraw before maturity?',
+          description: '{{name}} becomes an account you can spend from.',
+          payoutLabel: 'You receive',
+          principal: 'Principal',
+          interest: 'Interest',
+          clawback: 'Interest clawed back',
+          forgone: 'Holding to maturity would pay {{amount}} more.',
+          becomesAccount:
+            'The deposit is not lost: it becomes the account holding this money, keeping its value history.',
+          confirm: 'Settle',
+          submitting: 'Settling...',
+          done: 'Settled — the money is in the account.',
         },
         sale: {
           action: 'Sell',
@@ -5968,6 +6027,14 @@ export const resources = {
           manageSpace: 'Managing <1>{{name}}</1>',
           savedState: 'Saved',
         },
+        spaces: {
+          title: 'Your spaces',
+          label: 'Current space',
+          placeholder: 'Choose a space',
+          count: '{{count}} spaces',
+          description:
+            'You belong to more than one space. Choose which one to look at — every figure, member and goal below belongs to the space that is open.',
+        },
         household: {
           eyebrow: 'General information',
           title: 'Household profile',
@@ -6003,6 +6070,13 @@ export const resources = {
             'This permanently deletes the shared space: {{members}} members and {{sources}} money sources. It cannot be undone.',
           deleteAction: 'Delete space',
           dangerMeta: 'Cannot be undone',
+          // Someone who did not create the household cannot delete the shared
+          // space — the only thing they can end is their own access.
+          leave: 'Leave household space',
+          leaveMeta: 'Your access',
+          leaveDescription:
+            'You will no longer see this household’s numbers. The shared data stays as it is for everyone else.',
+          leaveAction: 'Leave space',
         },
         categories: {
           eyebrow: 'Categories',

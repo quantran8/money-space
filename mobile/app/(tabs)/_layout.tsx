@@ -43,11 +43,16 @@ export default function TabsLayout() {
  */
 function TabBar() {
   const { t } = useTranslation()
-  useActiveHousehold()
+  const { activeHouseholdId } = useActiveHousehold()
 
   return (
     <>
+      {/* Keyed on the space. Tab screens stay mounted on a phone, so an id held
+          in a screen's state — an event being edited, a member picked for
+          removal — would otherwise survive a switch made on the Gia đình tab
+          and act on the wrong space the next time that tab was opened. */}
       <Tabs
+        key={activeHouseholdId ?? 'none'}
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.ink,

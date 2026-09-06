@@ -48,3 +48,21 @@ export function deleteMember(householdId: string, memberId: string) {
     },
   )
 }
+
+/**
+ * Leaving is its own endpoint, not `deleteMember` pointed at your own id.
+ *
+ * `DELETE /members/:memberId` is creator-only on the backend — removing
+ * someone is a lifecycle operation over the shared space — so calling it to
+ * leave returned 403 for exactly the people who needed it. `DELETE
+ * /members/me` carries no id at all: the row is resolved from the bearer
+ * token, so there is nothing here that could name someone else.
+ */
+export function leaveHousehold(householdId: string) {
+  return apiRequest<{ left: boolean; memberId: string }>(
+    `/households/${householdId}/members/me`,
+    {
+      method: 'DELETE',
+    },
+  )
+}

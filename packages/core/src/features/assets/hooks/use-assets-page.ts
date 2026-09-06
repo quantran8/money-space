@@ -10,7 +10,7 @@ import { useAssetQuantity } from '#/features/assets/hooks/use-asset-quantity'
 import {
   buildAssetSchema,
   canBePurchased,
-  defaultAssetFormValues,
+  freshAssetFormValues,
   fromAsset,
   toAsset,
   type AssetForm,
@@ -98,7 +98,7 @@ export function useAssetsPage() {
   // what makes an error clear the moment the user starts fixing that field.
   const form = useForm<AssetForm>({
     resolver: zodResolver(assetSchema),
-    defaultValues: defaultAssetFormValues,
+    defaultValues: freshAssetFormValues(),
     mode: 'onSubmit',
     reValidateMode: 'onChange',
     shouldFocusError: true,
@@ -131,7 +131,11 @@ export function useAssetsPage() {
     reset(
       editingAsset
         ? fromAsset(editingAsset)
-        : { ...defaultAssetFormValues, acquisition: createAcquisition },
+        : // `freshAssetFormValues()`, not the constant: it resolves "today" at
+          // the moment the form opens. The constant carries a fixed past date,
+          // which silently back-dated every new saving deposit and had the app
+          // showing accrued interest for days the deposit did not exist.
+          { ...freshAssetFormValues(), acquisition: createAcquisition },
     )
   }, [formOpen, editingAsset, createAcquisition, reset])
 

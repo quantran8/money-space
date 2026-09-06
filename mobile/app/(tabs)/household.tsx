@@ -16,6 +16,7 @@ import { notify } from '@money-space/core/shared/notify'
 
 import { ConfirmDialog, Panel, Screen, Sections, Skeleton } from '@/components/ui'
 import { HouseholdIdentitySection } from '@/features/household/ui/household-identity-section'
+import { SpaceSwitcherSection } from '@/features/household/ui/space-switcher-section'
 import { InviteQrSheet } from '@/features/invites/ui/invite-qr-sheet'
 import { MembersSection } from '@/features/members/ui/members-section'
 import { HouseholdDataSection } from '@/features/settings/ui/household-data-section'
@@ -112,6 +113,9 @@ export default function HouseholdScreen() {
       refreshing={isRefetching}
     >
       <Sections>
+        {/* First: everything below it describes the space this row picks. */}
+        <SpaceSwitcherSection />
+
         {isSettingsLoading ? (
           <Panel>
             <Skeleton height={28} className="w-40" />

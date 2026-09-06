@@ -26,6 +26,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -46,6 +48,8 @@ import {
 import { useLogout } from '@money-space/core/features/auth/hooks/use-logout'
 import { useSession } from '@money-space/core/features/auth/hooks/use-session'
 import { cn } from '@money-space/core/shared/lib/utils'
+import { useSpaceSwitcher } from '@money-space/core/features/settings/hooks/use-space-switcher'
+import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
 
 type NavItem = {
@@ -220,6 +224,7 @@ function SidebarAccount() {
   const { t } = useTranslation()
   const logout = useLogout()
   const { name, email, avatarUrl } = useAccountIdentity()
+  const { spaces, activeSpaceId, canSwitch, switchTo } = useSpaceSwitcher()
 
   return (
     <SidebarMenu>
@@ -273,6 +278,29 @@ function SidebarAccount() {
                 {email && <span className="t-caption truncate text-ink3">{email}</span>}
               </span>
             </DropdownMenuLabel>
+
+            {/* The spaces this account can open, between who is signed in and
+                the way out. Absent for the household with one space, which
+                leaves the menu exactly as it was. */}
+            {canSwitch ? (
+              <>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuLabel className="t-caption font-normal text-ink3">
+                  {t('settings.spaces.label')}
+                </DropdownMenuLabel>
+                <DropdownMenuRadioGroup
+                  value={activeSpaceId ?? undefined}
+                  onValueChange={switchTo}
+                >
+                  {spaces.map((space) => (
+                    <DropdownMenuRadioItem key={space.id} value={space.id}>
+                      <span className="truncate">{space.name}</span>
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </>
+            ) : null}
 
             <DropdownMenuSeparator />
 
@@ -400,6 +428,7 @@ export function AppShell() {
   const account = useAccountIdentity()
   const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
   const scrollRef = useRef<HTMLElement>(null)
+  const { activeHouseholdId } = useActiveHousehold()
 
   // `<main>` is the scroll container now, and it is NOT remounted between
   // routes — without this, opening a page from halfway down a long list would
@@ -484,8 +513,13 @@ export function AppShell() {
           {t('home.picture.simulate')}
         </button>
 
+        {/* Keyed on the SPACE as well as the route. Everything below this point
+            is scoped to one space — a member selected for removal, an open edit
+            dialog, an id queued for deletion — and all of it is component state
+            a switch invalidates. One key retires a reset effect per page and
+            cannot be forgotten by the next page that holds an id. */}
         <motion.div
-          key={location.pathname}
+          key={`${activeHouseholdId ?? 'none'}:${location.pathname}`}
           initial="initial"
           animate="animate"
           variants={pageVariants}

@@ -116,9 +116,16 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
   - **Not a column on `assets`** — it describes ONE acquisition, not the asset.
     Buying more of the same position later would have no single value to store.
     Purchase history lives in `money_events`, next to `asset_sale`.
-  - Offered only for types a household actually buys (`canBePurchased`): gold,
-    crypto, stock, real estate, foreign currency. Paying for a wallet out of a
-    wallet is a transfer, and a saving deposit has its own funding flow.
+  - Offered for types a household actually parts with money for (`canBePurchased`): gold, crypto,
+    stock, real estate, foreign currency, **and saving_deposit**. Paying for a wallet out of a wallet
+    is a transfer, so wallets stay out.
+    - `saving_deposit` was added 2026-09-05. It had been excluded on the stated grounds that a
+      deposit "already has its own funding flow" — it never did, so every passbook read as "we
+      already had this" and recording a 100tr deposit raised net worth by 100tr the household never
+      gained. The backend create path was always type-agnostic; only this client set blocked it.
+    - `purchaseCostOf` keys on the valuation MODE, not the type: a formula asset keeps its amount in
+      `principal`, and reading `value` there returned NaN — which the affordability check reads as
+      "cannot tell", so an unaffordable deposit passed silently.
   - Entry points: the asset form, and the **"Mua tài sản"** quick action on the
     events page — which opens that form already set to "vừa mua", mirroring
     "Bán tài sản". See [[money-events]].

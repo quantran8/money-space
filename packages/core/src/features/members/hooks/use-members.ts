@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createMember,
   deleteMember,
+  leaveHousehold,
   listMembers,
   updateMember,
   type MemberPayload,
@@ -47,6 +48,12 @@ export function useMembers() {
     deleteMember: useMutation({
       mutationFn: (memberId: string) => deleteMember(activeHouseholdId!, memberId),
       onSuccess: invalidate,
+    }),
+    // No `onSuccess: invalidate` — after leaving there is no membership list to
+    // refresh, and asking for one would 403. The caller navigates out and drops
+    // the cache instead.
+    leaveHousehold: useMutation({
+      mutationFn: () => leaveHousehold(activeHouseholdId!),
     }),
   }
 }

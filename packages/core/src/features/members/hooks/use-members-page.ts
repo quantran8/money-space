@@ -21,7 +21,8 @@ import { useAuthStore } from '#/shared/stores/auth-store'
  */
 export function useMembersPage() {
   const { t } = useTranslation()
-  const { members, household, updateMember, deleteMember, isLoading } = useMembers()
+  const { members, household, updateMember, deleteMember, leaveHousehold, isLoading } =
+    useMembers()
   const userId = useAuthStore((state) => state.user?.id)
   const queryClient = useQueryClient()
   const setActiveHouseholdId = useAppStore((state) => state.setActiveHouseholdId)
@@ -76,14 +77,26 @@ export function useMembersPage() {
   async function removeMember(id: string) {
     const leaving = id === viewerMemberId
     try {
-      await deleteMember.mutateAsync(id)
+      // Two endpoints, because they are two different permissions. Removing
+      // someone is creator-only; leaving is nobody's business but your own and
+      // carries no id (`DELETE /members/me`). Pointing `deleteMember` at your
+      // own row 403s for exactly the people who need to leave.
+      if (leaving) await leaveHousehold.mutateAsync()
+      else await deleteMember.mutateAsync(id)
       if (leaving) {
-        // The membership row is what made this household visible, so the stored
-        // id and the cached list both have to go before the caller navigates —
-        // `RequireHousehold` reads that list, and a stale one would send the
-        // user straight back into a household they just left.
+        // The membership row is what made this household visible, so the
+        // stored id has to go — `RequireHousehold` reads the list this id
+        // points into, and a stale one would send the user back into a
+        // household they left.
         setActiveHouseholdId(null)
-        await queryClient.invalidateQueries({ queryKey: queryKeys.households })
+        // REFETCH, not invalidate and not remove. `RequireHousehold` is
+        // mounted above this page and is an active observer of this query, so
+        // `removeQueries` does not leave the cache empty — it drops the entry
+        // and the live observer immediately refetches it anyway. Awaiting the
+        // refetch here makes that fetch the one we control: by the time the
+        // caller navigates, the list is authoritative and empty, so the gate
+        // agrees with us instead of racing us.
+        await queryClient.refetchQueries({ queryKey: queryKeys.households })
       }
       notify.success(leaving ? t('members.list.left') : t('members.list.removed'))
     } catch (error) {
@@ -113,7 +126,7 @@ export function useMembersPage() {
     removeId,
     removingMember,
     isLeaving,
-    isRemoving: deleteMember.isPending,
+    isRemoving: deleteMember.isPending || leaveHousehold.isPending,
     removeMember,
   }
 }

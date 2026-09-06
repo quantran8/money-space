@@ -1,4 +1,4 @@
-import { LogOut, MoreHorizontal, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,7 @@ type MemberRowProps = {
   holdsCount: number
   /** True for whoever created the household; that row has no exit at all. */
   isOwner: boolean
-  /** True when this row is the signed-in member — the only row they can act on. */
+  /** True when this row is the signed-in member; their own exit is not here. */
   isSelf: boolean
   /** True when the signed-in member created the household. */
   canRemoveOthers: boolean
@@ -33,14 +33,17 @@ type MemberRowProps = {
  * What replaces it is the question the product actually cares about: not "who
  * is allowed what" but "who is responsible for what".
  *
- * The one action left is the way out, and which way out depends on who is
- * looking. The creator's row has none — the backend refuses to delete it,
- * because the household's guard resolves against that row. Anyone else sees
- * "leave" on their own row and nothing on the other person's: taking a partner
- * out of the shared picture is the creator's call, not something either of them
- * can do to the other. It lives in an overflow menu rather than as a standing
- * red button, because a destructive action does not belong at rest in a row
- * whose job is to state a fact.
+ * The one action left is the creator's, and it is only ever about someone else:
+ * removing a member. The creator's own row has none — the backend refuses to
+ * delete it, because the household's guard resolves against that row — and a
+ * member who did not create the household sees no menu at all. Leaving is still
+ * theirs to do, but it is a household-level decision and it lives on the
+ * settings page as its own card; putting it behind a three-dot menu on their own
+ * row hid the only exit they have in the one place nobody thinks to look.
+ *
+ * What remains lives in an overflow menu rather than as a standing red button,
+ * because a destructive action does not belong at rest in a row whose job is to
+ * state a fact.
  *
  * `-mx-3 px-3` is what keeps the row FLUSH with the panel's content edge while
  * its hover band bleeds 12px past it on both sides. Padding alone would indent
@@ -56,9 +59,11 @@ export function MemberRow({
   onRemove,
 }: MemberRowProps) {
   const { t } = useTranslation()
-  const exit = isOwner ? 'none' : isSelf ? 'leave' : canRemoveOthers ? 'remove' : 'none'
-  // Still gates the exit: there is nothing to leave or remove on a row for
-  // someone who has not accepted the invite yet.
+  // Only the creator, only on someone else's row. Their own row is guarded by
+  // the backend, and a non-creator's exit is the settings page's leave card.
+  const canRemove = canRemoveOthers && !isOwner && !isSelf
+  // Still gates the action: there is nothing to remove on a row for someone who
+  // has not accepted the invite yet.
   const isActive = member.status === 'active'
   const displayName = member.name || member.email
 
@@ -86,7 +91,7 @@ export function MemberRow({
         {holdsCount > 0 ? t('members.list.holdsSources', { count: holdsCount }) : null}
       </p>
 
-      {isActive && exit !== 'none' ? (
+      {isActive && canRemove ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -104,14 +109,14 @@ export function MemberRow({
               className="text-alert-ink focus:text-alert-ink"
               onSelect={() => onRemove(member.id)}
             >
-              {exit === 'leave' ? <LogOut className="size-4" /> : <Trash2 className="size-4" />}
-              {exit === 'leave' ? t('members.list.leave') : t('common.remove')}
+              <Trash2 className="size-4" />
+              {t('common.remove')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
         // Holds the column so every row's facts line up, whether or not the
-        // row has a way out.
+        // row carries an action.
         <span className="hidden sm:block sm:size-11" aria-hidden />
       )}
     </article>

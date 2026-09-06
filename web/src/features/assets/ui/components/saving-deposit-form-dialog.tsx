@@ -34,7 +34,7 @@ import {
   termPresetForDates,
   type SavingPreview,
 } from '@money-space/core/features/assets/model/saving-preview'
-import { formatVndExact } from '@money-space/core/shared/lib/format-money'
+import { formatMoney, formatVndExact } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type WalletOption = { value: string; label: string; balance?: number }
@@ -61,7 +61,7 @@ const STEPS: Array<{ step: Step; key: string }> = [
  */
 const STEP_FIELDS: Record<Step, Array<keyof AssetForm>> = {
   1: ['name'],
-  2: ['principal', 'startDate', 'maturityDate'],
+  2: ['principal', 'startDate', 'maturityDate', 'fundingAssetId'],
   3: ['interestRate', 'nonTermRate', 'receivingWalletId'],
   4: [],
 }
@@ -138,6 +138,8 @@ export function SavingDepositFormDialog({
   const interestDestination = useWatch({ control, name: 'interestDestination' })
   const receivingWalletId = useWatch({ control, name: 'receivingWalletId' })
   const countsAsFlexible = useWatch({ control, name: 'countsAsFlexible' })
+  const acquisition = useWatch({ control, name: 'acquisition' })
+  const fundingAssetId = useWatch({ control, name: 'fundingAssetId' })
 
   const preview = previewSavingDeposit({
     type: 'saving_deposit',
@@ -149,6 +151,9 @@ export function SavingDepositFormDialog({
     interestPayment,
   })
   const walletName = walletOptions.find((option) => option.value === receivingWalletId)?.label
+  const fundingWalletName = walletOptions.find(
+    (option) => option.value === fundingAssetId,
+  )?.label
 
   function goToStep(nextStep: Step) {
     setStep(nextStep)
@@ -389,6 +394,22 @@ export function SavingDepositFormDialog({
                   setValue={setValue}
                   t={t}
                 />
+
+                {/* Which act is this? Declaring a passbook the household already
+                    holds RAISES net worth — they are no richer, just newly
+                    honest about what they have. Opening one today leaves net
+                    worth put: money left a wallet and came back as the deposit.
+                    Without the question every deposit read as the first, so
+                    recording a 100tr passbook invented 100tr. Create-only: an
+                    edit is not a second deposit. */}
+                {!isEditing ? (
+                  <DepositFundingFields
+                    control={control}
+                    errors={errors}
+                    walletOptions={walletOptions}
+                    t={t}
+                  />
+                ) : null}
               </div>
             ) : null}
 
@@ -585,6 +606,18 @@ export function SavingDepositFormDialog({
                         interestDestination === 'wallet'
                           ? (walletName ?? t('options.interestDestination.wallet'))
                           : t('options.interestDestination.principal')
+                      }
+                    />
+                    {/* Whether this moved money is the difference between net
+                        worth rising and net worth staying put, so it is stated
+                        before the user commits. */}
+                    <SummaryRow
+                      label={t('assets.form.deposit.acquisition')}
+                      value={
+                        acquisition === 'purchased'
+                          ? (fundingWalletName ??
+                            t('assets.form.deposit.acquisitionDeposited'))
+                          : t('assets.form.deposit.acquisitionOwned')
                       }
                     />
                     <SummaryRow
@@ -812,6 +845,86 @@ function SavingTermField({
         </p>
       ) : null}
     </Field>
+  )
+}
+
+/**
+ * "Đã có sẵn" or "Vừa gửi" — and, when just deposited, which account paid.
+ *
+ * Same distinction the gold/crypto form draws, in the language of a passbook:
+ * money moving from a wallet into a deposit is not new wealth, and declaring a
+ * passbook opened years ago is not a withdrawal from anything.
+ *
+ * "Đã có sẵn" is the default because entering what you already hold is the
+ * first thing anyone does in a manual-entry app.
+ */
+function DepositFundingFields({
+  control,
+  errors,
+  walletOptions,
+  t,
+}: {
+  control: Control
+  errors: Errors
+  walletOptions: WalletOption[]
+  t: Translate
+}) {
+  const acquisition = useWatch({ control, name: 'acquisition' })
+
+  return (
+    <>
+      <Field label={t('assets.form.deposit.acquisition')} error={errors.acquisition?.message}>
+        <Controller
+          control={control}
+          name="acquisition"
+          render={({ field }) => (
+            <Segmented
+              value={field.value}
+              onChange={field.onChange}
+              options={[
+                { value: 'owned' as const, label: t('assets.form.deposit.acquisitionOwned') },
+                {
+                  value: 'purchased' as const,
+                  label: t('assets.form.deposit.acquisitionDeposited'),
+                },
+              ]}
+            />
+          )}
+        />
+      </Field>
+
+      {acquisition === 'purchased' ? (
+        <Field
+          label={t('assets.form.deposit.payFrom')}
+          error={errors.fundingAssetId?.message}
+        >
+          <div className={cn(fieldShell, errors.fundingAssetId && 'border-alert-ink')}>
+            <Controller
+              control={control}
+              name="fundingAssetId"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className={fieldControlReset}>
+                    <SelectValue placeholder={t('assets.form.deposit.payFromPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {walletOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {/* The balance rides along so the choice can be made
+                            here, rather than by trial and error on save. */}
+                        {option.balance === undefined
+                          ? option.label
+                          : `${option.label} · ${formatMoney(option.balance)}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+        </Field>
+      ) : null}
+    </>
   )
 }
 
