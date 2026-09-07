@@ -358,6 +358,10 @@ export const resources = {
           on: 'Oursight tự lấy giá mới mỗi ngày.',
           off: 'Gia đình tự nhập giá cho tài sản này.',
           manualChip: 'Cập nhật tay',
+          // Nói vì sao tài sản này nhập tay, bằng hạn mức — không phải bằng
+          // một lời từ chối.
+          atLimit:
+            'Gói hiện tại tự cập nhật {{limit}} tài sản, dành cho những tài sản gia đình thêm trước.',
         },
         // Shared by the buy and sell dialogs — the live quote reads the same in
         // both, so the copy lives once.
@@ -3831,6 +3835,8 @@ export const resources = {
           on: 'Oursight refreshes this price every day.',
           off: 'You record this value yourself.',
           manualChip: 'Manual',
+          atLimit:
+            'Your plan keeps {{limit}} assets priced automatically, and they go to the ones you added first.',
         },
         marketPrice: {
           label: 'Market price',

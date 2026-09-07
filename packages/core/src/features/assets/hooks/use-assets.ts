@@ -7,7 +7,6 @@ import {
   getAssetSummary,
   listAssets,
   purchaseIntoPosition,
-  setAssetAutoPrice,
   updateAsset,
   withdrawSavingDeposit,
   type AssetPayload,
@@ -94,18 +93,6 @@ export function useAssets() {
     }),
     // Adding to a holding is a purchase, never an asset edit: the wallet pays and
     // the cost basis re-averages, neither of which raising `quantity` could do.
-    /**
-     * Move automatic pricing onto (or off) one asset.
-     *
-     * Invalidates like any other asset write, because at the plan's ceiling it
-     * can also turn a DIFFERENT asset's automation off — the list has to
-     * re-read, not just the row that was tapped.
-     */
-    setAutoPrice: useMutation({
-      mutationFn: ({ assetId, enabled }: { assetId: string; enabled: boolean }) =>
-        setAssetAutoPrice(activeHouseholdId!, assetId, enabled),
-      onSuccess: invalidate,
-    }),
     purchaseIntoPosition: useMutation({
       mutationFn: ({
         assetId,

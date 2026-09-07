@@ -97,6 +97,25 @@ it was hit.
 **Counts show only at the ceiling** (`isLastOne` / `isExhausted`). Counting from
 1/5 on an empty page turns a tool for thinking into a meter.
 
+The auto-price quota was the third gap, and fixing it meant removing behaviour
+rather than adding a warning. `setAutoPrice` used to swap at the ceiling: it
+moved automation off the oldest asset and returned `turnedOff` so the UI could
+name it — except no screen ever did, so an asset the household had chosen
+silently stopped updating and looked broken.
+
+The whole control is now gone. Automation is decided when an asset is created:
+under the ceiling it lands automatic, over it lands manual with the "Cập nhật
+tay" chip, and making room means deleting an asset they no longer hold. Deleted
+with it: the `PATCH :assetId/auto-price` route, `AssetsService.setAutoPrice`,
+and `setAutoPriceEnabled` / `findAutoPricedAssetIds` in the repository.
+`AutoPriceRow` is now a statement, not a switch.
+
+**Free `marketPricedAssets` also drops from 2 to 1.** One is enough to show what
+automation feels like, and a household holding both gold and stocks meets the
+ceiling on their second asset — which is where the value of automating is
+easiest to see. It is one number in `plan-limits.ts`; every client reads it from
+the server, so no copy hardcodes it.
+
 Found but **not** changed: `forecast.service.ts` spends a what-if slot on every
 successful run, so exploring one question through the asset-sale funding step
 can cost three of five. Defensible (each run is a real engine execution) but
