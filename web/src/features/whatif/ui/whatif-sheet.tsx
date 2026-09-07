@@ -122,12 +122,18 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
             sellable: formatVndShort(verdict.sellable),
           })
 
-  async function runWith(assetSale?: WhatIfAssetSale) {
+  /**
+   * `rerun` marks the calls that explore the answer already on screen rather
+   * than asking a new question: adding an asset sale to it, or taking one
+   * away. Those cost no quota slot — the household asked once.
+   */
+  async function runWith(assetSale?: WhatIfAssetSale, rerun = false) {
     return await run({
       amount: amountValue,
       plannedDate,
       goalId: prefill.goalId,
       assetSale,
+      rerun,
     })
   }
 
@@ -185,7 +191,7 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
       // `undefined` means the quota gate opened the paywall instead of running.
       // Closing the step then would drop the household back on a stale answer
       // with no sign of why.
-      const next = await runWith(assetSale)
+      const next = await runWith(assetSale, true)
       if (next) setSaleStepOpen(false)
     } catch (error) {
       toast.error(getErrorMessage(error, t('whatif.error')))
@@ -195,7 +201,7 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   /** Undo the sale, keeping the draft so the CTA can restore it. */
   async function handleRemoveSale() {
     try {
-      await runWith()
+      await runWith(undefined, true)
     } catch (error) {
       toast.error(getErrorMessage(error, t('whatif.error')))
     }

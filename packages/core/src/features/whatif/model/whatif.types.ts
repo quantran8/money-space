@@ -79,6 +79,15 @@ export type WhatIfRequest = {
   horizonDays?: number
   /** Optional step 2. Absent = the simulation behaves exactly as before. */
   assetSale?: WhatIfAssetSale
+  /**
+   * `true` when this re-runs the answer already on screen — an asset sale was
+   * added to it, or taken away — rather than asking a new question.
+   *
+   * A quota slot is one QUESTION, so a re-run does not spend another. Typing
+   * the same amount and asking again IS a new question, which is why this is
+   * set by the caller rather than inferred from the payload.
+   */
+  rerun?: boolean
 }
 
 export type WhatIfSideResult = {

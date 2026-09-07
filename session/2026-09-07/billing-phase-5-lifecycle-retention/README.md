@@ -116,12 +116,14 @@ ceiling on their second asset — which is where the value of automating is
 easiest to see. It is one number in `plan-limits.ts`; every client reads it from
 the server, so no copy hardcodes it.
 
-Found but **not** changed: `forecast.service.ts` spends a what-if slot on every
-successful run, so exploring one question through the asset-sale funding step
-can cost three of five. Defensible (each run is a real engine execution) but
-invisible until the UI started counting — written up in
-`backend/memory/billing-and-entitlement.md` rather than fixed, since charging
-per question needs a scenario id the API does not have.
+**A what-if slot is now one QUESTION, not one engine run.** `forecast.service.ts`
+used to consume a slot on every successful run, so exploring one question
+through the asset-sale funding step cost three — and the funding step appears
+exactly when a household is short of money. Requests now carry `rerun: true`
+when they re-run the answer on screen (`handleApplySale`, `handleRemoveSale`),
+and those are checked against the ceiling but not counted. The server does not
+infer this by comparing payloads: typing the same amount again is a new
+question, and a content hash would quietly make it free.
 
 ## Key decisions
 

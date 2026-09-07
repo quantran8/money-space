@@ -74,6 +74,20 @@ tệ hơn nhiều so với tặng thêm vài lượt.
 Thứ tự có chủ ý: **validate payload trước, tiêu quota sau khi tính xong.** Một
 request sai định dạng không được phép tiêu lượt của ai.
 
+**Một lượt = một CÂU HỎI, không phải một lần chạy engine.** Hộ nhập input, bấm
+"Xem thử", ra kết quả — đó là một lượt, dù có đi qua bước bán tài sản hay không.
+Thêm/bỏ bán tài sản chạy lại engine nhưng vẫn là câu hỏi đó, nên không tính
+thêm: bước tài trợ xuất hiện đúng lúc hộ đang thiếu tiền, tính ba lượt cho một
+lần hỏi là tệ nhất ở đúng chỗ tệ nhất.
+
+Client đánh dấu bằng `rerun: true`. Hai hệ quả cố ý:
+
+- **Server không tự đoán bằng cách so payload.** Nhập lại đúng số tiền cũ rồi
+  hỏi lần nữa **là câu hỏi mới**. Băm nội dung sẽ lặng lẽ cho lần thứ hai miễn
+  phí, không đúng với ý "3 lượt một tháng".
+- **Lần chạy lại vẫn bị kiểm tra trần**, chỉ là không bị đếm — nếu không, client
+  cứ gửi `rerun` là thoát hẳn hạn mức.
+
 Vượt trần → **402** `whatif_quota` kèm `{ limit, used }`.
 
 ### Tài sản tự cập nhật giá — 1 cái
