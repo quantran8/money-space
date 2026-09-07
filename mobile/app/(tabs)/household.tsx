@@ -15,6 +15,7 @@ import { useNavigate } from '@money-space/core/shared/navigation'
 import { notify } from '@money-space/core/shared/notify'
 
 import { ConfirmDialog, Panel, Screen, Sections, Skeleton } from '@/components/ui'
+import { SubscriptionSection } from '@/features/billing/ui/subscription-section'
 import { HouseholdIdentitySection } from '@/features/household/ui/household-identity-section'
 import { SpaceSwitcherSection } from '@/features/household/ui/space-switcher-section'
 import { InviteQrSheet } from '@/features/invites/ui/invite-qr-sheet'
@@ -157,6 +158,8 @@ export default function HouseholdScreen() {
               not that question. If that port decides the hub needs an entry
               point, it goes in this panel. */}
         </Panel>
+
+        <SubscriptionSection />
 
         {/* Sign-out lives on this screen, not in a nav drawer: the drawer is
             gone (the tab bar is the navigation), and "who is in this space and

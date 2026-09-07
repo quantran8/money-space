@@ -7,7 +7,7 @@ folders are the working record.
 | # | Task | Status |
 |---|---|---|
 | 0 | [`phase-0-pre-launch-fixes`](phase-0-pre-launch-fixes/) — frozen dates, error boundaries, forgot password, CORS | **done** |
-| 1 | [`billing-phase-1-entitlement-engine`](billing-phase-1-entitlement-engine/) — read-only, gates nothing | planned |
+| 1 | [`billing-phase-1-entitlement-engine`](billing-phase-1-entitlement-engine/) — read-only, gates nothing | **done** |
 | 2 | [`billing-phase-2-redeem-code`](billing-phase-2-redeem-code/) — ★ **can sell after this** | planned |
 | 3 | [`billing-phase-3-enable-gates`](billing-phase-3-enable-gates/) — Free vs Premium becomes real | planned |
 | 4 | [`billing-phase-4-payos`](billing-phase-4-payos/) — self-service checkout | planned |

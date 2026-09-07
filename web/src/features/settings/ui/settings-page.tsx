@@ -20,6 +20,7 @@ import {
   LeaveSpaceCard,
   SignOutCard,
 } from '@/features/settings/ui/components/data-card'
+import { SubscriptionCard } from '@/features/settings/ui/components/subscription-card'
 import { InviteQrDialog } from '@/features/invites/ui/components/invite-qr-dialog'
 import { MembersListSection } from '@/features/members/ui/components/members-list-section'
 import { SpaceSwitcherCard } from '@/features/settings/ui/components/space-switcher-card'
@@ -136,6 +137,10 @@ export function SettingsPage() {
         />
 
         <CategoriesCard />
+
+        {/* Above the data card: what the household is paying for is closer to
+            who they are than to how they export a copy. */}
+        <SubscriptionCard />
 
         <DataCard />
 
