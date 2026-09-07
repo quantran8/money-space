@@ -95,14 +95,24 @@ export type RedeemCodeResult = {
 
 export type PaymentOrderStatus = 'pending' | 'paid' | 'cancelled' | 'expired'
 
+/** Which route paid for an order. `revenuecat` is an in-app purchase. */
+export type PaymentProvider = 'payos' | 'revenuecat'
+export type PurchaseStore = 'app_store' | 'play_store'
+
 export type PaymentOrder = {
-  /** A string on the wire: PayOS's order code is a BigInt server-side. */
+  /**
+   * A string on the wire: PayOS's order code is a BigInt server-side. For an
+   * in-app purchase there is no order code at all — the server sends the store
+   * transaction id instead, so every row has something quotable to support.
+   */
   orderCode: string
   status: PaymentOrderStatus
   planCode: PlanCode
   amount: number
   createdAt?: string
   paidAt: string | null
+  provider?: PaymentProvider
+  store?: PurchaseStore | null
 }
 
 export type CreatedOrder = {
@@ -172,4 +182,22 @@ export function fetchPlans() {
   return apiRequest<{ items: PlanOffer[]; total: number }>('/billing/plans', {
     skipAuth: true,
   })
+}
+
+/**
+ * Tell the server which household a RevenueCat subscriber's purchases pay for.
+ *
+ * Called BEFORE the store sheet opens, and this is what makes a renewal
+ * settleable a year later: Apple charges the card with no app running, and the
+ * webhook that follows carries only `app_user_id`. Without this mapping the
+ * money would arrive for a household the server could not name.
+ *
+ * The household comes from the authenticated membership server-side, never
+ * from this body — a client cannot link a subscriber to somebody else's plan.
+ */
+export function linkRevenuecatSubscriber(householdId: string, appUserId: string) {
+  return apiRequest<{ linked: true }>(
+    `/households/${householdId}/revenuecat/link`,
+    { method: 'POST', body: JSON.stringify({ appUserId }) },
+  )
 }

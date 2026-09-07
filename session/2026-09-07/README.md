@@ -1,6 +1,6 @@
 # 2026-09-07 — Freemium subscription: the whole plan
 
-Six tasks, each shippable on its own. Full reasoning, pricing rationale and the
+Seven tasks, each shippable on its own. Full reasoning, pricing rationale and the
 technical design live in `~/.claude/plans/l-n-k-ho-ch-cho-rosy-kay.md`; these
 folders are the working record.
 
@@ -12,6 +12,7 @@ folders are the working record.
 | 3 | [`billing-phase-3-enable-gates`](billing-phase-3-enable-gates/) — Free vs Premium becomes real | **done** |
 | 4 | [`billing-phase-4-payos`](billing-phase-4-payos/) — self-service checkout | **done** (live payment untested) |
 | 5 | [`billing-phase-5-lifecycle-retention`](billing-phase-5-lifecycle-retention/) — expiry, renewal, export | **done** (referral deferred) |
+| 6 | [`billing-phase-6-revenuecat-iap`](billing-phase-6-revenuecat-iap/) — in-app purchase, so mobile can sell | **done** (store products not yet configured) |
 
 ## What was decided
 

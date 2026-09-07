@@ -1,14 +1,16 @@
-import { Text, View } from 'react-native'
+import { Platform, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { CalendarClock, Calculator, RefreshCw, Target } from 'lucide-react-native'
 
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
 import { usePlans } from '@money-space/core/features/billing/hooks/use-plans'
+import { useStorePurchase } from '@money-space/core/features/billing/hooks/use-store-purchase'
 import { formatMoney } from '@money-space/core/shared/lib/format-money'
 import { useNavigate } from '@money-space/core/shared/navigation'
 import { usePaywallStore } from '@money-space/core/shared/stores/paywall-store'
 
 import { BottomSheet, Button, Skeleton, StatusChip } from '@/components/ui'
+import { PurchaseStatus } from '@/features/billing/ui/purchase-status'
 import { colors } from '@/theme/tokens'
 
 type BenefitKey = 'horizon' | 'price' | 'whatif' | 'goals'
@@ -41,10 +43,9 @@ function formatDate(iso: string) {
  * core's `paywall-store` — including by the global 402 handler, which is shared
  * with the web.
  *
- * **It shows prices and takes a code, but has no button to a payment page.**
- * App Store rules: an app may not steer to an outside payment flow. The
- * renewal line names the website in plain words instead, and the code field is
- * fine — entering one is not a transaction.
+ * **Sells through the store, never a link out** — App Store and Play forbid
+ * steering to an outside payment flow. Prices come from the store, and a
+ * purchase grants nothing on the device. See memory/billing.md.
  */
 export function PaywallSheet() {
   const { t } = useTranslation()
@@ -54,6 +55,15 @@ export function PaywallSheet() {
   const close = usePaywallStore((store) => store.close)
   const { plans, isLoading: plansLoading } = usePlans()
   const { entitlement } = useEntitlement()
+  const {
+    isAvailable: canBuyInApp,
+    productFor,
+    isLoadingProducts,
+    buy,
+    restore,
+    state: purchaseState,
+    isBusy,
+  } = useStorePurchase()
 
   const { reason } = context
   const available = plans.filter((plan) => plan.available)
@@ -73,9 +83,10 @@ export function PaywallSheet() {
       })}
       footer={
         <View className="gap-2">
-          {/* The code field, not a checkout. Someone holding a code at the wall
-              is the highest-intent moment there is, and it is not a purchase. */}
+          {/* A code is not a purchase, so it sits beside the store buttons
+              rather than competing with them. */}
           <Button
+            variant="ghost"
             onPress={() => {
               close()
               navigate('/subscription')
@@ -83,6 +94,12 @@ export function PaywallSheet() {
           >
             {t('billing.redeem.haveCode')}
           </Button>
+          {/* Apple requires this and rejects builds without one. */}
+          {canBuyInApp ? (
+            <Button variant="ghost" loading={isBusy} onPress={restore}>
+              {t('billing.paywall.store.restore')}
+            </Button>
+          ) : null}
           <Button variant="ghost" onPress={close}>
             {t('billing.paywall.later')}
           </Button>
@@ -143,43 +160,66 @@ export function PaywallSheet() {
         })}
       </View>
 
-      {/* Prices are shown — that is allowed, and the household needs to know
-          what the thing costs. What is absent is any way to pay from here. */}
-      {plansLoading ? (
+      {/* One row per plan. The price is the STORE's string, not ours. */}
+      {plansLoading || (canBuyInApp && isLoadingProducts) ? (
         <Skeleton height={80} className="mt-4 w-full" />
       ) : (
         <View className="mt-4 gap-2">
-          {available.map((plan) => (
-            <View
-              key={plan.planCode}
-              className="flex-row items-center justify-between gap-4 rounded-card bg-card px-4 py-3"
-            >
-              <View className="min-w-0">
-                <Text className="t-body-sm text-ink">
-                  {t(`settings.billing.plan.${plan.planCode}`)}
-                </Text>
+          {available.map((plan) => {
+            const product = productFor(plan.planCode)
+            const priceLabel = product?.priceString ?? formatMoney(plan.amount)
+            const planLabel = t(`settings.billing.plan.${plan.planCode}`)
+            const isThisPlan =
+              purchaseState.status === 'purchasing' &&
+              purchaseState.planCode === plan.planCode
+
+            return (
+              <View key={plan.planCode} className="gap-2">
+                {canBuyInApp && product ? (
+                  <Button loading={isThisPlan} onPress={() => buy(plan.planCode)}>
+                    {t('billing.paywall.store.buy', {
+                      plan: planLabel,
+                      price: priceLabel,
+                    })}
+                  </Button>
+                ) : (
+                  /* No store product — Expo Go, or a plan not yet configured
+                     in App Store Connect. Price shown, but nothing to press. */
+                  <View className="flex-row items-center justify-between gap-4 rounded-card bg-card px-4 py-3">
+                    <Text className="t-body-sm text-ink">{planLabel}</Text>
+                    <Text className="t-body-sm text-ink">{priceLabel}</Text>
+                  </View>
+                )}
                 {plan.savingsAmount ? (
-                  <Text className="mt-0.5 t-caption text-ink3">
+                  <Text className="t-caption text-ink3">
                     {t('settings.billing.savings', {
                       amount: formatMoney(plan.savingsAmount),
                     })}
                   </Text>
                 ) : null}
               </View>
-              <View className="items-end">
-                <Text className="t-body-sm text-ink">{formatMoney(plan.amount)}</Text>
-                {plan.compareAtAmount ? (
-                  <Text className="t-caption text-ink3 line-through">
-                    {formatMoney(plan.compareAtAmount)}
-                  </Text>
-                ) : null}
-              </View>
-            </View>
-          ))}
+            )
+          })}
         </View>
       )}
 
-      <Text className="mt-4 t-caption text-ink3">{t('billing.paywall.mobileNote')}</Text>
+      <PurchaseStatus state={purchaseState} />
+
+      {canBuyInApp ? (
+        <Text className="mt-4 t-caption text-ink3">
+          {t('billing.paywall.store.renewNote', {
+            store: t(
+              Platform.OS === 'ios'
+                ? 'billing.paywall.store.appStore'
+                : 'billing.paywall.store.playStore',
+            ),
+          })}
+        </Text>
+      ) : (
+        <Text className="mt-4 t-caption text-ink3">
+          {t('billing.paywall.mobileNote')}
+        </Text>
+      )}
     </BottomSheet>
   )
 }
