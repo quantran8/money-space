@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
 
+import { Button } from '@/components/ui/button'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatusChip } from '@/components/ui/status-chip'
@@ -52,7 +54,15 @@ export function SubscriptionCard() {
     <Panel>
       <PanelHeader
         title={t('settings.billing.eyebrow')}
-        meta={t('settings.billing.forBothOfYou')}
+        action={
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/settings/subscription">
+              {isPremium
+                ? t('settings.billing.manage')
+                : t('settings.billing.viewPlans')}
+            </Link>
+          </Button>
+        }
       />
 
       <div className="s-head-body">

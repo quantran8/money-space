@@ -1,9 +1,12 @@
-import { Text, View } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { ChevronRight } from 'lucide-react-native'
 
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
+import { useNavigate } from '@money-space/core/shared/navigation'
 
 import { Panel, PanelHeader, Skeleton, StatusChip } from '@/components/ui'
+import { colors } from '@/theme/tokens'
 
 /** `2027-12-31T00:00:00Z` → `31/12/2027`. */
 function formatDate(iso: string) {
@@ -19,6 +22,7 @@ function formatDate(iso: string) {
  */
 export function SubscriptionSection() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { entitlement, isPremium, isLoading } = useEntitlement()
 
   if (isLoading) {
@@ -54,7 +58,14 @@ export function SubscriptionSection() {
         }
       />
 
-      <Text className="mt-4 t-subtitle text-ink">{title}</Text>
+      <Pressable
+        accessibilityRole="button"
+        className="mt-4 flex-row items-center justify-between gap-3"
+        onPress={() => navigate('/subscription')}
+      >
+        <Text className="t-subtitle text-ink">{title}</Text>
+        <ChevronRight size={18} strokeWidth={1.75} color={colors.ink3} />
+      </Pressable>
 
       {isLifetime ? null : hasLapsed && expiresAt ? (
         <View className="mt-2">

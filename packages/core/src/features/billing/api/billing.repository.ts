@@ -60,8 +60,56 @@ export type PlanOffer = {
   available: boolean
 }
 
+/** Why a code cannot be used. A code, not a sentence — the client owns the copy. */
+export type RedeemFailureReason =
+  | 'invalid'
+  | 'expired'
+  | 'exhausted'
+  | 'already_used'
+  | 'no_effect'
+  | 'rate_limited'
+
+export type RedeemCodePreview = {
+  code: string
+  valid: boolean
+  reason: RedeemFailureReason | null
+  /** Which household this would activate — catches the wrong-household case. */
+  householdName: string
+  grant: {
+    addedDays: number
+    /** ISO. `null` = lifetime. */
+    periodEndAfter: string | null
+    /** True when this extends a period that is still running. */
+    stacked: boolean
+    isLifetime: boolean
+  } | null
+}
+
+export type RedeemCodeResult = {
+  redeemed: true
+  code: string
+  addedDays: number
+  /** The new state in full, so nothing has to be refetched. */
+  entitlement: Entitlement
+}
+
 export function fetchEntitlement(householdId: string) {
   return apiRequest<Entitlement>(`/households/${householdId}/entitlement`)
+}
+
+/** What the code would do. Does not spend it. */
+export function previewRedeemCode(householdId: string, code: string) {
+  return apiRequest<RedeemCodePreview>(
+    `/households/${householdId}/redeem-codes/preview`,
+    { method: 'POST', body: JSON.stringify({ code }) },
+  )
+}
+
+export function redeemCode(householdId: string, code: string) {
+  return apiRequest<RedeemCodeResult>(
+    `/households/${householdId}/redeem-codes/redeem`,
+    { method: 'POST', body: JSON.stringify({ code }) },
+  )
 }
 
 /** Public: the pricing table is shown before anyone signs in. */

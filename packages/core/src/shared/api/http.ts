@@ -9,13 +9,33 @@ type ApiEnvelope<T> = {
   timestamp: string
 }
 
+/**
+ * The `premium` block a 402 carries: which limit was hit, and what the current
+ * plan allows.
+ *
+ * Forwarded onto the error because a status code alone cannot say which paywall
+ * to open, and parsing `message` for it would make a copy string load-bearing.
+ */
+export type PremiumErrorMeta = {
+  reason: string
+  currentTier: 'free' | 'premium'
+  status: 'active' | 'expired'
+  limits?: Record<string, unknown>
+  /** Present on counted quotas: what the ceiling is and how much is used. */
+  limit?: number
+  used?: number
+}
+
 export class ApiError extends Error {
   statusCode: number
+  /** Only on a 402. */
+  premium?: PremiumErrorMeta
 
-  constructor(message: string, statusCode: number) {
+  constructor(message: string, statusCode: number, premium?: PremiumErrorMeta) {
     super(message)
     this.name = 'ApiError'
     this.statusCode = statusCode
+    this.premium = premium
   }
 }
 
@@ -104,13 +124,14 @@ export async function apiRequest<T>(
 
   const raw = (await response.json().catch(() => null)) as
     | ApiEnvelope<T>
-    | { message?: string }
+    | { message?: string; premium?: PremiumErrorMeta }
     | null
 
   if (!response.ok) {
     throw new ApiError(
       typeof raw?.message === 'string' ? raw.message : 'API request failed',
       response.status,
+      (raw as { premium?: PremiumErrorMeta } | null)?.premium,
     )
   }
 
