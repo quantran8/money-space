@@ -1338,6 +1338,13 @@ export const resources = {
         description: 'Xem điều gì thay đổi sau khi chi. Không lưu lại.',
         arrow: '→',
         error: 'Chưa tính được lúc này. Thử lại giúp mình nhé.',
+        quota: {
+          // Nói số còn lại, không nói "bạn đã dùng hết" — cùng một sự thật,
+          // nhưng một câu là thông tin, câu kia là lời trách.
+          lastOne: 'Còn 1 lượt tính thử trong tháng này.',
+          exhausted:
+            'Đã dùng {{limit}} lượt tính thử của tháng này. Lượt mới mở lại vào đầu tháng sau.',
+        },
         form: {
           amount: 'Số tiền',
           plannedDate: 'Ngày chi',
@@ -2133,6 +2140,11 @@ export const resources = {
         },
         header: {
           title: 'Mục tiêu',
+        },
+        quota: {
+          // Chỉ hiện khi đã kín chỗ, và nói bằng con số — không phải "bạn
+          // không được tạo thêm".
+          used: '{{used}}/{{limit}} mục tiêu',
         },
         demo: {
           overview: 'Tổng quan',
@@ -3053,6 +3065,16 @@ export const resources = {
           savings: 'Tiết kiệm {{amount}}',
           perMonth: '≈{{amount}}/tháng cho cả hai',
           payHint: 'Gia hạn gói tại oursight.vn trên trình duyệt.',
+          orders: {
+            title: 'Lịch sử thanh toán',
+            meta: 'Các lần gia đình đã mua gói',
+            status: {
+              paid: 'Đã thanh toán',
+              pending: 'Chờ thanh toán',
+              cancelled: 'Đã dừng',
+              expired: 'Đã hết hạn',
+            },
+          },
         },
         data: {
           eyebrow: 'Dữ liệu',
@@ -3061,6 +3083,8 @@ export const resources = {
           export: 'Xuất dữ liệu gia đình',
           exportDescription: 'Tải xuống tài sản, khoản nợ, mục tiêu và sự kiện tài chính.',
           exportAction: 'Xuất dữ liệu',
+          exporting: 'Đang chuẩn bị tệp…',
+          exportFailed: 'Chưa tải được tệp. Thử lại sau một chút nhé.',
           delete: 'Xóa không gian gia đình',
           deleteDescription: 'Xóa toàn bộ dữ liệu và quyền truy cập của các thành viên.',
           // §22.11: hậu quả nói bằng số thật, một dòng — không phải "bạn có
@@ -4758,6 +4782,11 @@ export const resources = {
           'See what changes afterwards. Nothing is saved, and this is not advice about whether to buy.',
         arrow: '→',
         error: 'Could not work that out just now. Please try again.',
+        quota: {
+          lastOne: '1 what-if run left this month.',
+          exhausted:
+            "That is all {{limit}} what-if runs for this month. They reset at the start of next month.",
+        },
         form: {
           amount: 'Amount',
           plannedDate: 'Planned for',
@@ -5469,6 +5498,9 @@ export const resources = {
         },
         header: {
           title: 'Goals',
+        },
+        quota: {
+          used: '{{used}}/{{limit}} goals',
         },
         demo: {
           overview: 'Overview',
@@ -6374,6 +6406,16 @@ export const resources = {
           savings: 'Save {{amount}}',
           perMonth: '≈{{amount}}/month for both of you',
           payHint: 'Renew at oursight.vn in a browser.',
+          orders: {
+            title: 'Payment history',
+            meta: 'What your household has bought',
+            status: {
+              paid: 'Paid',
+              pending: 'Awaiting payment',
+              cancelled: 'Stopped',
+              expired: 'Expired',
+            },
+          },
         },
         data: {
           eyebrow: 'Data',
@@ -6382,6 +6424,8 @@ export const resources = {
           export: 'Export household data',
           exportDescription: 'Download assets, debts, goals, and financial events.',
           exportAction: 'Export data',
+          exporting: 'Preparing your file…',
+          exportFailed: 'Could not download the file. Please try again shortly.',
           delete: 'Delete household space',
           deleteDescription: 'Delete all data and remove member access.',
           deleteConsequence:

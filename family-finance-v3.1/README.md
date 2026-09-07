@@ -10,9 +10,16 @@ Bộ spec được tách theo domain để dễ đọc, chỉnh sửa và giao c
 4. [03-product-architecture.md](03-product-architecture.md) — Product layers, principles, core concepts, sharing model
 5. [04-mvp-features-flows.md](04-mvp-features-flows.md) — MVP scope, onboarding, screens, core flows
 6. [05-calculation-data-model.md](05-calculation-data-model.md) — Forecast, flexible money, goal projection, data model
-7. [06-pricing-metrics-validation.md](06-pricing-metrics-validation.md) — Pricing, WTP hypotheses, metrics, validation plan
+7. [06-pricing-metrics-validation.md](06-pricing-metrics-validation.md) — ⚠️ **Giả thuyết ban đầu, đã lỗi thời.** Giữ làm tư liệu lịch sử; phần metrics và validation vẫn dùng được
 8. [07-roadmap-risks.md](07-roadmap-risks.md) — Build order, roadmap, risks, founder dogfood
 9. [08-brand-copy-wireframes.md](08-brand-copy-wireframes.md) — Brand tone, copy examples, wireframes
+10. [09-pricing-implemented.md](09-pricing-implemented.md) — **Giá đang chạy thật**: gói, khuyến mãi qua env, PayOS, mã kích hoạt
+11. [10-feature-gating.md](10-feature-gating.md) — **Ranh giới Free/Premium đang chạy thật**: hạn mức, cơ chế chặn, paywall, cái gì chưa enforce
+
+> **Về pricing:** dùng `09` và `10` làm tham chiếu. Chúng mô tả code đang chạy và
+> nói rõ cái gì *chưa* được enforce. `06` viết trước khi sản phẩm được build —
+> nó bán những thứ nay không còn tồn tại (Protected Reserve, mức chia sẻ
+> `private`) và đề xuất gate những thứ không bao giờ nên gate.
 
 ## Product architecture
 

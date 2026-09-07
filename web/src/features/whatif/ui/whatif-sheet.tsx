@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/responsive-dialog'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useWhatIf } from '@money-space/core/features/whatif/hooks/use-whatif'
+import { useQuota } from '@money-space/core/features/billing/hooks/use-quota'
 import { useWhatIfAssetSale } from '@money-space/core/features/whatif/hooks/use-whatif-asset-sale'
 import {
   exceedsEverything,
@@ -61,6 +62,8 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   const close = useWhatIfStore((state) => state.close)
   const { result, run, reset, isRunning } = useWhatIf()
   const { flexibleMoney } = useFlexibleMoney()
+  // Display only — `useWhatIf` is what actually refuses a run over the ceiling.
+  const quota = useQuota('whatIfPerMonth')
 
   const [amount, setAmount] = useState(prefill.amount ? String(prefill.amount) : '')
   const [plannedDate, setPlannedDate] = useState(
@@ -179,8 +182,11 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
     const assetSale = sale.validate()
     if (!assetSale) return
     try {
-      await runWith(assetSale)
-      setSaleStepOpen(false)
+      // `undefined` means the quota gate opened the paywall instead of running.
+      // Closing the step then would drop the household back on a stale answer
+      // with no sign of why.
+      const next = await runWith(assetSale)
+      if (next) setSaleStepOpen(false)
     } catch (error) {
       toast.error(getErrorMessage(error, t('whatif.error')))
     }
@@ -366,6 +372,17 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
                 className={whatIfDateTriggerClass}
               />
             </WhatIfField>
+
+            {/* Only near the ceiling. Counting every run from 1/5 would turn a
+                tool for thinking into a meter, which is the opposite of what
+                what-if is for. `null` for premium and while loading. */}
+            {quota && (quota.isLastOne || quota.isExhausted) ? (
+              <p className="t-caption leading-5 text-ink3">
+                {quota.isExhausted
+                  ? t('whatif.quota.exhausted', { limit: quota.limit })
+                  : t('whatif.quota.lastOne')}
+              </p>
+            ) : null}
           </div>
         )}
       </div>

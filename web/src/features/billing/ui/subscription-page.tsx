@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { StatusChip } from '@/components/ui/status-chip'
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { RedeemCodeForm } from '@/features/billing/ui/redeem-code-form'
+import { OrderHistory } from '@/features/billing/ui/order-history'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('vi-VN')
@@ -154,6 +155,10 @@ export function SubscriptionPage() {
             </p>
           )}
         </Panel>
+
+        {/* Absent entirely for a household that has never bought anything —
+            an empty "lịch sử" panel is a reminder of nothing. */}
+        <OrderHistory />
       </div>
     </div>
   )
