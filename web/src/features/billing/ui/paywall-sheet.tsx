@@ -4,6 +4,7 @@ import { CalendarClock, Calculator, RefreshCw, Target } from 'lucide-react'
 
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
 import { usePlans } from '@money-space/core/features/billing/hooks/use-plans'
+import { useCheckout } from '@money-space/core/features/billing/hooks/use-checkout'
 import { formatMoney } from '@money-space/core/shared/lib/format-money'
 import { usePaywallStore } from '@money-space/core/shared/stores/paywall-store'
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -74,6 +75,7 @@ export function PaywallSheet() {
   const close = usePaywallStore((store) => store.close)
   const { plans, isLoading: plansLoading } = usePlans()
   const { entitlement } = useEntitlement()
+  const checkout = useCheckout()
 
   // `null` means "nothing chosen yet in this opening", which resolves to the
   // default below. Keyed off the store's `open` rather than reset in an
@@ -235,19 +237,26 @@ export function PaywallSheet() {
                   Payment itself lands in Phase 4; until then the highest-intent
                   destination is the subscription page, where the code field is. */}
               <Button
-                onClick={() => {
-                  close()
-                  navigate('/settings/subscription')
-                }}
-                disabled={!activePlan}
+                onClick={() => activePlan && checkout.start(activePlan.planCode)}
+                disabled={!activePlan || checkout.isStarting}
               >
-                {activePlan
-                  ? t('billing.paywall.cta', {
-                      plan: t(`settings.billing.plan.${activePlan.planCode}`),
-                      amount: formatMoney(activePlan.amount),
-                    })
-                  : t('settings.billing.viewPlans')}
+                {checkout.isStarting
+                  ? t('billing.paywall.ctaLoading')
+                  : activePlan
+                    ? t('billing.paywall.cta', {
+                        plan: t(`settings.billing.plan.${activePlan.planCode}`),
+                        amount: formatMoney(activePlan.amount),
+                      })
+                    : t('settings.billing.viewPlans')}
               </Button>
+
+              {/* The checkout could not even be opened — a misconfigured
+                  gateway, or the plan switched off since the page loaded.
+                  Said here rather than swallowed, because the household is
+                  standing at a button that did nothing. */}
+              {checkout.error ? (
+                <p className="t-caption text-alert-ink">{t('billing.checkout.failed')}</p>
+              ) : null}
 
               {/* Someone holding a code, at the wall, is the highest-intent
                   moment there is. */}

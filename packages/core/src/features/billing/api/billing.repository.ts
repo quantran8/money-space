@@ -93,6 +93,61 @@ export type RedeemCodeResult = {
   entitlement: Entitlement
 }
 
+export type PaymentOrderStatus = 'pending' | 'paid' | 'cancelled' | 'expired'
+
+export type PaymentOrder = {
+  /** A string on the wire: PayOS's order code is a BigInt server-side. */
+  orderCode: string
+  status: PaymentOrderStatus
+  planCode: PlanCode
+  amount: number
+  createdAt?: string
+  paidAt: string | null
+}
+
+export type CreatedOrder = {
+  orderCode: string
+  /** PayOS's hosted page, with the QR already on it. */
+  checkoutUrl: string
+  amount: number
+  planCode: PlanCode
+  expiresAt: string
+}
+
+/**
+ * Open a checkout.
+ *
+ * Only the PLAN is sent. The amount is resolved server-side from the same
+ * catalogue the prices come from — a client that could name its own price
+ * could buy a lifetime plan for 1.000đ.
+ */
+export function createPaymentOrder(householdId: string, planCode: PlanCode) {
+  return apiRequest<CreatedOrder>(`/households/${householdId}/payments/orders`, {
+    method: 'POST',
+    body: JSON.stringify({ planCode }),
+  })
+}
+
+/** Where one order stands. The return page polls this. */
+export function fetchPaymentOrder(householdId: string, orderCode: string) {
+  return apiRequest<PaymentOrder>(
+    `/households/${householdId}/payments/orders/${orderCode}`,
+  )
+}
+
+export function fetchPaymentOrders(householdId: string) {
+  return apiRequest<{ items: PaymentOrder[]; total: number }>(
+    `/households/${householdId}/payments/orders`,
+  )
+}
+
+export function cancelPaymentOrder(householdId: string, orderCode: string) {
+  return apiRequest<{ cancelled: boolean; status: PaymentOrderStatus }>(
+    `/households/${householdId}/payments/orders/${orderCode}/cancel`,
+    { method: 'POST' },
+  )
+}
+
 export function fetchEntitlement(householdId: string) {
   return apiRequest<Entitlement>(`/households/${householdId}/entitlement`)
 }

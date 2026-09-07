@@ -2,7 +2,7 @@
 
 - **Date**: 2026-09-07
 - **Session folder**: `session/2026-09-07/billing-phase-4-payos/`
-- **Status**: planned
+- **Status**: done (code complete; live payment untested — no credentials yet)
 
 > Part of the freemium plan. Full reasoning:
 > `~/.claude/plans/l-n-k-ho-ch-cho-rosy-kay.md`. Depends on Phases 1–3.
@@ -81,6 +81,106 @@ free-text matching to get wrong.
   message. An abandoned tab must not poll forever. The subscription page also
   sets `refetchOnWindowFocus: true`, which covers coming back from the banking
   app.
+
+## Changes made
+
+### Backend
+
+- `prisma/schema.prisma` — enums `PaymentProvider`, `PaymentOrderStatus`; model
+  `PaymentOrder` with `orderCode BigInt @unique` and `providerTxnId @unique`.
+- `prisma/migrations/20260907120000_payment_orders/` — hand-written, purely
+  additive (a new table, two enums). **Applied**; `migrate status` reports
+  "Database schema is up to date".
+- `src/modules/billing/domain/payos-signature.ts` + `.spec.ts` — 10 cases.
+- `src/modules/billing/domain/order-code.ts` + `.spec.ts` — 5 cases.
+- `src/modules/billing/gateways/payment-gateway.interface.ts` +
+  `payos.gateway.ts` — hand-written, no `@payos/node`.
+- `src/modules/billing/payments.service.ts` + `.spec.ts` — 11 cases, all of
+  them about idempotency or about what must never grant.
+- `src/modules/billing/payments.controller.ts`,
+  `payments-webhook.controller.ts`.
+- `src/common/interceptors/raw-response.decorator.ts` + the branch in
+  `response.interceptor.ts`.
+- `src/common/repositories/prisma-errors.ts` — `isUniqueViolation`, extracted
+  from `redeem.service.ts`, which now shares it with payments. It is the
+  idempotency barrier in both.
+- `src/main.ts` — `rawBody: true`.
+- `src/config/billing.config.ts` — the five PayOS fields plus
+  `payosConfigured` and `payosOrderTtlMinutes`.
+
+New endpoints: `POST …/payments/orders`, `GET …/payments/orders`,
+`GET …/payments/orders/:orderCode`, `POST …/payments/orders/:orderCode/cancel`,
+and `POST /billing/webhooks/payos` (`@Public()`).
+
+### Frontend
+
+- `packages/core/src/features/billing/api/billing.repository.ts` — the four
+  payment calls.
+- `packages/core/src/features/billing/hooks/use-checkout.ts` (new) — starts an
+  order and redirects; remembers the order code in `sessionStorage`.
+- `packages/core/src/features/billing/hooks/use-payment-return.ts` (new) — 2s
+  polling, bounded at 30s.
+- `packages/core/src/i18n/resources.ts` — `billing.checkout.*`, both languages.
+- `web/src/features/billing/ui/paywall-sheet.tsx` — the CTA now opens a real
+  checkout.
+- `web/src/features/billing/ui/subscription-page.tsx` — plan rows are buy
+  buttons; the return banner sits above the plan card.
+
+## Notes from the build
+
+- **PayOS signs the `data` object, not the request body.** The spec pins this
+  explicitly, because HMAC-ing the whole body is what every other webhook
+  scheme does and the resulting failure is indistinguishable from a forged
+  request. `null`/`undefined` also serialize as the EMPTY string rather than
+  `"null"` — get that wrong and genuine payments are rejected.
+- **`rawBody: true` is not actually needed by PayOS,** since it signs the
+  parsed object. Enabled anyway: Nest 11 keeps the parsed body alongside it so
+  nothing is affected, and discovering the need after taking a payment is worse
+  than one flag now.
+- **`ResponseInterceptor` gained a `Reflector`.** It is registered with
+  `useClass`, so Nest injects it — no registration change was needed.
+- **`isUniqueViolation` was a private function in `redeem.service.ts`.**
+  Extracted rather than duplicated: it is the same barrier doing the same job
+  in both places, and a second copy could drift.
+- **The checkout error is a boolean, not a message.** Every failure to OPEN a
+  checkout reads the same to a household — the page did not appear — and the
+  copy belongs in i18n rather than being whatever the gateway said.
+
+## Verified
+
+```bash
+cd backend && pnpm test          # 906 pass (26 new), 1 pre-existing failure
+cd frontend && pnpm verify       # build · copy · design scale · eslint · mobile
+```
+
+The 26 new cases cover the parts that decide whether money is handled
+correctly: the signature scheme in full (including the sign-the-body trap, a
+one-byte alteration, a wrong key, and lengths that would make `timingSafeEqual`
+throw), the order code's range and salt, and every webhook outcome — replay,
+lost settle race, unique-violation, forged signature, tampered amount, unknown
+order, underpayment, and PayOS's registration ping. A transient failure is the
+one case that still throws, so PayOS retries it.
+
+## ⚠ Not yet done — needs credentials
+
+`.env` has no PayOS keys, so **nothing has touched the real gateway**. Set:
+
+```
+PAYOS_CLIENT_ID=…
+PAYOS_API_KEY=…
+PAYOS_CHECKSUM_KEY=…
+PAYOS_RETURN_URL=https://oursight.vn/settings/subscription
+PAYOS_CANCEL_URL=https://oursight.vn/settings/subscription
+```
+
+Until they are set, `payosConfigured` is false and order creation refuses with
+`payments_unavailable` — deliberately, at the button rather than mid-checkout.
+
+Everything under *Verification* below still has to be run against the live
+gateway: a real 39k payment, the webhook replay, the tampered-byte resend, the
+registration ping, and cancelling mid-checkout. The unit tests assert the same
+properties against a stub, which is not the same as PayOS actually agreeing
+with our reading of its signature scheme.
 
 ## Verification
 

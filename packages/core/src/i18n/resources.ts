@@ -1225,6 +1225,33 @@ export const resources = {
         },
       },
       billing: {
+        checkout: {
+          // "gói" và "gia hạn gói", không bao giờ "đăng ký": trả trước một lần,
+          // không tự động gia hạn — nói đúng thứ gia đình thực sự mua.
+          payNote: 'Thanh toán một lần qua PayOS. Gói không tự động gia hạn.',
+          failed: 'Chưa mở được trang thanh toán. Thử lại sau một chút nhé.',
+          checking: {
+            title: 'Đang xác nhận thanh toán',
+            description: 'Thường chỉ mất vài giây. Bạn giữ trang này giúp mình nhé.',
+          },
+          paid: {
+            title: 'Đã nhận thanh toán',
+            description: 'Gia đình đã mở khoá Oursight Premium. Cả hai người cùng dùng được.',
+          },
+          still_confirming: {
+            title: 'Đang chờ xác nhận từ ngân hàng',
+            description:
+              'Tiền của gia đình vẫn an toàn. Khi ngân hàng báo về, gói sẽ tự mở — thường trong vài phút.',
+          },
+          cancelled: {
+            title: 'Đã dừng thanh toán',
+            description: 'Chưa có khoản nào bị trừ. Gia đình có thể chọn gói lại bất cứ lúc nào.',
+          },
+          expired: {
+            title: 'Link thanh toán đã hết hạn',
+            description: 'Chưa có khoản nào bị trừ. Chọn gói lại để lấy link mới nhé.',
+          },
+        },
         paywall: {
           eyebrow: 'OURSIGHT PREMIUM',
           // Mỗi bức tường có câu mở đầu riêng: gia đình vừa chạm mục tiêu thứ ba
@@ -4621,6 +4648,31 @@ export const resources = {
         },
       },
       billing: {
+        checkout: {
+          payNote: 'A single payment through PayOS. Plans do not auto-renew.',
+          failed: 'Could not open the payment page. Please try again shortly.',
+          checking: {
+            title: 'Confirming your payment',
+            description: 'This usually takes a few seconds. Please keep this page open.',
+          },
+          paid: {
+            title: 'Payment received',
+            description: 'Your household has Oursight Premium. You are both unlocked.',
+          },
+          still_confirming: {
+            title: 'Waiting on the bank',
+            description:
+              'Your money is safe. The plan opens as soon as the bank confirms — usually within a few minutes.',
+          },
+          cancelled: {
+            title: 'Payment stopped',
+            description: 'Nothing was charged. You can choose a plan again whenever you like.',
+          },
+          expired: {
+            title: 'The payment link expired',
+            description: 'Nothing was charged. Choose a plan again for a fresh link.',
+          },
+        },
         paywall: {
           eyebrow: 'OURSIGHT PREMIUM',
           title: {

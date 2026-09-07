@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
 import { usePlans } from '@money-space/core/features/billing/hooks/use-plans'
+import { useCheckout } from '@money-space/core/features/billing/hooks/use-checkout'
+import { usePaymentReturn } from '@money-space/core/features/billing/hooks/use-payment-return'
 import { formatMoney } from '@money-space/core/shared/lib/format-money'
 
 import { Panel, PanelHeader } from '@/components/ui/panel'
@@ -25,12 +27,26 @@ export function SubscriptionPage() {
   const { t } = useTranslation()
   const { entitlement, isPremium, isLoading } = useEntitlement()
   const { plans, isLoading: plansLoading } = usePlans()
+  const checkout = useCheckout()
+  // Mounted here because this is where PayOS's return URL points.
+  const payment = usePaymentReturn()
 
   return (
     <div className="s-page">
       <CompactPageHeader title={t('settings.billing.eyebrow')} />
 
       <div className="s-card-gap s-head-body flex flex-col">
+        {/* What happened to the payment just made. Absent entirely when the
+            household did not arrive from a checkout. */}
+        {payment.state !== 'idle' ? (
+          <Panel>
+            <p className="t-subtitle">{t(`billing.checkout.${payment.state}.title`)}</p>
+            <p className="mt-2 t-body-sm text-ink2">
+              {t(`billing.checkout.${payment.state}.description`)}
+            </p>
+          </Panel>
+        ) : null}
+
         <Panel>
           <PanelHeader
             title={t('settings.billing.eyebrow')}
@@ -89,10 +105,13 @@ export function SubscriptionPage() {
           ) : (
             <ul className="s-head-body flex flex-col gap-3">
               {plans.map((plan) => (
-                <li
-                  key={plan.planCode}
-                  className="flex items-baseline justify-between gap-4"
-                >
+                <li key={plan.planCode}>
+                  <button
+                    type="button"
+                    onClick={() => checkout.start(plan.planCode)}
+                    disabled={checkout.isStarting}
+                    className="flex w-full items-baseline justify-between gap-4 rounded-control px-3 py-2 text-left transition-colors hover:bg-canvas"
+                  >
                   <div className="min-w-0">
                     <p className="t-body">
                       {t(`settings.billing.plan.${plan.planCode}`)}
@@ -119,14 +138,21 @@ export function SubscriptionPage() {
                       </p>
                     ) : null}
                   </div>
+                  </button>
                 </li>
               ))}
             </ul>
           )}
 
-          <p className="mt-4 t-caption leading-5 text-ink3">
-            {t('settings.billing.payHint')}
-          </p>
+          {checkout.error ? (
+            <p className="mt-4 t-caption leading-5 text-alert-ink">
+              {t('billing.checkout.failed')}
+            </p>
+          ) : (
+            <p className="mt-4 t-caption leading-5 text-ink3">
+              {t('billing.checkout.payNote')}
+            </p>
+          )}
         </Panel>
       </div>
     </div>
