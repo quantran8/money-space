@@ -12,8 +12,8 @@
 | Trục | Free | Premium | Đã enforce |
 |---|---|---|---|
 | Mục tiêu đang hoạt động | **2** | ∞ | ✅ |
-| Lượt tính thử (what-if) / tháng | **5** | ∞ | ✅ |
-| Tài sản tự cập nhật giá | **2** | ∞ | ✅ (không từ chối — xem §3) |
+| Lượt tính thử (what-if) / tháng | **3** | ∞ | ✅ |
+| Tài sản tự cập nhật giá | **1** | ∞ | ✅ (quyết lúc tạo — xem §3) |
 | Tầm nhìn dự báo | 7 · 30 ngày | + 60 · 90 | ✅ |
 | Xuất dữ liệu | — | ✅ | ✅ |
 | Lịch sử snapshot | 3 tháng | Toàn bộ | ❌ **chưa chặn** |
@@ -61,7 +61,7 @@ hỏi "mục tiêu nào phải nhường" trong what-if đều vô nghĩa với 
 
 Vượt trần → **402** `goal_quota`.
 
-### Tính thử — 5 lượt/tháng
+### Tính thử — 3 lượt/tháng
 
 Đếm bằng **bộ đếm Redis, không có bảng DB**. What-if là thao tác đọc thuần và
 người dùng chạy liên tục khi chỉnh số tiền — ghi một dòng Postgres mỗi lần sẽ
@@ -76,22 +76,31 @@ request sai định dạng không được phép tiêu lượt của ai.
 
 Vượt trần → **402** `whatif_quota` kèm `{ limit, used }`.
 
-### Tài sản tự cập nhật giá — 2 cái
+### Tài sản tự cập nhật giá — 1 cái
 
 Đây là hạn mức duy nhất có **chi phí biến đổi thật** phía sau (CoinMarketCap,
 Twelve Data).
 
-**Không bao giờ trả về 402.** Hai hành vi thay thế:
+**Quyết một lần, lúc tạo tài sản. Không bao giờ trả về 402, và không có công
+tắc bật/tắt.**
 
-- **Tạo tài sản thứ ba loại market-priced** → vẫn tạo được, nhưng
-  `autoPriceEnabled = false`. Hộ nhập giá tay. Chặn hẳn là chặn bảng cân đối,
-  và họ sẽ rời đi chứ không trả tiền.
-- **Bật tự cập nhật cho tài sản mới khi đã đủ trần** → tự tắt tài sản cũ nhất và
-  bật cái mới, trả về thông tin cái vừa bị tắt. Hộ **tự chọn** hai cái nào được
-  tự động, chứ không phải "hai cái đầu tiên bạn tạo".
+- Tài sản market-priced tạo khi còn dưới trần → `autoPriceEnabled = true`.
+- Tạo khi đã đủ trần → vẫn tạo được, `autoPriceEnabled = false`, hộ nhập giá
+  tay và thấy chip "Cập nhật tay". Chặn hẳn là chặn bảng cân đối, và họ sẽ rời
+  đi chứ không trả tiền.
 
-Lý do không ném 402 ở hành vi thứ hai: hộ không xin *thêm* tự động hoá, họ chỉ
-đang **di chuyển** phần tự động hoá đang có.
+Cái nào được tự động là hệ quả của **hộ có gì và thêm lúc nào**, không phải một
+tuỳ chọn để chỉnh. Muốn nhường chỗ thì xoá tài sản không còn giữ nữa — trần đếm
+tài sản đang sống, nên xoá xong là slot trống cho cái tạo tiếp theo.
+
+Hai thiết kế đã bỏ:
+
+1. **Đánh đổi**: bật cho cái mới thì tự tắt cái cũ nhất, trả về `turnedOff`.
+   Không màn hình nào hiển thị tên đó, nên một tài sản hộ đã chọn lặng lẽ ngừng
+   cập nhật và trông như hỏng.
+2. **Ném 402** trên chính công tắc ấy. Thành thật hơn, nhưng để lại một control
+   trên màn hình mà công dụng duy nhất là bị từ chối, và câu trả lời "tắt cái
+   khác đi để lấy chỗ" bắt hộ xáo trộn chỉ để vừa một hạn mức.
 
 Cron cập nhật giá hằng ngày lọc theo cờ này, nên đây cũng là chỗ **cắt chi phí
 API thật**.
@@ -259,8 +268,10 @@ lại là cằn nhằn.
    `PLAN_LIMITS` và trong hàm `hasFeature`, nhưng không route nào dùng nó và
    module snapshots không đọc entitlement. **Hộ Free hiện đọc được toàn bộ lịch
    sử.**
-2. **`auto_price_quota` không bao giờ được server ném** — theo thiết kế ở §3.
-   Lý do nó tồn tại: để client mở paywall chủ động khi muốn giải thích.
+2. **`auto_price_quota` không bao giờ được server ném, và client cũng không còn
+   mở paywall bằng nó** — theo thiết kế ở §3, không có hành động nào để từ chối.
+   Mã lý do vẫn còn trong enum để dùng nếu sau này có nút "nâng gói" đặt cạnh
+   một tài sản nhập tay.
 3. **`expired` và `trial_ending`** chỉ tồn tại phía client.
 4. **Không có tự động gia hạn.** Cột `autoRenew` có nhưng luôn `false`.
 5. **Chưa có analytics và error monitoring.** Nghĩa là mọi con số ở §1 vẫn là

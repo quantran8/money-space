@@ -226,9 +226,11 @@ Mục §4 và §5 của `06` (metrics, North Star) **chưa đo được**: repo 
 có analytics** (không PostHog, Amplitude, GA) và **không có error monitoring**
 (không Sentry).
 
-Hệ quả cụ thể: mọi con số trong `plan-limits.ts` — 2 mục tiêu, 5 lượt tính thử,
-2 tài sản tự cập nhật giá — đều là **giả thuyết chưa được kiểm chứng**. Chúng
+Hệ quả cụ thể: mọi con số trong `plan-limits.ts` — 2 mục tiêu, 3 lượt tính thử,
+1 tài sản tự cập nhật giá — đều là **giả thuyết chưa được kiểm chứng**. Chúng
 nằm trong một file nên sửa rẻ, nhưng đừng nhầm chúng với quyết định đã có căn cứ.
+Bản thân các con số này đã siết lại một lần (từ 5 lượt và 2 tài sản) trước khi
+có bất kỳ dữ liệu nào — nên chúng là phán đoán sản phẩm, không phải kết quả đo.
 
 Những câu hỏi cần trả lời trước khi tinh chỉnh giá:
 
