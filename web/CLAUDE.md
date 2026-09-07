@@ -86,6 +86,19 @@ Two domain rules worth knowing up front:
 - **Money input**: whole digits only. Fields group them for display (`20000` → `"20.000"`) but form state always holds a plain separator-free digit string — see `packages/core/src/shared/lib/number-format.ts` (`sanitizeIntegerInput`, `formatIntegerDisplay`, `parseRawMoney`). There is **no** `"20M"` / `"500K"` shorthand: `sanitizeIntegerInput` strips the suffix and `parseRawMoney("20M")` is `NaN`. Comma is the decimal separator for quantities and rates (`parseRawDecimal`).
 - **Styling**: Tailwind v4 utilities with CSS variables, e.g. `text-[hsl(var(--muted-foreground))]`. Chart colors come from `packages/core/src/shared/constants/colors.ts` — don't invent per-chart hues.
 
+## Comment style and commits
+
+- **Code comments are short** — a line or two saying _what_ the line does, or a
+  one-line caveat when something is genuinely surprising. Anything longer about
+  business logic (nghiệp vụ) — why a rule exists, trade-offs weighed,
+  alternatives rejected, what was tried and discarded — goes in `../memory/`,
+  never inline, with a pointer from the code (`// … See memory/goals.md.`). A
+  long comment duplicates the doc, drifts out of sync, and buries the code.
+  Doc comments on components and hooks are held to the same length.
+- **Commit messages are 1–2 lines.** Say what changed; no body paragraphs, no
+  bullet lists, no rationale — that belongs in `../memory/`. **No
+  `Co-Authored-By` trailer** and no "Generated with Claude Code".
+
 ## Voice
 
 Non-negotiable, and enforced by `pnpm lint`. The product must never read as control, surveillance, judgement, or a verdict.
