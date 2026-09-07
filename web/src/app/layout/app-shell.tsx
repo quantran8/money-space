@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 
 import { MobileBottomNav } from '@/app/layout/mobile-bottom-nav'
+import { PaywallSheet } from '@/features/billing/ui/paywall-sheet'
 import { WhatIfSheet } from '@/features/whatif/ui/whatif-sheet'
 
 import type { ComponentType } from 'react'
@@ -543,6 +544,9 @@ export function AppShell() {
           mobile. */}
       <MobileBottomNav />
       <WhatIfSheet />
+      {/* Same reasoning as the what-if sheet, and the global 402 handler opens
+          it from anywhere — so it has to be mounted where every route is. */}
+      <PaywallSheet />
     </SidebarProvider>
   )
 }

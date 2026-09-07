@@ -119,6 +119,29 @@ export function createAsset(householdId: string, payload: AssetPayload) {
   })
 }
 
+/**
+ * Move automatic pricing onto (or off) one asset.
+ *
+ * Its own endpoint rather than a field on the asset PATCH, because it can
+ * change a DIFFERENT asset too: at the plan's ceiling the oldest automatic
+ * asset gives way, and `turnedOff` names it so the UI can say which one
+ * stopped updating.
+ */
+export function setAssetAutoPrice(
+  householdId: string,
+  assetId: string,
+  enabled: boolean,
+) {
+  return apiRequest<{
+    assetId: string
+    autoPriceEnabled: boolean
+    turnedOff: string | null
+  }>(`/households/${householdId}/assets/${assetId}/auto-price`, {
+    method: 'PATCH',
+    body: JSON.stringify({ enabled }),
+  })
+}
+
 export function updateAsset(
   householdId: string,
   assetId: string,

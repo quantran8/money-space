@@ -353,6 +353,12 @@ export const resources = {
           sellFailed: 'Chưa bán được tài sản.',
           saleUpdateFailed: 'Chưa cập nhật được giao dịch bán.',
         },
+         autoPrice: {
+          label: 'Giá tự cập nhật',
+          on: 'Oursight tự lấy giá mới mỗi ngày.',
+          off: 'Gia đình tự nhập giá cho tài sản này.',
+          manualChip: 'Cập nhật tay',
+        },
         // Shared by the buy and sell dialogs — the live quote reads the same in
         // both, so the copy lives once.
         marketPrice: {
@@ -1219,6 +1225,52 @@ export const resources = {
         },
       },
       billing: {
+        paywall: {
+          eyebrow: 'OURSIGHT PREMIUM',
+          // Mỗi bức tường có câu mở đầu riêng: gia đình vừa chạm mục tiêu thứ ba
+          // cần đọc đúng câu đó trước, không phải một lời mời chung chung.
+          title: {
+            goal_quota: 'Gia đình đang có {{limit}} mục tiêu',
+            whatif_quota: 'Đã dùng {{used}}/{{limit}} lượt tính thử tháng này',
+            auto_price_quota: 'Đang tự cập nhật giá cho {{limit}} tài sản',
+            forecast_horizon: 'Nhìn xa 60 và 90 ngày',
+            history: 'Xem lại toàn bộ lịch sử',
+            export: 'Tải dữ liệu của gia đình',
+            trial_ending: 'Bản dùng thử sắp hết',
+            expired: 'Gói Premium của gia đình đã hết hạn',
+            general: 'Mở khóa Oursight Premium',
+          },
+          subtitle: {
+            goal_quota: 'Gói Premium mở không giới hạn số mục tiêu cho cả hai người.',
+            whatif_quota: 'Gói Premium mở không giới hạn lượt tính thử mỗi tháng.',
+            auto_price_quota:
+              'Gói Premium tự cập nhật giá cho mọi tài sản vàng, cổ phiếu và crypto.',
+            forecast_horizon:
+              'Gói Premium mở tầm nhìn 60 và 90 ngày, đủ sớm để xoay trước khi cần.',
+            history: 'Gói Premium giữ lại toàn bộ lịch sử của gia đình.',
+            export: 'Gói Premium cho phép tải toàn bộ dữ liệu về máy.',
+            trial_ending: 'Giữ lại những gì gia đình đang dùng.',
+            expired: 'Kích hoạt lại để dùng tiếp.',
+            general: 'Một gói cho cả hai người.',
+          },
+          expiredOn: 'Hết hạn ngày {{date}}',
+          youGet: 'Bạn nhận được',
+          benefit: {
+            horizon: { label: 'Biết trước xa hơn', detail: 'Thấy lúc nào gia đình có thể bị căng', value: '90 ngày' },
+            price: { label: 'Giá tự cập nhật', detail: 'Vàng, cổ phiếu, crypto luôn đúng giá', value: 'Luôn cập nhật' },
+            whatif: { label: 'Tính thử thoải mái', detail: 'Xem trước hệ quả của mỗi khoản chi', value: 'What-if' },
+            goals: { label: 'Mục tiêu không giới hạn', detail: 'Đủ chỗ cho mọi dự định của gia đình', value: 'Không giới hạn' },
+          },
+          household: {
+            title: 'Một gói Premium cho cả hai người',
+            detail: 'Cả hai cùng được mở khóa. Không cần mua riêng từng người.',
+          },
+          cta: 'Chọn {{plan}} · {{amount}}',
+          ctaLoading: 'Đang mở…',
+          later: 'Để sau',
+          payNote: 'Thanh toán một lần, không tự động gia hạn.',
+          mobileNote: 'Mở oursight.vn trên trình duyệt để nâng cấp gói.',
+        },
         redeem: {
           title: 'Nhập mã kích hoạt',
           description: 'Mã có dạng OURS-XXXX-XXXX.',
@@ -1620,6 +1672,7 @@ export const resources = {
           days7: '7 ngày tới',
           days30: '30 ngày tới',
           days60: '60 ngày tới',
+          days90: '90 ngày tới',
           thisMonth: 'Tháng này',
           nextMonth: 'Tháng sau',
           custom: 'Khoảng tự chọn',
@@ -3722,6 +3775,12 @@ export const resources = {
           sellFailed: 'Could not sell the asset.',
           saleUpdateFailed: 'Could not update the sale.',
         },
+        autoPrice: {
+          label: 'Automatic pricing',
+          on: 'Oursight refreshes this price every day.',
+          off: 'You record this value yourself.',
+          manualChip: 'Manual',
+        },
         marketPrice: {
           label: 'Market price',
           observedAt: 'Updated {{time}} · {{date}}',
@@ -4562,6 +4621,50 @@ export const resources = {
         },
       },
       billing: {
+        paywall: {
+          eyebrow: 'OURSIGHT PREMIUM',
+          title: {
+            goal_quota: 'Your household has {{limit}} goals',
+            whatif_quota: 'You have used {{used}}/{{limit}} what-ifs this month',
+            auto_price_quota: 'Prices update automatically for {{limit}} assets',
+            forecast_horizon: 'See 60 and 90 days ahead',
+            history: 'Read back your full history',
+            export: 'Export your household data',
+            trial_ending: 'Your trial is ending',
+            expired: 'Your household Premium has expired',
+            general: 'Unlock Oursight Premium',
+          },
+          subtitle: {
+            goal_quota: 'Premium removes the limit on goals, for both of you.',
+            whatif_quota: 'Premium gives you unlimited what-ifs every month.',
+            auto_price_quota:
+              'Premium keeps prices current for every gold, stock and crypto asset.',
+            forecast_horizon:
+              'Premium opens the 60 and 90-day view, early enough to act on.',
+            history: 'Premium keeps your whole history.',
+            export: 'Premium lets you download everything.',
+            trial_ending: 'Keep what your household is already using.',
+            expired: 'Activate again to keep going.',
+            general: 'One plan for both of you.',
+          },
+          expiredOn: 'Expired {{date}}',
+          youGet: 'What you get',
+          benefit: {
+            horizon: { label: 'See further ahead', detail: 'Know when things could get tight', value: '90 days' },
+            price: { label: 'Prices stay current', detail: 'Gold, stocks and crypto, always right', value: 'Automatic' },
+            whatif: { label: 'What-if without limits', detail: 'See the consequence before you spend', value: 'What-if' },
+            goals: { label: 'Unlimited goals', detail: 'Room for everything you are planning', value: 'Unlimited' },
+          },
+          household: {
+            title: 'One Premium plan for both of you',
+            detail: 'You are both unlocked. No need to buy it twice.',
+          },
+          cta: 'Choose {{plan}} · {{amount}}',
+          ctaLoading: 'Opening…',
+          later: 'Maybe later',
+          payNote: 'One payment, no auto-renewal.',
+          mobileNote: 'Open oursight.vn in a browser to upgrade.',
+        },
         redeem: {
           title: 'Enter an activation code',
           description: 'Codes look like OURS-XXXX-XXXX.',
@@ -4917,6 +5020,7 @@ export const resources = {
           days7: 'Next 7 days',
           days30: 'Next 30 days',
           days60: 'Next 60 days',
+          days90: 'Next 90 days',
           thisMonth: 'This month',
           nextMonth: 'Next month',
           custom: 'Custom range',

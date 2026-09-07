@@ -2,7 +2,7 @@
 
 - **Date**: 2026-09-07
 - **Session folder**: `session/2026-09-07/billing-phase-3-enable-gates/`
-- **Status**: planned
+- **Status**: done
 
 > Part of the freemium plan. Full reasoning:
 > `~/.claude/plans/l-n-k-ho-ch-cho-rosy-kay.md`. Depends on Phases 1 and 2.
@@ -58,6 +58,106 @@ Then, each independently shippable:
   `auth.module.ts`, after `HouseholdAccessGuard` (it needs
   `request.membership`).
 - **3g. 14-day trial** granted in `households.service.ts` on create.
+
+## Changes made
+
+### Backend
+
+- `prisma/schema.prisma` — `Asset.autoPriceEnabled` (Boolean, default true).
+- `prisma/migrations/20260907110000_asset_auto_price/` — hand-written, additive:
+  the column plus a partial index for the cron's scan. **Applied**;
+  `migrate status` reports "Database schema is up to date".
+- `src/modules/auth/decorators/require-premium.decorator.ts` (new).
+- `src/modules/auth/guards/entitlement.guard.ts` + `.spec.ts` (new) — the third
+  `APP_GUARD` in `auth.module.ts`, after `HouseholdAccessGuard`.
+- `src/modules/billing/whatif-usage.service.ts` + `.spec.ts` (new).
+- `src/modules/billing/entitlement-quota.spec.ts` (new) — `assertQuota`.
+- `src/modules/billing/test-support/entitlement.fixture.ts` (new) —
+  `premiumEntitlement()` / `freeEntitlement()`, so specs whose subject is not
+  the plan stay unaffected by the gates.
+- `src/modules/billing/entitlement.service.ts` — `whatIfThisMonth` now reads the
+  real counter (it was a Phase 1 placeholder of `0`).
+- `src/common/cache/cache.keys.ts` — `whatIfUsage` key + a 32-day TTL, outside
+  the `hh:` prefix.
+- `src/common/audit/audit.types.ts` — `asset.auto_price_changed`.
+- `src/modules/goals/goals.service.ts` + `goals.quota.spec.ts` — the goal quota,
+  counting `status === 'active'` off the `existingGoals` already loaded.
+- `src/modules/forecast/forecast.service.ts` — `resolveHorizon()` and the four
+  `…ForRequest` entries; the what-if quota.
+- `src/modules/assets/` — `canAutoPrice()`, `setAutoPrice()`, the repository's
+  `countAutoPricedAssets` / `findAutoPricedAssetIds` / `setAutoPriceEnabled`,
+  the cron filter, and `assets.auto-price.spec.ts`.
+- `src/modules/households/households.service.ts` — the 14-day trial on create.
+- `FinancialGoal.status` and `Asset.autoPriceEnabled` surfaced on the domain
+  entities and the mapper.
+
+New endpoint: `PATCH /households/:householdId/assets/:assetId/auto-price`.
+
+### Frontend
+
+- `packages/core/src/shared/stores/paywall-store.ts` (new).
+- `packages/core/src/features/billing/hooks/use-premium-action.ts` (new).
+- `packages/core/src/shared/api/query-client.ts` — the global 402 handler, on
+  both the query and mutation caches, plus `retry: false` for 402.
+- `packages/core/src/features/assets/` — `setAssetAutoPrice`, the `setAutoPrice`
+  mutation, `Asset.autoPriceEnabled`.
+- `packages/core/src/features/goals/hooks/use-goals-page.ts` — the quota checked
+  in `openCreate()`, before the form opens.
+- `packages/core/src/i18n/resources.ts` — `billing.paywall.*`,
+  `assets.autoPrice.*`, `upcoming.range.days90`, both languages.
+- `web/src/features/billing/ui/paywall-sheet.tsx` (new), mounted in
+  `app-shell.tsx`.
+- `web/src/features/assets/ui/components/auto-price-row.tsx` (new).
+- `web/src/features/forecast/ui/components/range-picker.tsx` — 90 days added;
+  horizons beyond the plan keep their place, wear a badge, and open the paywall.
+- `mobile/src/features/billing/ui/paywall-sheet.tsx` (new), mounted in
+  `app/(tabs)/_layout.tsx`.
+- `mobile/src/features/assets/components/auto-price-row.tsx` (new), on the asset
+  detail screen.
+
+## Notes from the build
+
+- **One shared `QueryClient`.** Both hosts import the same instance from core,
+  so the 402 net is written once and covers web and mobile together — the README
+  anticipated one per host.
+- **`parseHorizon` did not move; it split.** `forecast()` and the other three
+  are also called internally (the snapshot backfill, and what-if running the
+  engine twice over one bundle) with a horizon that was never a query string and
+  has no household choosing it. Gating inside them would have subjected an
+  internal caller to a paywall it cannot answer. The four `…ForRequest` entries
+  resolve the horizon and delegate, so the check is still one chokepoint and
+  every HTTP path goes through it.
+- **The goal quota needed `FinancialGoal.status`,** which the domain entity had
+  never surfaced even though the column has existed all along. Added to the
+  entity and the mapper rather than paying for a second `count` query — which is
+  what kept the promise of "no extra query".
+- **`Asset.autoPriceEnabled` is optional on the entity,** like
+  `countsAsFlexible`. Required, it would have forced a change to ~15 unrelated
+  asset fixtures for a field with a column default; optional, an asset built
+  without mentioning it behaves exactly as it always did.
+- **The paywall's plan selection is derived, not reset in an effect.**
+  `react-hooks/set-state-in-effect` refuses a `setState` on open, and it is
+  right to: keying the choice off the store's `open` gets the same "re-arm the
+  default each time" behaviour without a second render per appearance.
+
+## Verified
+
+```bash
+cd backend && pnpm test          # 880 pass (20 new), 1 pre-existing failure
+cd frontend && pnpm verify       # build · copy · design scale · eslint · mobile
+```
+
+The one backend failure is `vnstock-commodity.provider.spec.ts`, the same
+pre-existing failure Phase 2 recorded. `pnpm verify` is clean on both hosts:
+0 errors, and `check-copy.mjs` passes on the new paywall strings.
+
+**Not yet exercised against a running server.** The gates are unit-tested at the
+level that matters — the guard's no-decorator fast path, `assertQuota` at the
+ceiling rather than past it, completed goals not occupying a slot, the auto-price
+swap, and the Redis counter's fail-open contract — but the live walkthrough in
+*Verification* above (a real Free household hitting each wall, and the
+`trialEndsAt`-in-the-past cache check) has not been run. That last check remains
+the most important proof the cache design is right.
 
 ## Key decisions
 
@@ -117,4 +217,5 @@ With a Premium household, every path above is open.
   402 handler.
 - Mobile paywall shows prices and takes a code, but **no button to a payment
   page** (App Store rules). The renewal line points at the web app.
-- The auto-price toggle needs a mobile equivalent on the asset detail screen.
+- The auto-price toggle has its mobile equivalent on the asset detail screen
+  (`auto-price-row.tsx`), built in this phase.

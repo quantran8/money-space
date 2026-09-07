@@ -125,6 +125,15 @@ export type Asset = {
   countsAsFlexible?: boolean | null
   currency: string
   note: string
+  /**
+   * Whether this asset's price refreshes automatically.
+   *
+   * Only meaningful for `market_priced` assets. Free plans cap how many can be
+   * automatic — but never how many can EXIST: an asset over the ceiling is
+   * created exactly as asked and simply valued by hand, which is what the
+   * "Cập nhật tay" chip says. Absent means true, matching the server default.
+   */
+  autoPriceEnabled?: boolean
   /** Lifecycle status; defaults to `active`. A `sold` asset is kept for history. */
   status?: AssetStatus
   /** ISO date the asset was fully sold, when `status === 'sold'`. */
