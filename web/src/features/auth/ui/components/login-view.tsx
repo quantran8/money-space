@@ -64,9 +64,12 @@ export function LoginView({ form, onSubmit, onGoogle, googlePending }: LoginView
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <Label>{t('auth.fields.password')}</Label>
-            <button type="button" className="t-body-sm font-medium text-action hover:underline">
+            <Link
+              to="/auth/forgot-password"
+              className="t-body-sm font-medium text-action hover:underline"
+            >
               {t('auth.login.forgotPassword')}
-            </button>
+            </Link>
           </div>
           <PasswordInput
             autoComplete="current-password"

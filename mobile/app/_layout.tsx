@@ -19,8 +19,15 @@ import { queryClient } from '@money-space/core/shared/api/query-client'
 import { bootstrap } from '@/shared/bootstrap'
 import { colors } from '@/theme/tokens'
 import { ToastProvider } from '@/shared/toast'
+import { RouteErrorBoundary } from '@/components/route-error-boundary'
 
 import type { AppStateStatus } from 'react-native'
+
+/**
+ * Expo Router renders this in place of any screen under this layout that
+ * throws. Without it a render error left a blank frame in production.
+ */
+export { RouteErrorBoundary as ErrorBoundary }
 
 /**
  * The query client is configured with `refetchOnWindowFocus: false` because the

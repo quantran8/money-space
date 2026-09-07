@@ -28,6 +28,27 @@ export function signup(payload: SignupPayload) {
   })
 }
 
+/**
+ * Send the recovery email. Resolves the same way whether or not the address has
+ * an account — the server will not say, and neither should the UI.
+ */
+export function requestPasswordReset(email: string, redirectTo?: string) {
+  return apiRequest<{ success: true }>('/auth/password/reset', {
+    method: 'POST',
+    body: JSON.stringify({ email, redirectTo }),
+    skipAuth: true,
+  })
+}
+
+/** Completes a reset with the token carried by the emailed link. */
+export function updatePassword(accessToken: string, password: string) {
+  return apiRequest<AuthResult>('/auth/password/update', {
+    method: 'POST',
+    body: JSON.stringify({ accessToken, password }),
+    skipAuth: true,
+  })
+}
+
 /** Returns the Google authorization URL to redirect the browser to. */
 export function getGoogleAuthUrl(redirectTo: string) {
   return apiRequest<{ url: string }>(

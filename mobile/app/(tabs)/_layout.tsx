@@ -7,7 +7,14 @@ import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-ho
 import { RequireAuth } from '@/features/auth/require-auth'
 import { RequireHousehold } from '@/features/onboarding/require-household'
 import { WhatIfSheet } from '@/features/whatif'
+import { RouteErrorBoundary } from '@/components/route-error-boundary'
 import { colors } from '@/theme/tokens'
+
+/**
+ * Scoped to the tab segment, so one tab throwing is contained to that tab and
+ * the household can still navigate out of it.
+ */
+export { RouteErrorBoundary as ErrorBoundary }
 
 /**
  * The five primary destinations (design v4.2 §8 — the bottom bar is capped at

@@ -2,7 +2,11 @@ import {
   ArrowDownLeft,
   ArrowLeftRight,
   ArrowUpRight,
+  CalendarClock,
   ChevronRight,
+  Landmark,
+  PackageMinus,
+  PackagePlus,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -31,22 +35,20 @@ const ACTION_GROUPS: Array<{
   {
     labelKey: 'events.form.actionGroup.cashflow',
     actions: [
-      // Temporarily hidden from this picker:
-      // { key: 'upcoming', icon: CalendarClock },
+      { key: 'upcoming', icon: CalendarClock },
       { key: 'expense', icon: ArrowUpRight },
       { key: 'income', icon: ArrowDownLeft },
       { key: 'transfer', icon: ArrowLeftRight },
     ],
   },
-  // Temporarily hidden from this picker:
-  // {
-  //   labelKey: 'events.form.actionGroup.assetsDebts',
-  //   actions: [
-  //     { key: 'debt_borrow', icon: Landmark },
-  //     { key: 'buy_asset', icon: PackagePlus },
-  //     { key: 'sell_asset', icon: PackageMinus },
-  //   ],
-  // },
+  {
+    labelKey: 'events.form.actionGroup.assetsDebts',
+    actions: [
+      { key: 'debt_borrow', icon: Landmark },
+      { key: 'buy_asset', icon: PackagePlus },
+      { key: 'sell_asset', icon: PackageMinus },
+    ],
+  },
 ]
 
 /**

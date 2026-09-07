@@ -47,6 +47,14 @@ export const resources = {
           title: 'Xóa mục này?',
           description: 'Bạn có chắc muốn xóa “{{name}}”? Hành động này không thể hoàn tác.',
         },
+        errorBoundary: {
+          title: 'Màn hình này chưa hiện được',
+          description: 'Dữ liệu của gia đình vẫn an toàn. Thử mở lại giúp nhé.',
+          retry: 'Mở lại',
+          goHome: 'Về Tổng quan',
+          notFoundTitle: 'Không tìm thấy trang này',
+          notFoundDescription: 'Đường dẫn có thể đã thay đổi.',
+        },
       },
       // Relative timestamps (design.md §10.5). Always a concrete number —
       // never "gần đây", which hides how old the data actually is.
@@ -3230,16 +3238,40 @@ export const resources = {
         callback: {
           signingIn: 'Đang hoàn tất đăng nhập...',
         },
+        forgotPassword: {
+          title: 'Đặt lại mật khẩu',
+          description: 'Nhập email của bạn, Oursight sẽ gửi liên kết đặt lại mật khẩu.',
+          submit: 'Gửi liên kết',
+          submitting: 'Đang gửi...',
+          backToLogin: 'Quay lại đăng nhập',
+          sentTitle: 'Đã gửi liên kết',
+          // Worded the same whether or not the address has an account.
+          sentDescription:
+            'Nếu {{email}} có tài khoản, liên kết đặt lại mật khẩu đang trên đường tới hộp thư. Liên kết có hiệu lực trong 1 giờ.',
+        },
+        resetPassword: {
+          title: 'Chọn mật khẩu mới',
+          description: 'Mật khẩu mới sẽ dùng cho lần đăng nhập tới.',
+          submit: 'Lưu mật khẩu',
+          submitting: 'Đang lưu...',
+          invalidTitle: 'Liên kết không còn dùng được',
+          invalidDescription:
+            'Liên kết đặt lại mật khẩu đã hết hạn hoặc đã được dùng. Gửi lại một liên kết mới nhé.',
+          requestAgain: 'Gửi lại liên kết',
+        },
         toast: {
           loginSuccess: 'Đăng nhập thành công',
           signupSuccess: 'Chào {{name}}, tài khoản đã sẵn sàng.',
           confirmEmail: 'Kiểm tra email để xác nhận tài khoản nhé.',
+          passwordUpdated: 'Đã cập nhật mật khẩu',
         },
         errors: {
           notConfigured: 'Chưa cấu hình đăng nhập. Vui lòng liên hệ quản trị.',
           loginFailed: 'Không thể đăng nhập. Kiểm tra lại email và mật khẩu.',
           signupFailed: 'Không thể tạo tài khoản.',
           googleFailed: 'Không thể đăng nhập với Google.',
+          resetRequestFailed: 'Chưa gửi được liên kết. Thử lại sau ít phút nhé.',
+          resetFailed: 'Chưa đặt lại được mật khẩu.',
         },
       },
       onboarding: {
@@ -3328,6 +3360,14 @@ export const resources = {
         confirmDelete: {
           title: 'Delete this item?',
           description: 'Are you sure you want to delete “{{name}}”? This can’t be undone.',
+        },
+        errorBoundary: {
+          title: 'This screen could not load',
+          description: 'Your household data is safe. Try opening it again.',
+          retry: 'Open again',
+          goHome: 'Back to Overview',
+          notFoundTitle: 'Page not found',
+          notFoundDescription: 'This link may have changed.',
         },
       },
       // Relative timestamps (design.md §10.5).
@@ -6375,16 +6415,39 @@ export const resources = {
         callback: {
           signingIn: 'Completing sign-in...',
         },
+        forgotPassword: {
+          title: 'Reset your password',
+          description: 'Enter your email and Oursight will send you a reset link.',
+          submit: 'Send link',
+          submitting: 'Sending...',
+          backToLogin: 'Back to sign in',
+          sentTitle: 'Link sent',
+          sentDescription:
+            'If {{email}} has an account, a reset link is on its way. The link works for 1 hour.',
+        },
+        resetPassword: {
+          title: 'Choose a new password',
+          description: 'You will use this password the next time you sign in.',
+          submit: 'Save password',
+          submitting: 'Saving...',
+          invalidTitle: 'This link no longer works',
+          invalidDescription:
+            'The reset link has expired or has already been used. Request a new one.',
+          requestAgain: 'Send a new link',
+        },
         toast: {
           loginSuccess: 'Signed in successfully',
           signupSuccess: 'Hi {{name}}, your account is ready.',
           confirmEmail: 'Check your email to confirm your account.',
+          passwordUpdated: 'Password updated',
         },
         errors: {
           notConfigured: 'Sign-in is not configured. Please contact your admin.',
           loginFailed: 'Could not sign in. Check your email and password.',
           signupFailed: 'Could not create the account.',
           googleFailed: 'Could not sign in with Google.',
+          resetRequestFailed: 'Could not send the link. Try again in a few minutes.',
+          resetFailed: 'Could not reset the password.',
         },
       },
       onboarding: {
