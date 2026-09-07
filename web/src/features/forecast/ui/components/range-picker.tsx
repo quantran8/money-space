@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { enUS, vi } from 'date-fns/locale'
-import { CalendarRange, Check, ChevronDown, Sparkles } from 'lucide-react'
+import { CalendarRange, Check, ChevronDown, Crown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { DateRange } from 'react-day-picker'
 
@@ -194,14 +194,25 @@ export function RangePicker({
                       active ? 'bg-wash' : 'hover:bg-canvas',
                     )}
                   >
-                    <span className={cn('t-body-sm', active && 'font-medium')}>
+                    {/* A locked row is not a row you can pick: its label sits
+                        back at `ink3` so the reachable options read first. */}
+                    <span
+                      className={cn(
+                        't-body-sm',
+                        active && 'font-medium',
+                        !isAllowed(preset) && 'text-ink3',
+                      )}
+                    >
                       {t(`upcoming.range.${preset.key}`)}
                     </span>
                     {active ? (
                       <Check className="size-4 shrink-0 text-ink" strokeWidth={1.75} aria-hidden />
                     ) : !isAllowed(preset) ? (
-                      <Sparkles
-                        className="size-4 shrink-0 text-ink3"
+                      // Amber, not `ink3`: at metadata grey the crown read as
+                      // one more label rather than as the thing standing
+                      // between them and the option.
+                      <Crown
+                        className="size-4 shrink-0 text-attention-ink"
                         strokeWidth={1.75}
                         aria-label={t('billing.paywall.eyebrow')}
                       />

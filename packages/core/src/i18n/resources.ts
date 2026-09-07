@@ -362,6 +362,11 @@ export const resources = {
           // một lời từ chối.
           atLimit:
             'Gói hiện tại tự cập nhật {{limit}} tài sản, dành cho những tài sản gia đình thêm trước.',
+          // Nói TRƯỚC khi lưu, ở form thêm tài sản: hạn mức đã dùng hết nên
+          // tài sản này sẽ nhập tay. Không chặn — chỉ để gia đình biết trước.
+          willBeManualTitle: 'Tài sản này sẽ cập nhật tay',
+          willBeManual:
+            'Gói hiện tại đang tự cập nhật giá cho {{limit}} tài sản. Gia đình vẫn thêm được tài sản này và tự nhập giá bất cứ lúc nào.',
         },
         // Shared by the buy and sell dialogs — the live quote reads the same in
         // both, so the copy lives once.
@@ -1258,6 +1263,8 @@ export const resources = {
         },
         paywall: {
           eyebrow: 'OURSIGHT PREMIUM',
+          // Một câu cho mọi bức tường: nâng cấp để dùng không giới hạn.
+          headerSubtitle: 'Nâng cấp Premium để trải nghiệm không giới hạn',
           // Mỗi bức tường có câu mở đầu riêng: gia đình vừa chạm mục tiêu thứ ba
           // cần đọc đúng câu đó trước, không phải một lời mời chung chung.
           title: {
@@ -1269,6 +1276,7 @@ export const resources = {
             export: 'Tải dữ liệu của gia đình',
             trial_ending: 'Bản dùng thử sắp hết',
             expired: 'Gói Premium của gia đình đã hết hạn',
+            manage: 'Gói của gia đình',
             general: 'Mở khóa Oursight Premium',
           },
           subtitle: {
@@ -1282,6 +1290,7 @@ export const resources = {
             export: 'Gói Premium cho phép tải toàn bộ dữ liệu về máy.',
             trial_ending: 'Giữ lại những gì gia đình đang dùng.',
             expired: 'Kích hoạt lại để dùng tiếp.',
+            manage: 'Gia hạn thêm bất cứ lúc nào — thời gian được cộng dồn.',
             general: 'Một gói cho cả hai người.',
           },
           expiredOn: 'Hết hạn ngày {{date}}',
@@ -1361,6 +1370,14 @@ export const resources = {
           // Nói số còn lại, không nói "bạn đã dùng hết" — cùng một sự thật,
           // nhưng một câu là thông tin, câu kia là lời trách.
           lastOne: 'Còn 1 lượt tính thử trong tháng này.',
+          // Số còn lại, hiện ở mọi mức — gia đình cần biết để tính trước, chứ
+          // không phải đến lúc gần hết mới được báo.
+          remaining_one: 'Còn {{count}} lượt tính thử trong tháng này.',
+          remaining_other: 'Còn {{count}} lượt tính thử trong tháng này.',
+          // Dạng badge cạnh tiêu đề — chỉ con số, câu đầy đủ nằm ở title khi
+          // rê chuột.
+          badge: 'Còn {{count}} lượt',
+          badgeExhausted: 'Hết lượt tháng này',
           exhausted:
             'Đã dùng {{limit}} lượt tính thử của tháng này. Lượt mới mở lại vào đầu tháng sau.',
         },
@@ -2917,6 +2934,7 @@ export const resources = {
           pending: 'Chờ xác nhận',
           active: 'Đang hoạt động',
           holdsSources: '{{count}} nguồn tiền',
+          owner: 'Chủ gia đình',
           memberMenu: 'Tuỳ chọn {{name}}',
           soloPrompt: 'Mời thêm một thành viên để cùng theo dõi tài chính gia đình.',
           removed: 'Đã gỡ thành viên.',
@@ -3050,6 +3068,10 @@ export const resources = {
           languagePlaceholder: 'Chọn ngôn ngữ',
           createdAt: 'Hộ được tạo ngày {{date}}. Đơn vị tiền áp dụng cho toàn bộ số liệu trong không gian này.',
           spaceTitle: 'Không gian gia đình',
+          editName: 'Đổi tên không gian',
+        },
+        other: {
+          title: 'Cài đặt khác',
         },
         reminders: {
           eyebrow: 'Nhắc nhở',
@@ -3074,6 +3096,7 @@ export const resources = {
             'Gia đình đang dùng {{goals}} mục tiêu và {{whatIf}} lượt tính thử mỗi tháng.',
           freeDescriptionUnlimited: 'Gia đình đang dùng đầy đủ tính năng.',
           viewPlans: 'Xem các gói',
+          viewPlan: 'Xem gói hiện tại: {{plan}}',
           manage: 'Quản lý gói',
           plans: 'Các gói',
           plan: {
@@ -3852,6 +3875,9 @@ export const resources = {
           manualChip: 'Manual',
           atLimit:
             'Your plan keeps {{limit}} assets priced automatically, and they go to the ones you added first.',
+          willBeManualTitle: 'This one updates manually',
+          willBeManual:
+            'Your plan already keeps {{limit}} assets priced automatically. You can still add this one and record its value yourself.',
         },
         marketPrice: {
           label: 'Market price',
@@ -4720,6 +4746,7 @@ export const resources = {
         },
         paywall: {
           eyebrow: 'OURSIGHT PREMIUM',
+          headerSubtitle: 'Upgrade to Premium for unlimited',
           title: {
             goal_quota: 'Your household has {{limit}} goals',
             whatif_quota: 'You have used {{used}}/{{limit}} what-ifs this month',
@@ -4729,6 +4756,7 @@ export const resources = {
             export: 'Export your household data',
             trial_ending: 'Your trial is ending',
             expired: 'Your household Premium has expired',
+            manage: 'Your household plan',
             general: 'Unlock Oursight Premium',
           },
           subtitle: {
@@ -4742,6 +4770,7 @@ export const resources = {
             export: 'Premium lets you download everything.',
             trial_ending: 'Keep what your household is already using.',
             expired: 'Activate again to keep going.',
+            manage: 'Extend any time — the days are added on top.',
             general: 'One plan for both of you.',
           },
           expiredOn: 'Expired {{date}}',
@@ -4820,6 +4849,12 @@ export const resources = {
         error: 'Could not work that out just now. Please try again.',
         quota: {
           lastOne: '1 what-if run left this month.',
+          // Only ever rendered for 2+ — `lastOne` owns the singular — but keyed
+          // for plurals so a bare-key fallback cannot read "1 runs".
+          remaining_one: '{{count}} what-if run left this month.',
+          remaining_other: '{{count}} what-if runs left this month.',
+          badge: '{{count}} left',
+          badgeExhausted: 'None left this month',
           exhausted:
             "That is all {{limit}} what-if runs for this month. They reset at the start of next month.",
         },
@@ -6274,6 +6309,7 @@ export const resources = {
           pending: 'Pending',
           active: 'Active',
           holdsSources: '{{count}} money sources',
+          owner: 'Household owner',
           memberMenu: 'Options for {{name}}',
           soloPrompt: 'Invite another member to manage your household finances together.',
           removed: 'Member removed.',
@@ -6408,6 +6444,10 @@ export const resources = {
           createdAt:
             'This household was created on {{date}}. The selected currency applies to all figures in this space.',
           spaceTitle: 'Household space',
+          editName: 'Rename space',
+        },
+        other: {
+          title: 'Other settings',
         },
         reminders: {
           eyebrow: 'Reminders',
@@ -6432,6 +6472,7 @@ export const resources = {
             'Your household has {{goals}} goals and {{whatIf}} what-if runs a month.',
           freeDescriptionUnlimited: 'Your household has every feature.',
           viewPlans: 'See plans',
+          viewPlan: 'View current plan: {{plan}}',
           manage: 'Manage plan',
           plans: 'Plans',
           plan: {

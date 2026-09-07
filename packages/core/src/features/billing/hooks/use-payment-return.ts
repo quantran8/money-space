@@ -84,7 +84,10 @@ export function usePaymentReturn(enabled = true) {
 
     clearPendingOrder()
     if (status === 'paid') {
-      void queryClient.invalidateQueries({
+      // `refetchQueries`, not `invalidateQueries`: the entitlement query holds
+      // `staleTime: 5m`, so marking it stale would leave the household reading
+      // "Gói Miễn phí" on the page confirming they just paid.
+      void queryClient.refetchQueries({
         queryKey: queryKeys.entitlement(activeHouseholdId),
       })
     }

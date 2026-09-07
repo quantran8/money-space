@@ -27,7 +27,11 @@ export function useWhatIf() {
       if (!activeHouseholdId) return
       // On settled, not on success: a run refused for being over the ceiling
       // is exactly when the count on screen is most wrong.
-      void queryClient.invalidateQueries({
+      //
+      // `refetchQueries`, NOT `invalidateQueries`: the entitlement query holds
+      // `staleTime: 5m`, so marking it stale does not refetch it — the badge
+      // kept the count it opened with for the rest of the session.
+      void queryClient.refetchQueries({
         queryKey: queryKeys.entitlement(activeHouseholdId),
       })
     },

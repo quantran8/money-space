@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CalendarClock, Calculator, RefreshCw, Target } from 'lucide-react'
 
@@ -12,6 +11,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
 import type { PlanCode } from '@money-space/core/features/billing/api/billing.repository'
 import type { ComponentType } from 'react'
 import { useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -69,10 +69,11 @@ function formatDate(iso: string) {
  */
 export function PaywallSheet() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const open = usePaywallStore((store) => store.open)
   const context = usePaywallStore((store) => store.context)
   const close = usePaywallStore((store) => store.close)
+  const openRedeem = usePaywallStore((store) => store.openRedeem)
+  const reduced = useReducedMotion()
   const { plans, isLoading: plansLoading } = usePlans()
   const { entitlement } = useEntitlement()
   const checkout = useCheckout()
@@ -103,17 +104,13 @@ export function PaywallSheet() {
     <ResponsiveDialog open={open} onOpenChange={(next) => !next && close()}>
       <ResponsiveDialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-[940px]">
         <ResponsiveDialogHeader>
-          <p className="t-caption tracking-wide text-ink3">
-            {t('billing.paywall.eyebrow')}
-          </p>
+          {/* One header for every wall. Which limit was hit is still visible —
+              the benefits list below reorders to lead with it. */}
           <ResponsiveDialogTitle className="t-title">
-            {t(`billing.paywall.title.${reason}`, {
-              limit: context.limit,
-              used: context.used,
-            })}
+            {t('billing.paywall.eyebrow')}
           </ResponsiveDialogTitle>
           <ResponsiveDialogDescription>
-            {t(`billing.paywall.subtitle.${reason}`)}
+            {t('billing.paywall.headerSubtitle')}
           </ResponsiveDialogDescription>
 
           {/* An expired plan gets its date said out loud. "Hết hạn ngày X" is a
@@ -176,55 +173,61 @@ export function PaywallSheet() {
             {plansLoading ? (
               <Skeleton className="mt-4 h-32 w-full" />
             ) : (
-              <ul className="mt-4 flex flex-col gap-2">
+              <ul className="mt-4 grid gap-2">
                 {available.map((plan) => {
                   const isSelected = activePlan?.planCode === plan.planCode
                   return (
-                    <li key={plan.planCode}>
+                    <li key={plan.planCode} className="grid">
                       <button
                         type="button"
                         onClick={() => setSelected(plan.planCode)}
                         aria-pressed={isSelected}
                         className={cn(
-                          'flex w-full items-center justify-between gap-4 rounded-card px-4 py-3 text-left transition-colors',
+                          'grid h-full w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 rounded-card px-4 py-3 text-left transition-colors',
                           isSelected
                             ? 'bg-card ring-2 ring-action'
                             : 'bg-card ring-1 ring-divider hover:ring-protect',
                         )}
                       >
-                        <div className="min-w-0">
-                          <p className="t-body-sm">
-                            {t(`settings.billing.plan.${plan.planCode}`)}
-                          </p>
-                          {plan.savingsAmount ? (
-                            <p className="mt-0.5 t-caption text-ink3">
-                              {t('settings.billing.savings', {
-                                amount: formatMoney(plan.savingsAmount),
-                              })}
-                              {plan.monthlyEquivalent
-                                ? ` · ${t('settings.billing.perMonth', {
-                                    amount: formatMoney(plan.monthlyEquivalent),
-                                  })}`
-                                : ''}
-                            </p>
+                        {/* Price leads: it is the fact being compared. The plan
+                            name is the label for it, not the other way round. */}
+                        <p className="t-subhead">{formatMoney(plan.amount)}</p>
+
+                        {/* Reserved whether or not this plan is discounted, so
+                            every row is the same height. */}
+                        <div className="min-h-6 justify-self-end">
+                          {plan.discountPercent > 0 && plan.discountLabel ? (
+                            <StatusChip tone="accent">{plan.discountLabel}</StatusChip>
                           ) : null}
                         </div>
 
-                        <div className="shrink-0 text-right">
-                          <p className="t-body-sm">{formatMoney(plan.amount)}</p>
+                        <p className="t-body-sm text-ink2">
+                          {t(`settings.billing.plan.${plan.planCode}`)}
+                        </p>
+
+                        <p className="justify-self-end t-caption text-ink3">
                           {plan.compareAtAmount ? (
-                            <p className="t-caption text-ink3 line-through">
+                            <span className="line-through">
                               {formatMoney(plan.compareAtAmount)}
-                            </p>
+                            </span>
                           ) : null}
-                          {/* Only when there IS a discount, and it reads the
-                              server's own label. */}
-                          {plan.discountPercent > 0 && plan.discountLabel ? (
-                            <StatusChip tone="accent" className="mt-1">
-                              {plan.discountLabel}
-                            </StatusChip>
-                          ) : null}
-                        </div>
+                        </p>
+
+                        {/* The savings line, in the same reserved slot on every
+                            row — an absent one leaves the height, not a gap. */}
+                        <p className="col-span-2 min-h-5 t-caption text-ink3">
+                          {plan.savingsAmount
+                            ? `${t('settings.billing.savings', {
+                                amount: formatMoney(plan.savingsAmount),
+                              })}${
+                                plan.monthlyEquivalent
+                                  ? ` · ${t('settings.billing.perMonth', {
+                                      amount: formatMoney(plan.monthlyEquivalent),
+                                    })}`
+                                  : ''
+                              }`
+                            : null}
+                        </p>
                       </button>
                     </li>
                   )
@@ -234,21 +237,52 @@ export function PaywallSheet() {
 
             <div className="mt-4 flex flex-col gap-2">
               {/* The CTA states the choice rather than saying "Continue".
-                  Payment itself lands in Phase 4; until then the highest-intent
-                  destination is the subscription page, where the code field is. */}
-              <Button
-                onClick={() => activePlan && checkout.start(activePlan.planCode)}
-                disabled={!activePlan || checkout.isStarting}
+
+                  At rest a sheen crosses it every few seconds: the button does
+                  not move, resize or change colour, so it stays a calm surface
+                  while still catching the eye. The 4.6s gap is what keeps it
+                  from reading as a spinner. Off under reduced motion, and off
+                  while the checkout is running — a moving highlight on a button
+                  that is already working says the wrong thing. */}
+              <motion.div
+                className="relative w-full"
+                whileTap={reduced ? undefined : { scale: 0.985 }}
               >
-                {checkout.isStarting
-                  ? t('billing.paywall.ctaLoading')
-                  : activePlan
-                    ? t('billing.paywall.cta', {
-                        plan: t(`settings.billing.plan.${activePlan.planCode}`),
-                        amount: formatMoney(activePlan.amount),
-                      })
-                    : t('settings.billing.viewPlans')}
-              </Button>
+                <Button
+                  className="relative w-full overflow-hidden"
+                  onClick={() => activePlan && checkout.start(activePlan.planCode)}
+                  disabled={!activePlan || checkout.isStarting}
+                >
+                  {!reduced && activePlan && !checkout.isStarting ? (
+                    <motion.span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/22 to-transparent"
+                      initial={{ left: '-40%' }}
+                      animate={{ left: ['-40%', '140%'] }}
+                      // Linear, not the app's expo `easeOut`: that curve is
+                      // ~90% done in its first fifth, so a sweep across a width
+                      // reads as a flash rather than a pass.
+                      transition={{
+                        duration: 1.1,
+                        ease: 'linear',
+                        repeat: Infinity,
+                        repeatDelay: 4.6,
+                      }}
+                    />
+                  ) : null}
+                  {/* Above the sheen, which is absolutely positioned behind. */}
+                  <span className="relative">
+                    {checkout.isStarting
+                      ? t('billing.paywall.ctaLoading')
+                      : activePlan
+                        ? t('billing.paywall.cta', {
+                            plan: t(`settings.billing.plan.${activePlan.planCode}`),
+                            amount: formatMoney(activePlan.amount),
+                          })
+                        : t('settings.billing.viewPlans')}
+                  </span>
+                </Button>
+              </motion.div>
 
               {/* The checkout could not even be opened — a misconfigured
                   gateway, or the plan switched off since the page loaded.
@@ -259,13 +293,11 @@ export function PaywallSheet() {
               ) : null}
 
               {/* Someone holding a code, at the wall, is the highest-intent
-                  moment there is. */}
+                  moment there is. `openRedeem` swaps this sheet for that one —
+                  they are siblings, never stacked. */}
               <button
                 type="button"
-                onClick={() => {
-                  close()
-                  navigate('/settings/subscription')
-                }}
+                onClick={openRedeem}
                 className="t-body-sm text-ink2 underline underline-offset-4"
               >
                 {t('billing.redeem.haveCode')}
@@ -274,15 +306,6 @@ export function PaywallSheet() {
               <p className="t-caption leading-5 text-ink3">
                 {t('billing.paywall.payNote')}
               </p>
-
-              {/* A paywall with no way out reads as a trap. */}
-              <button
-                type="button"
-                onClick={close}
-                className="mt-1 t-body-sm text-ink3"
-              >
-                {t('billing.paywall.later')}
-              </button>
             </div>
           </section>
         </div>

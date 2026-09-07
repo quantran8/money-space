@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useRedeemCode } from '@money-space/core/features/billing/hooks/use-redeem-code'
 import { clipboard } from '@money-space/core/shared/clipboard'
+import { cn } from '@money-space/core/shared/lib/utils'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,7 +29,14 @@ const ERROR_KEYS = {
  * are typed off a screenshot in a chat. The preview also names the household,
  * which is what saves someone who belongs to two of them.
  */
-export function RedeemCodeForm({ onRedeemed }: { onRedeemed?: () => void }) {
+export function RedeemCodeForm({
+  onRedeemed,
+  /** Off when a dialog header already carries the title and description. */
+  withHeading = true,
+}: {
+  onRedeemed?: () => void
+  withHeading?: boolean
+}) {
   const { t } = useTranslation()
   const {
     input,
@@ -103,13 +111,17 @@ export function RedeemCodeForm({ onRedeemed }: { onRedeemed?: () => void }) {
 
   return (
     <div>
-      <p className="t-subtitle">{t('billing.redeem.title')}</p>
-      <p className="mt-1 t-body-sm leading-5 text-ink2">
-        {t('billing.redeem.description')}
-      </p>
+      {withHeading ? (
+        <>
+          <p className="t-subtitle">{t('billing.redeem.title')}</p>
+          <p className="mt-1 t-body-sm leading-5 text-ink2">
+            {t('billing.redeem.description')}
+          </p>
+        </>
+      ) : null}
 
       <form
-        className="mt-4 flex flex-wrap items-start gap-2"
+        className={cn('flex flex-wrap items-start gap-2', withHeading && 'mt-4')}
         onSubmit={(event) => {
           event.preventDefault()
           void check()

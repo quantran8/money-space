@@ -1,16 +1,14 @@
 import { useTranslation } from 'react-i18next'
 
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
-import { usePlans } from '@money-space/core/features/billing/hooks/use-plans'
-import { useCheckout } from '@money-space/core/features/billing/hooks/use-checkout'
 import { usePaymentReturn } from '@money-space/core/features/billing/hooks/use-payment-return'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { usePaywallStore } from '@money-space/core/shared/stores/paywall-store'
 
+import { Button } from '@/components/ui/button'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatusChip } from '@/components/ui/status-chip'
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
-import { RedeemCodeForm } from '@/features/billing/ui/redeem-code-form'
 import { OrderHistory } from '@/features/billing/ui/order-history'
 
 function formatDate(iso: string) {
@@ -18,17 +16,16 @@ function formatDate(iso: string) {
 }
 
 /**
- * The plan, in full: what the household is on now, what is for sale, and the
- * field for an activation code.
+ * Where a checkout comes back to, and the record of what has been bought.
  *
- * Its own route rather than a sixth card in Settings — that page is already
- * long, and a route can be linked to from the paywall and from a message.
+ * It stays a route because PayOS's return URL points at it — that is the whole
+ * reason it cannot be a modal. Choosing a plan is `PaywallSheet` and entering a
+ * code is the settings card; neither is repeated here.
  */
 export function SubscriptionPage() {
   const { t } = useTranslation()
   const { entitlement, isPremium, isLoading } = useEntitlement()
-  const { plans, isLoading: plansLoading } = usePlans()
-  const checkout = useCheckout()
+  const openPaywall = usePaywallStore((store) => store.openPaywall)
   // Mounted here because this is where PayOS's return URL points.
   const payment = usePaymentReturn()
 
@@ -51,7 +48,16 @@ export function SubscriptionPage() {
         <Panel>
           <PanelHeader
             title={t('settings.billing.eyebrow')}
-            meta={t('settings.billing.forBothOfYou')}
+            action={
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => openPaywall({ reason: isPremium ? 'manage' : 'general' })}
+              >
+                {isPremium ? t('settings.billing.manage') : t('settings.billing.viewPlans')}
+              </Button>
+            }
           />
 
           {isLoading || !entitlement ? (
@@ -89,70 +95,6 @@ export function SubscriptionPage() {
                 </p>
               ) : null}
             </div>
-          )}
-        </Panel>
-
-        <Panel>
-          <RedeemCodeForm />
-        </Panel>
-
-        {/* Prices come from the server, never a literal here: that is what makes
-            a discount campaign a config change rather than a release. */}
-        <Panel>
-          <PanelHeader title={t('settings.billing.plans')} />
-
-          {plansLoading ? (
-            <Skeleton className="s-head-body h-16 w-full" />
-          ) : (
-            <ul className="s-head-body flex flex-col gap-3">
-              {plans.map((plan) => (
-                <li key={plan.planCode}>
-                  <button
-                    type="button"
-                    onClick={() => checkout.start(plan.planCode)}
-                    disabled={checkout.isStarting}
-                    className="flex w-full items-baseline justify-between gap-4 rounded-control px-3 py-2 text-left transition-colors hover:bg-canvas"
-                  >
-                  <div className="min-w-0">
-                    <p className="t-body">
-                      {t(`settings.billing.plan.${plan.planCode}`)}
-                    </p>
-                    {plan.savingsAmount ? (
-                      <p className="mt-1 t-caption text-ink3">
-                        {t('settings.billing.savings', {
-                          amount: formatMoney(plan.savingsAmount),
-                        })}
-                        {plan.monthlyEquivalent
-                          ? ` · ${t('settings.billing.perMonth', {
-                              amount: formatMoney(plan.monthlyEquivalent),
-                            })}`
-                          : ''}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div className="shrink-0 text-right">
-                    <p className="t-body">{formatMoney(plan.amount)}</p>
-                    {plan.compareAtAmount ? (
-                      <p className="t-caption text-ink3 line-through">
-                        {formatMoney(plan.compareAtAmount)}
-                      </p>
-                    ) : null}
-                  </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {checkout.error ? (
-            <p className="mt-4 t-caption leading-5 text-alert-ink">
-              {t('billing.checkout.failed')}
-            </p>
-          ) : (
-            <p className="mt-4 t-caption leading-5 text-ink3">
-              {t('billing.checkout.payNote')}
-            </p>
           )}
         </Panel>
 
