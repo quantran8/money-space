@@ -225,7 +225,7 @@ export function AssetSaleDialog({
         </ResponsiveDialogHeader>
 
         <form className="grid min-h-0 min-w-0 grid-rows-[1fr_auto]" onSubmit={onSubmit} noValidate>
-          <div className="min-h-0 space-y-4 overflow-y-auto overflow-x-hidden px-6 pb-2 pt-6 sm:px-8">
+          <div className="min-h-0 space-y-4 overflow-y-auto overflow-x-hidden scrollbar-inset px-6 pb-2 pt-6 sm:px-8">
             {isMarketAsset ? (
               <>
                 {/* What one unit trades at right now, above the price it seeds. */}
@@ -402,7 +402,7 @@ export function AssetSaleDialog({
             </div>
           </div>
 
-          <ResponsiveDialogFooter className="border-t border-divider px-6 py-4 sm:px-8">
+          <ResponsiveDialogFooter fullBleed className="px-6 py-3 sm:px-8">
             <Button
               type="button"
               variant="secondary"

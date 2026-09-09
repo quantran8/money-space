@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next'
 import {
   computeCurrentValue,
   liquidityOrder,
+  sectionForAsset,
+  sectionMatchesLiquidity,
+  sectionOrder,
   type Asset,
   type AssetLiquidity,
 } from '@money-space/core/features/assets/model/assets'
@@ -32,9 +35,14 @@ import {
  * subtotal before a single row is read — and `Thanh khoản` stops being part of
  * each row's metadata, because it has become the heading.
  *
- * The web puts `usable_now` and `not_immediately_usable` side by side and
- * splits `long_term` into two inner columns. There is no wide breakpoint here:
- * the groups stack in one column, in `liquidityOrder`.
+ * The cards are not one per liquidity bucket: `other`-type holdings get their
+ * own group rather than being filed under `Tiết kiệm` alongside real deposits
+ * (see `sectionForAsset`). The filter above still asks the three-bucket
+ * question, so narrowing to `Tiết kiệm` keeps both of that bucket's groups.
+ *
+ * The web lays the four groups out on a 2x2 grid, `other` beside `long_term`.
+ * There is no wide breakpoint here: the groups stack in one column, in
+ * `sectionOrder`.
  *
  * Rows stay grouped rows (§8): the columns a table would give — owner,
  * freshness — fold into one metadata line under the name, and the amount keeps
@@ -81,10 +89,10 @@ export function AssetsListSection({
 
   const groups = useMemo(
     () =>
-      liquidityOrder.map((liquidity) => {
-        const items = assets.filter((asset) => asset.liquidity === liquidity)
+      sectionOrder.map((section) => {
+        const items = assets.filter((asset) => sectionForAsset(asset) === section)
         return {
-          liquidity,
+          section,
           items,
           subtotal: items.reduce(
             (sum, asset) => sum + (computeCurrentValue(asset, asOf) ?? 0),
@@ -180,17 +188,17 @@ export function AssetsListSection({
         )
       ) : (
         <View className="mt-5 gap-6">
-          {groups.map(({ liquidity, items, subtotal }) => {
+          {groups.map(({ section, items, subtotal }) => {
             /* The one case where dropping the group is still right: the reader
-               narrowed to a single one on purpose, so the other two are not an
+               narrowed to a single bucket on purpose, so the others are not an
                absence worth reporting — they are the filter working. */
-            if (liquidityFilter !== 'all' && liquidityFilter !== liquidity) return null
+            if (!sectionMatchesLiquidity(section, liquidityFilter)) return null
 
             return (
-              <View key={liquidity}>
+              <View key={section}>
                 <View className="flex-row items-baseline justify-between gap-3">
                   <Text className="t-subtitle text-ink">
-                    {t(`options.liquidity.${liquidity}`)}
+                    {t(`options.assetSection.${section}`)}
                   </Text>
                   <Text className="t-caption text-ink3">
                     {t('assets.demo.sourceCount', { count: items.length })}
@@ -212,8 +220,8 @@ export function AssetsListSection({
                 </Text>
 
                 {items.length === 0 ? (
-                  /* The group stays in place rather than being dropped, so the
-                     three are always in the same order and the reader learns
+                  /* The group stays in place rather than being dropped, so they
+                     are always in the same order and the reader learns
                      "nothing here" instead of having to notice one is missing. */
                   <EmptyState
                     className="mt-3"

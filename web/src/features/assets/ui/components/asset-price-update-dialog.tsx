@@ -109,7 +109,7 @@ export function AssetPriceUpdateDialog({
               <EventMoneyInput value={price} onChange={(value) => { setPrice(value); setError('') }} placeholder="0" />
             </EventField>
           </div>
-          <ResponsiveDialogFooter className="min-w-0 border-t border-black/[0.06] px-6 py-4 sm:flex-wrap sm:px-8">
+          <ResponsiveDialogFooter fullBleed className="min-w-0 px-6 py-3 sm:flex-wrap sm:px-8">
             <Button
               type="button"
               variant="ghost"

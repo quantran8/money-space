@@ -334,7 +334,7 @@ export function GoalFormDialog({
 
           <div className="min-h-0 overflow-hidden">
             <div className="grid h-full">
-              <main className="min-h-0 overflow-y-auto">
+              <main className="min-h-0 overflow-y-auto scrollbar-inset">
                 <div className="w-full px-5 pb-5 pt-4 sm:px-8">
                   {isEditing ? (
                     <EditPlanFields

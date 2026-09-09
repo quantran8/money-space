@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import {
   assetClassForType,
+  flexibleByDefaultForAssetType,
   assetTypeForForm,
   assetTypeOrder,
   calculationTypeForType,
@@ -279,10 +280,10 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
     id,
     name: resolveAssetName(values),
     type: values.type,
-    countsAsFlexible: values.countsAsFlexible,
+    countsAsFlexible: submittedCountsAsFlexible(values.type),
     // Derived here too so the optimistic local asset lands in the same bucket
     // the server will store it in.
-    liquidity: liquidityForAsset(values.type, values.countsAsFlexible),
+    liquidity: liquidityForAsset(values.type, submittedCountsAsFlexible(values.type)),
     currency: 'VND',
     note: values.note.trim(),
     holderMemberId: values.holderMemberId || null,
@@ -409,6 +410,20 @@ export function fromAsset(asset: Asset): AssetForm {
     acquisition: 'owned',
     fundingAssetId: '',
   }
+}
+
+/**
+ * The value `countsAsFlexible` is submitted with, whatever the form holds.
+ *
+ * TEMPORARY (tạm): the household's own call on what counts as tiền linh hoạt is
+ * switched off — the answer is now derived from the type alone, true for cash
+ * and a bank account and false for everything else. The toggle is hidden in
+ * every asset form rather than deleted, and this is the single place submit
+ * reads, so restoring the decision means dropping this call, not unpicking it
+ * from three forms and two payloads.
+ */
+export function submittedCountsAsFlexible(type: AssetType): boolean {
+  return flexibleByDefaultForAssetType(type)
 }
 
 const moneyLike = /^\d+$/
@@ -564,11 +579,15 @@ export function buildAssetSchema(
         }
         // A due date is often not agreed up front when the money is lent to
         // family, so it stays optional — only its order is checked when given.
+        // `<=`, not `<`: the maturity MONTH is picked and the lending day is
+        // stamped onto it, so choosing the lending month lands on the lending
+        // date itself — a zero-length loan that earns nothing and that the
+        // preview refuses to price.
         if (
           values.type === 'loan_receivable' &&
           values.maturityDate &&
           values.startDate &&
-          values.maturityDate < values.startDate
+          values.maturityDate <= values.startDate
         ) {
           ctx.addIssue({
             path: ['maturityDate'],

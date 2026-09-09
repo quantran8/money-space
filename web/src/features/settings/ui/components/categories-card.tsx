@@ -444,7 +444,7 @@ export function CategoriesCard() {
               </div>
             </div>
 
-            <DialogFooter className="mt-7">
+            <DialogFooter className="-mx-6 mt-4 px-6 py-3">
               <Button type="button" variant="secondary" onClick={() => handleAddOpenChange(false)}>
                 {t('common.cancel')}
               </Button>

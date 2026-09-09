@@ -216,12 +216,17 @@ export function GoalAllocationDialog({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
+        {/* The form is the shell's `1fr` row and splits it again: only the
+            fields scroll, the footer is a row of its own. Scrolling the whole
+            form put the scrollbar on the modal's OUTER edge — outside the
+            rounded corner, over the shadow, running the full height past the
+            header and behind the sticky footer. */}
         <form
-          className="overflow-y-auto px-5 pb-5 sm:px-8 sm:pb-7"
+          className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto]"
           onSubmit={handleSubmit}
           noValidate
         >
-          <div className="space-y-4">
+          <div className="min-h-0 space-y-4 overflow-y-auto scrollbar-inset px-5 pb-5 sm:px-8 sm:pb-7">
             <Field
               label={t('goals.allocations.assetLabel')}
               htmlFor="allocation-asset"
@@ -385,7 +390,7 @@ export function GoalAllocationDialog({
             </Consequence>
           </div>
 
-          <ResponsiveDialogFooter className="mt-5 gap-2.5">
+          <ResponsiveDialogFooter fullBleed className="gap-2.5 px-5 py-3 sm:px-8">
             <Button
               type="button"
               variant="secondary"

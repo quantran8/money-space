@@ -16,6 +16,9 @@ import { AssetSourceRow } from '@/features/assets/ui/components/asset-source-row
 import {
   computeCurrentValue,
   liquidityOrder,
+  sectionForAsset,
+  sectionMatchesLiquidity,
+  sectionOrder,
   type Asset,
   type AssetLiquidity,
 } from '@money-space/core/features/assets/model/assets'
@@ -50,9 +53,15 @@ type AssetsListSectionProps = {
  * subtotal before a single row is read — and `Thanh khoản` stops being a
  * column, because it has become the heading.
  *
- * `usable_now` and `not_immediately_usable` share a row on wide screens;
- * `long_term` spans the full width beneath them, since it is normally the
- * longest list.
+ * The cards are not one per liquidity bucket: `other`-type holdings get their
+ * own, rather than being filed under `Tiết kiệm` alongside real deposits (see
+ * `sectionForAsset`). The liquidity filter above still asks the three-bucket
+ * question, so narrowing to `Tiết kiệm` keeps both of that bucket's cards.
+ *
+ * Two cards per row: `usable_now` beside `not_immediately_usable`, then `other`
+ * beside `long_term`. `long_term` used to span the full width and split its rows
+ * into two inner columns; sharing its row with `other` is what keeps the four
+ * cards on one 2×2 grid instead of leaving a half-empty row above it.
  */
 export function AssetsListSection({
   assets,
@@ -78,10 +87,10 @@ export function AssetsListSection({
 
   const groups = useMemo(
     () =>
-      liquidityOrder.map((liquidity) => {
-        const items = assets.filter((asset) => asset.liquidity === liquidity)
+      sectionOrder.map((section) => {
+        const items = assets.filter((asset) => sectionForAsset(asset) === section)
         return {
-          liquidity,
+          section,
           items,
           subtotal: items.reduce(
             (sum, asset) => sum + (computeCurrentValue(asset, asOf) ?? 0),
@@ -170,21 +179,18 @@ export function AssetsListSection({
       </div>
 
       <div className="s-card-gap grid lg:grid-cols-2">
-        {groups.map(({ liquidity, items, subtotal }) => {
+        {groups.map(({ section, items, subtotal }) => {
           /* The one case where dropping the card is still right: the reader
-             narrowed to a single group on purpose, so the other two are not
+             narrowed to a single bucket on purpose, so the others are not
              an absence worth reporting — they are the filter working. */
-          if (liquidityFilter !== 'all' && liquidityFilter !== liquidity) return null
+          if (!sectionMatchesLiquidity(section, liquidityFilter)) return null
 
           const isEmpty = items.length === 0
 
           return (
-            <Panel
-              key={liquidity}
-              className={liquidity === 'long_term' ? 'lg:col-span-2' : undefined}
-            >
+            <Panel key={section}>
               <PanelHeader
-                title={t(`options.liquidity.${liquidity}`)}
+                title={t(`options.assetSection.${section}`)}
                 meta={t('assets.demo.sourceCount', { count: items.length })}
               />
 
@@ -197,55 +203,31 @@ export function AssetsListSection({
 
               {isEmpty ? (
                 /* The card stays in the grid rather than being dropped, so the
-                   three liquidity groups are always in the same place and the
-                   reader learns "nothing here" instead of having to notice a
-                   card is missing. The subtotal above is a truthful 0đ, so the
-                   only thing to replace is the row list. */
+                   groups are always in the same place and the reader learns
+                   "nothing here" instead of having to notice a card is missing.
+                   The subtotal above is a truthful 0đ, so the only thing to
+                   replace is the row list. */
                 <EmptyState icon={isFiltered ? SearchX : Wallet} className="mt-5 py-6">
                   {isFiltered
                     ? t('assets.toolbar.groupEmpty')
                     : t('assets.toolbar.groupNoneYet')}
                 </EmptyState>
               ) : (
-              <div
-                className={
-                  liquidity === 'long_term'
-                    ? 'mt-5 grid gap-x-12 lg:grid-cols-2'
-                    : 'mt-5 space-y-2'
-                }
-              >
-                {liquidity === 'long_term'
-                  ? splitInHalf(items).map((column, index) => (
-                      <div key={index} className="space-y-2">
-                        {column.map((asset) => (
-                          <SourceRow
-                            key={asset.id}
-                            asset={asset}
-                            asOf={asOf}
-                            memberById={memberById}
-                            onOpen={onOpen}
-                            onEdit={onEdit}
-                            onSell={onSell}
-                            onBuyMore={onBuyMore}
-                            onDelete={onDelete}
-                          />
-                        ))}
-                      </div>
-                    ))
-                  : items.map((asset) => (
-                      <SourceRow
-                        key={asset.id}
-                        asset={asset}
-                        asOf={asOf}
-                        memberById={memberById}
-                        onOpen={onOpen}
-                        onEdit={onEdit}
-                        onSell={onSell}
-                        onBuyMore={onBuyMore}
-                        onDelete={onDelete}
-                      />
-                    ))}
-              </div>
+                <div className="mt-5 space-y-2">
+                  {items.map((asset) => (
+                    <SourceRow
+                      key={asset.id}
+                      asset={asset}
+                      asOf={asOf}
+                      memberById={memberById}
+                      onOpen={onOpen}
+                      onEdit={onEdit}
+                      onSell={onSell}
+                      onBuyMore={onBuyMore}
+                      onDelete={onDelete}
+                    />
+                  ))}
+                </div>
               )}
             </Panel>
           )
@@ -290,10 +272,4 @@ function SourceRow({
       onDelete={onDelete}
     />
   )
-}
-
-/** Balances the long-term card's two columns, first half left. */
-function splitInHalf<T>(items: T[]): [T[], T[]] {
-  const half = Math.ceil(items.length / 2)
-  return [items.slice(0, half), items.slice(half)]
 }

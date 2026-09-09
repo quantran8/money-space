@@ -238,6 +238,59 @@ export const liquidityOrder: AssetLiquidity[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// List sections
+// ---------------------------------------------------------------------------
+
+/**
+ * The groups the sources list is broken into.
+ *
+ * Not the same thing as liquidity, and deliberately so. `other` is the catch-all
+ * type — an odd holding nobody has a better word for — and it derives
+ * `not_immediately_usable`, which the UI labels "Tiết kiệm". A household reading
+ * that card saw its miscellaneous holdings filed under savings, which is a claim
+ * about them that is simply not true.
+ *
+ * So the list splits that bucket in two: the savings card keeps the deposits and
+ * the receivables that genuinely are a reserve, and `other` gets its own card.
+ * Totals, the donut and the liquidity filter still work in the three real
+ * buckets — this is a heading, not a fourth bucket.
+ */
+export type AssetSection = AssetLiquidity | 'other'
+
+/** Which section's card an asset's row belongs in. */
+export function sectionForAsset(asset: {
+  type: AssetType
+  liquidity: AssetLiquidity
+}): AssetSection {
+  return asset.type === 'other' && asset.liquidity === 'not_immediately_usable'
+    ? 'other'
+    : asset.liquidity
+}
+
+export const sectionOrder: AssetSection[] = [
+  'usable_now',
+  'not_immediately_usable',
+  'long_term',
+  'other',
+]
+
+/**
+ * Does the liquidity filter let this section's card through?
+ *
+ * The filter still asks a liquidity question, so narrowing to "Tiết kiệm" keeps
+ * both cards carved out of that bucket — hiding the `other` card there would
+ * lose rows the filter did select.
+ */
+export function sectionMatchesLiquidity(
+  section: AssetSection,
+  filter: AssetLiquidity | 'all',
+): boolean {
+  if (filter === 'all') return true
+  if (section === 'other') return filter === 'not_immediately_usable'
+  return section === filter
+}
+
+// ---------------------------------------------------------------------------
 // Sellable assets (see asset-sale)
 // ---------------------------------------------------------------------------
 

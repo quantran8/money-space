@@ -345,7 +345,7 @@ export function DebtUpdateModeDialog({
           ) : null}
         </div>
 
-        <ResponsiveDialogFooter className="border-t border-[#e8e8ee] bg-[#fcfcfd] px-5 py-4 sm:px-6">
+        <ResponsiveDialogFooter fullBleed className="px-5 py-3 sm:px-6">
           <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
             {t('debts.updateMode.actions.back')}
           </Button>
