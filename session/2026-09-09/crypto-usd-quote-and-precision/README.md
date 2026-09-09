@@ -73,6 +73,46 @@ while a held position is priced from the batch cache, which fetched đồng only
 - Tests: dual-currency batch fetch (`market-data.cache.spec.ts`) and `quoteFor`
   currency selection (`money-space.utils.spec.ts`).
 
+### Round 5 — currency FKs, and crypto stored in USD (option B)
+
+**Currency FKs.** `20260812102000_restore_currency_fks` was recorded with
+`applied_steps_count: 0` — baselined, never executed — so the DB had ZERO foreign
+keys onto `currencies` and every currency column was free text. New migration
+`20260909020000_apply_currency_fks` re-runs it idempotently and VALIDATEs.
+All 10 FKs now present and valid; verified `'usd'` is rejected (23503).
+
+**FX ingestion** (the prerequisite — `fx_rates` was empty, so a USD position
+valued at 0 everywhere):
+- `MarketDataService.captureFxRates()` writes vnstock counter rates (buy-transfer)
+  into `fx_rates`; `saveFxRates` on the repository, filtered to the `currencies`
+  catalog. Runs at the top of `AssetsValuationCron.captureAll()`.
+- Verified live: USD/VND = 25.790 now in `fx_rates`.
+
+**USD storage:**
+- `positionQuoteCurrency(type)` — crypto → 'USD', everything else → 'VND'.
+- `purchasePriceIn(values, quoteCurrency)` replaces `purchasePriceInVnd`;
+  converts in whichever direction the toggle needs.
+- `assets.service.ts`: new `toVndCost()` guards `resolvePurchaseCost` and
+  `addPurchase` — a đồng wallet must not be debited a USD figure; throws when no
+  rate is published.
+- `withMarketPrice` now always returns đồng in `marketPrice` with USD in
+  `nativeMarketPrice`, whatever the position stores.
+- Detail page derives the rate from the position's own two prices to state a USD
+  cost basis in đồng, and shows `Giá vốn` in the stored currency.
+
+### Round 6 — toggle removed
+
+The `đ/$` toggle went away once positions store USD: `positionQuoteCurrency(type)`
+already decides the currency, so `purchasePriceCurrency` was redundant form state
+that could drift from the type, and the choice implied a conversion that no
+longer happens on submit.
+
+- `assets-form.ts` — dropped the `purchasePriceCurrency` field, its default,
+  schema entry and the `purchasePriceIn()` converter; the price is now parsed
+  straight from the field. Validation reads `positionQuoteCurrency(values.type)`.
+- `asset-form-dialog.tsx` — `PurchasePriceField` takes `currency` as a prop and
+  renders no Segmented; the `≈ đồng` line is display-only.
+
 ## Key decisions
 
 - **Crypto quotes are fetched in USD and served in đồng, always.** CoinMarketCap
@@ -89,10 +129,11 @@ while a held position is priced from the batch cache, which fetched đồng only
 - **CMC quotes VND directly** — my earlier "paid tier only" claim was wrong. The
   real limit is one `convert` per HTTP call, so both currencies come from the
   exchange in two batched calls. `toVnd` is now a fallback only.
-- **Crypto cost basis is typed in USD but stored in đồng**, converted with the
-  quote's own implied rate. Storing `quote_currency: 'USD'` would be more correct
-  but is blocked by the empty `fx_rates` table — the asset would value at 0đ
-  everywhere. Full reasoning in `memory/market-data.md`.
+- **Crypto is stored in USD** (`quote_currency='USD'`, real USD `purchase_price`),
+  computed to đồng by the valuation engine. `assets.currency` stays `'VND'`: it
+  labels the COMPUTED value, and `computeCurrentValue` always returns đồng —
+  stamping 'USD' there would corrupt every total, since `computeLiquidityTotals`
+  sums with a bare `+=`. Full reasoning in `memory/market-data.md`.
 
 ## Mobile app parity notes
 

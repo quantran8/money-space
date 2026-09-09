@@ -63,12 +63,6 @@ export type AssetForm = {
   unit: string
   purchasePrice: string
   /**
-   * Currency `purchasePrice` is TYPED in — never what gets stored. Crypto is
-   * bought in USD, so typing đồng means doing the FX by hand. Converted to đồng
-   * on submit. See memory/market-data.md.
-   */
-  purchasePriceCurrency: 'VND' | 'USD'
-  /**
    * Today's USD/VND, carried on the form so submit can convert without
    * re-fetching. Set by the market fields from the live quote; never submitted.
    */
@@ -124,7 +118,6 @@ export const defaultAssetFormValues: AssetForm = {
   quantity: '',
   unit: '',
   purchasePrice: '',
-  purchasePriceCurrency: 'VND',
   usdToVnd: null,
   principal: '',
   interestRate: '',
@@ -269,18 +262,9 @@ function resolveMarketUnit(values: AssetForm): string {
   return values.unit.trim()
 }
 
-/**
- * The cost basis in đồng — the only currency the position stores.
- *
- * A USD figure needs today's rate; with none to hand it is NOT stored, since
- * writing 2.400 into a đồng column understates the basis ~26.000x.
- */
-function purchasePriceInVnd(values: AssetForm): number {
-  const typed = parseRawDecimal(values.purchasePrice)
-  if (!Number.isFinite(typed)) return NaN
-  if (values.purchasePriceCurrency !== 'USD') return typed
-  const rate = values.usdToVnd
-  return rate && Number.isFinite(rate) ? typed * rate : NaN
+/** The currency a position of this type is quoted, stored and valued in. */
+export function positionQuoteCurrency(type: AssetType): 'VND' | 'USD' {
+  return type === 'crypto' ? 'USD' : 'VND'
 }
 
 /**
@@ -320,7 +304,13 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
     const assetClass = assetClassForType(values.type)
     const quantity = parseRawDecimal(values.quantity)
     if (!assetClass || !values.symbol.trim() || !Number.isFinite(quantity)) return null
-    const purchasePrice = purchasePriceInVnd(values)
+    // The position is stored in the currency it is QUOTED in — crypto in USD —
+    // and the backend converts to đồng with a real rate when it values the
+    // holding. See memory/market-data.md.
+    const quoteCurrency = positionQuoteCurrency(values.type)
+    // Typed directly in the position's own currency — the field's suffix says
+    // which, and there is no conversion between the two.
+    const purchasePrice = parseRawDecimal(values.purchasePrice)
     return {
       ...base,
       valuationMode: 'market_priced',
@@ -330,7 +320,7 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
         market: values.market.trim() || undefined,
         quantity,
         unit: resolveMarketUnit(values),
-        quoteCurrency: 'VND',
+        quoteCurrency,
         purchasePrice: Number.isFinite(purchasePrice) ? purchasePrice : undefined,
       },
     }
@@ -396,9 +386,8 @@ export function fromAsset(asset: Asset): AssetForm {
     market: asset.marketPosition?.market ?? '',
     quantity: decimalToRaw(asset.marketPosition?.quantity),
     unit: asset.marketPosition?.unit ?? '',
-    purchasePrice: moneyToRaw(asset.marketPosition?.purchasePrice),
-    // Stored đồng, so editing reopens in đồng whatever it was typed in.
-    purchasePriceCurrency: 'VND' as const,
+    // The stored figure, in the currency it is stored in.
+    purchasePrice: decimalToRaw(asset.marketPosition?.purchasePrice),
     usdToVnd: null,
     principal: moneyToRaw(asset.calculationTerm?.principalAmount),
     interestRate: decimalToRaw(asset.calculationTerm?.interestRate),
@@ -449,7 +438,6 @@ export function buildAssetSchema(
       quantity: z.string().trim(),
       unit: z.string().trim(),
       purchasePrice: z.string().trim(),
-      purchasePriceCurrency: z.enum(['VND', 'USD']),
       usdToVnd: z.number().nullable(),
       principal: z.string().trim(),
       interestRate: z.string().trim(),
@@ -536,7 +524,7 @@ export function buildAssetSchema(
           })
         } else if (
           // A USD price has cents; đồng stays whole digits.
-          values.purchasePriceCurrency === 'USD'
+          positionQuoteCurrency(values.type) === 'USD'
             ? !Number.isFinite(parseRawDecimal(values.purchasePrice))
             : !moneyLike.test(values.purchasePrice)
         ) {
