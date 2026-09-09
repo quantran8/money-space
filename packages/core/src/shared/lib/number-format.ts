@@ -22,10 +22,17 @@ export function sanitizeIntegerInput(input: string): string {
 
 /**
  * Keep digits plus at most one decimal separator (for quantity / rate fields).
- * Accepts "." or "," as the decimal mark and normalizes to ",".
+ *
+ * "." is ALWAYS a group separator here and is dropped; "," is the one decimal
+ * mark. That mirrors `sanitizeIntegerInput` and is what lets the grouped
+ * display round-trip: these fields render through `formatDecimalDisplay`, so
+ * every keystroke feeds the previous GROUPED text back in. Reading "." as a
+ * decimal made the display its own input — typing 83000 showed "8.300", which
+ * came back as "8,3000". A pasted "78821.21" must therefore use "," (or be
+ * pasted grouped); the field's own output never contains a decimal dot.
  */
 export function sanitizeDecimalInput(input: string): string {
-  const normalized = input.replace(/\./g, DECIMAL_SEPARATOR)
+  const normalized = input.replace(/\./g, '')
   let seenSeparator = false
   let out = ''
   for (const char of normalized) {
