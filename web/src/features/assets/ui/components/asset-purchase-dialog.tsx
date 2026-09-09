@@ -201,12 +201,13 @@ export function AssetPurchaseDialog({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        <form
-          className="overflow-y-auto px-5 pb-5 sm:px-8 sm:pb-7"
-          onSubmit={onSubmit}
-          noValidate
-        >
-          <div className="space-y-4">
+        {/* The form is the shell's `1fr` row and splits it again: only the
+            fields scroll, the footer is a row of its own. Scrolling the whole
+            form put the scrollbar on the modal's OUTER edge — outside the
+            rounded corner, over the shadow, running the full height past the
+            header and behind the sticky footer. */}
+        <form className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto]" onSubmit={onSubmit} noValidate>
+          <div className="min-h-0 space-y-4 overflow-y-auto scrollbar-inset px-5 pb-5 sm:px-8 sm:pb-7">
             <MarketPriceSection
               quote={quote}
               isLoading={isLoading}
@@ -298,7 +299,7 @@ export function AssetPurchaseDialog({
           {/* No Cancel: the dialog is dismissed by its own close control and by
               Esc, so a second button here would only compete with the one that
               does something. */}
-          <ResponsiveDialogFooter className="mt-5 gap-2.5 sm:items-center sm:justify-end">
+          <ResponsiveDialogFooter fullBleed className="gap-2.5 px-5 py-3 sm:px-8">
             <Button type="submit" className="px-5" disabled={isSubmitting}>
               {t('assets.purchase.submit')}
             </Button>

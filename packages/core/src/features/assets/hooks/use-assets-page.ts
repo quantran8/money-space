@@ -12,6 +12,7 @@ import {
   canBePurchased,
   freshAssetFormValues,
   fromAsset,
+  submittedCountsAsFlexible,
   toAsset,
   type AssetForm,
   type AssetTotals,
@@ -185,8 +186,9 @@ export function useAssetsPage() {
         marketPosition: nextAsset.marketPosition,
         calculationTerm: nextAsset.calculationTerm,
         // The one liquidity input the server accepts: it derives the bucket
-        // from this, and every figure reads that same bucket.
-        countsAsFlexible: values.countsAsFlexible,
+        // from this, and every figure reads that same bucket. Tạm thời the
+        // household does not get to choose — see `submittedCountsAsFlexible`.
+        countsAsFlexible: submittedCountsAsFlexible(values.type),
         // `holderMemberId` sends null rather than '' so the backend stores an
         // absent value.
         holderMemberId: values.holderMemberId || null,

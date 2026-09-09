@@ -318,7 +318,7 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
       <div
         className={
           showResult
-            ? '-mx-6 min-h-0 flex-1 overflow-y-auto bg-canvas px-6 py-4'
+            ? '-mx-6 min-h-0 flex-1 overflow-y-auto scrollbar-inset bg-canvas px-6 py-4'
             : showSaleStep
               // `pr-*` + matching `-mr-*`: the scrollbar rides in a gutter of
               // its own instead of sitting flush against the cards, while the
@@ -370,7 +370,20 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
         )}
       </div>
 
-      <ResponsiveDialogFooter>
+      {/* The shell changes shape per step, and the sticky bar's full-bleed
+          margins have to match whatever padding that shell is wearing: the
+          result view is `overflow-hidden` with none of its own, and the sale
+          step overrides to `p-5 sm:p-7`. */}
+      <ResponsiveDialogFooter
+        fullBleed={showResult || showSaleStep}
+        className={
+          showResult
+            ? 'px-6 py-3'
+            : showSaleStep
+              ? 'px-5 py-3 sm:px-7'
+              : undefined
+        }
+      >
         {showSaleStep ? (
           <>
             {/*

@@ -62,7 +62,7 @@ export function ConfirmDialog({
           <DialogTitle className="t-subhead">{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="-mx-6 mt-2 px-6 py-3">
           <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
             {cancelLabel ?? t('common.cancel')}
           </Button>

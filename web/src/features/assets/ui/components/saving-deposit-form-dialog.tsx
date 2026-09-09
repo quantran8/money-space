@@ -24,7 +24,8 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
+// Only the tạm-ẩn flexible-money switch used this; restore with that block.
+// import { Switch } from '@/components/ui/switch'
 import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
 import type { AssetForm } from '@money-space/core/features/assets/model/assets-form'
 import {
@@ -293,7 +294,7 @@ export function SavingDepositFormDialog({
             </ResponsiveDialogTitle>
           </ResponsiveDialogHeader>
 
-          <div className="min-h-0 overflow-y-auto px-5 pb-5 pt-4 sm:px-8">
+          <div className="min-h-0 overflow-y-auto scrollbar-inset px-5 pb-5 pt-4 sm:px-8">
             {step === 1 ? (
               <div className="space-y-5">
                 <StepHeading title={t('assets.form.deposit.sections.account')} />
@@ -307,8 +308,9 @@ export function SavingDepositFormDialog({
                 />
 
                 {/* §22.1 — the household's own call on what "money we can use"
-                    means. Money in a passbook is not spendable by default, so
-                    this starts off; flipping it moves the headline figure. */}
+                    means. Tạm ẩn: a passbook never counts as flexible money
+                    under the derived rule, so the switch could only offer a
+                    choice submit ignores. See `submittedCountsAsFlexible`.
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0">
                     <label
@@ -332,7 +334,7 @@ export function SavingDepositFormDialog({
                       />
                     )}
                   />
-                </div>
+                </div> */}
 
                 {/* Who is responsible for the passbook, and any note about it.
                     Both answer this step's question — WHICH account is this —
@@ -634,7 +636,10 @@ export function SavingDepositFormDialog({
             ) : null}
           </div>
 
-          <ResponsiveDialogFooter className="shrink-0 flex-row items-center justify-between px-5 pb-5 pt-3 sm:px-8 sm:pb-7">
+          <ResponsiveDialogFooter
+                fullBleed
+                className="shrink-0 justify-between px-5 py-3 sm:px-8"
+              >
             <div className="flex items-center gap-2">
               {step > 1 ? (
                 <Button

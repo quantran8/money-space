@@ -25,7 +25,7 @@ import { GoalPriorityMark } from '@/features/goals/ui/components/goal-priority-m
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { hasProjectedDate } from '@money-space/core/features/goals/model/goal-projection.types'
-import type { GoalItem } from '@money-space/core/features/goals/model/goals'
+import type { GoalItem, GoalPriority } from '@money-space/core/features/goals/model/goals'
 import { formatAmount, goalAmount, priorityRank } from '@money-space/core/features/goals/model/goals-form'
 import { formatMonthYear } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -39,11 +39,32 @@ import { cn } from '@money-space/core/shared/lib/utils'
  * cards each goal owns its own progress bar at full width, and the grid gives
  * one goal a comfortable card rather than a lonely stripe.
  *
- * `auto-fit` with a 560px cap is what keeps that true at both ends: a single
- * goal on a wide desktop stays a readable card instead of stretching to 1200px,
- * and a third goal turns the list into two columns on its own.
+ * Three columns on a wide desktop, two at tablet width, one on a phone. This
+ * used to be an `auto-fit` track with a 560px cap, which never reached a third
+ * column at ordinary window widths — three goals wrapped to a second row with
+ * a gap beside them. Fixed breakpoints put the usual two-or-three-goal list on
+ * one row instead.
+ *
+ * A block holding a single goal keeps the same column width as a full row: the
+ * track is fixed, so the lone card lines up with the cards in the block above
+ * instead of stretching or shrinking to fit its own block.
  */
-const CARD_GRID = { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 560px))' }
+const CARD_GRID = 'grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3'
+
+/**
+ * Priority is a HEADING, not a sort key.
+ *
+ * Sorting by `priorityRank` alone put the high-priority goals first and left the
+ * reader to infer where one rank ended and the next began — and `low` carries no
+ * priority mark at all by design (see `GoalPriorityMark`), so on a full row of
+ * three cards there was nothing on the card itself saying which rank it was.
+ * Grouping states it once per block instead.
+ *
+ * Priority decides which goal gets funded first when the wallet cannot cover
+ * every one, so `high` → `medium` → `low` is the reading order, not a
+ * preference. Within a block the goals stay sorted by progress.
+ */
+const PRIORITY_ORDER: GoalPriority[] = ['high', 'medium', 'low']
 
 type GoalsListSectionProps = {
   goals: GoalItem[]
@@ -74,6 +95,19 @@ export function GoalsListSection({
       .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority] || b.progress - a.progress)
   }, [goals, locale, query])
 
+  /* Empty ranks are dropped rather than shown as an empty block. Unlike the
+     asset sections, a rank nobody used is not a fact worth a heading — most
+     households never file anything as `low`, and three headings for one goal
+     reads as a form the reader failed to fill in. */
+  const priorityGroups = useMemo(
+    () =>
+      PRIORITY_ORDER.map((priority) => ({
+        priority,
+        items: visibleGoals.filter((goal) => goal.priority === priority),
+      })).filter((group) => group.items.length > 0),
+    [visibleGoals],
+  )
+
   return (
     <section>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -96,9 +130,9 @@ export function GoalsListSection({
       </div>
 
       {isLoading ? (
-        <div className="mt-5 grid items-start gap-3" style={CARD_GRID}>
-          {Array.from({ length: 2 }).map((_, index) => (
-            <Skeleton key={index} className="h-[268px] w-full rounded-card" />
+        <div className={cn('mt-5', CARD_GRID)}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-[212px] w-full rounded-card" />
           ))}
         </div>
       ) : null}
@@ -121,21 +155,30 @@ export function GoalsListSection({
       ) : null}
 
       {!isLoading && visibleGoals.length > 0 ? (
-        <div
-          className="mt-5 grid items-start gap-3"
-          style={CARD_GRID}
-          aria-label={t('goals.table.ariaLabel')}
-        >
-          {visibleGoals.map((goal) => (
-            <GoalCard
-              key={goal.id}
-              goal={goal}
-              locale={locale}
-              isPrimary={goal.id === primaryGoalId}
-              onOpen={onOpen}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
+        <div className="s-section-gap mt-5 flex flex-col" aria-label={t('goals.table.ariaLabel')}>
+          {priorityGroups.map(({ priority, items }) => (
+            <section key={priority} aria-label={t(`options.priority.${priority}`)}>
+              <div className="flex items-baseline gap-3">
+                <h3 className="t-subtitle">{t(`options.priority.${priority}`)}</h3>
+                <span className="num t-caption text-ink3">
+                  {t('goals.countLabel', { count: items.length })}
+                </span>
+              </div>
+
+              <div className={cn('mt-3', CARD_GRID)}>
+                {items.map((goal) => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    locale={locale}
+                    isPrimary={goal.id === primaryGoalId}
+                    onOpen={onOpen}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       ) : null}
@@ -206,28 +249,32 @@ function GoalCard({
           <GoalMenu goalId={goal.id} goalName={goal.name} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete} />
         </div>
       </div>
-      <p className="num mt-1 t-caption text-ink3">
+      <p className="num t-caption text-ink3">
         {t('goals.card.target', { amount: formatAmount(target) })}
       </p>
 
       {/* The one question the card answers. §12.3: the figure and the bar
           already say the ratio, so the percentage sits beside the figure as its
-          reading rather than repeated under the bar. */}
-      <div className="mt-7">
+          reading rather than repeated under the bar.
+
+          Three cards to a row now, so the block is read across as much as down:
+          the airier rhythm this had at two-up made a card taller than a screen
+          third for four short lines of content. */}
+      <div className="mt-4">
         <p className="t-body-sm text-ink2">{t('goals.demo.saved')}</p>
-        <div className="mt-2 flex items-end justify-between gap-5">
+        <div className="mt-1 flex items-end justify-between gap-5">
           <span className="money-number t-figure">{formatAmount(current)}</span>
           <span className="num t-body-sm text-ink2">{percent}%</span>
         </div>
         <Progress
           value={percent}
-          className="mt-4"
+          className="mt-2.5"
           aria-label={t('goals.detail.picture.progressAria', {
             current: formatAmount(current),
             target: formatAmount(target),
           })}
         />
-        <p className="num mt-2 t-caption text-ink3">
+        <p className="num mt-1.5 t-caption text-ink3">
           {t('goals.card.ofTarget', { amount: formatAmount(target) })}
         </p>
       </div>
@@ -238,7 +285,7 @@ function GoalCard({
         saying nothing, while the greyed icon says the same thing in 44px and
         still carries the sentence in its tooltip and its label.
       */}
-      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-ink2">
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-ink2">
         <Fact
           icon={CalendarDays}
           value={desiredDate}

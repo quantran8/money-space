@@ -582,6 +582,21 @@ export const resources = {
           savingTermMaturity: 'Đáo hạn {{date}}',
           savingTermPickDate: 'Chọn ngày đáo hạn',
           nonTermRateHint: 'Lãi suất ngân hàng áp dụng nếu rút trước hạn.',
+          // --- Khoản cho vay: tháng đáo hạn + khối tiền thu hồi -----------
+          // Ngày đáo hạn chỉ chọn tháng: ngày trong tháng luôn lấy theo ngày
+          // cho vay, nên không bắt người dùng nhập cùng một ngày hai lần.
+          maturityMonth: 'Tháng đáo hạn',
+          maturityMonthHint: 'Ngày trong tháng lấy theo ngày cho vay: {{date}}.',
+          loanPreview: {
+            title: 'Dự kiến khi thu hồi',
+            principal: 'Gốc cho vay',
+            interest: 'Tiền lãi',
+            interestMeta: '{{rate}}%/năm · {{months}} tháng',
+            monthlyInterest: 'Lãi trung bình mỗi tháng',
+            total: 'Tổng nhận lại',
+            totalCaption: 'Số tiền nhận về khi thu hồi đúng hạn',
+            needsInput: 'Nhập số tiền gốc, lãi suất và tháng đáo hạn để xem tiền lãi dự kiến.',
+          },
           preview: {
             title: 'Dự kiến khi đáo hạn',
             principal: 'Gốc',
@@ -3064,6 +3079,15 @@ export const resources = {
           not_immediately_usable: 'Tiết kiệm',
           long_term: 'Dài hạn',
         },
+        // Headings for the sources list, which carves `other`-type holdings out
+        // of the savings bucket. Separate from `liquidity` above: that names the
+        // three real buckets the filter and the donut work in.
+        assetSection: {
+          usable_now: 'Dùng ngay',
+          not_immediately_usable: 'Tiết kiệm',
+          other: 'Khác',
+          long_term: 'Dài hạn',
+        },
         assetType: {
           cash: 'Tiền mặt',
           bank_account: 'Tài khoản',
@@ -3853,6 +3877,19 @@ export const resources = {
           savingTermMaturity: 'Matures {{date}}',
           savingTermPickDate: 'Pick a maturity date',
           nonTermRateHint: 'The rate the bank pays if you withdraw early.',
+          // --- Loan receivable: maturity month + collection block ---------
+          maturityMonth: 'Maturity month',
+          maturityMonthHint: 'The day of the month follows the lending date: {{date}}.',
+          loanPreview: {
+            title: 'Expected on collection',
+            principal: 'Amount lent',
+            interest: 'Interest',
+            interestMeta: '{{rate}}%/yr · {{months}} months',
+            monthlyInterest: 'Average interest per month',
+            total: 'Total you get back',
+            totalCaption: 'What you get back when the loan is collected on time',
+            needsInput: 'Enter the amount, rate and maturity month to see the expected interest.',
+          },
           preview: {
             title: 'Expected at maturity',
             principal: 'Principal',
@@ -6213,6 +6250,12 @@ export const resources = {
         liquidity: {
           usable_now: 'Ready to use',
           not_immediately_usable: 'Savings',
+          long_term: 'Long-term',
+        },
+        assetSection: {
+          usable_now: 'Ready to use',
+          not_immediately_usable: 'Savings',
+          other: 'Other',
           long_term: 'Long-term',
         },
         assetType: {

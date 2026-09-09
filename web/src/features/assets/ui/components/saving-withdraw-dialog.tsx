@@ -123,7 +123,7 @@ export function SavingWithdrawDialog({
           {t('assets.withdraw.becomesAccount')}
         </p>
 
-        <DialogFooter>
+        <DialogFooter className="-mx-6 mt-2 px-6 py-3">
           <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>

@@ -528,7 +528,7 @@ export function DebtFormDialog({
             </ResponsiveDialogTitle>
           </ResponsiveDialogHeader>
 
-          <div className="min-h-0 overflow-y-auto px-5 pb-5 pt-4 sm:px-8">
+          <div className="min-h-0 overflow-y-auto scrollbar-inset px-5 pb-5 pt-4 sm:px-8">
             {step === 1 ? (
               <div className="space-y-5">
                 <StepHeading title={t('debts.form.sections.debt')} />
@@ -809,7 +809,10 @@ export function DebtFormDialog({
             ) : null}
           </div>
 
-          <ResponsiveDialogFooter className="shrink-0 flex-row items-center justify-between px-5 pb-5 pt-3 sm:px-8 sm:pb-7">
+          <ResponsiveDialogFooter
+            fullBleed
+            className="shrink-0 justify-between px-5 py-3 sm:px-8"
+          >
             <div>
               {step > 1 ? (
                 <Button type="button" variant="ghost" className="h-11 px-4" onClick={() => goToStep((step - 1) as Step)}>
