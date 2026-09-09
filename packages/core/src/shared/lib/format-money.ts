@@ -226,3 +226,36 @@ export function formatMonthYear(isoDate: string, locale = 'vi-VN'): string {
     timeZone: 'UTC',
   }).format(date)
 }
+
+/**
+ * A holding's quantity, at the precision its class is counted in — eight
+ * decimals for crypto (the satoshi floor), three otherwise. Trailing zeros
+ * trimmed. Rounding crypto to three made the hero unverifiable.
+ */
+export function formatQuantity(
+  value: number,
+  options: { assetClass?: string; locale?: string } = {},
+): string {
+  const { assetClass, locale = 'vi-VN' } = options
+  const amount = Number.isFinite(value) ? value : 0
+  // Eight decimals is the satoshi floor, and the finest any supported class is
+  // quoted in; other classes keep the three-decimal reading they have always had.
+  const maximumFractionDigits = assetClass === 'crypto' ? 8 : 3
+  return amount.toLocaleString(locale, { maximumFractionDigits })
+}
+
+/**
+ * A price in the instrument's OWN currency — "$110,234.57". Sits beside the
+ * đồng figure, never replacing it; the household still counts in đồng.
+ */
+export function formatQuotePrice(value: number, currency: string): string {
+  const amount = Number.isFinite(value) ? value : 0
+  // `en-US`, not the app locale: every exchange the reader would check this
+  // against writes it "$110,234.57", not vi-VN's "110.234,57 US$".
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    // Enough for a sub-dollar coin, never more than the quote carries.
+    maximumFractionDigits: Math.abs(amount) < 1 ? 6 : 2,
+  }).format(amount)
+}

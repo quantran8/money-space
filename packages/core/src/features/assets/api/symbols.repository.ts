@@ -39,6 +39,11 @@ export type MarketQuote = {
    * one request covers all three, and nothing here rescales a price.
    */
   unitPrices?: Record<string, number>
+  /**
+   * The quote before conversion, present only when `price` IS a conversion —
+   * crypto is checked against USD exchanges. See memory/market-data.md.
+   */
+  nativePrice?: { price: number; quoteCurrency: string }
 }
 
 type SearchSymbolsResponse = {

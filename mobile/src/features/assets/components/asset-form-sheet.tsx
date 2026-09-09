@@ -4,6 +4,7 @@ import { Controller, useWatch, type UseFormReturn, type UseFormSetValue } from '
 import { useTranslation } from 'react-i18next'
 
 import { useMarketQuote } from '@money-space/core/features/assets/hooks/use-market-quote'
+import type { MarketQuote } from '@money-space/core/features/assets/api/symbols.repository'
 import {
   assetTypeGroups,
   flexibleByDefaultForAssetType,
@@ -25,7 +26,7 @@ import {
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import { currentMemberId } from '@money-space/core/features/members/model/members.types'
-import { formatMoney, formatVndExact, formatVndShort, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
+import { formatMoney, formatQuotePrice, formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { useAuthStore } from '@money-space/core/shared/stores/auth-store'
 
 import {
@@ -543,11 +544,10 @@ function MarketFields({
   const assetClass = searchableAssetClassForType(type)
   const symbol = useWatch({ control, name: 'symbol' })
   const market = useWatch({ control, name: 'market' })
-  // Ask crypto for its quote in đồng: every money field here is VND, but crypto
-  // defaults to USD upstream. Crypto ONLY — foreign equities route to a provider
-  // that labels a USD price with whatever currency was asked for, which would
-  // slip past the guard below and understate the cost basis ~26,000x.
-  const quoteCurrency = assetClass === 'crypto' ? 'VND' : undefined
+  // Crypto is asked for in USD — the currency it is actually quoted in — and the
+  // backend converts to đồng with the bank rate. Crypto ONLY: a foreign equity
+  // labels a USD price with whatever was asked for. See memory/market-data.md.
+  const quoteCurrency = assetClass === 'crypto' ? 'USD' : undefined
 
   // A gold quote carries every unit's price, so switching chỉ → gram picks a
   // figure out of the response rather than re-fetching. The backend owns the
@@ -744,7 +744,7 @@ function MarketQuoteHint({
   t,
 }: {
   symbol: string
-  quote: { price: number; unit: string; quoteCurrency: string; source: string } | null
+  quote: MarketQuote | null
   /** The quote's price in `unit` — for gold, the unit the form is showing. */
   price: number | null
   /** The chosen gold unit; absent for classes quoted in one unit only. */
@@ -769,12 +769,21 @@ function MarketQuoteHint({
       <Text className="t-body-sm text-ink2">
         {t('assets.form.market.quoteLabel')}{' '}
         <Text className="font-medium text-ink" style={{ fontVariant: ['tabular-nums'] }}>
-          {/* `formatMoney`, not the app-wide `formatVndShort`: a quote is
-              priced in the EXCHANGE's currency, which is not the household's,
-              and only this formatter takes one. */}
-          {formatMoney(price, quote.quoteCurrency as DisplayCurrency)} / {unit || quote.unit}
+          {/* A quote is priced in the exchange's currency, not the household's. */}
+          {quote.quoteCurrency === 'VND'
+            ? formatVndExact(price)
+            : formatQuotePrice(price, quote.quoteCurrency)}{' '}
+          / {unit || quote.unit}
         </Text>
       </Text>
+      {/* The USD figure behind a converted đồng one — what a crypto holder
+          would check against an exchange. See memory/market-data.md. */}
+      {quote.nativePrice ? (
+        <Text className="mt-0.5 t-caption text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
+          {formatQuotePrice(quote.nativePrice.price, quote.nativePrice.quoteCurrency)} /{' '}
+          {unit || quote.unit}
+        </Text>
+      ) : null}
       {/* Every derived number is explainable — this says where it came from. */}
       <Text className="mt-0.5 t-caption-sm text-ink3">
         {t('assets.form.market.quoteSource', { source: quote.source })}
