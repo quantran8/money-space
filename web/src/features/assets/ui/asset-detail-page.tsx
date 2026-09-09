@@ -33,7 +33,12 @@ import { EVENT_TYPE_ICONS } from '@/features/events/ui/components/event-type-ico
 import { formatDate } from '@money-space/core/features/debts/model/debts-form'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
-import { formatVndExact, formatVndShort } from '@money-space/core/shared/lib/format-money'
+import {
+  formatQuantity,
+  formatQuotePrice,
+  formatVndExact,
+  formatVndShort,
+} from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type ChartRange = 1 | 6 | 12
@@ -326,6 +331,27 @@ export function AssetDetailPage() {
   const position = asset.marketPosition
   const quantity = position?.quantity ?? 0
   const currentUnitPrice = quantity > 0 ? currentValue / quantity : 0
+  // The unit price in the instrument's own currency — what a crypto holder would
+  // check against an exchange. `nativeMarketPrice` rides along on a đồng-priced
+  // holding; a position quoted in USD outright uses its own price directly.
+  // See memory/market-data.md.
+  const nativeUnitPrice = (() => {
+    if (!position) return null
+    if (position.nativeMarketPrice) {
+      return formatQuotePrice(
+        position.nativeMarketPrice.price,
+        position.nativeMarketPrice.quoteCurrency,
+      )
+    }
+    const marketCurrency = position.marketPriceCurrency ?? position.quoteCurrency
+    if (position.marketPrice !== undefined && marketCurrency !== 'VND') {
+      return formatQuotePrice(position.marketPrice, marketCurrency)
+    }
+    if (position.lastPrice !== undefined && position.quoteCurrency !== 'VND') {
+      return formatQuotePrice(position.lastPrice, position.quoteCurrency)
+    }
+    return null
+  })()
   const costBasis = position?.purchasePrice
     ? position.purchasePrice * quantity
     : asset.calculationTerm?.principalAmount ?? currentValue
@@ -477,23 +503,23 @@ export function AssetDetailPage() {
                   ? formatVndExact(currentValue)
                   : formatVndShort(currentValue)}
               </p>
-              {/* Quantity and unit price on one line: for a market asset the
-                  headline figure is a product of the two, and stating them
-                  together is what makes it checkable — so the unit price is
-                  exact. Compact, "1 chỉ · 15,1 tr / chỉ" sat under a hero of
-                  "15,1 tr" while the real value was 15.050.000đ, and the one
-                  line meant to let the reader verify the total was the line
-                  that could not be multiplied back. */}
+              {/* The live unit price, plus the native one for a foreign-quoted
+                  instrument. Exact: it is what the hero divides back into.
+                  Quantity dropped — it is in the info panel below. */}
               {isMarketPriced && position && quantity > 0 ? (
-                <p className="mt-2 t-caption text-ink3">
+                <p className="mt-2 t-body-sm text-ink3">
                   <Trans
-                    i18nKey="assets.detail.hero.holdingLine"
+                    i18nKey={
+                      nativeUnitPrice
+                        ? 'assets.detail.hero.holdingLineNative'
+                        : 'assets.detail.hero.holdingLine'
+                    }
                     values={{
-                      quantity: position.quantity.toLocaleString(locale),
                       unit: position.unit,
                       price: formatVndExact(currentUnitPrice),
+                      nativePrice: nativeUnitPrice ?? '',
                     }}
-                    components={{ 1: <span className="num" /> }}
+                    components={{ 1: <span className="num text-ink2" /> }}
                   />
                 </p>
               ) : null}
@@ -623,7 +649,10 @@ export function AssetDetailPage() {
                   <>
                     <InfoRow
                       label={t('assets.detail.info.quantity')}
-                      value={`${position.quantity.toLocaleString(locale)} ${position.unit}`}
+                      value={`${formatQuantity(position.quantity, {
+                        assetClass: position.assetClass,
+                        locale,
+                      })} ${position.unit}`}
                     />
                     {position.purchasePrice ? (
                       <InfoRow
