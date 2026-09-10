@@ -21,6 +21,35 @@ Bộ spec được tách theo domain để dễ đọc, chỉnh sửa và giao c
 > nó bán những thứ nay không còn tồn tại (Protected Reserve, mức chia sẻ
 > `private`) và đề xuất gate những thứ không bao giờ nên gate.
 
+## Đối chiếu code — 2026-09-10
+
+Spec sản phẩm đóng băng 21/08, doc backend 28/08, code chạy tiếp tới 09/09. Đã
+rà lại toàn bộ, lấy **code làm nguồn sự thật**. Chỗ nào lệch thì gắn khối ⚠️
+ngay tại mục đó và giữ nội dung cũ làm tư liệu lịch sử, thay vì xoá.
+
+Ba thay đổi lớn nhất so với spec gốc:
+
+1. **Mô hình chia sẻ 3 mức đã bị gỡ hoàn toàn** (`03 §4`). Mọi khoản đều tính
+   vào mọi con số chung; không có mức `private`, không redaction ở server.
+   Thay bằng nhật ký (`/activity`).
+2. **Không còn bậc quyền** (`05 §7`, `Backend-Tables §8`, `§31`). `role` và
+   `permission_level` đã drop. Là thành viên = đọc/ghi mọi thứ; chỉ 3 thao tác
+   vòng đời bị gác bởi `households.created_by`.
+3. **Onboarding còn 1 bước** thay vì 11 (`04 §4`).
+
+Đã kiểm và **khớp**, không phải sửa: forecast 7/30/60/90, bốn trạng thái tài
+chính, công thức tiến độ goal, what-if stateless, `protected_reserves` đã gỡ,
+`audit_logs snapshot.created`.
+
+Còn nợ — mới ghi nhận, chưa sửa:
+
+- `asset_valuations` và `snapshot_goal_values` **thiếu unique index trên DB
+  thật** (`Backend-Tables §16`). Chưa hỏng dữ liệu; nên thêm.
+- 4 rule attention chết vì mất nơi lưu (`§21`).
+- `FinancialManagementMode` + 10 key i18n mồ côi (`04 §4`).
+- `backend/memory/sharing-levels.md` còn tả `visibility_level` 2 mức — cột đó
+  đã bị drop sau đó.
+
 ## Product architecture
 
 **Financial Clarity → Financial Foresight → Financial Decision**

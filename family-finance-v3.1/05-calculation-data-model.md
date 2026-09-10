@@ -67,6 +67,31 @@ cùng một con số.
 
 App phải cho user xem assumptions.
 
+## Thật: có HAI con số, không phải một
+
+Công thức đầu ("Projected available money") **không được implement**. Chỉ có
+dạng conservative. Và cái Home hiển thị lại là một con số thứ ba:
+
+| Con số | Công thức | Ai dùng |
+|---|---|---|
+| `flexibleMoneyToday` | `startingLiquidBalance − requiredOutflowsBeforeNextInflow` | field API; snapshot đóng băng cột này |
+| **Số Home hiển thị** | `lowestProjectedBalance − goalCommitments` | hero + thanh chia trên Home |
+
+`goalCommitments` = phần các mục tiêu đang giữ trong **cùng số tiền lỏng** mà
+forecast xuất phát từ đó. Spec chưa bao giờ nêu nó. Nó là **field trả kèm**
+trong kết quả, **không** trừ vào `flexibleMoneyToday` — client tự trừ.
+
+Đo *sau* các khoản chi trong horizon, không phải trên số dư hôm nay: một khoản
+chi xếp trên mục tiêu dùng chung ví, nên tiền mục tiêu co lại nhường chỗ. Nếu
+đo trên số dư hôm nay trong khi `lowestProjectedBalance` đã trừ đúng các khoản
+đó thì mỗi khoản bị trừ hai lần.
+
+**Số âm là tín hiệu, không được kẹp về 0** ở hero. Thanh chia tỷ lệ trên Home có
+kẹp `max(…, 0)` nhưng đó là quy tắc vẽ cho bề rộng dương, không phải sửa số.
+
+> Nguồn: `backend/src/modules/forecast/domain/flexible-money.ts`,
+> `frontend/packages/core/src/features/dashboard/model/home-derivations.ts`.
+
 ---
 
 # 4. Goal Projection
@@ -204,13 +229,19 @@ Không diễn đạt các state như judgment.
 - id
 - household_id
 - user_id
-- role
+- ~~role~~ — **không có cột này**
+- status (`active` | `invited`)
 - joined_at
 
-Role:
-
-- Owner
-- Partner
+> ⚠️ `role` (Owner/Partner) và `permission_level` đều **đã bị drop** khỏi DB
+> (2026-08-15). Không có bậc quyền nào giữa hai partner: **là thành viên nghĩa
+> là đọc/ghi được mọi thứ** trong không gian đó.
+>
+> "Owner" chỉ còn là **suy ra** từ `households.created_by`, và chỉ gác 3 thao
+> tác vòng đời: xoá không gian, mời thành viên, xoá thành viên. Tự rời không
+> gian là endpoint riêng (`DELETE /members/me`) nên không bị cổng đó chặn.
+>
+> Xem `Backend-Tables §31` và `03 §4`.
 
 ## Asset
 
@@ -303,20 +334,20 @@ Phần đóng góp của một asset vào một goal `asset_backed`.
 - financial_state
 - calculated_at
 
-## WhatIfScenario
+## ~~WhatIfScenario~~ — KHÔNG tồn tại
 
-- id
-- household_id
-- created_by
-- amount
-- planned_date
-- label
-- related_goal_id
-- before_flexible_money
-- after_flexible_money
-- before_goal_date
-- after_goal_date
-- goal_delay_days
-- lowest_projected_balance
-- obligations_covered
-- created_at
+> ⚠️ Bảng này **không được build và không được build**. What-if là preview
+> stateless: chạy xong trả kết quả rồi thôi, không ghi gì. Xem
+> `Backend-Tables §26D` ("Không persist vào DB") và `§35` (danh sách không thêm).
+>
+> Code nói thẳng: `backend/src/modules/forecast/domain/what-if.ts` —
+> *"There is no `what_if_scenarios` table and there must not be one."*
+>
+> Chỉ một dòng analytics được ghi (`what_if_run`), và nó cố ý **không chứa số
+> tiền** — chỉ khoảng giá trị (`amountBucket`).
+
+Danh sách field cũ, giữ làm tư liệu lịch sử:
+
+- id, household_id, created_by, amount, planned_date, label, related_goal_id,
+  before_flexible_money, after_flexible_money, before_goal_date, after_goal_date,
+  goal_delay_days, lowest_projected_balance, obligations_covered, created_at

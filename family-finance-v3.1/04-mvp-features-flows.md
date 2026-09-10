@@ -18,28 +18,42 @@
 
 # 2. MVP Scope
 
-1. Authentication.
-2. Household.
-3. Partner invite.
-4. Money sources.
-5. 3-level sharing.
-6. Upcoming income.
-7. Upcoming obligations.
-8. 30-day forecast.
-9. Flexible money.
-10. One main financial goal.
-11. Goal projection.
-13. What-if simulator.
-14. Share scenario.
-15. Update reminders.
-16. Analytics.
+> Cột "Thật" = trạng thái trong code hôm nay (2026-09-10).
+
+| # | Hạng mục | Thật |
+|---|---|---|
+| 1 | Authentication | ✅ |
+| 2 | Household | ✅ |
+| 3 | Partner invite | ✅ — có thêm QR / mã mời (`/join`) |
+| 4 | Money sources (assets) | ✅ |
+| 5 | 3-level sharing | ❌ **đã gỡ** — xem `03 §4` |
+| 6 | Upcoming income | ✅ |
+| 7 | Upcoming obligations | ✅ |
+| 8 | 30-day forecast | ✅ — 7/30/60/90 |
+| 9 | Flexible money | ✅ |
+| 10 | One main financial goal | ✅ — nhiều goal, có nhóm ưu tiên |
+| 11 | Goal projection | ✅ |
+| 13 | What-if simulator | ✅ — thêm bán tài sản, nguồn tiền |
+| 14 | Share scenario | ⚠️ chỉ copy text ra clipboard |
+| 15 | Update reminders | ❌ **chưa có** — không có kênh gửi nào |
+| 16 | Analytics | ⚠️ chỉ có log `what_if_run` phía server; chưa có analytics sản phẩm |
+
+**Đã build thêm, ngoài scope trên:** nợ (debts), sổ tiết kiệm / tài sản tính
+theo công thức, money events + danh mục, net worth, nhật ký `/activity`,
+snapshots, giá thị trường + FX, nhiều không gian (multi-space), rời không gian,
+chuyển quyền chủ không gian.
 
 ---
 
 # 3. Không thuộc MVP Core
 
-- Detailed expense tracking.
-- Transaction categories.
+> ⚠️ Bốn mục đầu **đã được build** dù nằm trong danh sách loại trừ này.
+
+- ~~Detailed expense tracking~~ → **đã có**: money events + `/events`.
+- ~~Transaction categories~~ → **đã có**: CRUD đầy đủ, kèm icon và màu.
+- ~~Multiple household~~ → **đã có**: multi-space + space switcher.
+- ~~Complex field-level permissions~~ → không build **và sẽ không build**;
+  thay bằng nhật ký (`03 §4`).
 - Bank linking.
 - SMS parsing.
 - Receipt scanning.
@@ -49,8 +63,6 @@
 - Complex discussion threads.
 - Voting system.
 - Approval rules.
-- Complex field-level permissions.
-- Multiple household.
 - Financial marketplace.
 
 ---
@@ -71,7 +83,24 @@ và cuối cùng:
 
 > “Nếu chi X thì consequence là Y.”
 
-## Flow
+## Flow đang chạy thật
+
+Onboarding chỉ còn **một câu hỏi: tạo không gian mới, hay tham gia một không
+gian có sẵn.**
+
+1. Tạo account.
+2. Tạo không gian (tên + đơn vị tiền) — **hoặc** tham gia bằng mã / QR.
+
+Hết. Mọi thứ khác user làm sau, từ đúng nơi sở hữu tính năng đó.
+
+**Vì sao bỏ wizard 9 bước:** mỗi bước đều dựng sẵn một tính năng vốn đã có lối
+vào riêng trong app, nên wizard hỏi toàn bộ tình hình tài chính của household
+*trước khi* cho họ thấy bất cứ thứ gì. Thêm nữa, bước dở dang có thể khôi phục
+khiến đóng tab xong quay lại vẫn bị ghim trong setup thay vì được vào app.
+
+> Nguồn: `frontend/web/src/features/onboarding/ui/onboarding-page.tsx`.
+
+### ~~Flow 11 bước cũ~~ (không build — tư liệu lịch sử)
 
 1. Tạo account.
 2. Tạo household.
@@ -89,6 +118,9 @@ và cuối cùng:
 9. Tạo main goal.
 10. App tạo first financial picture.
 11. Prompt first what-if.
+
+> Bước 3 để lại dấu vết: enum `FinancialManagementMode` và 10 key i18n vẫn còn
+> trong code nhưng **không có gì đọc** — mồ côi, nên xoá hoặc nối lại.
 
 ---
 
@@ -330,16 +362,22 @@ Không biến screen này thành settings-heavy admin panel.
 
 ## Entry Points
 
-- Home.
-- Goal detail.
-- Upcoming.
-- Shared scenario.
+Thật: **một lối vào duy nhất** — nút nổi (FAB) ở thanh điều hướng, có mặt trên
+mọi màn hình. Sheet what-if là global, không phải một route riêng.
+
+- ~~Home / Goal detail / Upcoming~~ — union `WhatIfSource` vẫn khai báo
+  `'home' | 'upcoming' | 'goal' | 'goal-detail' | 'onboarding'` nhưng **không
+  caller nào truyền**; mọi lời gọi đều là `'other'`. Nên prefill theo ngữ cảnh
+  và phân tách analytics theo màn hình đều đang chết.
+- ~~Shared scenario~~ — không thể có, vì scenario không lưu (xem Actions).
 
 ## Input
 
 - Amount.
 - Planned date.
 - Optional goal.
+- **Thật, thêm:** bán tài sản để bù thiếu hụt (nhiều dòng `lines[]`, một ví
+  nhận), và danh sách nguồn tiền có thể bán.
 
 ## Result hierarchy
 
@@ -354,9 +392,12 @@ reserve chính là `lowestProjectedBalance` — đúng hai con số khối 1 đ�
 
 Actions:
 
-- Share with partner.
-- Save scenario.
-- Try another amount.
+- Share with partner — thật: **chỉ copy một đoạn text ra clipboard**, không có
+  scenario chia sẻ được.
+- ~~Save scenario~~ — **cố ý không làm**. What-if là preview stateless, không
+  có bảng `what_if_scenarios` và không được thêm (§26D, §35). Bảng
+  `WhatIfScenario` ở `05 §7` là spec cũ còn sót.
+- Try another amount — ✅ (không tính thêm lượt quota khi chỉnh lại cùng câu hỏi).
 
 Later:
 
@@ -368,15 +409,18 @@ Later:
 
 # 11. Household Sharing Flows
 
+> Bước "chọn sharing" ở Flow A không còn: mọi record đều tính vào số chung và
+> ai cũng thấy như nhau (`03 §4`).
+
 ## Flow A — Một người giữ chính
 
-1. A tạo household.
+1. A tạo không gian.
 2. A nhập nguồn tiền.
-3. Chọn sharing.
-4. Invite B.
+3. ~~Chọn sharing.~~ — đã gỡ.
+4. Invite B (email, hoặc mã / QR).
 5. B thấy household picture.
 6. Cả hai dùng forecast.
-7. A/B có thể share what-if.
+7. A/B có thể copy kết quả what-if ra text.
 
 ## Flow B — Mỗi người giữ một phần
 
