@@ -247,14 +247,13 @@ export function GoalAllocationDialog({
                     const nextRole = defaultAllocationRole(nextType)
                     setRole(nextRole)
                     if (!isWalletAssetType(nextType)) setMonthly('')
-                    // A contribution wallet counts as a share of its balance —
-                    // see the role control below. Set here too, or an amount
-                    // left over from the previous asset would be submitted with
-                    // nothing on screen saying so.
+                    // A contribution share is always an amount (see the role
+                    // control below), so switching to one drops any percent
+                    // left over from the previous asset — it would otherwise be
+                    // submitted with nothing on screen saying so.
                     if (nextRole === 'contribution') {
-                      setKind('percent')
-                      setPercent((current) => current || '100')
-                      setAmount('')
+                      setKind('fixed')
+                      setPercent('')
                     }
                   }}
                   disabled={Boolean(editing)}
@@ -285,15 +284,18 @@ export function GoalAllocationDialog({
                   value={role}
                   onChange={(next) => {
                     setRole(next)
-                    // A contribution wallet is the account the goal is saved
-                    // into, so the goal's share of it has to FOLLOW the balance:
-                    // a figure typed once would sit still while the household
-                    // kept saving. Full by default; a wallet split between two
-                    // goals is what the share below is for.
+                    // A contribution share is always stated as an amount. A
+                    // wallet has no market price, so a percent has nothing to
+                    // track — it would just re-read itself against the balance
+                    // every time the household spent, and the pace panel is
+                    // built on exactly these shares: it would then measure how
+                    // much the WALLET moved rather than how much went into the
+                    // goal. What the household means is "this much of this
+                    // account is for the goal", with the monthly figure above
+                    // saying what gets added to it.
                     if (next === 'contribution') {
-                      setKind('percent')
-                      setPercent((current) => current || '100')
-                      setAmount('')
+                      setKind('fixed')
+                      setPercent('')
                     }
                   }}
                   options={[
