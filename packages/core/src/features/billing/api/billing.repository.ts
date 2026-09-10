@@ -40,6 +40,8 @@ export type Entitlement = {
   source: EntitlementSource | null
   isTrial: boolean
   trialUsed: boolean
+  /** How long the trial on offer lasts. 0 when trials are switched off. */
+  trialDays: number
   limits: PlanLimits
   usage?: EntitlementUsage
 }
@@ -160,6 +162,13 @@ export function cancelPaymentOrder(householdId: string, orderCode: string) {
 
 export function fetchEntitlement(householdId: string) {
   return apiRequest<Entitlement>(`/households/${householdId}/entitlement`)
+}
+
+/** Start the free trial. The paywall's own action — never granted on signup. */
+export function startTrial(householdId: string) {
+  return apiRequest<Entitlement>(`/households/${householdId}/entitlement/trial`, {
+    method: 'POST',
+  })
 }
 
 /** What the code would do. Does not spend it. */

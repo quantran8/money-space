@@ -1326,6 +1326,13 @@ export const resources = {
           cta: 'Chọn {{plan}} · {{amount}}',
           ctaLoading: 'Đang mở…',
           later: 'Để sau',
+          trial: {
+            cta: 'Dùng thử {{days}} ngày miễn phí',
+            starting: 'Đang mở bản dùng thử…',
+            note: 'Không cần thẻ. Hết {{days}} ngày sẽ tự về gói Free.',
+            started: 'Đã mở {{days}} ngày dùng thử Premium.',
+            failed: 'Chưa mở được bản dùng thử. Vui lòng thử lại.',
+          },
           payNote: 'Thanh toán một lần, không tự động gia hạn.',
           mobileNote: 'Mở oursight.vn trên trình duyệt để nâng cấp gói.',
           store: {
@@ -4831,6 +4838,13 @@ export const resources = {
           cta: 'Choose {{plan}} · {{amount}}',
           ctaLoading: 'Opening…',
           later: 'Maybe later',
+          trial: {
+            cta: 'Try {{days}} days free',
+            starting: 'Starting your trial…',
+            note: 'No card needed. It returns to Free after {{days}} days.',
+            started: 'Your {{days}}-day Premium trial has started.',
+            failed: 'Could not start the trial. Please try again.',
+          },
           payNote: 'One payment, no auto-renewal.',
           mobileNote: 'Open oursight.vn in a browser to upgrade.',
           store: {

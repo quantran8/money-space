@@ -4,6 +4,7 @@ import { CalendarClock, Calculator, RefreshCw, Target } from 'lucide-react'
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
 import { usePlans } from '@money-space/core/features/billing/hooks/use-plans'
 import { useCheckout } from '@money-space/core/features/billing/hooks/use-checkout'
+import { useStartTrial } from '@money-space/core/features/billing/hooks/use-start-trial'
 import { formatMoney } from '@money-space/core/shared/lib/format-money'
 import { usePaywallStore } from '@money-space/core/shared/stores/paywall-store'
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -77,6 +78,9 @@ export function PaywallSheet() {
   const { plans, isLoading: plansLoading } = usePlans()
   const { entitlement } = useEntitlement()
   const checkout = useCheckout()
+  // Closes on success: the wall they hit is down, and leaving it up would
+  // still be asking for money they no longer need to pay.
+  const trial = useStartTrial(close)
 
   // `null` means "nothing chosen yet in this opening", which resolves to the
   // default below. Keyed off the store's `open` rather than reset in an
@@ -283,6 +287,28 @@ export function PaywallSheet() {
                   </span>
                 </Button>
               </motion.div>
+
+              {/* Under the paid CTA, not above it: the trial is the cheaper
+                  ask, but paying is still the primary action. Hidden once
+                  `trialUsed` is true — a button that can only be refused is
+                  worse than no button. */}
+              {trial.canStartTrial ? (
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => void trial.start()}
+                    disabled={trial.pending}
+                  >
+                    {trial.pending
+                      ? t('billing.paywall.trial.starting')
+                      : t('billing.paywall.trial.cta', { days: trial.trialDays })}
+                  </Button>
+                  <p className="t-caption leading-5 text-ink3">
+                    {t('billing.paywall.trial.note', { days: trial.trialDays })}
+                  </p>
+                </div>
+              ) : null}
 
               {/* The checkout could not even be opened — a misconfigured
                   gateway, or the plan switched off since the page loaded.

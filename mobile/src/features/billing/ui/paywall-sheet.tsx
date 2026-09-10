@@ -5,6 +5,7 @@ import { CalendarClock, Calculator, RefreshCw, Target } from 'lucide-react-nativ
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
 import { usePlans } from '@money-space/core/features/billing/hooks/use-plans'
 import { useStorePurchase } from '@money-space/core/features/billing/hooks/use-store-purchase'
+import { useStartTrial } from '@money-space/core/features/billing/hooks/use-start-trial'
 import { formatMoney } from '@money-space/core/shared/lib/format-money'
 import { useNavigate } from '@money-space/core/shared/navigation'
 import { usePaywallStore } from '@money-space/core/shared/stores/paywall-store'
@@ -64,6 +65,8 @@ export function PaywallSheet() {
     state: purchaseState,
     isBusy,
   } = useStorePurchase()
+  // Closes on success: the wall they hit is down.
+  const trial = useStartTrial(close)
 
   const { reason } = context
   const available = plans.filter((plan) => plan.available)
@@ -83,6 +86,22 @@ export function PaywallSheet() {
       })}
       footer={
         <View className="gap-2">
+          {/* Above the secondary actions, below the per-plan buy buttons in the
+              body. Hidden once `trialUsed` is true. */}
+          {trial.canStartTrial ? (
+            <>
+              <Button
+                variant="secondary"
+                loading={trial.pending}
+                onPress={() => void trial.start()}
+              >
+                {t('billing.paywall.trial.cta', { days: trial.trialDays })}
+              </Button>
+              <Text className="t-caption text-ink3">
+                {t('billing.paywall.trial.note', { days: trial.trialDays })}
+              </Text>
+            </>
+          ) : null}
           {/* A code is not a purchase, so it sits beside the store buttons
               rather than competing with them. */}
           <Button
