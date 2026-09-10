@@ -10,6 +10,7 @@ import { ChevronDownIcon, Trash2Icon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
+import { MonthPicker } from '@/components/ui/month-picker'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,6 +66,14 @@ import {
   positionQuoteCurrency,
   type AssetForm,
 } from '@money-space/core/features/assets/model/assets-form'
+import {
+  previewLoanReceivable,
+  type LoanPreview,
+} from '@money-space/core/features/assets/model/loan-preview'
+import {
+  toMonthStartIso,
+  withDayOfMonth,
+} from '@money-space/core/features/debts/model/debts-interest'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useBillingSheetOpen } from '@money-space/core/shared/stores/paywall-store'
 import {
@@ -206,12 +215,13 @@ export function AssetFormDialog({
           )}
         </ResponsiveDialogHeader>
 
-        <form
-          className="overflow-y-auto px-5 pb-5 sm:px-8 sm:pb-7"
-          onSubmit={onSubmit}
-          noValidate
-        >
-          <div className="space-y-4">
+        {/* The form is the shell's `1fr` row and splits it again: only the
+            fields scroll, the footer is a row of its own. Scrolling the whole
+            form instead put the scrollbar on the modal's OUTER edge — outside
+            the rounded corner, over the shadow, running the full height past
+            the header and behind the sticky footer. */}
+        <form className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto]" onSubmit={onSubmit} noValidate>
+          <div className="min-h-0 space-y-4 overflow-y-auto scrollbar-inset px-5 pb-5 sm:px-8 sm:pb-7">
             {/* A wrong type is deleted and entered again, not re-typed over an
                 asset's history (memory/assets.md) — so on edit it is not a
                 field at all: the header subtitle names it instead. */}
@@ -293,6 +303,7 @@ export function AssetFormDialog({
                 errors={errors}
                 type={selectedType}
                 earnsInterest={earnsInterest}
+                setValue={setValue}
                 t={t}
               />
             ) : null}
@@ -310,15 +321,17 @@ export function AssetFormDialog({
             ) : null}
 
             {/* §22.1 — the household's own call on what "money we can use"
-                means. It moves the headline number, so it belongs in the main
-                section with the consequence sentence right under it. */}
+                means. Tạm ẩn: flexible money is derived from the type alone for
+                now (cash and a bank account count, nothing else does), so
+                asking the question would offer a choice submit ignores. See
+                `submittedCountsAsFlexible`.
             <ToggleRow
               id="asset-counts-as-flexible"
               label={t('assets.form.countsAsFlexible')}
               hint={t('assets.form.countsAsFlexibleHint')}
               control={control}
               name="countsAsFlexible"
-            />
+            /> */}
 
             <AssetEffect
               control={control}
@@ -373,14 +386,18 @@ export function AssetFormDialog({
               No Cancel button: the dialog is dismissed by its own close control
               and by Esc, so a third button in the row only competes with the
               two that DO something. */}
-          <ResponsiveDialogFooter className="mt-5 gap-2.5 sm:items-center sm:justify-between">
+          {/* No `justify-between`: Delete already carries `mr-auto`, which pins
+              it left and lets the base `justify-end` hold the submit on the
+              right. With `justify-between` the CREATE case — which has no
+              Delete button — spread its one remaining child to the left edge. */}
+          <ResponsiveDialogFooter fullBleed className="gap-2.5 px-5 py-3 sm:px-8">
             {isEditing && onRemove ? (
               <Button
                 type="button"
                 variant="destructive"
                 size="sm"
                 onClick={onRemove}
-                className="sm:mr-auto"
+                className="mr-auto"
               >
                 <Trash2Icon />
                 {t('assets.form.remove')}
@@ -1073,15 +1090,44 @@ function FormulaFields({
   errors,
   type,
   earnsInterest,
+  setValue,
   t,
 }: {
   control: Control
   errors: Errors
   type: AssetType
   earnsInterest: boolean
+  setValue: UseFormSetValue<AssetForm>
   t: Translate
 }) {
   const isLoan = type === 'loan_receivable'
+  const startDate = useWatch({ control, name: 'startDate' })
+  const maturityDate = useWatch({ control, name: 'maturityDate' })
+  const principal = useWatch({ control, name: 'principal' })
+  const interestRate = useWatch({ control, name: 'interestRate' })
+  const hasInterest = useWatch({ control, name: 'hasInterest' })
+
+  /**
+   * The maturity month carries the lending date's day. Re-anchor it whenever
+   * that day moves, so pushing the lending date back after picking a month does
+   * not leave a due date sitting on the old day.
+   */
+  useEffect(() => {
+    if (!isLoan || !maturityDate || !startDate) return
+    const merged = withDayOfMonth(maturityDate, startDate)
+    if (merged && merged !== maturityDate) {
+      setValue('maturityDate', merged, { shouldValidate: true })
+    }
+  }, [isLoan, maturityDate, startDate, setValue])
+
+  const loanPreview = previewLoanReceivable({
+    type,
+    principal,
+    interestRate,
+    hasInterest,
+    startDate,
+    maturityDate,
+  })
 
   return (
     <>
@@ -1120,22 +1166,32 @@ function FormulaFields({
       </Field>
 
       {/* The due date is optional — many family loans have none — but it is the
-          field people reach for next, so it stays in the main section. */}
+          field people reach for next, so it stays in the main section.
+
+          Only the MONTH is asked for. A loan is agreed as "trả sau một năm",
+          and the day it falls due is the day it was handed over, so a full
+          date picker made the household find and re-pick a day the form
+          already knew. `withDayOfMonth` stamps the lending day back on. */}
       {isLoan ? (
-        <Field label={t('assets.form.maturityDate')} error={errors.maturityDate?.message}>
+        <Field label={t('assets.form.maturityMonth')} error={errors.maturityDate?.message}>
           <div className={cn(fieldShell, errors.maturityDate && 'border-alert-ink')}>
             <Controller
               control={control}
               name="maturityDate"
               render={({ field }) => (
-                <DatePicker
-                  value={field.value}
-                  onChange={field.onChange}
+                <MonthPicker
+                  value={toMonthStartIso(field.value)}
+                  onChange={(month) => field.onChange(withDayOfMonth(month, startDate))}
                   className={cn(fieldControlReset, 'justify-start [&_svg]:hidden')}
                 />
               )}
             />
           </div>
+          {startDate ? (
+            <p className="mt-1.5 t-caption leading-[1.5] text-ink3">
+              {t('assets.form.maturityMonthHint', { date: formatIsoDate(startDate) })}
+            </p>
+          ) : null}
         </Field>
       ) : null}
 
@@ -1168,8 +1224,95 @@ function FormulaFields({
           )}
         />
       ) : null}
+
+      {/* An interest-bearing loan is agreed on one number the lender cares
+          about — what comes back — and until now the form asked for a rate and
+          a term and answered with nothing. §22.7: the consequence block is
+          where "what happens if I do this" is stated, in money. */}
+      {isLoan && earnsInterest ? (
+        <LoanPreviewBlock preview={loanPreview} interestRate={interestRate} t={t} />
+      ) : null}
     </>
   )
+}
+
+/**
+ * What an interest-bearing loan returns when it is collected.
+ *
+ * Exact đồng throughout: gốc + lãi = tổng nhận lại is a subtraction the reader
+ * does on screen, on numbers they typed moments ago and are about to confirm
+ * (§6) — the same reasoning as the deposit's payout block.
+ */
+function LoanPreviewBlock({
+  preview,
+  interestRate,
+  t,
+}: {
+  preview: LoanPreview | null
+  interestRate: string
+  t: Translate
+}) {
+  // The block holds its shape with an em-dash where the figure will land, so
+  // filling in the rate does not make the form jump. §2.16 — a placeholder is
+  // honest about not knowing yet; a zero would not be.
+  if (!preview) {
+    return (
+      <div aria-live="polite" className="rounded-[14px] bg-accent-soft px-5 py-5">
+        <p className="t-caption-sm font-medium text-ink3">{t('assets.form.loanPreview.title')}</p>
+        <p className="money-number mt-2 t-figure text-ink3">—</p>
+        <p className="mt-1 t-body-sm text-ink3">{t('assets.form.loanPreview.needsInput')}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div aria-live="polite" className="rounded-[14px] bg-accent-soft px-5 py-5">
+      {/* §32 — the answer leads at hero weight; the inputs that produce it sit
+          below the divider, because the big number is always the one the app
+          computed, never one that was typed (§22.5). */}
+      <p className="t-caption-sm font-medium text-ink3">{t('assets.form.loanPreview.title')}</p>
+      <p className="money-number mt-2 t-figure text-ink">{formatVndExact(preview.total)}</p>
+      <p className="mt-1 t-body-sm text-ink2">{t('assets.form.loanPreview.totalCaption')}</p>
+
+      <div className="mt-4 space-y-2 border-t border-divider pt-4">
+        <PreviewRow label={t('assets.form.loanPreview.principal')} value={preview.principal} />
+        <PreviewRow
+          label={t('assets.form.loanPreview.interest')}
+          meta={t('assets.form.loanPreview.interestMeta', {
+            rate: interestRate,
+            months: preview.termMonths,
+          })}
+          value={preview.interest}
+        />
+        {/* Nothing is paid out monthly on a family loan — the whole sum comes
+            back at the end — so this is labelled as what it is: the average the
+            money earns per month, not a payment anyone receives. */}
+        <PreviewRow
+          label={t('assets.form.loanPreview.monthlyInterest')}
+          value={preview.monthlyInterest}
+        />
+      </div>
+    </div>
+  )
+}
+
+function PreviewRow({ label, meta, value }: { label: string; meta?: string; value: number }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="min-w-0 t-body-sm text-ink2">
+        {label}
+        {meta ? <span className="ml-1.5 t-caption text-ink3">{meta}</span> : null}
+      </span>
+      <span className="num shrink-0 t-body-sm text-ink">{formatVndExact(value)}</span>
+    </div>
+  )
+}
+
+/** `2027-09-05` → `05/09/2027`, the form a loan note itself uses. */
+function formatIsoDate(iso: string): string {
+  const [year, month, day] = iso.split('-')
+  if (!year || !month || !day) return iso
+  return `${day}/${month}/${year}`
 }
 
 /**

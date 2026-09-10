@@ -532,7 +532,11 @@ export function AppShell() {
               no sheet, no wrapper panel (01-foundations §2.2). */}
           {/* Cards sit on `--canvas`; the tinted backdrop stays behind the
               chrome only, so no card is ever asked to read against it. */}
-          <div className="min-h-full flex-1 s-page pb-24 lg:pb-8">
+          {/* `flex-1` only — NOT `min-h-full`. The parent is already
+              `min-h-full`, so a second one here resolves to the full scroller
+              height and then adds this element's own padding on top, making the
+              subtree taller than the viewport on every short page. */}
+          <div className="flex-1 s-page pb-24 lg:pb-8">
             <div className="mx-auto w-full max-w-[1280px]">
               <Outlet />
             </div>

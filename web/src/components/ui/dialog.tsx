@@ -69,7 +69,7 @@ const DialogContent = React.forwardRef<
       ref={ref}
       data-slot="dialog-content"
       className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 overflow-y-auto rounded-card bg-card p-6 text-ink shadow-[0_24px_60px_rgba(0,0,0,0.18)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+        'fixed left-[50%] top-[50%] z-50 grid max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 overflow-y-auto scrollbar-inset rounded-card bg-card p-6 text-ink shadow-[0_24px_60px_rgba(0,0,0,0.18)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         className,
       )}
       {...props}
@@ -102,11 +102,37 @@ function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
+/**
+ * The action row, pinned to the bottom of the modal.
+ *
+ * `DialogContent` is itself the scroll container, so `sticky bottom-0` keeps
+ * the buttons on screen while a long form scrolls under them — the confirm is
+ * never a scroll away. It carries its own background and top border for the
+ * same reason: once content passes beneath it, a transparent footer would let
+ * fields show through the buttons.
+ *
+ * Padding and the full-bleed margins are NOT set here. A modal is laid out one
+ * of two ways and they want opposite things: the default `DialogContent` pads
+ * itself and scrolls as a whole, so its footer must pull back out to the edges
+ * (`-mx-6 -mb-6 px-6 py-4`); a `p-0 overflow-hidden` modal with its own inner
+ * scroll area is already flush and only needs its own padding. Baking either in
+ * would double it for half the modals, so each passes what its shell needs.
+ *
+ * Actions sit bottom-RIGHT, the primary one last — where a mouse expects the
+ * confirm. A footer with a secondary action on the left (Back, Delete) passes
+ * `justify-between` instead.
+ */
 function DialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-footer"
-      className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
+      className={cn(
+        // A row at EVERY width, vertically centred. `flex-col-reverse` below
+        // `sm` stacked the buttons, which made the bar two buttons tall and ate
+        // the small screens that could least afford it.
+        'sticky bottom-0 z-10 flex flex-row items-center justify-end gap-2 border-t border-divider bg-card',
+        className,
+      )}
       {...props}
     />
   )

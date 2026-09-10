@@ -246,7 +246,7 @@ export function ActualRecordForm({
       </div>
 
       {/* No divider: spacing separates the action row (§2.2, §2.4). */}
-      <ResponsiveDialogFooter className="mt-5 gap-2.5">
+      <ResponsiveDialogFooter className="gap-2.5">
         <Button
           type="button"
           variant="secondary"

@@ -209,7 +209,7 @@ export function CashflowEventFormDialog({
         </ResponsiveDialogHeader>
 
         <form className="contents" onSubmit={handleSubmit} noValidate>
-          <div className="min-h-0 overflow-y-auto px-5 pb-5 sm:px-8">
+          <div className="min-h-0 overflow-y-auto scrollbar-inset px-5 pb-5 sm:px-8">
             <div className="space-y-4">
               <Controller
                 control={control}
@@ -468,7 +468,10 @@ export function CashflowEventFormDialog({
             </div>
           </div>
 
-          <ResponsiveDialogFooter className="shrink-0 flex-row items-center justify-end gap-2.5 px-5 pb-5 pt-3 sm:px-8 sm:pb-7">
+          <ResponsiveDialogFooter
+            fullBleed
+            className="shrink-0 gap-2.5 px-5 py-3 sm:px-8"
+          >
             <Button
               type="button"
               variant="ghost"

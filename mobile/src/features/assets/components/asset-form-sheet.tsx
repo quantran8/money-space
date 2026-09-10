@@ -23,6 +23,14 @@ import {
   parseMoneyToVnd,
   type AssetForm,
 } from '@money-space/core/features/assets/model/assets-form'
+import {
+  previewLoanReceivable,
+  type LoanPreview,
+} from '@money-space/core/features/assets/model/loan-preview'
+import {
+  toMonthStartIso,
+  withDayOfMonth,
+} from '@money-space/core/features/debts/model/debts-interest'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import { currentMemberId } from '@money-space/core/features/members/model/members.types'
@@ -38,6 +46,7 @@ import {
   Disclosure,
   Field,
   MoneyInput,
+  MonthField,
   Segmented,
   Select,
   Switch,
@@ -238,6 +247,7 @@ export function AssetFormSheet({
             errors={errors}
             type={selectedType}
             earnsInterest={earnsInterest}
+            setValue={setValue}
             t={t}
           />
         ) : null}
@@ -254,7 +264,9 @@ export function AssetFormSheet({
         ) : null}
 
         {/* §22.1 — the household's own call on what "money we can use" means.
-            It moves the headline number, so the consequence sits right under it. */}
+            Tạm ẩn, cùng lý do với web: tiền linh hoạt hiện suy ra từ loại tài
+            sản (chỉ tiền mặt và tài khoản ngân hàng), nên hỏi ở đây là đưa ra
+            một lựa chọn mà submit bỏ qua. Xem `submittedCountsAsFlexible`.
         <Controller
           control={control}
           name="countsAsFlexible"
@@ -265,7 +277,7 @@ export function AssetFormSheet({
               onChange={field.onChange}
             />
           )}
-        />
+        /> */}
 
         <AssetEffect
           control={control}
@@ -797,15 +809,43 @@ function FormulaFields({
   errors,
   type,
   earnsInterest,
+  setValue,
   t,
 }: {
   control: Control
   errors: Errors
   type: AssetType
   earnsInterest: boolean
+  setValue: UseFormSetValue<AssetForm>
   t: Translate
 }) {
   const isLoan = type === 'loan_receivable'
+  const startDate = useWatch({ control, name: 'startDate' })
+  const maturityDate = useWatch({ control, name: 'maturityDate' })
+  const principal = useWatch({ control, name: 'principal' })
+  const interestRate = useWatch({ control, name: 'interestRate' })
+  const hasInterest = useWatch({ control, name: 'hasInterest' })
+
+  /**
+   * The maturity month carries the lending date's day, so re-anchor it whenever
+   * that day moves — the same effect the debt form runs on its final due date.
+   */
+  useEffect(() => {
+    if (!isLoan || !maturityDate || !startDate) return
+    const merged = withDayOfMonth(maturityDate, startDate)
+    if (merged && merged !== maturityDate) {
+      setValue('maturityDate', merged, { shouldValidate: true })
+    }
+  }, [isLoan, maturityDate, startDate, setValue])
+
+  const loanPreview = previewLoanReceivable({
+    type,
+    principal,
+    interestRate,
+    hasInterest,
+    startDate,
+    maturityDate,
+  })
 
   return (
     <>
@@ -837,18 +877,29 @@ function FormulaFields({
 
       {/* The due date is optional — money lent to family often has none — but
           it is the field people reach for next, so it stays in the main
-          section rather than behind the disclosure. */}
+          section rather than behind the disclosure.
+
+          Only the MONTH is asked for: a loan is agreed as "trả sau một năm",
+          and the day it falls due is the day it was handed over, so the lending
+          day is stamped back on rather than picked a second time. */}
       {isLoan ? (
         <Controller
           control={control}
           name="maturityDate"
           render={({ field }) => (
-            <DateField
-              label={t('assets.form.maturityDate')}
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.maturityDate?.message}
-            />
+            <View>
+              <MonthField
+                label={t('assets.form.maturityMonth')}
+                value={toMonthStartIso(field.value)}
+                onChange={(month) => field.onChange(withDayOfMonth(month, startDate))}
+                error={errors.maturityDate?.message}
+              />
+              {startDate && !errors.maturityDate ? (
+                <Text className="mt-1.5 t-caption leading-4 text-ink3">
+                  {t('assets.form.maturityMonthHint', { date: formatIsoDate(startDate) })}
+                </Text>
+              ) : null}
+            </View>
           )}
         />
       ) : null}
@@ -884,8 +935,102 @@ function FormulaFields({
           )}
         />
       ) : null}
+
+      {/* An interest-bearing loan is agreed on one number the lender cares
+          about — what comes back — and the form asked for a rate and a term
+          without ever answering with it. §22.7: state the consequence in money. */}
+      {isLoan && earnsInterest ? (
+        <LoanPreviewBlock preview={loanPreview} interestRate={interestRate} t={t} />
+      ) : null}
     </>
   )
+}
+
+/**
+ * What an interest-bearing loan returns when it is collected.
+ *
+ * Exact đồng throughout: gốc + lãi = tổng nhận lại is a subtraction the reader
+ * does on screen, on numbers they typed moments ago and are about to confirm (§6).
+ */
+function LoanPreviewBlock({
+  preview,
+  interestRate,
+  t,
+}: {
+  preview: LoanPreview | null
+  interestRate: string
+  t: Translate
+}) {
+  // The block holds its shape with an em-dash where the figure will land, so
+  // filling in the rate does not make the sheet jump. §2.16 — a placeholder is
+  // honest about not knowing yet; a zero would not be.
+  if (!preview) {
+    return (
+      <View className="rounded-control bg-action-soft p-3.5">
+        <Text className="t-caption-sm text-ink3">{t('assets.form.loanPreview.title')}</Text>
+        <Text className="mt-0.5 t-metric text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
+          —
+        </Text>
+        <Text className="mt-1 t-body-sm leading-5 text-ink3">
+          {t('assets.form.loanPreview.needsInput')}
+        </Text>
+      </View>
+    )
+  }
+
+  return (
+    <View className="rounded-control bg-action-soft p-3.5">
+      {/* §32 — the answer leads; the inputs that produce it sit below the
+          divider, because the big number is the one the app computed. */}
+      <Text className="t-caption-sm text-ink3">{t('assets.form.loanPreview.title')}</Text>
+      <Text className="mt-0.5 t-metric text-ink" style={{ fontVariant: ['tabular-nums'] }}>
+        {formatVndExact(preview.total)}
+      </Text>
+      <Text className="mt-1 t-body-sm leading-5 text-ink2">
+        {t('assets.form.loanPreview.totalCaption')}
+      </Text>
+
+      <View className="mt-3 gap-2 border-t border-divider pt-3">
+        <PreviewRow label={t('assets.form.loanPreview.principal')} value={preview.principal} />
+        <PreviewRow
+          label={t('assets.form.loanPreview.interest')}
+          meta={t('assets.form.loanPreview.interestMeta', {
+            rate: interestRate,
+            months: preview.termMonths,
+          })}
+          value={preview.interest}
+        />
+        {/* Nothing is paid out monthly on a family loan — the whole sum comes
+            back at the end — so this is the average the money earns, not a
+            payment anyone receives. */}
+        <PreviewRow
+          label={t('assets.form.loanPreview.monthlyInterest')}
+          value={preview.monthlyInterest}
+        />
+      </View>
+    </View>
+  )
+}
+
+function PreviewRow({ label, meta, value }: { label: string; meta?: string; value: number }) {
+  return (
+    <View className="flex-row items-baseline justify-between gap-3">
+      <Text className="min-w-0 flex-1 t-body-sm text-ink2">
+        {label}
+        {meta ? <Text className="t-caption text-ink3">{` ${meta}`}</Text> : null}
+      </Text>
+      <Text className="t-body-sm text-ink" style={{ fontVariant: ['tabular-nums'] }}>
+        {formatVndExact(value)}
+      </Text>
+    </View>
+  )
+}
+
+/** `2027-09-05` → `05/09/2027`, the form a loan note itself uses. */
+function formatIsoDate(iso: string): string {
+  const [year, month, day] = iso.split('-')
+  if (!year || !month || !day) return iso
+  return `${day}/${month}/${year}`
 }
 
 /** The §22.2 disclosure half of the formula-mode fields. */

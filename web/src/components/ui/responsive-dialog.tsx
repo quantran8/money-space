@@ -63,10 +63,37 @@ function ResponsiveDialogHeader(props: React.ComponentProps<'div'>) {
   return <Header {...props} />
 }
 
-function ResponsiveDialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
+/**
+ * The sticky action bar, with the padding a PADDED shell needs.
+ *
+ * The default assumes the surrounding `ResponsiveDialogContent` keeps its own
+ * padding (`p-6` on the dialog, `p-6 pb-8` on the sheet). The negative SIDE
+ * margins pull the bar back out to both edges so its border and background span
+ * the modal, then re-apply that padding inside. A modal that renders `p-0` with
+ * its own inner scroll area is already flush and passes `fullBleed`.
+ *
+ * There is deliberately NO negative bottom margin. The bar is the last thing in
+ * the scroll container, so the container's own bottom padding is what the
+ * content scrolls into — pulling the bar down over that padding shortened the
+ * scroll range by exactly the bar's height, leaving the final field stranded
+ * underneath it with no way to scroll it clear.
+ */
+function ResponsiveDialogFooter({
+  className,
+  fullBleed = false,
+  ...props
+}: React.ComponentProps<'div'> & { fullBleed?: boolean }) {
   const isDesktop = useIsDesktopDialog()
   const Footer = isDesktop ? DialogFooter : SheetFooter
-  return <Footer className={cn(!isDesktop && 'pt-2', className)} {...props} />
+  return (
+    <Footer
+      className={cn(
+        !fullBleed && '-mx-6 mt-2 px-6 py-3',
+        className,
+      )}
+      {...props}
+    />
+  )
 }
 
 function ResponsiveDialogTitle(props: React.ComponentProps<typeof DialogTitle>) {

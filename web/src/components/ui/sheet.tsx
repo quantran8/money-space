@@ -68,7 +68,7 @@ const SheetContent = React.forwardRef<
       ref={ref}
       data-slot="sheet-content"
       className={cn(
-        'fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col gap-6 overflow-y-auto rounded-t-panel bg-card p-6 pb-8 text-ink shadow-[0_-16px_50px_rgba(0,0,0,0.18)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom data-[state=closed]:duration-200 data-[state=open]:duration-300',
+        'fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col gap-6 overflow-y-auto scrollbar-inset rounded-t-panel bg-card p-6 pb-8 text-ink shadow-[0_-16px_50px_rgba(0,0,0,0.18)] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom data-[state=closed]:duration-200 data-[state=open]:duration-300',
         className,
       )}
       {...props}
@@ -99,11 +99,24 @@ function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
+/**
+ * The sheet's action row, pinned to the bottom — same contract as
+ * `DialogFooter`, so a form that renders one on desktop and the other on a
+ * phone behaves the same way in both.
+ *
+ * Buttons are laid out in a row and pushed RIGHT rather than stacked full
+ * width: the two surfaces used to disagree about where a confirm lives, so the
+ * same form moved its button depending on the viewport. Padding comes from the
+ * caller for the same reason as `DialogFooter`.
+ */
 function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="sheet-footer"
-      className={cn('flex flex-col-reverse gap-2', className)}
+      className={cn(
+        'sticky bottom-0 z-10 flex flex-row items-center justify-end gap-2 border-t border-divider bg-card',
+        className,
+      )}
       {...props}
     />
   )

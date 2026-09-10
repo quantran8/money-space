@@ -254,7 +254,18 @@
     --attention-ink: #8a5f14;
   }
 
+  /* The app shell owns the viewport (`h-dvh` + `overflow-hidden`) and scrolls
+     its own `<main>`. The document itself must therefore be exactly one
+     viewport tall and never scroll: a `min-height` here only ever exceeds the
+     shell — on a mobile browser `dvh` shrinks below `vh` — and paints a second,
+     dead scrollbar outside the one that actually moves the page.
+
+     `height` (not `min-height`) plus `overflow: hidden` on the ROOT element,
+     not on `body`. Hiding overflow on `body` clips the shell's own content box
+     horizontally too, cutting cards off at the right edge. */
   html {
+    height: 100dvh;
+    overflow: hidden;
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -262,7 +273,7 @@
 
   body {
     margin: 0;
-    min-height: 100vh;
+    height: 100%;
     background: var(--app);
     color: var(--ink);
     font-family: "Urbanist", system-ui, sans-serif;
@@ -276,7 +287,7 @@
   }
 
   #root {
-    min-height: 100vh;
+    height: 100%;
   }
 
   /**
@@ -451,6 +462,36 @@
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;                  /* WebKit / Blink */
+  }
+
+  /**
+   * A scroll container whose scrollbar stays INSIDE the content.
+   *
+   * A modal shell that scrolls itself paints a full-width native scrollbar down
+   * its own outer edge — outside the rounded corner, over the shadow, and past
+   * the sticky footer that is meant to cap the modal. A thin overlay bar sits
+   * inside that corner instead, next to the content it actually scrolls.
+   *
+   * Deliberately NO `scrollbar-gutter: stable`: a reserved gutter is a column
+   * taken out of the padding box permanently, which would trim the sticky
+   * footer's full-bleed `-mx-6` back off both edges and narrow every dialog
+   * that never overflows at all.
+   */
+  .scrollbar-inset {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-inset::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-inset::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-inset::-webkit-scrollbar-thumb {
+    background: var(--committed);
+    border-radius: 999px;
   }
 
   /* --- Type (§10) ------------------------------------------------------- */
