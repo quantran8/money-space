@@ -75,17 +75,13 @@ import {
   withDayOfMonth,
 } from '@money-space/core/features/debts/model/debts-interest'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
-import { useBillingSheetOpen } from '@money-space/core/shared/stores/paywall-store'
-import {
-  formatMoney,
-  formatQuotePrice,
-  formatVndExact,
-} from '@money-space/core/shared/lib/format-money'
 import {
   formatDecimalDisplay,
   formatIntegerDisplay,
   parseRawDecimal,
 } from '@money-space/core/shared/lib/number-format'
+import { useBillingSheetOpen } from '@money-space/core/shared/stores/paywall-store'
+import { formatMoney, formatVndExact, formatQuotePrice, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type WalletOption = { value: string; label: string; balance?: number }
