@@ -353,9 +353,29 @@ export function AssetDetailPage() {
     }
     return null
   })()
-  const costBasis = position?.purchasePrice
-    ? position.purchasePrice * quantity
-    : asset.calculationTerm?.principalAmount ?? currentValue
+  /**
+   * Today's rate for the position's own currency, so a USD cost basis can be
+   * compared against a đồng `currentValue`.
+   *
+   * `currentValue / (quantity × unit price)` is the most reliable form: the
+   * server computed that value from that very price, so the ratio IS the rate it
+   * used — and it works whether or not both currency quotes came back.
+   */
+  const positionFxToVnd = (() => {
+    if (!position || position.quoteCurrency === 'VND') return 1
+    const nativeUnit =
+      position.nativeMarketPrice?.price ??
+      (position.marketPriceCurrency && position.marketPriceCurrency !== 'VND'
+        ? position.marketPrice
+        : undefined) ??
+      position.lastPrice
+    if (!nativeUnit || quantity <= 0 || currentValue <= 0) return null
+    return currentValue / (quantity * nativeUnit)
+  })()
+  const costBasis =
+    position?.purchasePrice && positionFxToVnd !== null
+      ? position.purchasePrice * quantity * positionFxToVnd
+      : asset.calculationTerm?.principalAmount ?? currentValue
   const profitLoss = currentValue - costBasis
   const profitLossPercent = costBasis > 0 ? (profitLoss / costBasis) * 100 : 0
   const share = householdAssetTotal > 0 ? (currentValue / householdAssetTotal) * 100 : 0
@@ -662,8 +682,16 @@ export function AssetDetailPage() {
                     {position.purchasePrice ? (
                       <InfoRow
                         label={t('assets.detail.info.averagePurchasePrice')}
-                        // A stored per-unit price, exact to the đồng.
-                        value={formatVndExact(position.purchasePrice)}
+                        // Stated in the position's own currency, like the
+                        // market price above it.
+                        value={
+                          position.quoteCurrency === 'VND'
+                            ? formatVndExact(position.purchasePrice)
+                            : formatQuotePrice(
+                                position.purchasePrice,
+                                position.quoteCurrency,
+                              )
+                        }
                       />
                     ) : null}
                   </>

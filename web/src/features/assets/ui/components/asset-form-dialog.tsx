@@ -62,6 +62,7 @@ import {
   isWholeQuantityType,
   manualValueLabelKey,
   parseMoneyToVnd,
+  positionQuoteCurrency,
   type AssetForm,
 } from '@money-space/core/features/assets/model/assets-form'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
@@ -736,14 +737,12 @@ function MarketFields({
     setValue('usdToVnd', usdToVnd)
   }, [usdToVnd, setValue])
 
-  const priceCurrency = useWatch({ control, name: 'purchasePriceCurrency' })
+  const priceCurrency = positionQuoteCurrency(type)
 
   const prefillPurchasePrice = (price: number) => {
-    // Seed the field in the currency it is currently accepting, so a USD field
-    // is not filled with a đồng figure.
-    // Comma is this app's decimal separator, and `parseRawDecimal` strips "."
-    // as a THOUSANDS separator — so a JS "78821.2085" would parse as
-    // 782_120_853..., i.e. the price times 10^11. Cents are enough for a quote.
+    // Seed in the currency the field accepts. Comma is this app's decimal
+    // separator and `parseRawDecimal` strips "." as THOUSANDS, so a JS
+    // "78821.2085" would parse as the price times 10^11.
     const seed =
       priceCurrency === 'USD' && quote?.nativePrice
         ? quote.nativePrice.price.toFixed(2).replace('.', ',')
@@ -878,9 +877,9 @@ function MarketFields({
         control={control}
         errors={errors}
         label={t(`${fieldPrefix}.purchasePrice`)}
-        // Crypto is bought in USD; every other class is priced in đồng here.
-        usdToVnd={type === 'crypto' ? usdToVnd : null}
-        setValue={setValue}
+        // Follows the type: crypto is stored in USD, everything else in đồng.
+        currency={positionQuoteCurrency(type)}
+        usdToVnd={usdToVnd}
         t={t}
       />
     </>
@@ -899,23 +898,28 @@ function PurchasePriceField({
   control,
   errors,
   label,
+  currency,
   usdToVnd,
-  setValue,
   t,
 }: {
   control: Control
   errors: Errors
   label: string
-  /** Today's rate; `null` when the class is đồng-priced or no quote has landed. */
+  /** The currency the position is stored in — no choice, it follows the type. */
+  currency: 'VND' | 'USD'
+  /** Today's rate, for the đồng equivalent; null until a quote lands. */
   usdToVnd: number | null
-  setValue: UseFormSetValue<AssetForm>
   t: Translate
 }) {
-  const currency = useWatch({ control, name: 'purchasePriceCurrency' })
   const raw = useWatch({ control, name: 'purchasePrice' })
   const isUsd = currency === 'USD'
   const typed = parseRawDecimal(raw ?? '')
-  const converted = isUsd && usdToVnd && Number.isFinite(typed) ? typed * usdToVnd : null
+  // A USD price still needs to read in đồng — the currency the household thinks
+  // in — so the equivalent sits under the field.
+  const converted =
+    isUsd && usdToVnd && Number.isFinite(typed)
+      ? { value: formatVndExact(typed * usdToVnd) }
+      : null
 
   return (
     <div>
@@ -936,25 +940,10 @@ function PurchasePriceField({
           />
         )}
       />
-      {usdToVnd ? (
-        <div className="mt-2 flex items-center justify-between gap-3">
-          {/* The đồng that will actually be stored. */}
-          <span className="num t-caption text-ink3">
-            {converted !== null ? t('assets.form.market.approxVnd', {
-              value: formatVndExact(converted),
-            }) : null}
-          </span>
-          <Segmented
-            value={currency ?? 'VND'}
-            // The market fields re-seed the price in the new currency, so the
-            // old figure is never reinterpreted as the other one.
-            onChange={(next) => setValue('purchasePriceCurrency', next, { shouldDirty: true })}
-            options={[
-              { value: 'VND', label: 'đ' },
-              { value: 'USD', label: '$' },
-            ]}
-          />
-        </div>
+      {converted ? (
+        <p className="num mt-2 t-caption text-ink3">
+          {t('assets.form.market.approxVnd', converted)}
+        </p>
       ) : null}
     </div>
   )
