@@ -66,7 +66,16 @@ import {
 } from '@money-space/core/features/assets/model/assets-form'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useBillingSheetOpen } from '@money-space/core/shared/stores/paywall-store'
-import { formatMoney, formatVndExact, type DisplayCurrency } from '@money-space/core/shared/lib/format-money'
+import {
+  formatMoney,
+  formatQuotePrice,
+  formatVndExact,
+} from '@money-space/core/shared/lib/format-money'
+import {
+  formatDecimalDisplay,
+  formatIntegerDisplay,
+  parseRawDecimal,
+} from '@money-space/core/shared/lib/number-format'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type WalletOption = { value: string; label: string; balance?: number }
@@ -693,17 +702,10 @@ function MarketFields({
   const assetClass = searchableAssetClassForType(type)
   const symbol = useWatch({ control, name: 'symbol' })
   const market = useWatch({ control, name: 'market' })
-  // Ask crypto for its quote in đồng. Every money field here is VND, but crypto
-  // defaults to USD upstream, so the quote came back unprefillable (see
-  // `canPrefill`). CoinMarketCap converts server-side in the same call — the only
-  // place a real FX rate exists, since the client's `fxToVnd` is a stub.
-  //
-  // Deliberately crypto ONLY. Foreign equities are just as USD-bound, but they
-  // route to Twelve Data, which fetches a USD price and then labels it with
-  // whatever currency was ASKED for — requesting VND there would return a USD
-  // figure tagged `VND`, slipping past `canPrefill` and understating the cost
-  // basis ~26,000x. That is the exact bug the guard exists to prevent.
-  const quoteCurrency = assetClass === 'crypto' ? 'VND' : undefined
+  // Crypto is asked for in USD — the currency it is actually quoted in — and the
+  // backend converts to đồng with the bank rate. Crypto ONLY: a foreign equity
+  // labels a USD price with whatever was asked for. See memory/market-data.md.
+  const quoteCurrency = assetClass === 'crypto' ? 'USD' : undefined
 
   // A gold quote carries every unit's price, so switching chỉ → gram picks a
   // figure out of the response rather than re-fetching. The backend owns the
@@ -718,8 +720,35 @@ function MarketFields({
   )
   const quotedPrice = quote ? quotePriceForUnit(quote, unit) : null
 
+  // Today's USD/VND, read off the quote itself rather than fetched again: the
+  // backend returns the đồng price with the USD one beside it, so their ratio is
+  // the exact rate it used. See memory/market-data.md.
+  const usdToVnd =
+    quote?.quoteCurrency === 'VND' &&
+    quote.nativePrice?.quoteCurrency === 'USD' &&
+    quote.nativePrice.price > 0
+      ? quote.price / quote.nativePrice.price
+      : null
+
+  // Carried on the form so submit can convert a USD cost basis without asking
+  // for the rate again.
+  useEffect(() => {
+    setValue('usdToVnd', usdToVnd)
+  }, [usdToVnd, setValue])
+
+  const priceCurrency = useWatch({ control, name: 'purchasePriceCurrency' })
+
   const prefillPurchasePrice = (price: number) => {
-    setValue('purchasePrice', String(Math.round(price)), {
+    // Seed the field in the currency it is currently accepting, so a USD field
+    // is not filled with a đồng figure.
+    // Comma is this app's decimal separator, and `parseRawDecimal` strips "."
+    // as a THOUSANDS separator — so a JS "78821.2085" would parse as
+    // 782_120_853..., i.e. the price times 10^11. Cents are enough for a quote.
+    const seed =
+      priceCurrency === 'USD' && quote?.nativePrice
+        ? quote.nativePrice.price.toFixed(2).replace('.', ',')
+        : String(Math.round(price))
+    setValue('purchasePrice', seed, {
       shouldDirty: true,
       shouldValidate: true,
     })
@@ -745,13 +774,13 @@ function MarketFields({
   const prefilledFor = useRef<string | null>(null)
   useEffect(() => {
     if (!quote || !canPrefill || quotedPrice === null) return
-    const key = `${quote.assetClass}:${quote.symbol}:${unit ?? quote.unit}`
+    const key = `${quote.assetClass}:${quote.symbol}:${unit ?? quote.unit}:${priceCurrency}`
     if (prefilledFor.current === key) return
     prefilledFor.current = key
     prefillPurchasePrice(quotedPrice)
     // `prefillPurchasePrice` is a stable form helper.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quote, canPrefill, quotedPrice, unit])
+  }, [quote, canPrefill, quotedPrice, unit, priceCurrency])
 
   return (
     <>
@@ -845,21 +874,89 @@ function MarketFields({
 
       {type === 'gold' ? <GoldUnitField control={control} errors={errors} t={t} /> : null}
 
+      <PurchasePriceField
+        control={control}
+        errors={errors}
+        label={t(`${fieldPrefix}.purchasePrice`)}
+        // Crypto is bought in USD; every other class is priced in đồng here.
+        usdToVnd={type === 'crypto' ? usdToVnd : null}
+        setValue={setValue}
+        t={t}
+      />
+    </>
+  )
+}
+
+/**
+ * The cost basis, typed in đồng or — for crypto — in USD.
+ *
+ * Crypto is bought and remembered in dollars, so a đồng-only field asks the user
+ * to do the FX by hand. The position still stores đồng; the toggle only changes
+ * what is TYPED, and the đồng it converts to is shown under the field so the
+ * stored number is never a surprise. See memory/market-data.md.
+ */
+function PurchasePriceField({
+  control,
+  errors,
+  label,
+  usdToVnd,
+  setValue,
+  t,
+}: {
+  control: Control
+  errors: Errors
+  label: string
+  /** Today's rate; `null` when the class is đồng-priced or no quote has landed. */
+  usdToVnd: number | null
+  setValue: UseFormSetValue<AssetForm>
+  t: Translate
+}) {
+  const currency = useWatch({ control, name: 'purchasePriceCurrency' })
+  const raw = useWatch({ control, name: 'purchasePrice' })
+  const isUsd = currency === 'USD'
+  const typed = parseRawDecimal(raw ?? '')
+  const converted = isUsd && usdToVnd && Number.isFinite(typed) ? typed * usdToVnd : null
+
+  return (
+    <div>
       <Controller
         control={control}
         name="purchasePrice"
         render={({ field }) => (
-          <MoneyField
+          <DecimalField
             id="asset-purchase-price"
-            label={t(`${fieldPrefix}.purchasePrice`)}
-            value={field.value}
+            label={label}
+            // Grouped either way, so a four-figure USD price reads "78.821,21"
+            // rather than "78821,21" — and the comma is visibly the decimal.
+            value={isUsd ? formatDecimalDisplay(field.value) : formatIntegerDisplay(field.value)}
             onChange={field.onChange}
             onBlur={field.onBlur}
             error={errors.purchasePrice?.message}
+            suffix={isUsd ? 'USD' : 'đ'}
           />
         )}
       />
-    </>
+      {usdToVnd ? (
+        <div className="mt-2 flex items-center justify-between gap-3">
+          {/* The đồng that will actually be stored. */}
+          <span className="num t-caption text-ink3">
+            {converted !== null ? t('assets.form.market.approxVnd', {
+              value: formatVndExact(converted),
+            }) : null}
+          </span>
+          <Segmented
+            value={currency ?? 'VND'}
+            // The market fields re-seed the price in the new currency, so the
+            // old figure is never reinterpreted as the other one.
+            onChange={(next) => setValue('purchasePriceCurrency', next, { shouldDirty: true })}
+            options={[
+              { value: 'VND', label: 'đ' },
+              { value: 'USD', label: '$' },
+            ]}
+          />
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -921,10 +1018,20 @@ function MarketQuoteHint({
       aria-live="polite"
     >
       <span className="text-ink3">{t('assets.form.market.quoteLabel')}</span>
-      <span className="font-medium text-ink">
-        {formatMoney(price, quote.quoteCurrency as DisplayCurrency)} /{' '}
-        {unit || quote.unit}
+      <span className="num font-medium text-ink">
+        {quote.quoteCurrency === 'VND'
+          ? formatVndExact(price)
+          : formatQuotePrice(price, quote.quoteCurrency)}{' '}
+        / {unit || quote.unit}
       </span>
+      {/* The USD figure behind a converted đồng one — what a crypto holder
+          would check against an exchange. See memory/market-data.md. */}
+      {quote.nativePrice ? (
+        <span className="num text-ink3">
+          {formatQuotePrice(quote.nativePrice.price, quote.nativePrice.quoteCurrency)} /{' '}
+          {unit || quote.unit}
+        </span>
+      ) : null}
     </div>
   )
 }

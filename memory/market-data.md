@@ -64,9 +64,9 @@ and a "dùng làm giá mua" action.
     figure the user has since edited; picking a different symbol re-prefills.
   - **VND quotes only.** A USD quote (crypto, foreign equities) would land as
     plain digits in a đồng field — BTC at 78,188 USD becomes 78.188đ, off by the
-    FX rate. Those quotes are still shown, formatted in their own currency via
-    `formatMoney(price, quote.quoteCurrency)`, with the "dùng làm giá mua"
-    action hidden until FX conversion exists.
+    FX rate. Crypto is now converted server-side (see below), so it arrives in
+    đồng; anything still quoting foreign is shown in its own currency with the
+    "dùng làm giá mua" action hidden.
   - The two numbers stay conceptually distinct — market price is *now*,
     `purchasePrice` is what was paid — which is why the quote remains visible
     after prefilling.
@@ -74,6 +74,94 @@ and a "dùng làm giá mua" action.
   `purchasePrice`.** An instrument belongs to exactly one class, so nothing
   picked for the old type survives: "VÀNG MIẾNG SJC" is not a crypto symbol, and
   leaving it would submit a position nothing can price.
+
+## Crypto: both currencies come from the exchange
+
+A crypto quote is served in **đồng** whatever currency the caller named, with the
+USD figure alongside in `nativePrice`. **Both are CoinMarketCap's own numbers** —
+`getQuote` asks the provider for `VND` and `USD` in one `getLatestPrices` call.
+
+CMC quotes VND directly; the limit is **one `convert` per HTTP call**
+(`convert=USD,VND` → HTTP 400, *"Your plan is limited to 1 convert options"*), so
+`CoinMarketCapPriceProvider` already groups requests by convert-currency and
+issues one call each. Two calls, no rate of ours in the middle.
+
+Do NOT "fix" this by fetching USD once and multiplying: a derived USD/VND figure
+drifts from the exchange's, so the two numbers on screen stop agreeing.
+
+- **Fallback only if the upstream will not quote đồng**: convert its own currency
+  with vnstock's bank counter rates — the same feed `foreign_currency` is priced
+  from, so a USD holding and a USD-denominated coin convert identically. Not
+  `fx_rates`: that table is empty and nothing writes to it. `source` then reads
+  `coinmarketcap+vnstock`, naming both upstreams.
+- **Buy-transfer side, not sell**, in that fallback. `commodityQuote` uses `sell`
+  because it prices a currency being *acquired*; conversion restates a value the
+  household already holds and would realise by selling USD to the bank. Order:
+  `buyTransfer → buyCash → sell`.
+- **No rate published → serve the USD quote unconverted.** It is honestly
+  labelled by its `quoteCurrency`, and callers already check that before
+  prefilling a đồng field. Inventing a rate puts a number ~26.000× wrong into a
+  form.
+- **`nativePrice` carries the pre-conversion figure** (`{ price, quoteCurrency }`),
+  set only when `price` IS a conversion. Crypto is quoted and remembered in USD
+  everywhere the household would check it, so the đồng figure alone cannot be
+  verified against any exchange — and since the đồng number is a product of the
+  rate, stating only the result hides the half most likely to be stale.
+- **One cache entry per symbol**, keyed `VND`: both spellings mean the same đồng
+  answer, so the pair of upstream calls happens once per 5-minute TTL.
+- `source` names both upstreams (`coinmarketcap+vnstock`): a stale figure is only
+  debuggable if you know which half went stale.
+
+**Still required for any of this to return a price**: `COIN_MARKETCAP_API_KEY`
+(or `TWELVEDATA_API_KEY`) in the backend env. With neither set, `crypto` never
+enters the routes map in `priceRoutes`, the composite provider skips the request,
+and the endpoint returns `null` — silently, with no log at the service level.
+
+### The USD price on a HELD position comes from the batch cache
+
+`getQuote` (asset-create) and `getMarketPrices` (held positions) are separate
+paths, and both need the dual-currency treatment:
+
+- Positions store `quote_currency: 'VND'`, so `getMarketSymbolUniverse` alone
+  would only ever fetch đồng. `fetchPrices` adds a USD request for every crypto
+  row, so the cache holds both.
+- **`quoteFor` therefore takes a `quoteCurrency`** — with two entries per crypto
+  symbol, taking the first match would price a position in whichever landed
+  first (~26.000x out). `computeCurrentValue` passes the position's own currency;
+  `withMarketPrice` passes it too, then looks up USD separately and attaches it
+  as `nativeMarketPrice`.
+- `MarketPosition.nativeMarketPrice` is read-only and never persisted, exactly
+  like `marketPrice` beside it.
+
+### Cost basis for crypto is TYPED in USD, STORED in đồng
+
+`asset_market_positions.purchase_price` stays đồng and `quote_currency` stays
+`VND` for every position the form creates. The `đ/$` toggle beside the price
+field changes only what is typed; `purchasePriceInVnd` multiplies by
+`values.usdToVnd` on submit.
+
+- **The rate is the quote's own**: `quote.price / quote.nativePrice.price`, i.e.
+  CMC's đồng price over CMC's USD price for the same coin at the same instant. No
+  second source, so nothing can drift out of step with the price shown above it.
+- **No rate → the price is not stored** (`NaN`, so `toAsset` omits it) rather than
+  writing 2.400 into a đồng column and understating the basis ~26.000x.
+- The converted đồng is shown under the field (`≈ 62.345.751đ`) — the stored
+  number is never a surprise.
+- Editing an existing asset reopens in **đồng**, because đồng is what was stored;
+  the original USD figure is not kept.
+
+**Seeding the USD field: never `String(price)`.** Comma is this app's decimal
+separator and `parseRawDecimal` strips `.` as a THOUSANDS separator, so a JS
+`String(78821.20853177381)` parses back as 7.882.120.853.177.381 — the price
+times 10^11, which then converted to 204 tỷ tỷ đồng. Seed with
+`price.toFixed(2).replace('.', ',')`; cents are all a quote carries anyway.
+
+**Why not store `quote_currency: 'USD'` and the real USD basis?** The column and
+`computeCurrentValue` already support it — the blocker is `fx_rates`, which is
+empty with nothing writing to it, so `fxRateToVnd` returns `null` and the asset
+values at **0đ** across dashboard, forecast and snapshots. Storing đồng needs no
+migration, no FX job, and no change to the valuation engine. Revisit only if a
+household needs a cost basis that survives rate moves.
 
 ### Popover mechanics inside the dialog (two real traps)
 

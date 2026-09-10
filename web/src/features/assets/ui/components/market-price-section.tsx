@@ -2,7 +2,7 @@ import { RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import type { MarketQuote } from '@money-space/core/features/assets/api/symbols.repository'
-import { formatMoney } from '@money-space/core/shared/lib/format-money'
+import { formatMoney, formatQuotePrice } from '@money-space/core/shared/lib/format-money'
 import { formatRelativeDay } from '@money-space/core/shared/lib/format-relative-day'
 import { cn } from '@money-space/core/shared/lib/utils'
 
@@ -79,7 +79,7 @@ export function MarketPriceSection({
               must read as USD, never relabelled as đồng. */}
           {quote.quoteCurrency === 'VND'
             ? formatMoney(quote.price)
-            : `${quote.price} ${quote.quoteCurrency}`}
+            : formatQuotePrice(quote.price, quote.quoteCurrency)}
         </span>
       </div>
 
@@ -106,6 +106,15 @@ export function MarketPriceSection({
           </span>
         ) : null}
       </div>
+
+      {/* The USD figure behind a converted đồng one — what the household
+          would check against an exchange. See memory/market-data.md. */}
+      {quote.nativePrice ? (
+        <p className="num mt-1 t-caption text-ink3">
+          {formatQuotePrice(quote.nativePrice.price, quote.nativePrice.quoteCurrency)}
+          {unit ? ` / ${unit}` : null}
+        </p>
+      ) : null}
     </section>
   )
 }

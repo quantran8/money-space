@@ -77,6 +77,11 @@ export type MarketPosition = {
   marketPriceCurrency?: string
   /** ISO timestamp the upstream observed `marketPrice`. */
   marketPriceAt?: string
+  /**
+   * The same price in the currency the instrument is really quoted in, when
+   * `marketPrice` is đồng — crypto is checked against USD exchanges.
+   */
+  nativeMarketPrice?: { price: number; quoteCurrency: string }
 }
 
 /** How interest is paid out during the term (kỳ trả lãi). */

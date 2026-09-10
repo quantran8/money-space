@@ -552,6 +552,7 @@ export const resources = {
           purchasePricePlaceholder: 'Ví dụ: 1.500.000.000',
           market: {
             quoteLabel: 'Giá thị trường',
+            approxVnd: '≈ {{value}}',
             quoteLoading: 'Đang lấy giá thị trường...',
             quoteUnavailable: 'Chưa có giá thị trường cho mã này',
             gold: {
@@ -873,7 +874,9 @@ export const resources = {
             currentValue: 'Giá trị hiện tại',
             balance: 'Số dư',
             marketPrice: 'Giá thị trường',
-            holdingLine: '{{quantity}} {{unit}} · <1>{{price}} / {{unit}}</1>',
+            holdingLine: 'Giá hiện tại · <1>{{price}}</1> / {{unit}}',
+            holdingLineNative:
+              'Giá hiện tại · <1>{{price}}</1> / {{unit}} · {{nativePrice}} / {{unit}}',
             shareOfTotal: 'Trong tổng tài sản',
             currentPrice: 'Giá hiện tại {{value}}/{{unit}}.',
             valuationDescription: 'Giá trị ước tính mới nhất của tài sản.',
@@ -4055,6 +4058,7 @@ export const resources = {
           purchasePricePlaceholder: 'Example: 1.500.000.000',
           market: {
             quoteLabel: 'Market price',
+            approxVnd: '≈ {{value}}',
             quoteLoading: 'Fetching the market price...',
             quoteUnavailable: 'No market price for this symbol yet',
             gold: {
@@ -4358,7 +4362,9 @@ export const resources = {
             currentValue: 'Current value',
             balance: 'Balance',
             marketPrice: 'Market price',
-            holdingLine: '{{quantity}} {{unit}} · <1>{{price}} / {{unit}}</1>',
+            holdingLine: 'Current price · <1>{{price}}</1> / {{unit}}',
+            holdingLineNative:
+              'Current price · <1>{{price}}</1> / {{unit}} · {{nativePrice}} / {{unit}}',
             shareOfTotal: 'Of total assets',
             currentPrice: 'Current price {{value}}/{{unit}}.',
             valuationDescription: 'The latest estimated value of this asset.',

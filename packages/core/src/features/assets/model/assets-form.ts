@@ -62,6 +62,17 @@ export type AssetForm = {
   quantity: string
   unit: string
   purchasePrice: string
+  /**
+   * Currency `purchasePrice` is TYPED in — never what gets stored. Crypto is
+   * bought in USD, so typing đồng means doing the FX by hand. Converted to đồng
+   * on submit. See memory/market-data.md.
+   */
+  purchasePriceCurrency: 'VND' | 'USD'
+  /**
+   * Today's USD/VND, carried on the form so submit can convert without
+   * re-fetching. Set by the market fields from the live quote; never submitted.
+   */
+  usdToVnd: number | null
   // formula-calculated
   principal: string
   interestRate: string
@@ -113,6 +124,8 @@ export const defaultAssetFormValues: AssetForm = {
   quantity: '',
   unit: '',
   purchasePrice: '',
+  purchasePriceCurrency: 'VND',
+  usdToVnd: null,
   principal: '',
   interestRate: '',
   hasInterest: false,
@@ -256,7 +269,26 @@ function resolveMarketUnit(values: AssetForm): string {
   return values.unit.trim()
 }
 
-/** Build an Asset from raw form values, or null if inputs are incomplete. */
+/**
+ * The cost basis in đồng — the only currency the position stores.
+ *
+ * A USD figure needs today's rate; with none to hand it is NOT stored, since
+ * writing 2.400 into a đồng column understates the basis ~26.000x.
+ */
+function purchasePriceInVnd(values: AssetForm): number {
+  const typed = parseRawDecimal(values.purchasePrice)
+  if (!Number.isFinite(typed)) return NaN
+  if (values.purchasePriceCurrency !== 'USD') return typed
+  const rate = values.usdToVnd
+  return rate && Number.isFinite(rate) ? typed * rate : NaN
+}
+
+/**
+ * Build an Asset from raw form values, or null if inputs are incomplete.
+ *
+ * A cost basis typed in USD is converted with `values.usdToVnd`; without a rate
+ * it is left unstored rather than written as đồng. See memory/market-data.md.
+ */
 export function toAsset(id: string, values: AssetForm): Asset | null {
   const mode = valuationModeForType(values.type)
   const base = {
@@ -288,7 +320,7 @@ export function toAsset(id: string, values: AssetForm): Asset | null {
     const assetClass = assetClassForType(values.type)
     const quantity = parseRawDecimal(values.quantity)
     if (!assetClass || !values.symbol.trim() || !Number.isFinite(quantity)) return null
-    const purchasePrice = parseMoneyToVnd(values.purchasePrice)
+    const purchasePrice = purchasePriceInVnd(values)
     return {
       ...base,
       valuationMode: 'market_priced',
@@ -365,6 +397,9 @@ export function fromAsset(asset: Asset): AssetForm {
     quantity: decimalToRaw(asset.marketPosition?.quantity),
     unit: asset.marketPosition?.unit ?? '',
     purchasePrice: moneyToRaw(asset.marketPosition?.purchasePrice),
+    // Stored đồng, so editing reopens in đồng whatever it was typed in.
+    purchasePriceCurrency: 'VND' as const,
+    usdToVnd: null,
     principal: moneyToRaw(asset.calculationTerm?.principalAmount),
     interestRate: decimalToRaw(asset.calculationTerm?.interestRate),
     // A stored 0% loan reopens with the interest toggle off, the way it was saved.
@@ -414,6 +449,8 @@ export function buildAssetSchema(
       quantity: z.string().trim(),
       unit: z.string().trim(),
       purchasePrice: z.string().trim(),
+      purchasePriceCurrency: z.enum(['VND', 'USD']),
+      usdToVnd: z.number().nullable(),
       principal: z.string().trim(),
       interestRate: z.string().trim(),
       hasInterest: z.boolean(),
@@ -497,7 +534,12 @@ export function buildAssetSchema(
             code: 'custom',
             message: required(t(`assets.form.market.${values.type}.purchasePrice`)),
           })
-        } else if (!moneyLike.test(values.purchasePrice)) {
+        } else if (
+          // A USD price has cents; đồng stays whole digits.
+          values.purchasePriceCurrency === 'USD'
+            ? !Number.isFinite(parseRawDecimal(values.purchasePrice))
+            : !moneyLike.test(values.purchasePrice)
+        ) {
           ctx.addIssue({ path: ['purchasePrice'], code: 'custom', message: invalidMoney })
         }
         if (values.type === 'gold' && !values.unit) {
