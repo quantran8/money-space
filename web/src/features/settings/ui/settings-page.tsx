@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { HouseholdOverviewCard } from '@/features/settings/ui/components/household-overview-card'
 import { useHouseholdInvite } from '@money-space/core/features/invites/hooks/use-household-invite'
 import { useMembersPage } from '@money-space/core/features/members/hooks/use-members-page'
 import { useSettingsPage } from '@money-space/core/features/settings/hooks/use-settings-page'
@@ -22,7 +21,8 @@ import {
   SignOutCard,
 } from '@/features/settings/ui/components/data-card'
 import { InviteQrDialog } from '@/features/invites/ui/components/invite-qr-dialog'
-import { MembersListSection } from '@/features/members/ui/components/members-list-section'
+import { OtherSettingsCard } from '@/features/settings/ui/components/other-settings-card'
+import { SpaceCard } from '@/features/settings/ui/components/space-card'
 import { SpaceSwitcherCard } from '@/features/settings/ui/components/space-switcher-card'
 
 /**
@@ -76,9 +76,9 @@ export function SettingsPage() {
 
   return (
     <div className="flex flex-col pb-3">
-      {/* Saving sits level with the title, not at the bottom of the settings
-          card: the two selects below are the only thing it commits, and a
-          button buried inside one card of five reads as that card's footer.
+      {/* Saving sits level with the title, not at the bottom of a card: it
+          commits the space name and the two selects, which now live in two
+          different panels, so neither one may own the button.
           Rendered here rather than through `CompactPageHeader` because that
           component deliberately has no subtitle slot, and this page's second
           line names the space every panel below belongs to. */}
@@ -122,21 +122,27 @@ export function SettingsPage() {
             asks which space the name field just renamed. */}
         <SpaceSwitcherCard />
 
-        {!isSettingsLoading ? <HouseholdOverviewCard form={settingsForm} /> : null}
-
-        <MembersListSection
-          members={members}
-          isLoading={isLoading}
-          invitedCount={invitedCount}
-          holdsByMember={holdsByMember}
-          ownerMemberId={ownerMemberId}
-          viewerMemberId={viewerMemberId}
-          isViewerOwner={isViewerOwner}
-          onInvite={invite.openQr}
-          onRemoveMember={setRemoveId}
-        />
+        {/* Name, members and plan are one subject: who this space is. */}
+        {!isSettingsLoading ? (
+          <SpaceCard
+            form={settingsForm}
+            members={members}
+            isLoadingMembers={isLoading}
+            invitedCount={invitedCount}
+            holdsByMember={holdsByMember}
+            ownerMemberId={ownerMemberId}
+            viewerMemberId={viewerMemberId}
+            isViewerOwner={isViewerOwner}
+            isSavingName={settingsSaving}
+            onSaveName={() => void submitSettings()}
+            onInvite={invite.openQr}
+            onRemoveMember={setRemoveId}
+          />
+        ) : null}
 
         <CategoriesCard />
+
+        {!isSettingsLoading ? <OtherSettingsCard form={settingsForm} /> : null}
 
         <DataCard />
 

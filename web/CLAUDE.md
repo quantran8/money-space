@@ -86,6 +86,13 @@ Two domain rules worth knowing up front:
 - **Money input**: whole digits only. Fields group them for display (`20000` → `"20.000"`) but form state always holds a plain separator-free digit string — see `packages/core/src/shared/lib/number-format.ts` (`sanitizeIntegerInput`, `formatIntegerDisplay`, `parseRawMoney`). There is **no** `"20M"` / `"500K"` shorthand: `sanitizeIntegerInput` strips the suffix and `parseRawMoney("20M")` is `NaN`. Comma is the decimal separator for quantities and rates (`parseRawDecimal`).
 - **Styling**: Tailwind v4 utilities with CSS variables, e.g. `text-[hsl(var(--muted-foreground))]`. Chart colors come from `packages/core/src/shared/constants/colors.ts` — don't invent per-chart hues.
 
+## Comment style and commits
+
+See [../.claude/CLAUDE.md](../.claude/CLAUDE.md). Short version: comments are a
+line or two, every longer nghiệp vụ explanation lives in `../memory/` with a
+pointer from the code, and commit messages are 1–2 lines with no
+`Co-Authored-By`.
+
 ## Voice
 
 Non-negotiable, and enforced by `pnpm lint`. The product must never read as control, surveillance, judgement, or a verdict.

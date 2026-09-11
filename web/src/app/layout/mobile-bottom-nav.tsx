@@ -5,6 +5,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
+import { sourceForPathname } from '@money-space/core/features/whatif/model/whatif-source'
 
 type BottomNavItem = {
   to: string
@@ -51,7 +52,7 @@ export function MobileBottomNav() {
           is what it is, and it keeps the five tabs at full width. */}
       <button
         type="button"
-        onClick={() => openWhatIf({ source: 'other' })}
+        onClick={() => openWhatIf({ source: sourceForPathname(pathname) })}
         aria-label={t('home.picture.simulate')}
         title={t('home.picture.simulate')}
         className={cn(

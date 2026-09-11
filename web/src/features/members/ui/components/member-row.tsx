@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { StatusChip } from '@/components/ui/status-chip'
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
 
 type MemberRowProps = {
@@ -74,7 +75,14 @@ export function MemberRow({
           {member.initials}
         </div>
         <div className="min-w-0">
-          <p className="truncate t-body-sm font-medium">{member.name}</p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="truncate t-body-sm font-medium">{member.name}</p>
+            {isOwner ? (
+              <StatusChip tone="neutral" className="t-caption text-ink3">
+                {t('members.list.owner')}
+              </StatusChip>
+            ) : null}
+          </div>
           <p className="mt-0.5 truncate t-caption text-ink3">{member.email}</p>
         </div>
       </div>

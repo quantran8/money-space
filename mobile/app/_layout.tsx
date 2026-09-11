@@ -1,7 +1,9 @@
 import '../global.css'
 
 import { useEffect, useState } from 'react'
-import { AppState } from 'react-native'
+import { AppState, Platform } from 'react-native'
+
+import { noteAppOpened } from '@money-space/core/shared/analytics-session'
 import { QueryClientProvider, focusManager } from '@tanstack/react-query'
 import {
   Urbanist_300Light,
@@ -19,8 +21,15 @@ import { queryClient } from '@money-space/core/shared/api/query-client'
 import { bootstrap } from '@/shared/bootstrap'
 import { colors } from '@/theme/tokens'
 import { ToastProvider } from '@/shared/toast'
+import { RouteErrorBoundary } from '@/components/route-error-boundary'
 
 import type { AppStateStatus } from 'react-native'
+
+/**
+ * Expo Router renders this in place of any screen under this layout that
+ * throws. Without it a render error left a blank frame in production.
+ */
+export { RouteErrorBoundary as ErrorBoundary }
 
 /**
  * The query client is configured with `refetchOnWindowFocus: false` because the
@@ -30,6 +39,12 @@ import type { AppStateStatus } from 'react-native'
  */
 function onAppStateChange(status: AppStateStatus) {
   focusManager.setFocused(status === 'active')
+  // Coming back to the app is an "open" — but only after a real absence, which
+  // `noteAppOpened` decides. Without that 30-minute rule a phone would report
+  // many times the web's opens for identical use.
+  if (status === 'active') {
+    void noteAppOpened(Platform.OS === 'ios' ? 'ios' : 'android')
+  }
 }
 
 export default function RootLayout() {

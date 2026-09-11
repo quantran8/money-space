@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { useLogout } from '@money-space/core/features/auth/hooks/use-logout'
+import { useExportData } from '@money-space/core/features/export/hooks/use-export-data'
 
 /**
  * Exporting and deleting used to share one card, as two sunk boxes side by
@@ -14,6 +15,9 @@ import { useLogout } from '@money-space/core/features/auth/hooks/use-logout'
  */
 export function DataCard() {
   const { t } = useTranslation()
+  // Premium-gated: a Free household gets the paywall sheet on click rather than
+  // a failed download. The server refuses independently either way.
+  const { exportData, isExporting, error } = useExportData()
 
   return (
     <Panel>
@@ -25,10 +29,22 @@ export function DataCard() {
           <p className="mt-1 t-body-sm leading-5 text-ink2">
             {t('settings.data.exportDescription')}
           </p>
+          {error ? (
+            <p className="mt-2 t-caption leading-5 text-alert-ink">
+              {t('settings.data.exportFailed')}
+            </p>
+          ) : null}
         </div>
-        <Button type="button" variant="secondary" size="sm" className="justify-self-start">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="justify-self-start"
+          disabled={isExporting}
+          onClick={() => void exportData('json')}
+        >
           <Download className="size-4" strokeWidth={1.75} />
-          {t('settings.data.exportAction')}
+          {isExporting ? t('settings.data.exporting') : t('settings.data.exportAction')}
         </Button>
       </div>
     </Panel>

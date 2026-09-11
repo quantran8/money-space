@@ -1,5 +1,18 @@
 # Backend Tables & Relationships — Oursight MVP v3.1
 
+> **Đối chiếu code ngày 2026-09-10.** Doc này viết tới 2026-08-28, code chạy
+> tiếp sau đó, nên nhiều chỗ đã lệch. Các mục lệch đã được gắn khối ⚠️ ngay
+> đầu mục, kèm migration đã đổi nó. **Không có khối ⚠️ nghĩa là đã kiểm và
+> khớp.**
+>
+> Nguồn sự thật của schema là `backend/prisma/schema.prisma` — repo dùng
+> `db push`, nên `prisma/migrations/` chỉ là tư liệu, không phải cái được áp.
+>
+> Các mục đã đối chiếu và lệch: §8 (role/permission), §9 (invite),
+> §11 (assets privacy), §13 (market_prices), §16 (unique index),
+> §19 (event_type, goal contribution), §20 (current_amount),
+> §21 (attention_items), §31 (guard stack), §38 (checklist).
+
 ## 1. Tổng quan
 
 Oursight là app **shared financial clarity + foresight + decision support** cho couple/household.
@@ -695,11 +708,22 @@ households 1 - n audit_logs
 
 # 8. Table: household_members
 
+> ⚠️ **`role` và `permission_level` ĐÃ BỊ DROP** (migration
+> `20260815130000_drop_household_role`, `20260815120200_drop_permission_level`),
+> cùng hai enum `HouseholdRole` và `PermissionLevel`. Mọi mô tả về bậc quyền
+> bên dưới là **tư liệu lịch sử**.
+>
+> Lý do ghi trong chính migration: *một member `view_summary` vẫn nhận đủ
+> response không che của mọi endpoint* — bậc quyền có tồn tại cũng chưa bao giờ
+> được enforce.
+>
+> **Đang chạy thật:** là thành viên (`status = active`, `deleted_at IS NULL`)
+> thì đọc/ghi được mọi thứ trong không gian. Ngoại lệ duy nhất là
+> `@RequireHouseholdCreator()`, suy từ `households.created_by`.
+
 ## Dùng để làm gì?
 
-Lưu user nào thuộc household nào và có quyền gì.
-
-Đây là bảng quan trọng cho permission và enforcement quyền (app-layer guard, xem §31).
+Lưu user nào thuộc household nào.
 
 ## Fields
 
@@ -709,8 +733,8 @@ id                  uuid primary key
 household_id        uuid not null references households(id)
 user_id             uuid not null references profiles(id)
 
-role                text not null
-permission_level    text                    (nullable, null = derive từ role)
+-- role             ĐÃ DROP
+-- permission_level ĐÃ DROP
 
 status              text not null default 'active'
 
@@ -995,6 +1019,14 @@ GET /snapshots
 
 # 11. Table: assets
 
+> ⚠️ Ba cột quyền riêng tư — `financial_nature`, `visibility_level`,
+> `privacy_owner_member_id` — **đã bị drop**. Mục "Shared calculation rule" và
+> "Privacy note" bên dưới vì thế không còn hiệu lực: **mọi asset đều tính vào
+> mọi con số chung**. Xem `03 §4`.
+>
+> `current_value >= 0` cũng không còn đúng: ví được phép âm
+> (`20260829050000_allow_negative_wallet_balance`).
+
 ## Dùng để làm gì?
 
 `assets` lưu tiền/tài sản của household đang nằm ở đâu.
@@ -1027,12 +1059,16 @@ currency                 text not null default 'VND'
 value_updated_at         timestamptz
 
 holder_member_id         uuid references household_members(id)
-privacy_owner_member_id  uuid references household_members(id)
+-- privacy_owner_member_id  ĐÃ DROP (20260815120100)
 
 liquidity                text not null
-financial_nature         text not null default 'household'
+-- financial_nature         ĐÃ DROP (20260815120100)
+-- visibility_level         ĐÃ DROP (20260816094000)
+counts_as_flexible       boolean          -- THẬT, spec chưa nêu
+status                   text not null    -- active | sold | closed
+sold_at                  timestamptz
+area_sqm                 numeric(14,4)
 purpose                  text
-visibility_level         text not null default 'detail'
 note                     text
 
 created_by               uuid references profiles(id)
@@ -1250,6 +1286,17 @@ price_source = stock_price_api
 ---
 
 # 13. Table: market_prices
+
+> ⚠️ **BẢNG NÀY ĐÃ BỊ DROP** (`20260714230000_external_price_provider_and_self_contained_history`).
+> Không phải đổi tên — bị xoá hẳn và thay bằng **provider giá bên ngoài + lịch
+> sử tự chứa**: mỗi dòng định giá tự mang nguồn giá của nó.
+>
+> Thay thế hiện tại: `asset_market_positions.last_price` / `last_price_at` /
+> `price_source`, cộng cache Redis dưới tiền tố `market:*` (không theo household,
+> vì giá BTC giống nhau với mọi người).
+>
+> Kéo theo: `market_price_id` ở §16 và dòng `market_prices.quote_currency`
+> trong danh sách FK ở §14A cũng không còn.
 
 ## Dùng để làm gì?
 
@@ -1632,9 +1679,21 @@ currency <> ''
 
 ## Suggested unique index
 
+> ⚠️ **Đã kiểm DB thật (2026-09-10): CẢ HAI index này ĐANG KHÔNG TỒN TẠI.**
+> `asset_valuations` chỉ có `pkey` và index thường trên `money_event_id`.
+>
+> Lý do: Prisma không diễn đạt được partial unique, nên chúng chỉ nằm trong
+> migration SQL — mà repo dùng `db push`, vốn chỉ áp `schema.prisma`.
+> `snapshot_goal_values` mất unique `(snapshot_id, financial_goal_id)` y hệt
+> (cái này Prisma **khai được** bằng `@@unique`).
+>
+> Hiện chưa có dòng trùng nào, nên thêm lại vẫn an toàn.
+
+Thật ra là **hai** partial unique, không phải một:
+
 ```txt
-unique(asset_id, valuation_date)
-where deleted_at is null
+unique(asset_id, money_event_id)  where money_event_id is not null and deleted_at is null
+unique(asset_id, valuation_date)  where money_event_id is null     and deleted_at is null
 ```
 
 ## Usage
@@ -2016,11 +2075,15 @@ event_type:
 - asset_purchase
 - asset_sale
 - asset_update
+- asset_quantity_adjustment   -- THẬT: số lượng đổi (khác asset_update = giá đổi)
 - payment_paid
-- goal_contribution
 - debt_update
 - adjustment
 - other
+
+-- goal_contribution: ĐÃ GỠ (20260819160000_goals_asset_backed_only).
+--   Goal không giữ tiền riêng nên không có "sự kiện góp vào goal"; tiến độ
+--   suy ra từ giá trị thật của asset. Xem §20.
 
 direction:
 - inflow
@@ -2092,9 +2155,16 @@ to_asset_id = Tài khoản VCB
 cashflow_event_id = Lương tháng 8
 ```
 
-## Goal contribution rule
+## ~~Goal contribution rule~~ — KHÔNG còn đúng
 
-Nếu user ghi một `money_event` có `event_type = goal_contribution`, transaction/service layer nên update `financial_goals.current_amount` cùng transaction để không lệch state.
+> ⚠️ Quy tắc này hỏng ở cả hai đầu: `goal_contribution` đã bị gỡ khỏi enum, và
+> `financial_goals.current_amount` đã bị drop
+> (`20260711160000_drop_dead_columns`). Không có gì để update.
+>
+> **Đang chạy thật:** góp tiền cho mục tiêu chỉ là **tiền vào ví thật**. Tiến độ
+> đọc ra từ `goal_asset_allocations` trên giá trị hiện tại của asset, nên không
+> cần đường thứ hai để đồng bộ — và cũng không có đường nào chỉnh tiến độ mà
+> không có tiền thật di chuyển. Xem §20.
 
 ---
 
@@ -2357,15 +2427,24 @@ Không có event nào cả. Tiêu tiền từ asset đứng sau goal là đủ: 
 ## Derived values — không cần lưu
 
 ```txt
+current_amount                      -- KHÔNG phải cột; suy từ allocations (§20B)
+= Σ goal_asset_allocations:
+    kind='fixed'   → min(allocated_amount, giá trị asset)
+    kind='percent' → giá trị asset × percent / 100
+
 remaining_amount
-= target_amount - current_amount
+= max(0, target_amount - current_amount)
 
 estimated_months_to_goal
-≈ remaining_amount / planned_monthly_contribution
+≈ ceil(remaining_amount / planned_monthly_contribution)
 
 projected_completion_date
 = derive từ estimated_months_to_goal
 ```
+
+> `current_amount` từng là một cột thật và **đã bị drop**
+> (`20260711160000_drop_dead_columns`). Nó là giá trị suy ra, không phải dữ liệu
+> lưu — goal không giữ tiền của riêng nó.
 
 Nếu `planned_monthly_contribution` null hoặc <= 0 thì không show projected completion date.
 
@@ -2520,6 +2599,25 @@ Delta này **đã gồm cả** tiền góp thêm, tiền tiêu ra khỏi asset, 
 ---
 
 # 21. Table: attention_items
+
+> ⚠️ **BẢNG NÀY ĐÃ BỊ DROP** (`20260829140000_drop_attention_items`), cùng enum
+> `AttentionItemStatus`. Lý do trong migration: bảng **không có dòng nào trên
+> production** và chưa client nào gọi endpoint ghi của nó.
+>
+> **Đang chạy thật:** mọi tín hiệu được **suy ra lúc đọc** từ forecast, ở
+> `backend/src/modules/attention/domain/attention-rules.ts`. Không lưu, không có
+> cơ chế "đã xem" / "bỏ qua" — tín hiệu tự biến mất khi điều kiện hết.
+>
+> API trả `ruleCode` + `params` thay cho `title`/`reason`, vì client giữ toàn
+> bộ phần chữ (i18n).
+>
+> Còn sống: enum `AttentionLevel` (`normal|important|urgent`) — nhưng nó là cột
+> của `cashflow_events.attention_level`, không phải của bảng này.
+>
+> **4 rule ở §29 vì thế đang chết** (khai báo type nhưng không có nơi sinh ra):
+> `user_flagged`, `money_event_flagged`, `amount_over_threshold`,
+> `asset_moved_sharply` — cả bốn đều thuộc nhóm cần lưu. Muốn có lại thì phải
+> dựng nơi lưu mới.
 
 ## Dùng để làm gì?
 
@@ -3237,16 +3335,33 @@ Enforcement quyền được làm ở **\*\*app-layer\*\*** (NestJS guards), **\
 
 ## Guard stack
 
+> ⚠️ **`@RequireCapability` không tồn tại.** Stack thật chỉ có 2 tầng, cộng một
+> decorator gác vòng đời.
+
 ```txt
 SupabaseAuthGuard   (global)
 = xác thực token, resolve user hiện tại
 
 HouseholdAccessGuard (global)
 = đảm bảo user là member (deleted_at is null) của household đang truy cập
+= VÀ ĐÂY LÀ HẾT: là thành viên nghĩa là đọc/ghi được mọi thứ
 
-@RequireCapability(...) (trên từng route ghi)
-= kiểm tra capability cần thiết cho hành động ghi
+@RequireHouseholdCreator()  (đúng 3 thao tác vòng đời)
+= suy từ households.created_by
+= xoá không gian · mời thành viên · xoá thành viên
 ```
+
+`req.membership` chỉ mang `{ householdId, userId, isCreator }`, không gì khác.
+
+**Hai trục enforcement mô tả bên dưới không được build.** Toàn bộ bộ máy
+(`PERMISSION_RANK`, `VISIBILITY_TIER`, `canViewVisibility`, `hasCapability`,
+`canEdit`, `canAdmin`, `effectivePermission`) đã **viết xong và test đầy đủ
+nhưng chưa bao giờ được nối vào đâu** — `canViewVisibility` có đúng một caller
+là chính spec của nó. Đã xoá; xem
+`backend/src/common/utils/money-space.utils.ts:59-71`.
+
+Cái thay thế là **nhật ký** (`audit_logs`, `/activity`): trách nhiệm giải trình
+đến từ dấu vết để lại, không đến từ quyền cấp trước.
 
 ## Hai trục enforcement
 
@@ -3669,6 +3784,20 @@ Preview một quyết định hôm nay sẽ ảnh hưởng Flexible Money và go
 ---
 
 # 38. Migration checklist từ schema hiện tại sang v3.1
+
+> ⚠️ **Checklist này đã chạy xong và một phần đã bị đảo ngược.** Đừng dùng nó
+> làm việc-cần-làm. Trạng thái thật:
+>
+> - P0 mục 1–3, 6–9: ✅ xong.
+> - P0 mục 4 (`current_amount`, `current_amount_updated_at`): ✅ thêm rồi
+>   **❌ drop lại** — goal không giữ tiền riêng (§20).
+> - P1 mục 11 (`assets.financial_nature`), 12 (`privacy_owner_member_id`),
+>   13 (freeze privacy metadata): ✅ thêm rồi **❌ drop hết** (§11, `03 §4`).
+>   `05` đã ghi nhận việc gỡ này; §38 thì chưa — đây là chỗ spec tự mâu thuẫn.
+> - P1 mục 10 (`financial_management_mode`): ⚠️ enum có, **không gì đọc**.
+> - P1 mục 14 (foresight fields), 15 (indexes/audit): ✅ xong.
+> - "Không làm lúc này": ✅ vẫn không làm — không có bảng `what_if_scenarios`
+>   hay `forecasts`.
 
 ## P0 — cần để chạy core product
 

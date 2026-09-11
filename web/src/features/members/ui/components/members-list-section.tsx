@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@money-space/core/shared/lib/utils'
 import { MemberRow } from '@/features/members/ui/components/member-row'
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
 
@@ -21,6 +22,8 @@ type MembersListSectionProps = {
   isViewerOwner: boolean
   onInvite: () => void
   onRemoveMember: (memberId: string) => void
+  /** Drop the surrounding `Panel` so this can sit as a block inside one. */
+  asBlock?: boolean
 }
 
 export function MembersListSection({
@@ -33,18 +36,17 @@ export function MembersListSection({
   isViewerOwner,
   onInvite,
   onRemoveMember,
+  asBlock = false,
 }: MembersListSectionProps) {
   const { t } = useTranslation()
+  const Wrapper = asBlock ? 'div' : Panel
 
   return (
-    <Panel>
+    <Wrapper>
       <PanelHeader
         title={t('household.merged.membersTitle')}
         action={
           <div className="flex items-center gap-3">
-            <span className="num t-caption text-ink3">
-              {t('members.list.count', { count: members.length })}
-            </span>
             {/* Always available, including in a solo household. A separate
                 "mời thêm người" prompt used to take the button's place below the
                 list, which meant the one household that most needs the action
@@ -63,7 +65,7 @@ export function MembersListSection({
         }
       />
 
-      <div className="s-head-body flex flex-col">
+      <div className={cn('flex flex-col', asBlock ? 'mt-4' : 's-head-body')}>
         {isLoading
           ? Array.from({ length: 2 }).map((_, index) => <MemberRowSkeleton key={index} />)
           : null}
@@ -88,7 +90,7 @@ export function MembersListSection({
           {t('members.list.invitedCount', { count: invitedCount })}
         </p>
       ) : null}
-    </Panel>
+    </Wrapper>
   )
 }
 

@@ -32,6 +32,22 @@ export const signupDefaultValues: SignupForm = {
   agreeTerms: false,
 }
 
+export type ForgotPasswordForm = {
+  email: string
+}
+
+export type ResetPasswordForm = {
+  password: string
+  confirmPassword: string
+}
+
+export const forgotPasswordDefaultValues: ForgotPasswordForm = { email: '' }
+
+export const resetPasswordDefaultValues: ResetPasswordForm = {
+  password: '',
+  confirmPassword: '',
+}
+
 const MIN_PASSWORD_LENGTH = 8
 
 export function buildLoginSchema(t: Translate) {
@@ -40,6 +56,32 @@ export function buildLoginSchema(t: Translate) {
     password: z.string().min(1, t('auth.validation.requiredPassword')),
     remember: z.boolean(),
   })
+}
+
+export function buildForgotPasswordSchema(t: Translate) {
+  return z.object({ email: localizedEmailField(t) })
+}
+
+export function buildResetPasswordSchema(t: Translate) {
+  return z
+    .object({
+      password: z
+        .string()
+        .min(
+          MIN_PASSWORD_LENGTH,
+          t('auth.validation.passwordTooShort', { min: MIN_PASSWORD_LENGTH }),
+        ),
+      confirmPassword: z.string().min(1, t('auth.validation.requiredConfirm')),
+    })
+    .superRefine((values, ctx) => {
+      if (values.confirmPassword !== values.password) {
+        ctx.addIssue({
+          path: ['confirmPassword'],
+          code: 'custom',
+          message: t('auth.validation.passwordMismatch'),
+        })
+      }
+    })
 }
 
 export function buildSignupSchema(t: Translate) {

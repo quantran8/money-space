@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/responsive-dialog'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import { useWhatIf } from '@money-space/core/features/whatif/hooks/use-whatif'
+import { useQuota } from '@money-space/core/features/billing/hooks/use-quota'
 import { useWhatIfAssetSale } from '@money-space/core/features/whatif/hooks/use-whatif-asset-sale'
 import {
   exceedsEverything,
@@ -26,9 +27,11 @@ import { WhatIfResultBlocks } from '@/features/whatif/ui/components/whatif-resul
 import { WhatIfAssetSaleStep } from '@/features/whatif/ui/components/whatif-asset-sale-step'
 import { buildShareSummary } from '@money-space/core/features/whatif/model/whatif-share'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
+import { cn } from '@money-space/core/shared/lib/utils'
 import { formatVndShort } from '@money-space/core/shared/lib/format-money'
 import { parseRawMoney } from '@money-space/core/shared/lib/number-format'
 import { useWhatIfStore, type WhatIfPrefill } from '@money-space/core/shared/stores/whatif-store'
+import { useBillingSheetOpen } from '@money-space/core/shared/stores/paywall-store'
 
 /**
  * The single global what-if surface (spec §26D). Mounted ONCE in AppShell and
@@ -40,9 +43,15 @@ import { useWhatIfStore, type WhatIfPrefill } from '@money-space/core/shared/sto
  */
 export function WhatIfSheet() {
   const { open, prefill, close } = useWhatIfStore()
+  // Stand aside while the paywall is up rather than closing — the quota gate
+  // opens it from inside this sheet, and closing would drop the question.
+  const billingOpen = useBillingSheetOpen()
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={(next) => (next ? undefined : close())}>
+    <ResponsiveDialog
+      open={open && !billingOpen}
+      onOpenChange={(next) => (next || billingOpen ? undefined : close())}
+    >
       {/*
         Keying on the prefill remounts the form for each new question, which
         resets the fields and drops the previous result without a
@@ -61,6 +70,8 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   const close = useWhatIfStore((state) => state.close)
   const { result, run, reset, isRunning } = useWhatIf()
   const { flexibleMoney } = useFlexibleMoney()
+  // Display only — `useWhatIf` is what actually refuses a run over the ceiling.
+  const quota = useQuota('whatIfPerMonth')
 
   const [amount, setAmount] = useState(prefill.amount ? String(prefill.amount) : '')
   const [plannedDate, setPlannedDate] = useState(
@@ -119,12 +130,18 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
             sellable: formatVndShort(verdict.sellable),
           })
 
-  async function runWith(assetSale?: WhatIfAssetSale) {
+  /**
+   * `rerun` marks the calls that explore the answer already on screen rather
+   * than asking a new question: adding an asset sale to it, or taking one
+   * away. Those cost no quota slot — the household asked once.
+   */
+  async function runWith(assetSale?: WhatIfAssetSale, rerun = false) {
     return await run({
       amount: amountValue,
       plannedDate,
       goalId: prefill.goalId,
       assetSale,
+      rerun,
     })
   }
 
@@ -179,8 +196,11 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
     const assetSale = sale.validate()
     if (!assetSale) return
     try {
-      await runWith(assetSale)
-      setSaleStepOpen(false)
+      // `undefined` means the quota gate opened the paywall instead of running.
+      // Closing the step then would drop the household back on a stale answer
+      // with no sign of why.
+      const next = await runWith(assetSale, true)
+      if (next) setSaleStepOpen(false)
     } catch (error) {
       toast.error(getErrorMessage(error, t('whatif.error')))
     }
@@ -189,7 +209,7 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
   /** Undo the sale, keeping the draft so the CTA can restore it. */
   async function handleRemoveSale() {
     try {
-      await runWith()
+      await runWith(undefined, true)
     } catch (error) {
       toast.error(getErrorMessage(error, t('whatif.error')))
     }
@@ -273,9 +293,40 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
       }
     >
       <ResponsiveDialogHeader>
-        <ResponsiveDialogTitle className={showSaleStep ? 't-title' : undefined}>
-          {showSaleStep ? t('whatif.assetSale.title') : t('whatif.title')}
-        </ResponsiveDialogTitle>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <ResponsiveDialogTitle className={showSaleStep ? 't-title' : undefined}>
+            {showSaleStep ? t('whatif.assetSale.title') : t('whatif.title')}
+          </ResponsiveDialogTitle>
+
+          {/* A tag, not a sentence: the count belongs beside the title where it
+              is read once on open, and the full wording stays in `title` for
+              anyone who wants it. Amber when the runs are gone — that state
+              stops the next question, so it is not neutral metadata. Hidden on
+              the result and sale steps: nothing there spends a run. */}
+          {quota && !showResult && !showSaleStep ? (
+            <span
+              title={
+                quota.isExhausted
+                  ? t('whatif.quota.exhausted', { limit: quota.limit })
+                  : quota.isLastOne
+                    ? t('whatif.quota.lastOne')
+                    : t('whatif.quota.remaining', { count: quota.remaining })
+              }
+              className={cn(
+                'inline-flex shrink-0 items-center rounded-pill px-2.5 py-1 t-caption',
+                // Amber ink on the card surface, not on `attention-soft`:
+                // that pairing is 4.4:1, under AA for 12px text.
+                quota.isExhausted
+                  ? 'bg-card font-medium text-attention-ink ring-1 ring-attention'
+                  : 'bg-wash text-ink2',
+              )}
+            >
+              {quota.isExhausted
+                ? t('whatif.quota.badgeExhausted')
+                : t('whatif.quota.badge', { count: quota.remaining })}
+            </span>
+          ) : null}
+        </div>
         {/*
           The form state carries NO visible description: "Không lưu thay đổi"
           was reassurance nobody asked for, and it pushed the first field down
@@ -366,6 +417,11 @@ function WhatIfSheetForm({ prefill }: { prefill: WhatIfPrefill }) {
                 className={whatIfDateTriggerClass}
               />
             </WhatIfField>
+
+            {/* How many runs are left, at every level — not only near the
+                ceiling. Without it the household cannot tell whether to spend
+                one on a rough question. Phrased as what remains, never as what
+                has been used. `null` for premium and while loading. */}
           </div>
         )}
       </div>

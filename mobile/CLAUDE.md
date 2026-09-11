@@ -147,6 +147,13 @@ Mandatory, and the resources are shared: keys live in
 hardcode a display string; never invent a key without adding it to both blocks.
 `pnpm lint` (web) runs the banned-copy check over that same file.
 
+## Comment style and commits
+
+See [../.claude/CLAUDE.md](../.claude/CLAUDE.md). Short version: comments are a
+line or two, every longer nghiệp vụ explanation lives in `../memory/` with a
+pointer from the code, and commit messages are 1–2 lines with no
+`Co-Authored-By`.
+
 ## Domain
 
 `../memory/` is the durable source of truth for business logic, shared across

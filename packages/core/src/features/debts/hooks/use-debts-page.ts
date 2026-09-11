@@ -15,7 +15,7 @@ import { useEvents } from '#/features/events/hooks/use-events'
 import {
   amountToRaw,
   buildDebtSchema,
-  defaultValues,
+  defaultDebtFormValues,
   parseAmountInput,
   resolveOutstandingAmount,
   type DebtForm,
@@ -89,7 +89,7 @@ export function useDebtsPage() {
 
   const form = useForm<DebtForm>({
     resolver: zodResolver(debtSchema),
-    defaultValues,
+    defaultValues: defaultDebtFormValues(),
     mode: 'onChange',
   })
 
@@ -228,7 +228,9 @@ export function useDebtsPage() {
       const fallbackRate = (editingDebt.interestSummary ?? '').replace(/[^0-9.,]/g, '')
       const rawPeriods =
         fromInterestPeriodDtos(editingDebt.interestPeriods) ??
-        (fallbackRate ? [{ ratePct: fallbackRate, months: '' }] : defaultValues.interestPeriods)
+        (fallbackRate
+          ? [{ ratePct: fallbackRate, months: '' }]
+          : defaultDebtFormValues().interestPeriods)
       // The last stage always derives its months from the term (shown read-only),
       // so clear any stored value on it — earlier stages keep their explicit months.
       const lastRawIndex = rawPeriods.length - 1
@@ -262,7 +264,7 @@ export function useDebtsPage() {
     }
 
     reset({
-      ...defaultValues,
+      ...defaultDebtFormValues(),
       ownerMemberId: creatorMemberId ?? '',
       // Creating a debt must not move money until the user explicitly enables
       // "Ghi nhận sự kiện nhận tiền" in step 2.
@@ -319,7 +321,10 @@ export function useDebtsPage() {
         borrowedAt: values.borrowedAt || undefined,
         firstPaymentDate: values.firstPaymentDate || undefined,
         expectedFinalDueDate: values.expectedFinalDueDate || undefined,
-        status: (values.expectedFinalDueDate && values.expectedFinalDueDate < '2026-07-08'
+        // Compared against today, not a fixed date: a frozen constant made every
+        // debt created after it look current, however far past its due date.
+        status: (values.expectedFinalDueDate &&
+        values.expectedFinalDueDate < new Date().toISOString().slice(0, 10)
           ? 'overdue'
           : 'active') as DebtStatus,
         ownerMemberId: values.ownerMemberId || undefined,

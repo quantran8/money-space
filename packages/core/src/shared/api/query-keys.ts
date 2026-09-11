@@ -77,7 +77,21 @@ export const queryKeys = {
    * holding the token has no household yet, which is the whole point.
    */
   invitePreview: (token: string) => ['invites', token] as const,
-  payments: (householdId: string) => ['households', householdId, 'payments'] as const,
+
+  // --- billing -------------------------------------------------------------
+  /**
+   * The household's plan. Deliberately NOT under `['households', id]`: anything
+   * invalidating that prefix would drop it, and recording an expense has not
+   * changed what anyone is subscribed to. Only redeeming, paying or expiring
+   * does — and all three invalidate this explicitly.
+   *
+   * (This replaces an unused `payments` key that sat under that prefix.)
+   */
+  entitlement: (householdId: string) => ['billing', 'entitlement', householdId] as const,
+  /** What is currently for sale. Not household-specific. */
+  plans: () => ['billing', 'plans'] as const,
+  /** Order history, for the subscription screen. */
+  paymentOrders: (householdId: string) => ['billing', 'orders', householdId] as const,
 
   // --- v3.1 foresight ------------------------------------------------------
   /** Stored cashflow event rows (the CRUD list), not forecast occurrences. */

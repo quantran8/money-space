@@ -9,13 +9,33 @@ type ApiEnvelope<T> = {
   timestamp: string
 }
 
+/**
+ * The `premium` block a 402 carries: which limit was hit, and what the current
+ * plan allows.
+ *
+ * Forwarded onto the error because a status code alone cannot say which paywall
+ * to open, and parsing `message` for it would make a copy string load-bearing.
+ */
+export type PremiumErrorMeta = {
+  reason: string
+  currentTier: 'free' | 'premium'
+  status: 'active' | 'expired'
+  limits?: Record<string, unknown>
+  /** Present on counted quotas: what the ceiling is and how much is used. */
+  limit?: number
+  used?: number
+}
+
 export class ApiError extends Error {
   statusCode: number
+  /** Only on a 402. */
+  premium?: PremiumErrorMeta
 
-  constructor(message: string, statusCode: number) {
+  constructor(message: string, statusCode: number, premium?: PremiumErrorMeta) {
     super(message)
     this.name = 'ApiError'
     this.statusCode = statusCode
+    this.premium = premium
   }
 }
 
@@ -104,15 +124,81 @@ export async function apiRequest<T>(
 
   const raw = (await response.json().catch(() => null)) as
     | ApiEnvelope<T>
-    | { message?: string }
+    | { message?: string; premium?: PremiumErrorMeta }
     | null
 
   if (!response.ok) {
     throw new ApiError(
       typeof raw?.message === 'string' ? raw.message : 'API request failed',
       response.status,
+      (raw as { premium?: PremiumErrorMeta } | null)?.premium,
     )
   }
 
   return (raw as ApiEnvelope<T>).data
+}
+
+export type ApiFile = {
+  blob: Blob
+  /** From `Content-Disposition`, so the server names the download. */
+  filename: string
+}
+
+/**
+ * Fetch a file rather than an envelope.
+ *
+ * A sibling of `apiRequest` and not a flag on it: that function's whole
+ * contract is "parse JSON, unwrap `data`, throw on failure", and a download has
+ * none of those. What IS shared is the part worth sharing — the auth header,
+ * the up-front refresh, and the single 401 retry.
+ *
+ * The error path still parses JSON: a failure is an ordinary API error (a 402
+ * from the premium guard, most usefully), not a file.
+ */
+export async function apiFileRequest(
+  path: string,
+  query?: Record<string, string | number | undefined | null>,
+): Promise<ApiFile> {
+  const url = buildUrl(path, query)
+
+  let token = (await authBridge?.ensureFreshToken()) ?? null
+  let response = await fetch(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+
+  if (response.status === 401 && authBridge) {
+    const refreshed = await authBridge.refresh()
+    if (refreshed) {
+      token = authBridge.getToken()
+      response = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+    } else {
+      authBridge.onAuthLost()
+    }
+  }
+
+  if (!response.ok) {
+    const raw = (await response.json().catch(() => null)) as {
+      message?: string
+      premium?: PremiumErrorMeta
+    } | null
+
+    throw new ApiError(
+      typeof raw?.message === 'string' ? raw.message : 'API request failed',
+      response.status,
+      raw?.premium,
+    )
+  }
+
+  return {
+    blob: await response.blob(),
+    filename: filenameFromDisposition(response.headers.get('Content-Disposition')),
+  }
+}
+
+/** `attachment; filename="oursight-….csv"` → the filename, or '' if absent. */
+function filenameFromDisposition(header: string | null): string {
+  if (!header) return ''
+  return /filename="?([^";]+)"?/.exec(header)?.[1]?.trim() ?? ''
 }

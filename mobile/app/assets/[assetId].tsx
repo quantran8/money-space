@@ -42,6 +42,7 @@ import { AssetGoalUsage } from '@/features/assets/components/asset-goal-usage'
 import { AssetPriceUpdateSheet } from '@/features/assets/components/asset-price-update-sheet'
 import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
 import { AssetValueChart } from '@/features/assets/components/asset-value-chart'
+import { AutoPriceRow } from '@/features/assets/components/auto-price-row'
 import { SavingWithdrawalPanel } from '@/features/assets/components/saving-withdrawal-panel'
 
 /**
@@ -318,6 +319,10 @@ export default function AssetDetailScreen() {
               {`${profitLossPercent >= 0 ? '+' : '−'}${round1(Math.abs(profitLossPercent))}%`}
             </RowMetaMono>
           ) : null}
+
+          {/* How the price stays current, and the switch that moves the plan's
+              automation onto this asset. */}
+          <AutoPriceRow asset={asset} />
         </Panel>
 
         {/* Value over time. The one chart in this feature worth drawing on a

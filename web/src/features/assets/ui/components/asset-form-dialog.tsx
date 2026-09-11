@@ -53,6 +53,7 @@ import { SymbolCombobox } from '@/features/assets/ui/components/symbol-combobox'
 import { useMarketQuote } from '@money-space/core/features/assets/hooks/use-market-quote'
 import type { MarketQuote } from '@money-space/core/features/assets/api/symbols.repository'
 import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
+import { AutoPriceNotice } from '@/features/assets/ui/components/auto-price-notice'
 import { SavingDepositFormDialog } from '@/features/assets/ui/components/saving-deposit-form-dialog'
 import {
   canBePurchased,
@@ -75,15 +76,12 @@ import {
 } from '@money-space/core/features/debts/model/debts-interest'
 import { useFlexibleMoney } from '@money-space/core/features/forecast/hooks/use-forecast'
 import {
-  formatMoney,
-  formatQuotePrice,
-  formatVndExact,
-} from '@money-space/core/shared/lib/format-money'
-import {
   formatDecimalDisplay,
   formatIntegerDisplay,
   parseRawDecimal,
 } from '@money-space/core/shared/lib/number-format'
+import { useBillingSheetOpen } from '@money-space/core/shared/stores/paywall-store'
+import { formatMoney, formatVndExact, formatQuotePrice } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type WalletOption = { value: string; label: string; balance?: number }
@@ -126,6 +124,11 @@ export function AssetFormDialog({
     formState: { errors },
   } = form
 
+  // Stand aside while a billing sheet is up, rather than closing: `formOpen`
+  // stays true, so nothing the household typed is lost and the dialog comes
+  // back on its own when they dismiss the paywall.
+  const billingOpen = useBillingSheetOpen()
+
   const selectedType = useWatch({ control, name: 'type' })
   const hasInterest = useWatch({ control, name: 'hasInterest' })
   // Interest is opt-in only where it is genuinely optional (a loan); every other
@@ -133,6 +136,9 @@ export function AssetFormDialog({
   const earnsInterest = !isInterestOptional(selectedType) || hasInterest
 
   function handleOpenChange(nextOpen: boolean) {
+    // Radix reports a close when the dialog is hidden for the paywall. That is
+    // not the household dismissing the form, so it must not clear it.
+    if (!nextOpen && billingOpen) return
     // Onboarding renders this dialog without a `key`, so it never remounts —
     // the disclosure must be collapsed here or it stays open on the next open.
     if (!nextOpen) setShowMore(false)
@@ -183,7 +189,7 @@ export function AssetFormDialog({
   }
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+    <ResponsiveDialog open={open && !billingOpen} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent className="grid max-h-[88dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:max-w-[520px]">
         <ResponsiveDialogHeader className="px-5 pb-5 pr-16 pt-5 text-left sm:px-8 sm:pr-16 sm:pt-7">
           <ResponsiveDialogTitle className="t-subhead font-medium tracking-[-0.015em]">
@@ -358,6 +364,16 @@ export function AssetFormDialog({
               <AssetClassificationFields form={form} defaultToCurrentMember={!isEditing} />
             </Disclosure>
           </div>
+
+          {/* Below every field, right above the submit: it is a consequence of
+              saving, not a note about one of the inputs. Between the fields it
+              read as the symbol field's error. Create only — on an existing
+              asset the detail page's `AutoPriceRow` already says this. */}
+          {mode === 'market_priced' && !isEditing ? (
+            <div className="mt-4">
+              <AutoPriceNotice />
+            </div>
+          ) : null}
 
           {/* §22.11 — the destructive action sits in the row, never in a
               bordered "Danger zone". It wears the `destructive` variant from
