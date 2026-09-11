@@ -40,7 +40,8 @@ export function useGoogleCallback() {
       nextPath === '/' ? '/auth' : `/auth?next=${encodeURIComponent(nextPath)}`
 
     if (oauthError) {
-      notify.error(oauthError)
+      // Google's own `error_description` is a diagnostic, not copy.
+      notify.error(getErrorMessage(oauthError, t('auth.errors.googleFailed')))
       navigate(authPath, { replace: true })
       return
     }

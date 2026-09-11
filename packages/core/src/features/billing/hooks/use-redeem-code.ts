@@ -41,8 +41,11 @@ function reasonFrom(error: unknown): RedeemFailureReason {
     'already_used',
     'no_effect',
   ]
-  return known.includes(error.message as RedeemFailureReason)
-    ? (error.message as RedeemFailureReason)
+  // `code` is the real contract; `message` is the legacy carrier for the same
+  // reason, kept until every redeem throw site sends a code.
+  const signal = error.code ?? error.message
+  return known.includes(signal as RedeemFailureReason)
+    ? (signal as RedeemFailureReason)
     : 'invalid'
 }
 

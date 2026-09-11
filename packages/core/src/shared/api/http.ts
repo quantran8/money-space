@@ -26,16 +26,30 @@ export type PremiumErrorMeta = {
   used?: number
 }
 
+/**
+ * `message` is a DIAGNOSTIC, never copy — it holds the server's own words, which
+ * may be English, carry an id, or quote Prisma. What the user reads comes from
+ * `getErrorMessage`. `code` is the machine-readable reason, when the server
+ * sends one. See memory/error-handling.md.
+ */
 export class ApiError extends Error {
   statusCode: number
+  /** Stable reason a client may branch on, e.g. `asset_in_use`. */
+  code?: string
   /** Only on a 402. */
   premium?: PremiumErrorMeta
 
-  constructor(message: string, statusCode: number, premium?: PremiumErrorMeta) {
+  constructor(
+    message: string,
+    statusCode: number,
+    premium?: PremiumErrorMeta,
+    code?: string,
+  ) {
     super(message)
     this.name = 'ApiError'
     this.statusCode = statusCode
     this.premium = premium
+    this.code = code
   }
 }
 
@@ -124,14 +138,21 @@ export async function apiRequest<T>(
 
   const raw = (await response.json().catch(() => null)) as
     | ApiEnvelope<T>
-    | { message?: string; premium?: PremiumErrorMeta }
+    | { message?: string; code?: string; premium?: PremiumErrorMeta }
     | null
 
   if (!response.ok) {
+    const failure = raw as {
+      message?: string
+      code?: string
+      premium?: PremiumErrorMeta
+    } | null
+
     throw new ApiError(
-      typeof raw?.message === 'string' ? raw.message : 'API request failed',
+      typeof failure?.message === 'string' ? failure.message : 'API request failed',
       response.status,
-      (raw as { premium?: PremiumErrorMeta } | null)?.premium,
+      failure?.premium,
+      failure?.code,
     )
   }
 
@@ -181,6 +202,7 @@ export async function apiFileRequest(
   if (!response.ok) {
     const raw = (await response.json().catch(() => null)) as {
       message?: string
+      code?: string
       premium?: PremiumErrorMeta
     } | null
 
@@ -188,6 +210,7 @@ export async function apiFileRequest(
       typeof raw?.message === 'string' ? raw.message : 'API request failed',
       response.status,
       raw?.premium,
+      raw?.code,
     )
   }
 
