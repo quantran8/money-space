@@ -19,6 +19,7 @@ import { HouseholdIdentitySection } from '@/features/household/ui/household-iden
 import { SpaceSwitcherSection } from '@/features/household/ui/space-switcher-section'
 import { InviteQrSheet } from '@/features/invites/ui/invite-qr-sheet'
 import { MembersSection } from '@/features/members/ui/members-section'
+import { FeedbackSection } from '@/features/settings/ui/feedback-section'
 import { HouseholdDataSection } from '@/features/settings/ui/household-data-section'
 import { SignOutSection } from '@/features/settings/ui/sign-out-section'
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
@@ -157,6 +158,11 @@ export default function HouseholdScreen() {
               not that question. If that port decides the hub needs an entry
               point, it goes in this panel. */}
         </Panel>
+
+        {/* Above the exits, mirroring the web: reporting something broken is an
+            ordinary utility, and it should be reachable without scrolling past
+            the actions that end a session or a space. */}
+        <FeedbackSection />
 
         {/* Sign-out lives on this screen, not in a nav drawer: the drawer is
             gone (the tab bar is the navigation), and "who is in this space and

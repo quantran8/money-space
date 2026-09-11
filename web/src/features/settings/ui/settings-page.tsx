@@ -14,6 +14,7 @@ import { deleteHousehold } from '@money-space/core/features/settings/api/setting
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
+import { FeedbackCard } from '@/features/settings/ui/components/feedback-card'
 import {
   DangerCard,
   DataCard,
@@ -138,6 +139,11 @@ export function SettingsPage() {
         <CategoriesCard />
 
         <DataCard />
+
+        {/* Above sign-out, not below it: reporting something broken is an
+            ordinary utility like exporting, and it should be reachable without
+            scrolling past the actions that end a session or a space. */}
+        <FeedbackCard />
 
         {/* Mobile only — above `lg` the sidebar's account menu holds sign-out.
             Above the danger card, not below it: signing out is the ordinary way

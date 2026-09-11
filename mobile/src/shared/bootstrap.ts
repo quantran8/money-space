@@ -1,5 +1,7 @@
 import * as Clipboard from 'expo-clipboard'
+import Constants from 'expo-constants'
 import { getLocales } from 'expo-localization'
+import { Platform } from 'react-native'
 
 import { installAuthBridge } from '@money-space/core/features/auth/api/auth-bridge'
 import { configureJoinUrlBase } from '@money-space/core/features/invites/model/invites.types'
@@ -37,7 +39,13 @@ export function bootstrap(): Promise<void> {
   if (started) return Promise.resolve()
   started = true
 
-  configureEnv({ apiBaseUrl })
+  configureEnv({
+    apiBaseUrl,
+    // Attached to a feedback report, so a bug names the platform and build it
+    // came from. `app.json`'s version is what `expoConfig.version` reads.
+    platform: Platform.OS === 'ios' || Platform.OS === 'android' ? Platform.OS : 'unknown',
+    appVersion: Constants.expoConfig?.version ?? '0.0.0',
+  })
   configureStorage(nativeStorage)
   configureNavigation(nativeNavigation)
   // Core's default reaches for `navigator.clipboard`, which does not exist
