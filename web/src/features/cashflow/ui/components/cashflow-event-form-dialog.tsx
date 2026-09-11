@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
@@ -44,7 +44,7 @@ type CashflowEventFormDialogProps = {
   /** The event being edited, so its own amount is not double-counted. */
   editingId?: string | null
   isSubmitting: boolean
-  onSubmit: () => void
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
 type CashflowFieldProps = {
@@ -191,9 +191,12 @@ export function CashflowEventFormDialog({
     onOpenChange(nextOpen)
   }
 
-  function handleSubmit() {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (isValid) setDetailsOpen(false)
-    onSubmit()
+    // `onSubmit` is RHF's handleSubmit(), which calls preventDefault() itself —
+    // but only when it receives the event. Forward it, or the browser performs a
+    // native submit and reloads the page.
+    onSubmit(event)
   }
 
   return (
