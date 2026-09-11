@@ -1,24 +1,21 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 
 import { ApiError } from '#/shared/api/http'
-import { usePaywallStore, type PaywallReason } from '#/shared/stores/paywall-store'
+import {
+  SERVER_PAYWALL_REASONS,
+  usePaywallStore,
+  type PaywallReason,
+} from '#/shared/stores/paywall-store'
 
 import type { PlanLimits } from '#/features/billing/api/billing.repository'
 
-const PAYWALL_REASONS: PaywallReason[] = [
-  'goal_quota',
-  'whatif_quota',
-  'auto_price_quota',
-  'forecast_horizon',
-  'history',
-  'export',
-  'trial_ending',
-  'expired',
-  'general',
-]
-
+/**
+ * Narrowed against the SERVER's reasons only. A 402 cannot carry `trial_ending`
+ * or `manage` — the previous hand-written list accepted one of them and dropped
+ * `manage`, so it was wrong in both directions.
+ */
 function toReason(raw: string | undefined): PaywallReason {
-  return PAYWALL_REASONS.includes(raw as PaywallReason)
+  return (SERVER_PAYWALL_REASONS as readonly string[]).includes(raw as string)
     ? (raw as PaywallReason)
     : 'general'
 }

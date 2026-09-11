@@ -1,7 +1,9 @@
 import '../global.css'
 
 import { useEffect, useState } from 'react'
-import { AppState } from 'react-native'
+import { AppState, Platform } from 'react-native'
+
+import { noteAppOpened } from '@money-space/core/shared/analytics-session'
 import { QueryClientProvider, focusManager } from '@tanstack/react-query'
 import {
   Urbanist_300Light,
@@ -37,6 +39,12 @@ export { RouteErrorBoundary as ErrorBoundary }
  */
 function onAppStateChange(status: AppStateStatus) {
   focusManager.setFocused(status === 'active')
+  // Coming back to the app is an "open" — but only after a real absence, which
+  // `noteAppOpened` decides. Without that 30-minute rule a phone would report
+  // many times the web's opens for identical use.
+  if (status === 'active') {
+    void noteAppOpened(Platform.OS === 'ios' ? 'ios' : 'android')
+  }
 }
 
 export default function RootLayout() {

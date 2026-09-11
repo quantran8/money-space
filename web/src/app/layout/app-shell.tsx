@@ -53,6 +53,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
 import { useSpaceSwitcher } from '@money-space/core/features/settings/hooks/use-space-switcher'
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
+import { sourceForPathname } from '@money-space/core/features/whatif/model/whatif-source'
 
 type NavItem = {
   to: string
@@ -503,7 +504,7 @@ export function AppShell() {
             `fixed`, so it stays put while `<main>` scrolls beneath it. */}
         <button
           type="button"
-          onClick={() => openWhatIf({ source: 'other' })}
+          onClick={() => openWhatIf({ source: sourceForPathname(location.pathname) })}
           aria-label={t('home.picture.simulate')}
           title={t('home.picture.simulate')}
           className={cn(

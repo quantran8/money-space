@@ -13,6 +13,7 @@
  */
 import type { CalculationAssumption } from '#/features/forecast/model/forecast.types'
 import type { GoalProjection } from '#/features/goals/model/goal-projection.types'
+import type { WhatIfSource } from '#/shared/stores/whatif-store'
 
 /**
  * `watch` is gone with the protected reserve: it fired only when the low point
@@ -88,6 +89,12 @@ export type WhatIfRequest = {
    * set by the caller rather than inferred from the payload.
    */
   rerun?: boolean
+  /**
+   * Which screen this was opened from. Analytics only — the server validates it
+   * against a closed list and normalises anything unknown to `'other'` rather
+   * than rejecting the request. Telemetry never fails a calculation.
+   */
+  source?: WhatIfSource
 }
 
 export type WhatIfSideResult = {

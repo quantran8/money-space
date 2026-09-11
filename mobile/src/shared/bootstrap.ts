@@ -1,5 +1,10 @@
 import * as Clipboard from 'expo-clipboard'
 import { getLocales } from 'expo-localization'
+import { Platform } from 'react-native'
+
+import { configureAnalytics } from '@money-space/core/shared/analytics'
+import { installAnalyticsIdentity } from '@money-space/core/shared/analytics-identity'
+import { noteAppOpened } from '@money-space/core/shared/analytics-session'
 
 import { installAuthBridge } from '@money-space/core/features/auth/api/auth-bridge'
 import { configureJoinUrlBase } from '@money-space/core/features/invites/model/invites.types'
@@ -12,6 +17,7 @@ import { configureStorage } from '@money-space/core/shared/storage'
 import { configureStorePurchases } from '@money-space/core/shared/store-purchases'
 
 import { nativeNavigation } from '@/shared/native-navigation'
+import { createNativeAnalytics } from '@/shared/native-analytics'
 import { nativePurchases } from '@/shared/native-purchases'
 import { nativeStorage } from '@/shared/native-storage'
 
@@ -60,6 +66,12 @@ export function bootstrap(): Promise<void> {
   // cannot sell — a browser has no store sheet, and the web sells via PayOS.
   configureStorePurchases(nativePurchases)
   identifyBuyerOnAuthChange()
+
+  // No EXPO_PUBLIC_POSTHOG_KEY ⇒ a no-op adapter and no network call, which is
+  // what Expo Go and CI run in. See ../../../memory/analytics.md.
+  configureAnalytics(createNativeAnalytics())
+  installAnalyticsIdentity()
+  void noteAppOpened(Platform.OS === 'ios' ? 'ios' : 'android')
 
   initI18n(getLocales()[0]?.languageTag)
 

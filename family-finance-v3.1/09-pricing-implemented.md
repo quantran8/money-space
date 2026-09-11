@@ -50,10 +50,20 @@ Paywall nói "30 ngày" / "365 ngày".
 
 ## 3. Dùng thử
 
-**14 ngày Premium, tự động khi tạo hộ.** Không cần thẻ, không cần đăng ký.
+**14 ngày Premium, hộ tự bấm trong paywall.** Không cần thẻ, không cần đăng ký.
 
-- Cấp tại `households.service.ts` khi tạo hộ, bọc try/catch — trial hỏng thì hộ
-  vẫn được tạo và ở Free.
+> ⚠️ **Sửa lỗi tài liệu:** mục này từng ghi "tự động khi tạo hộ, cấp tại
+> `households.service.ts`". **Code không làm vậy** — file đó có comment nói rõ
+> không ghi dòng subscription nào, và thiếu dòng đó *nghĩa là* Free. Trial được
+> cấp ở `SubscriptionService.startTrial`, qua
+> `POST /households/:id/entitlement/trial`, khi hộ chọn.
+>
+> Hệ quả cho đo lường: một property `trial_granted` gắn vào `household_created`
+> sẽ luôn `false`. `trial_started` là sự kiện riêng — xem
+> `backend/memory/analytics.md`.
+
+- Cấp tại `SubscriptionService.startTrial`, khoá dòng `FOR UPDATE` để hai lần
+  bấm cùng lúc không cùng đi qua.
 - `trialStartedAt` là thứ chặn trial lần hai, và nó **tồn tại vĩnh viễn** kể cả
   sau khi trial kết thúc hay hộ đã lên gói trả tiền.
 - Đã là Premium thì không cấp trial (không hạ cấp người đã trả tiền).
@@ -220,11 +230,21 @@ paywall đặt sau lần what-if đầu tiên thành công.
 
 ---
 
-## 9. Đo lường — chưa làm được
+## 9. Đo lường — đã build
 
-Mục §4 và §5 của `06` (metrics, North Star) **chưa đo được**: repo hiện **không
-có analytics** (không PostHog, Amplitude, GA) và **không có error monitoring**
-(không Sentry).
+> **Đã thay đổi.** Repo giờ có PostHog (backend + web + mobile) và error
+> tracking 5xx. Nguồn sự thật: `backend/memory/analytics.md` và
+> `frontend/memory/analytics.md`.
+>
+> Hai tầng: **SQL** (`pnpm metrics:weekly`) cho những gì đã nằm trong DB — hộ,
+> thành viên, gói, đơn, mã; **PostHog** cho những gì không để lại dấu vết —
+> chạm trần, mở app, paywall, what-if. Không key ⇒ toàn bộ là no-op, nên dev và
+> CI không cần tài khoản nào.
+>
+> Bảng câu hỏi dưới đây vẫn đúng, và giờ trả lời được — trừ hai khoảng mù đã
+> biết: doanh thu qua store không truy được lý do paywall (IAP tới bằng webhook,
+> không có đơn hàng nào của mình), và mobile chưa có preset 90 ngày nên
+> `forecast_horizon` không bao giờ bắn ở đó.
 
 Hệ quả cụ thể: mọi con số trong `plan-limits.ts` — 2 mục tiêu, 3 lượt tính thử,
 1 tài sản tự cập nhật giá — đều là **giả thuyết chưa được kiểm chứng**. Chúng

@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+import { analytics } from '#/shared/analytics'
+
 import type { PlanLimits } from '#/features/billing/api/billing.repository'
 
 /**
@@ -10,18 +12,30 @@ import type { PlanLimits } from '#/features/billing/api/billing.repository'
  * `general` is the entry from a plain "upgrade" button, where nothing was
  * refused and there is no number to show.
  */
+export const SERVER_PAYWALL_REASONS = [
+  'goal_quota',
+  'whatif_quota',
+  'auto_price_quota',
+  'forecast_horizon',
+  'history',
+  'export',
+  'expired',
+  'general',
+] as const
+
+/**
+ * Entries the client opens with nothing refused — a trial running out, or a
+ * Premium household looking at its own plan. **No 402 can carry these**, which
+ * is why they are kept apart rather than folded into one flat union.
+ */
+export const CLIENT_ONLY_PAYWALL_REASONS = ['trial_ending', 'manage'] as const
+
+/** What a 402 may carry. Mirrors the server's `PaywallReason`. */
+export type ServerPaywallReason = (typeof SERVER_PAYWALL_REASONS)[number]
+
 export type PaywallReason =
-  | 'goal_quota'
-  | 'whatif_quota'
-  | 'auto_price_quota'
-  | 'forecast_horizon'
-  | 'history'
-  | 'export'
-  | 'trial_ending'
-  | 'expired'
-  /** A household already on Premium opening the sheet to see or extend it. */
-  | 'manage'
-  | 'general'
+  | ServerPaywallReason
+  | (typeof CLIENT_ONLY_PAYWALL_REASONS)[number]
 
 export type PaywallContext = {
   reason: PaywallReason
@@ -56,8 +70,18 @@ export const usePaywallStore = create<PaywallState>((set) => ({
   open: false,
   context: DEFAULT_CONTEXT,
   redeemOpen: false,
-  openPaywall: (context = {}) =>
-    set({ open: true, context: { ...DEFAULT_CONTEXT, ...context } }),
+  openPaywall: (context = {}) => {
+    const next = { ...DEFAULT_CONTEXT, ...context }
+    // Fired from the ACTION, not the sheet: the sheet mounts once per host and
+    // may not re-render, and every route in — the optimistic gate, the global
+    // 402 handler, a plain upgrade button — comes through here.
+    analytics.capture('paywall_shown', {
+      reason: next.reason,
+      limit: next.limit ?? null,
+      used: next.used ?? null,
+    })
+    set({ open: true, context: next })
+  },
   // The context is deliberately KEPT on close: the sheet animates out, and
   // clearing the reason first would swap the headline to `general` mid-flight.
   close: () => set({ open: false }),

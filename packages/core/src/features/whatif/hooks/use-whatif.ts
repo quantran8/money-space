@@ -4,6 +4,7 @@ import { runWhatIf } from '#/features/whatif/api/whatif.repository'
 import type { WhatIfRequest, WhatIfResult } from '#/features/whatif/model/whatif.types'
 import { usePremiumAction } from '#/features/billing/hooks/use-premium-action'
 import { useActiveHousehold } from '#/shared/hooks/use-active-household'
+import { useWhatIfStore } from '#/shared/stores/whatif-store'
 import { queryKeys } from '#/shared/api/query-keys'
 
 /**
@@ -46,9 +47,14 @@ export function useWhatIf() {
    * which is the same shape a caller already handles for a failed run.
    */
   async function run(payload: WhatIfRequest): Promise<WhatIfResult | undefined> {
+    // Set HERE rather than in each sheet: both platforms and both callers (the
+    // first run and the asset-sale re-run) funnel through this one place, so
+    // the tag cannot be forgotten by one of them.
+    const source = payload.source ?? useWhatIfStore.getState().prefill.source
+
     return await runIfAllowed(
       { reason: 'whatif_quota', quota: 'whatIfPerMonth' },
-      () => mutation.mutateAsync(payload),
+      () => mutation.mutateAsync({ ...payload, source }),
     )
   }
 

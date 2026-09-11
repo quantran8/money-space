@@ -36,7 +36,7 @@
 | 13 | What-if simulator | ✅ — thêm bán tài sản, nguồn tiền |
 | 14 | Share scenario | ⚠️ chỉ copy text ra clipboard |
 | 15 | Update reminders | ❌ **chưa có** — không có kênh gửi nào |
-| 16 | Analytics | ⚠️ chỉ có log `what_if_run` phía server; chưa có analytics sản phẩm |
+| 16 | Analytics | ✅ PostHog (server + web + mobile) và error tracking 5xx; `pnpm metrics:weekly` cho số liệu trong DB — xem `backend/memory/analytics.md` |
 
 **Đã build thêm, ngoài scope trên:** nợ (debts), sổ tiết kiệm / tài sản tính
 theo công thức, money events + danh mục, net worth, nhật ký `/activity`,
@@ -365,10 +365,11 @@ Không biến screen này thành settings-heavy admin panel.
 Thật: **một lối vào duy nhất** — nút nổi (FAB) ở thanh điều hướng, có mặt trên
 mọi màn hình. Sheet what-if là global, không phải một route riêng.
 
-- ~~Home / Goal detail / Upcoming~~ — union `WhatIfSource` vẫn khai báo
-  `'home' | 'upcoming' | 'goal' | 'goal-detail' | 'onboarding'` nhưng **không
-  caller nào truyền**; mọi lời gọi đều là `'other'`. Nên prefill theo ngữ cảnh
-  và phân tách analytics theo màn hình đều đang chết.
+- **Home / Goal / Goal detail / Upcoming** — `source` giờ suy ra từ route bằng
+  `sourceForPathname()` (core), nên FAB báo đúng màn hình đang mở lúc bấm. Trước
+  đây union khai báo đủ giá trị nhưng chỉ 3 call site truyền, hai trong đó là
+  `'other'`, nên phân tách theo màn hình đã chết. `source` cũng được gửi lên
+  server và gắn vào `what_if_run`.
 - ~~Shared scenario~~ — không thể có, vì scenario không lưu (xem Actions).
 
 ## Input

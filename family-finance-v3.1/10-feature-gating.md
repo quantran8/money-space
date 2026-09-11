@@ -184,7 +184,7 @@ thứ hai:
     "reason": "goal_quota",
     "currentTier": "free",
     "status": "active",
-    "limits": { "goals": 2, "whatIfPerMonth": 5, "…": "…" },
+    "limits": { "goals": 2, "whatIfPerMonth": 3, "…": "…" },
     "limit": 2,
     "used": 2
   }
@@ -240,7 +240,7 @@ không trả lời được câu hỏi đang có trong đầu người vừa ch�
 | Lý do | Khi nào |
 |---|---|
 | `goal_quota` | Tạo mục tiêu thứ 3 |
-| `whatif_quota` | Lượt tính thử thứ 6 trong tháng |
+| `whatif_quota` | Lượt tính thử thứ 4 trong tháng (trần là 3) |
 | `forecast_horizon` | Chọn 60 hoặc 90 ngày |
 | `export` | Bấm xuất dữ liệu |
 | `auto_price_quota` · `history` · `trial_ending` · `expired` · `general` | Client mở chủ động |
@@ -288,8 +288,13 @@ lại là cằn nhằn.
    một tài sản nhập tay.
 3. **`expired` và `trial_ending`** chỉ tồn tại phía client.
 4. **Không có tự động gia hạn.** Cột `autoRenew` có nhưng luôn `false`.
-5. **Chưa có analytics và error monitoring.** Nghĩa là mọi con số ở §1 vẫn là
-   giả thuyết — xem [09 §9](09-pricing-implemented.md).
+5. ~~**Chưa có analytics và error monitoring.**~~ **Đã build.** Sự kiện phía
+   server bắn từ `assertQuota` (mọi trần đếm), `EntitlementGuard` (tính năng
+   boolean) và `assets.service.ts` (paywall im lặng của tự động cập nhật giá —
+   nó không bao giờ ném 402 nên không chỗ nào khác thấy được). Lỗi 5xx đi qua
+   `HttpExceptionFilter`. Số liệu trong DB đọc bằng `pnpm metrics:weekly`.
+   Xem `backend/memory/analytics.md`. Các con số ở §1 vẫn là giả thuyết cho tới
+   khi có đủ hộ thật để đo.
 6. **Chưa lưu kịch bản what-if.** Bảng `what_if_scenarios` chưa tồn tại; what-if
    cố ý là thao tác đọc thuần.
 7. **Chỉ có PayOS.** Enum nhà cung cấp có đúng một giá trị; interface gateway để
