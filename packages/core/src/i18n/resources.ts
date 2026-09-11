@@ -55,6 +55,8 @@ export const resources = {
           notFoundTitle: 'Không tìm thấy trang này',
           notFoundDescription: 'Đường dẫn có thể đã thay đổi.',
         },
+        // What every failed request says. Server messages are diagnostics, not copy.
+        genericError: 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
       },
       // Relative timestamps (design.md §10.5). Always a concrete number —
       // never "gần đây", which hides how old the data actually is.
@@ -3639,6 +3641,8 @@ export const resources = {
           notFoundTitle: 'Page not found',
           notFoundDescription: 'This link may have changed.',
         },
+        // What every failed request says. Server messages are diagnostics, not copy.
+        genericError: 'Something went wrong. Please try again later.',
       },
       // Relative timestamps (design.md §10.5).
       time: {

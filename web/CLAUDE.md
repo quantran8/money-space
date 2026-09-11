@@ -60,6 +60,7 @@ it runs on Hermes too.
 
 - **Routing**: [src/app/router.tsx](src/app/router.tsx) is a single `createBrowserRouter` tree. `RequireAuth` → `RequireHousehold` → `AppShell` wraps the authenticated pages. The nav list lives in [src/app/layout/app-shell.tsx](src/app/layout/app-shell.tsx).
 - **HTTP**: everything goes through `apiRequest` in `packages/core/src/shared/api/http.ts`. It unwraps the backend's `{ success, statusCode, data, ... }` envelope, throws `ApiError`, injects the bearer token, and on a 401 does one silent refresh + retry via the `AuthBridge` installed in [src/main.tsx](src/main.tsx). Never call `fetch` directly from a feature.
+- **Never show a server error message.** `ApiError.message` is a diagnostic (English, sometimes carrying an id or a Prisma detail). Render errors with `getErrorMessage(error, t('…'))` — it returns *your* translated fallback and logs the cause. The shared sentence is `t('common.genericError')`. Branch on `error.statusCode` / `error.code`, never on message text. See [../../backend/memory/error-handling.md](../../backend/memory/error-handling.md).
 - **Query keys** are centralized in `packages/core/src/shared/api/query-keys.ts`. Add new keys there, never inline.
 - **Path aliases**: `@/` → `web/src/`, `@money-space/core/*` → the shared package. Core uses `#/` for its own internals.
 - **Reference slice**: `packages/core/src/features/goals/` plus [src/features/goals/ui/](src/features/goals/ui/) is the canonical shape.
