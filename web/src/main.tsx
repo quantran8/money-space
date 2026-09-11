@@ -19,7 +19,13 @@ import { webStorage } from '@/shared/web-storage'
 // Core reads its environment through injection: the web has `import.meta.env`,
 // the mobile app has `process.env.EXPO_PUBLIC_*`, and neither expression is
 // valid in the other's bundler.
-configureEnv({ apiBaseUrl: import.meta.env.VITE_API_BASE_URL })
+configureEnv({
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+  // Attached to a feedback report, so a bug names the client and build it came
+  // from. `__APP_VERSION__` is stamped by Vite at build time.
+  platform: 'web',
+  appVersion: __APP_VERSION__,
+})
 configureStorage(webStorage)
 // Core routes through these rather than importing react-router or sonner
 // directly, since neither exists on native. Without them every `navigate()`

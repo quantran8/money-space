@@ -2,11 +2,17 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
+import pkg from './package.json' with { type: 'json' }
 
 const core = path.resolve(__dirname, '../packages/core/src')
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Stamped at build time so a feedback report names the build it came from.
+  // Declared for TypeScript in src/globals.d.ts.
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

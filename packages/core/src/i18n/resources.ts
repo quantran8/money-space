@@ -3011,6 +3011,35 @@ export const resources = {
           rowMenu: 'Tuỳ chọn {{name}}',
         },
       },
+      feedback: {
+        card: {
+          title: 'Báo lỗi / Góp ý',
+          meta: 'Gửi cho nhóm phát triển',
+          description:
+            'Thấy chỗ nào chưa chạy đúng, hoặc muốn app có thêm gì? Nhắn cho nhóm phát triển ở đây.',
+          action: 'Gửi phản hồi',
+        },
+        type: {
+          bug: 'Lỗi',
+          idea: 'Góp ý',
+          other: 'Khác',
+        },
+        dialog: {
+          title: 'Báo lỗi / Góp ý',
+          description:
+            'Mô tả càng cụ thể càng dễ tìm ra nguyên nhân — bạn đang ở màn hình nào, thao tác gì trước đó.',
+        submit: 'Gửi',
+          sending: 'Đang gửi...',
+        },
+        form: {
+          message: 'Nội dung',
+          messagePlaceholder: 'Chuyện gì đã xảy ra, hoặc bạn mong muốn điều gì?',
+        },
+        toast: {
+          success: 'Đã nhận phản hồi. Cảm ơn bạn.',
+          error: 'Chưa gửi được phản hồi.',
+        },
+      },
       options: {
         // --- v3.1 foresight vocabulary ------------------------------------
         // Tone rules: never a verdict, never surveillance, never judgement.
@@ -6184,6 +6213,35 @@ export const resources = {
           customEmptyBody:
             'Add one when the system categories do not cover how your household groups its money.',
           rowMenu: 'Options for {{name}}',
+        },
+      },
+      feedback: {
+        card: {
+          title: 'Report a bug / Share an idea',
+          meta: 'Sent to the team',
+          description:
+            'Something not working, or something you wish the app did? Tell the team here.',
+          action: 'Send feedback',
+        },
+        type: {
+          bug: 'Bug',
+          idea: 'Feedback',
+          other: 'Other',
+        },
+        dialog: {
+          title: 'Report a bug / Share an idea',
+          description:
+            'The more specific the better — which screen you were on, and what you did just before.',
+          submit: 'Send',
+          sending: 'Sending...',
+        },
+        form: {
+          message: 'Message',
+          messagePlaceholder: 'What happened, or what would you like to see?',
+        },
+        toast: {
+          success: 'Feedback received. Thank you.',
+          error: 'Could not send your feedback.',
         },
       },
       options: {
