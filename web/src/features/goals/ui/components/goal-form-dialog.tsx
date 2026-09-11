@@ -260,10 +260,20 @@ export function GoalFormDialog({
 
   return (
     <ResponsiveDialog open={open} onOpenChange={requestOpenChange}>
-      {/* Same shell as the debt wizard: a fixed height from `md` (where
+      {/* Creating is the debt-wizard shell: a fixed height from `md` (where
           ResponsiveDialog switches from Sheet to Dialog) so the box does not
-          resize between steps, and a left rail from `lg`. */}
-      <ResponsiveDialogContent className="grid max-h-[92dvh] gap-0 overflow-hidden p-0 sm:max-w-[920px] md:h-[min(680px,92dvh)] lg:grid-cols-[250px_1fr]">
+          resize between steps, and a left rail from `lg`. Editing has neither
+          steps nor a rail, so it keeps none of that geometry — the 920px width
+          and the 250px column would leave the single field column stranded in
+          an empty box, and the fixed height would scroll content that fits. */}
+      <ResponsiveDialogContent
+        className={cn(
+          'grid max-h-[92dvh] gap-0 overflow-hidden p-0',
+          isEditing
+            ? 'sm:max-w-[520px]'
+            : 'sm:max-w-[920px] md:h-[min(680px,92dvh)] lg:grid-cols-[250px_1fr]',
+        )}
+      >
         {/* The rail doubles as the running summary of what has been answered.
             Editing has no steps, so it renders only while creating. */}
         {!isEditing ? (
@@ -320,9 +330,7 @@ export function GoalFormDialog({
             ) : null}
             {/* The rail carries the title on wide screens; the narrow layout and
                 editing both drop the rail, so the title is restated here. */}
-            <ResponsiveDialogTitle
-              className={cn('mt-1 t-subhead font-medium tracking-[-0.015em]', !isEditing && 'lg:hidden')}
-            >
+            <ResponsiveDialogTitle className={cn('mt-1 t-subtitle', !isEditing && 'lg:hidden')}>
               {isEditing ? t('goals.form.editTitle') : t('goals.form.title')}
             </ResponsiveDialogTitle>
             {isEditing ? (
@@ -677,7 +685,6 @@ function EditPlanFields({
   const { control, register, formState: { errors } } = form
   return (
     <section>
-      <SectionIntro title={t('goals.builder.updatePlan')} />
       <div className="space-y-5">
         <Field label={t('goals.form.name')} htmlFor="goal-name" error={errors.name?.message}>
           <div className={cn(fieldShell, 'h-12', errors.name && 'border-alert-ink')}>

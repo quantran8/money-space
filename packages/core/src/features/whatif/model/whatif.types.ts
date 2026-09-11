@@ -13,6 +13,7 @@
  */
 import type { CalculationAssumption } from '#/features/forecast/model/forecast.types'
 import type { GoalProjection } from '#/features/goals/model/goal-projection.types'
+import type { WhatIfSource } from '#/shared/stores/whatif-store'
 
 /**
  * `watch` is gone with the protected reserve: it fired only when the low point
@@ -79,6 +80,21 @@ export type WhatIfRequest = {
   horizonDays?: number
   /** Optional step 2. Absent = the simulation behaves exactly as before. */
   assetSale?: WhatIfAssetSale
+  /**
+   * `true` when this re-runs the answer already on screen — an asset sale was
+   * added to it, or taken away — rather than asking a new question.
+   *
+   * A quota slot is one QUESTION, so a re-run does not spend another. Typing
+   * the same amount and asking again IS a new question, which is why this is
+   * set by the caller rather than inferred from the payload.
+   */
+  rerun?: boolean
+  /**
+   * Which screen this was opened from. Analytics only — the server validates it
+   * against a closed list and normalises anything unknown to `'other'` rather
+   * than rejecting the request. Telemetry never fails a calculation.
+   */
+  source?: WhatIfSource
 }
 
 export type WhatIfSideResult = {

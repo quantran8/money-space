@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { notify } from '#/shared/notify'
 
 import { useAssets } from '#/features/assets/hooks/use-assets'
+import { usePremiumAction } from '#/features/billing/hooks/use-premium-action'
 import { computeCurrentValue } from '#/features/assets/model/assets'
 import { useGoals } from '#/features/goals/hooks/use-goals'
 import { parseAmount, type GoalPriority } from '#/features/goals/model/goals'
@@ -68,6 +69,7 @@ export function useGoalsPage() {
     isLoading,
   } = useGoals()
   const { assets, asOf } = useAssets()
+  const premium = usePremiumAction()
   // EVERY asset, not just wallets: an asset-backed goal can be fed by gold,
   // crypto, stocks or cash alike — they are all part of what the household is
   // working towards. Used by the allocations panel.
@@ -218,6 +220,19 @@ export function useGoalsPage() {
   }, [formOpen, editingGoal, reset])
 
   function openCreate() {
+    // The plan ceiling, checked BEFORE the form opens.
+    //
+    // The server enforces it independently and the global 402 handler opens
+    // the same sheet if this misses — but filling in a whole goal only to be
+    // told it cannot be saved is the worst version of this interaction. It
+    // fails open while entitlement is loading, so a paying household never
+    // sees a wall on a button they own.
+    //
+    // Editing is deliberately never gated: a household over its ceiling (after
+    // a plan lapsed, say) must still be able to fix the goals it already has.
+    const allowed = premium.check({ reason: 'goal_quota', quota: 'goals' })
+    if (!allowed) return
+
     setEditingId(null)
     setFormOpen(true)
   }

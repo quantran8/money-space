@@ -5,6 +5,8 @@ import { AssetDetailPage } from '@/features/assets/ui/asset-detail-page'
 import { AuthCallbackPage } from '@/features/auth/ui/auth-callback-page'
 import { LoginPage } from '@/features/auth/ui/login-page'
 import { SignupPage } from '@/features/auth/ui/signup-page'
+import { ForgotPasswordPage } from '@/features/auth/ui/forgot-password-page'
+import { ResetPasswordPage } from '@/features/auth/ui/reset-password-page'
 import { RequireAuth } from '@/features/auth/ui/require-auth'
 import { DebtDetailPage } from '@/features/debts/ui/debt-detail-page'
 import { DashboardPage } from '@/features/dashboard/ui/dashboard-page'
@@ -19,6 +21,8 @@ import { GoalDetailPage } from '@/features/goals/ui/goal-detail-page'
 import { OnboardingPage } from '@/features/onboarding/ui/onboarding-page'
 import { RequireHousehold } from '@/features/onboarding/ui/require-household'
 import { RequireNoHousehold } from '@/features/onboarding/ui/require-no-household'
+import { RouteErrorBoundary } from '@/app/route-error-boundary'
+import { SubscriptionPage } from '@/features/billing/ui/subscription-page'
 
 /**
  * `/assets` and `/debts` → `/networth`, carrying navigation state across.
@@ -45,7 +49,17 @@ export const router = createBrowserRouter([
     path: '/auth/callback',
     element: <AuthCallbackPage />,
   },
-  /**
+  // Both public: whoever needs them is by definition locked out of the app.
+  {
+    path: '/auth/forgot-password',
+    element: <ForgotPasswordPage />,
+  },
+  // Where the emailed recovery link lands, carrying its token in the fragment.
+  {
+    path: '/auth/reset-password',
+    element: <ResetPasswordPage />,
+  },
+    /**
    * Create-or-join, and a dead end until one of them happens: whoever lands
    * here has no space to be sent back to. `RequireNoHousehold` only guards the
    * other direction — someone who already has one does not get asked to make a
@@ -85,6 +99,12 @@ export const router = createBrowserRouter([
         </RequireHousehold>
       </RequireAuth>
     ),
+    /**
+     * Declared on the layout route, so a page that throws is replaced INSIDE
+     * the shell — the sidebar and the nav out of the broken page survive.
+     * Without it a render error blanked the whole document.
+     */
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <DashboardPage /> },
       // Assets and debts are ONE route (§: two halves of the same balance
@@ -103,12 +123,23 @@ export const router = createBrowserRouter([
       { path: 'goals', element: <GoalsPage /> },
       { path: 'goals/:goalId', element: <GoalDetailPage /> },
       { path: 'settings', element: <SettingsPage /> },
+      // Its own route, not a sixth card: the settings page is long, and a
+      // route can be linked to from the paywall and from a message.
+      { path: 'settings/subscription', element: <SubscriptionPage /> },
       // Not a nav item — the bar is pinned at five (§14.9). Reached from Home.
       { path: 'activity', element: <ActivityPage /> },
       // v3.1 redirects (Phase 10): the old routes are gone, not aliased.
       { path: 'payments', element: <Navigate to="/upcoming" replace /> },
       { path: 'members', element: <Navigate to="/settings" replace /> },
       { path: 'household', element: <Navigate to="/settings" replace /> },
+      // Anything else under the shell: a real 404, not a blank shell.
+      { path: '*', element: <RouteErrorBoundary /> },
     ],
+  },
+  // Unauthenticated paths that match nothing. Outside the shell, so it cannot
+  // send someone who is not signed in through the household gate.
+  {
+    path: '*',
+    element: <RouteErrorBoundary />,
   },
 ])

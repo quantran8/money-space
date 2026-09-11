@@ -196,9 +196,45 @@ Không tham gia household calculation.
 
 # 4. Sharing Model
 
+> ⚠️ **Mô hình ba mức mô tả bên dưới KHÔNG được build.** Nó đã bị gỡ bỏ hoàn
+> toàn khỏi code (2026-08-15 → 08-16). Phần "Đang chạy thật" ngay dưới đây mới
+> là sự thật; ba mức cũ giữ lại làm tư liệu lịch sử.
+
+## Đang chạy thật
+
+**Mọi khoản được ghi vào app đều tính vào mọi con số chung.** Net worth, forecast,
+flexible money, snapshot totals — tất cả tính trên cùng một tập record, không có
+ngoại lệ nào.
+
+Không tồn tại trong code: `financial_nature`, `sharing_level`,
+`visibility_level`, `privacy_owner_member_id`,
+`included_in_household_calculation`, mức `private`.
+
+Lý do gỡ: hai partner có quyền như nhau và **ai cũng sửa được** mức chia sẻ của
+bất kỳ record nào chỉ bằng một lần edit. Vậy nên che ở server là che cho có —
+bypass được ngay bằng thiết kế, mà giá phải trả là một lớp redaction trong mọi
+mapper. Tệ hơn: quy tắc loại-trừ-khỏi-tính-toán từng làm dashboard và forecast
+báo hai số tiền khác nhau cho cùng một household.
+
+Cái thay thế nó: **nhật ký**. Mọi thay đổi đều để lại một dòng trong
+`audit_logs`, xem được ở `/activity`. Trách nhiệm giải trình đến từ dấu vết
+để lại, không đến từ quyền cấp trước.
+
+Ranh giới quyền duy nhất còn lại là `households.created_by`, gác 3 thao tác vòng
+đời (xoá household, mời/xoá thành viên) — xem `Backend-Tables §31`.
+
+> Nguồn: `backend/CLAUDE.md` §Authorization,
+> `backend/src/common/utils/money-space.utils.ts:59-71`.
+> Lưu ý: `backend/memory/sharing-levels.md` còn mô tả `visibility_level` 2 mức —
+> file đó tả trạng thái trung gian, cột đã bị drop sau đó.
+
+---
+
+## ~~Ba mức cũ~~ (không build — tư liệu lịch sử)
+
 MVP dùng ba mức.
 
-## Shared Details
+### Shared Details
 
 Partner thấy:
 
@@ -210,7 +246,7 @@ Partner thấy:
 
 Khoản tham gia household calculation.
 
-## Count in Total Only
+### Count in Total Only
 
 Khoản tham gia household calculation.
 
@@ -221,7 +257,7 @@ Partner chỉ thấy:
 
 Không thấy chi tiết nhạy cảm.
 
-## Private
+### Private
 
 Partner không thấy.
 

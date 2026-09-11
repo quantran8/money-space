@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { AppearGroup, AppearItem } from '@/components/ui/motion'
+import { useQuota } from '@money-space/core/features/billing/hooks/use-quota'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useGoalsPage } from '@money-space/core/features/goals/hooks/use-goals-page'
@@ -36,16 +37,30 @@ export function GoalsPage() {
     isDeleting,
     handleDeleteGoal,
   } = useGoalsPage()
+  // Display only — `useGoalsPage.openCreate` is what actually refuses.
+  const goalQuota = useQuota('goals')
 
   return (
     <AppearGroup className="s-section-gap flex flex-col pb-3">
       <CompactPageHeader
         title={t('goals.header.title')}
         actions={
-          <Button onClick={openCreate}>
-            <Plus className="size-4" />
-            {t('goals.form.submit')}
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Only at the ceiling. Counting from 1/2 on an empty page would
+                make a limit the first thing the household reads about goals. */}
+            {goalQuota?.isExhausted ? (
+              <span className="hidden t-caption text-ink3 sm:inline">
+                {t('goals.quota.used', {
+                  used: goalQuota.used,
+                  limit: goalQuota.limit,
+                })}
+              </span>
+            ) : null}
+            <Button onClick={openCreate}>
+              <Plus className="size-4" />
+              {t('goals.form.submit')}
+            </Button>
+          </div>
         }
       />
 

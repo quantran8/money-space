@@ -3,16 +3,23 @@ import Constants from 'expo-constants'
 import { getLocales } from 'expo-localization'
 import { Platform } from 'react-native'
 
+import { configureAnalytics } from '@money-space/core/shared/analytics'
+import { installAnalyticsIdentity } from '@money-space/core/shared/analytics-identity'
+import { noteAppOpened } from '@money-space/core/shared/analytics-session'
+
 import { installAuthBridge } from '@money-space/core/features/auth/api/auth-bridge'
 import { configureJoinUrlBase } from '@money-space/core/features/invites/model/invites.types'
 import { initI18n, restoreLanguage } from '@money-space/core/i18n/config'
 import { configureEnv } from '@money-space/core/shared/api/env'
 import { configureClipboard } from '@money-space/core/shared/clipboard'
 import { configureNavigation } from '@money-space/core/shared/navigation'
-import { hydrateAuth } from '@money-space/core/shared/stores/auth-store'
+import { hydrateAuth, useAuthStore } from '@money-space/core/shared/stores/auth-store'
 import { configureStorage } from '@money-space/core/shared/storage'
+import { configureStorePurchases } from '@money-space/core/shared/store-purchases'
 
 import { nativeNavigation } from '@/shared/native-navigation'
+import { createNativeAnalytics } from '@/shared/native-analytics'
+import { nativePurchases } from '@/shared/native-purchases'
 import { nativeStorage } from '@/shared/native-storage'
 
 /**
@@ -62,8 +69,45 @@ export function bootstrap(): Promise<void> {
   // Wire the HTTP client to the auth store before any request can run.
   installAuthBridge()
 
+  // In-app purchase. The web keeps core's default, which reports that it
+  // cannot sell — a browser has no store sheet, and the web sells via PayOS.
+  configureStorePurchases(nativePurchases)
+  identifyBuyerOnAuthChange()
+
+  // No EXPO_PUBLIC_POSTHOG_KEY ⇒ a no-op adapter and no network call, which is
+  // what Expo Go and CI run in. See ../../../memory/analytics.md.
+  configureAnalytics(createNativeAnalytics())
+  installAnalyticsIdentity()
+  void noteAppOpened(Platform.OS === 'ios' ? 'ios' : 'android')
+
   initI18n(getLocales()[0]?.languageTag)
 
   // Both read storage; the gates wait on `hydrated` rather than on this promise.
   return Promise.all([hydrateAuth(), restoreLanguage()]).then(() => undefined)
+}
+
+/**
+ * Keep RevenueCat's `app_user_id` equal to the signed-in profile id.
+ *
+ * This is load-bearing rather than housekeeping: that id is exactly what
+ * arrives in the purchase webhook, and the server resolves the household from
+ * it. If a purchase were made while RevenueCat still held an anonymous id, the
+ * money would arrive for a subscriber the server could not map.
+ *
+ * Subscribed rather than called at sign-in so a cold start with a restored
+ * session identifies too — that path never passes through the login screen.
+ */
+function identifyBuyerOnAuthChange() {
+  let identified: string | null = null
+
+  const sync = (userId: string | null | undefined) => {
+    if (!userId || userId === identified) return
+    identified = userId
+    // Failure here must not block startup: the purchase flow re-reads the id
+    // before it opens the store sheet, so a missed identify is recoverable.
+    void nativePurchases.identify(userId).catch(() => {})
+  }
+
+  sync(useAuthStore.getState().user?.id)
+  useAuthStore.subscribe((state) => sync(state.user?.id))
 }

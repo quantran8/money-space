@@ -18,9 +18,9 @@ import { useSpaceSwitcher } from '@money-space/core/features/settings/hooks/use-
  * sit directly above the panel naming the space it cannot change.
  *
  * Shaped like `DataCard` — description left, control right — rather than like
- * `HouseholdOverviewCard`'s field grid. The name below is what this space is
- * CALLED; this row is which space is OPEN. Giving them the same treatment would
- * read as two spellings of one fact.
+ * `SpaceCard`'s name field. The name below is what this space is CALLED; this
+ * row is which space is OPEN. Giving them the same treatment would read as two
+ * spellings of one fact.
  */
 export function SpaceSwitcherCard() {
   const { t } = useTranslation()

@@ -113,13 +113,19 @@ function WhatIfSheetForm({
             sellable: formatVndShort(verdict.sellable),
           })
 
-  async function runWith(assetSale?: WhatIfAssetSale) {
+  /**
+   * `rerun` marks the calls that explore the answer already on screen rather
+   * than asking a new question: adding an asset sale to it, or taking one
+   * away. Those cost no quota slot — the household asked once.
+   */
+  async function runWith(assetSale?: WhatIfAssetSale, rerun = false) {
     return await run({
       amount: amountValue,
       plannedDate,
       goalId: prefill.goalId,
       label: label.trim() || undefined,
       assetSale,
+      rerun,
     })
   }
 
@@ -198,7 +204,7 @@ function WhatIfSheetForm({
     const assetSale = sale.validate()
     if (!assetSale) return
     try {
-      await runWith(assetSale)
+      await runWith(assetSale, true)
       setSaleStepOpen(false)
     } catch (caught) {
       notify.error(getErrorMessage(caught, t('whatif.error')))
@@ -207,7 +213,7 @@ function WhatIfSheetForm({
 
   async function handleRemoveSale() {
     try {
-      await runWith()
+      await runWith(undefined, true)
     } catch (caught) {
       notify.error(getErrorMessage(caught, t('whatif.error')))
     }

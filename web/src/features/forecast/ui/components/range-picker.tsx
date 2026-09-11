@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { enUS, vi } from 'date-fns/locale'
-import { CalendarRange, Check, ChevronDown } from 'lucide-react'
+import { CalendarRange, Check, ChevronDown, Crown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { DateRange } from 'react-day-picker'
 
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { ForecastRange } from '@money-space/core/features/forecast/model/forecast-range'
+import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
+import { usePaywallStore } from '@money-space/core/shared/stores/paywall-store'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
@@ -20,6 +22,7 @@ const PRESETS: { key: string; range: ForecastRange }[] = [
   { key: 'days7', range: { kind: 'rolling', days: 7 } },
   { key: 'days30', range: { kind: 'rolling', days: 30 } },
   { key: 'days60', range: { kind: 'rolling', days: 60 } },
+  { key: 'days90', range: { kind: 'rolling', days: 90 } },
   { key: 'thisMonth', range: { kind: 'month', offset: 0 } },
   { key: 'nextMonth', range: { kind: 'month', offset: 1 } },
 ]
@@ -59,6 +62,22 @@ export function RangePicker({
   const [draft, setDraft] = useState<DateRange | undefined>()
 
   const locale = i18n.resolvedLanguage === 'vi' ? vi : enUS
+  const { limits } = useEntitlement()
+  const openPaywall = usePaywallStore((store) => store.openPaywall)
+
+  /**
+   * Whether the plan covers a preset's window.
+   *
+   * Read from the server's `limits`, never a hardcoded list — moving 60 days
+   * into Free is then a backend edit with no release on either client. While
+   * limits are still loading this answers `true`, so a paying household never
+   * sees a lock flash on a control they own.
+   */
+  const isAllowed = (preset: (typeof PRESETS)[number]): boolean => {
+    if (!limits) return true
+    if (preset.range.kind !== 'rolling') return true
+    return limits.forecastHorizons.includes(preset.range.days)
+  }
 
   const activePreset = PRESETS.find((preset) => isSameRange(preset.range, range))
   const label = activePreset
@@ -152,11 +171,21 @@ export function RangePicker({
                     // Functional: rolling windows above, calendar periods below.
                     <div className="my-2 h-px bg-divider" role="separator" />
                   ) : null}
+                  {/* Deliberately NOT disabled. A disabled control explains
+                      nothing; this one opens the paywall, which explains
+                      exactly what was hit and what it costs — and the longer
+                      horizons stay visible so people can see the product they
+                      do not have yet. */}
                   <button
                     type="button"
                     role="menuitemradio"
                     aria-checked={active}
                     onClick={() => {
+                      if (!isAllowed(preset)) {
+                        openPaywall({ reason: 'forecast_horizon', limits })
+                        handleOpenChange(false)
+                        return
+                      }
                       onChange(preset.range)
                       handleOpenChange(false)
                     }}
@@ -165,11 +194,28 @@ export function RangePicker({
                       active ? 'bg-wash' : 'hover:bg-canvas',
                     )}
                   >
-                    <span className={cn('t-body-sm', active && 'font-medium')}>
+                    {/* A locked row is not a row you can pick: its label sits
+                        back at `ink3` so the reachable options read first. */}
+                    <span
+                      className={cn(
+                        't-body-sm',
+                        active && 'font-medium',
+                        !isAllowed(preset) && 'text-ink3',
+                      )}
+                    >
                       {t(`upcoming.range.${preset.key}`)}
                     </span>
                     {active ? (
                       <Check className="size-4 shrink-0 text-ink" strokeWidth={1.75} aria-hidden />
+                    ) : !isAllowed(preset) ? (
+                      // Amber, not `ink3`: at metadata grey the crown read as
+                      // one more label rather than as the thing standing
+                      // between them and the option.
+                      <Crown
+                        className="size-4 shrink-0 text-attention-ink"
+                        strokeWidth={1.75}
+                        aria-label={t('billing.paywall.eyebrow')}
+                      />
                     ) : null}
                   </button>
                 </div>

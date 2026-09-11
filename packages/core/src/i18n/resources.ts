@@ -47,6 +47,14 @@ export const resources = {
           title: 'Xóa mục này?',
           description: 'Bạn có chắc muốn xóa “{{name}}”? Hành động này không thể hoàn tác.',
         },
+        errorBoundary: {
+          title: 'Màn hình này chưa hiện được',
+          description: 'Dữ liệu của gia đình vẫn an toàn. Thử mở lại giúp nhé.',
+          retry: 'Mở lại',
+          goHome: 'Về Tổng quan',
+          notFoundTitle: 'Không tìm thấy trang này',
+          notFoundDescription: 'Đường dẫn có thể đã thay đổi.',
+        },
       },
       // Relative timestamps (design.md §10.5). Always a concrete number —
       // never "gần đây", which hides how old the data actually is.
@@ -344,6 +352,21 @@ export const resources = {
           saleUpdated: 'Đã cập nhật giao dịch bán.',
           sellFailed: 'Chưa bán được tài sản.',
           saleUpdateFailed: 'Chưa cập nhật được giao dịch bán.',
+        },
+         autoPrice: {
+          label: 'Giá tự cập nhật',
+          on: 'Oursight tự lấy giá mới mỗi ngày.',
+          off: 'Gia đình tự nhập giá cho tài sản này.',
+          manualChip: 'Cập nhật tay',
+          // Nói vì sao tài sản này nhập tay, bằng hạn mức — không phải bằng
+          // một lời từ chối.
+          atLimit:
+            'Gói hiện tại tự cập nhật {{limit}} tài sản, dành cho những tài sản gia đình thêm trước.',
+          // Nói TRƯỚC khi lưu, ở form thêm tài sản: hạn mức đã dùng hết nên
+          // tài sản này sẽ nhập tay. Không chặn — chỉ để gia đình biết trước.
+          willBeManualTitle: 'Tài sản này sẽ cập nhật tay',
+          willBeManual:
+            'Gói hiện tại đang tự cập nhật giá cho {{limit}} tài sản. Gia đình vẫn thêm được tài sản này và tự nhập giá bất cứ lúc nào.',
         },
         // Shared by the buy and sell dialogs — the live quote reads the same in
         // both, so the copy lives once.
@@ -1228,12 +1251,161 @@ export const resources = {
           },
         },
       },
+      billing: {
+        checkout: {
+          // "gói" và "gia hạn gói", không bao giờ "đăng ký": trả trước một lần,
+          // không tự động gia hạn — nói đúng thứ gia đình thực sự mua.
+          payNote: 'Thanh toán một lần qua PayOS. Gói không tự động gia hạn.',
+          failed: 'Chưa mở được trang thanh toán. Thử lại sau một chút nhé.',
+          checking: {
+            title: 'Đang xác nhận thanh toán',
+            description: 'Thường chỉ mất vài giây. Bạn giữ trang này giúp mình nhé.',
+          },
+          paid: {
+            title: 'Đã nhận thanh toán',
+            description: 'Gia đình đã mở khoá Oursight Premium. Cả hai người cùng dùng được.',
+          },
+          still_confirming: {
+            title: 'Đang chờ xác nhận từ ngân hàng',
+            description:
+              'Tiền của gia đình vẫn an toàn. Khi ngân hàng báo về, gói sẽ tự mở — thường trong vài phút.',
+          },
+          cancelled: {
+            title: 'Đã dừng thanh toán',
+            description: 'Chưa có khoản nào bị trừ. Gia đình có thể chọn gói lại bất cứ lúc nào.',
+          },
+          expired: {
+            title: 'Link thanh toán đã hết hạn',
+            description: 'Chưa có khoản nào bị trừ. Chọn gói lại để lấy link mới nhé.',
+          },
+        },
+        paywall: {
+          eyebrow: 'OURSIGHT PREMIUM',
+          // Một câu cho mọi bức tường: nâng cấp để dùng không giới hạn.
+          headerSubtitle: 'Nâng cấp Premium để trải nghiệm không giới hạn',
+          // Mỗi bức tường có câu mở đầu riêng: gia đình vừa chạm mục tiêu thứ ba
+          // cần đọc đúng câu đó trước, không phải một lời mời chung chung.
+          title: {
+            goal_quota: 'Gia đình đang có {{limit}} mục tiêu',
+            whatif_quota: 'Đã dùng {{used}}/{{limit}} lượt tính thử tháng này',
+            auto_price_quota: 'Đang tự cập nhật giá cho {{limit}} tài sản',
+            forecast_horizon: 'Nhìn xa 60 và 90 ngày',
+            history: 'Xem lại toàn bộ lịch sử',
+            export: 'Tải dữ liệu của gia đình',
+            trial_ending: 'Bản dùng thử sắp hết',
+            expired: 'Gói Premium của gia đình đã hết hạn',
+            manage: 'Gói của gia đình',
+            general: 'Mở khóa Oursight Premium',
+          },
+          subtitle: {
+            goal_quota: 'Gói Premium mở không giới hạn số mục tiêu cho cả hai người.',
+            whatif_quota: 'Gói Premium mở không giới hạn lượt tính thử mỗi tháng.',
+            auto_price_quota:
+              'Gói Premium tự cập nhật giá cho mọi tài sản vàng, cổ phiếu và crypto.',
+            forecast_horizon:
+              'Gói Premium mở tầm nhìn 60 và 90 ngày, đủ sớm để xoay trước khi cần.',
+            history: 'Gói Premium giữ lại toàn bộ lịch sử của gia đình.',
+            export: 'Gói Premium cho phép tải toàn bộ dữ liệu về máy.',
+            trial_ending: 'Giữ lại những gì gia đình đang dùng.',
+            expired: 'Kích hoạt lại để dùng tiếp.',
+            manage: 'Gia hạn thêm bất cứ lúc nào — thời gian được cộng dồn.',
+            general: 'Một gói cho cả hai người.',
+          },
+          expiredOn: 'Hết hạn ngày {{date}}',
+          youGet: 'Bạn nhận được',
+          benefit: {
+            horizon: { label: 'Biết trước xa hơn', detail: 'Thấy lúc nào gia đình có thể bị căng', value: '90 ngày' },
+            price: { label: 'Giá tự cập nhật', detail: 'Vàng, cổ phiếu, crypto luôn đúng giá', value: 'Luôn cập nhật' },
+            whatif: { label: 'Tính thử thoải mái', detail: 'Xem trước hệ quả của mỗi khoản chi', value: 'What-if' },
+            goals: { label: 'Mục tiêu không giới hạn', detail: 'Đủ chỗ cho mọi dự định của gia đình', value: 'Không giới hạn' },
+          },
+          household: {
+            title: 'Một gói Premium cho cả hai người',
+            detail: 'Cả hai cùng được mở khóa. Không cần mua riêng từng người.',
+          },
+          cta: 'Chọn {{plan}} · {{amount}}',
+          ctaLoading: 'Đang mở…',
+          later: 'Để sau',
+          trial: {
+            cta: 'Dùng thử {{days}} ngày miễn phí',
+            starting: 'Đang mở bản dùng thử…',
+            note: 'Không cần thẻ. Hết {{days}} ngày sẽ tự về gói Free.',
+            started: 'Đã mở {{days}} ngày dùng thử Premium.',
+            failed: 'Chưa mở được bản dùng thử. Vui lòng thử lại.',
+          },
+          payNote: 'Thanh toán một lần, không tự động gia hạn.',
+          mobileNote: 'Mở oursight.vn trên trình duyệt để nâng cấp gói.',
+          store: {
+            buy: 'Mua {{plan}} · {{price}}',
+            purchasing: 'Đang xử lý…',
+            confirming: 'Đang kích hoạt Premium…',
+            done: 'Đã kích hoạt Premium cho cả gia đình.',
+            slow: 'Đã nhận thanh toán. Premium sẽ mở trong ít phút — bạn có thể đóng và mở lại ứng dụng.',
+            pending: 'Giao dịch đang chờ duyệt. Premium sẽ mở ngay khi được duyệt.',
+            failed: 'Giao dịch chưa hoàn tất. Chưa có khoản nào bị trừ.',
+            restore: 'Khôi phục giao dịch đã mua',
+            restoring: 'Đang kiểm tra…',
+            restoreEmpty: 'Không tìm thấy giao dịch nào trên tài khoản này.',
+            renewNote: 'Gói tự động gia hạn. Quản lý hoặc hủy trong cài đặt {{store}}.',
+            appStore: 'App Store',
+            playStore: 'Google Play',
+          },
+        },
+        redeem: {
+          title: 'Nhập mã kích hoạt',
+          description: 'Mã có dạng OURS-XXXX-XXXX.',
+          placeholder: 'OURS-XXXX-XXXX',
+          submit: 'Xem mã',
+          submitting: 'Đang xử lý…',
+          paste: 'Dán',
+          haveCode: 'Đã có mã kích hoạt?',
+          preview: {
+            title: 'Mã hợp lệ',
+            forHousehold: 'Kích hoạt cho {{name}}.',
+            description: 'Mã này thêm {{days}} ngày Oursight Premium cho gia đình.',
+            stacked:
+              'Gia đình đang dùng Premium đến {{current}}. Mã này cộng thêm {{days}} ngày, thành {{after}}.',
+            lifetime: 'Mã này mở Premium vĩnh viễn cho gia đình.',
+            confirm: 'Kích hoạt',
+            back: 'Nhập mã khác',
+          },
+          success: {
+            title: 'Đã kích hoạt Premium',
+            description: 'Gia đình dùng Oursight Premium đến {{date}}.',
+            lifetime: 'Gia đình dùng Oursight Premium vĩnh viễn.',
+            done: 'Xong',
+          },
+          error: {
+            invalid: 'Mã chưa đúng. Xem lại mã trong tin nhắn rồi thử lại nhé.',
+            expired: 'Mã đã quá hạn. Nhắn cho Oursight để được hỗ trợ.',
+            exhausted: 'Mã đã hết lượt kích hoạt.',
+            alreadyUsed: 'Gia đình đã dùng mã này rồi.',
+            noEffect: 'Gói hiện tại của gia đình đã tốt hơn mã này, nên mã vẫn còn nguyên.',
+            rateLimited: 'Bạn đã nhập nhiều lần liên tiếp. Chờ một chút rồi thử lại nhé.',
+          },
+        },
+      },
       whatif: {
         cta: 'Thử một khoản chi',
         title: 'Thử một khoản chi',
         description: 'Xem điều gì thay đổi sau khi chi. Không lưu lại.',
         arrow: '→',
         error: 'Chưa tính được lúc này. Thử lại giúp mình nhé.',
+        quota: {
+          // Nói số còn lại, không nói "bạn đã dùng hết" — cùng một sự thật,
+          // nhưng một câu là thông tin, câu kia là lời trách.
+          lastOne: 'Còn 1 lượt tính thử trong tháng này.',
+          // Số còn lại, hiện ở mọi mức — gia đình cần biết để tính trước, chứ
+          // không phải đến lúc gần hết mới được báo.
+          remaining_one: 'Còn {{count}} lượt tính thử trong tháng này.',
+          remaining_other: 'Còn {{count}} lượt tính thử trong tháng này.',
+          // Dạng badge cạnh tiêu đề — chỉ con số, câu đầy đủ nằm ở title khi
+          // rê chuột.
+          badge: 'Còn {{count}} lượt',
+          badgeExhausted: 'Hết lượt tháng này',
+          exhausted:
+            'Đã dùng {{limit}} lượt tính thử của tháng này. Lượt mới mở lại vào đầu tháng sau.',
+        },
         form: {
           amount: 'Số tiền',
           plannedDate: 'Ngày chi',
@@ -1595,6 +1767,7 @@ export const resources = {
           days7: '7 ngày tới',
           days30: '30 ngày tới',
           days60: '60 ngày tới',
+          days90: '90 ngày tới',
           thisMonth: 'Tháng này',
           nextMonth: 'Tháng sau',
           custom: 'Khoảng tự chọn',
@@ -2028,6 +2201,11 @@ export const resources = {
         },
         header: {
           title: 'Mục tiêu',
+        },
+        quota: {
+          // Chỉ hiện khi đã kín chỗ, và nói bằng con số — không phải "bạn
+          // không được tạo thêm".
+          used: '{{used}}/{{limit}} mục tiêu',
         },
         demo: {
           overview: 'Tổng quan',
@@ -2781,6 +2959,7 @@ export const resources = {
           pending: 'Chờ xác nhận',
           active: 'Đang hoạt động',
           holdsSources: '{{count}} nguồn tiền',
+          owner: 'Chủ gia đình',
           memberMenu: 'Tuỳ chọn {{name}}',
           soloPrompt: 'Mời thêm một thành viên để cùng theo dõi tài chính gia đình.',
           removed: 'Đã gỡ thành viên.',
@@ -2914,6 +3093,10 @@ export const resources = {
           languagePlaceholder: 'Chọn ngôn ngữ',
           createdAt: 'Hộ được tạo ngày {{date}}. Đơn vị tiền áp dụng cho toàn bộ số liệu trong không gian này.',
           spaceTitle: 'Không gian gia đình',
+          editName: 'Đổi tên không gian',
+        },
+        other: {
+          title: 'Cài đặt khác',
         },
         reminders: {
           eyebrow: 'Nhắc nhở',
@@ -2923,6 +3106,43 @@ export const resources = {
           updatesTitle: 'Cập nhật định kỳ',
           updatesDescription: 'Nhắc cả hai cập nhật snapshot theo nhịp đã chọn.',
         },
+        billing: {
+          eyebrow: 'Gói',
+          free: 'Gói Miễn phí',
+          premium: 'Oursight Premium',
+          trial: 'Đang dùng thử Premium',
+          lifetime: 'Premium vĩnh viễn',
+          activeUntil: 'Dùng đến {{date}}',
+          daysRemaining_one: 'Còn {{count}} ngày',
+          daysRemaining_other: 'Còn {{count}} ngày',
+          expiredOn: 'Đã hết hạn ngày {{date}}',
+          forBothOfYou: 'Một gói cho cả hai người',
+          freeDescription:
+            'Gia đình đang dùng {{goals}} mục tiêu và {{whatIf}} lượt tính thử mỗi tháng.',
+          freeDescriptionUnlimited: 'Gia đình đang dùng đầy đủ tính năng.',
+          viewPlans: 'Xem các gói',
+          viewPlan: 'Xem gói hiện tại: {{plan}}',
+          manage: 'Quản lý gói',
+          plans: 'Các gói',
+          plan: {
+            premium_monthly: 'Theo tháng',
+            premium_yearly: 'Theo năm',
+            premium_lifetime: 'Trọn đời',
+          },
+          savings: 'Tiết kiệm {{amount}}',
+          perMonth: '≈{{amount}}/tháng cho cả hai',
+          payHint: 'Gia hạn gói tại oursight.vn trên trình duyệt.',
+          orders: {
+            title: 'Lịch sử thanh toán',
+            meta: 'Các lần gia đình đã mua gói',
+            status: {
+              paid: 'Đã thanh toán',
+              pending: 'Chờ thanh toán',
+              cancelled: 'Đã dừng',
+              expired: 'Đã hết hạn',
+            },
+          },
+        },
         data: {
           eyebrow: 'Dữ liệu',
           title: 'Xuất hoặc xóa dữ liệu',
@@ -2930,6 +3150,8 @@ export const resources = {
           export: 'Xuất dữ liệu gia đình',
           exportDescription: 'Tải xuống tài sản, khoản nợ, mục tiêu và sự kiện tài chính.',
           exportAction: 'Xuất dữ liệu',
+          exporting: 'Đang chuẩn bị tệp…',
+          exportFailed: 'Chưa tải được tệp. Thử lại sau một chút nhé.',
           delete: 'Xóa không gian gia đình',
           deleteDescription: 'Xóa toàn bộ dữ liệu và quyền truy cập của các thành viên.',
           // §22.11: hậu quả nói bằng số thật, một dòng — không phải "bạn có
@@ -3286,16 +3508,40 @@ export const resources = {
         callback: {
           signingIn: 'Đang hoàn tất đăng nhập...',
         },
+        forgotPassword: {
+          title: 'Đặt lại mật khẩu',
+          description: 'Nhập email của bạn, Oursight sẽ gửi liên kết đặt lại mật khẩu.',
+          submit: 'Gửi liên kết',
+          submitting: 'Đang gửi...',
+          backToLogin: 'Quay lại đăng nhập',
+          sentTitle: 'Đã gửi liên kết',
+          // Worded the same whether or not the address has an account.
+          sentDescription:
+            'Nếu {{email}} có tài khoản, liên kết đặt lại mật khẩu đang trên đường tới hộp thư. Liên kết có hiệu lực trong 1 giờ.',
+        },
+        resetPassword: {
+          title: 'Chọn mật khẩu mới',
+          description: 'Mật khẩu mới sẽ dùng cho lần đăng nhập tới.',
+          submit: 'Lưu mật khẩu',
+          submitting: 'Đang lưu...',
+          invalidTitle: 'Liên kết không còn dùng được',
+          invalidDescription:
+            'Liên kết đặt lại mật khẩu đã hết hạn hoặc đã được dùng. Gửi lại một liên kết mới nhé.',
+          requestAgain: 'Gửi lại liên kết',
+        },
         toast: {
           loginSuccess: 'Đăng nhập thành công',
           signupSuccess: 'Chào {{name}}, tài khoản đã sẵn sàng.',
           confirmEmail: 'Kiểm tra email để xác nhận tài khoản nhé.',
+          passwordUpdated: 'Đã cập nhật mật khẩu',
         },
         errors: {
           notConfigured: 'Chưa cấu hình đăng nhập. Vui lòng liên hệ quản trị.',
           loginFailed: 'Không thể đăng nhập. Kiểm tra lại email và mật khẩu.',
           signupFailed: 'Không thể tạo tài khoản.',
           googleFailed: 'Không thể đăng nhập với Google.',
+          resetRequestFailed: 'Chưa gửi được liên kết. Thử lại sau ít phút nhé.',
+          resetFailed: 'Chưa đặt lại được mật khẩu.',
         },
       },
       onboarding: {
@@ -3384,6 +3630,14 @@ export const resources = {
         confirmDelete: {
           title: 'Delete this item?',
           description: 'Are you sure you want to delete “{{name}}”? This can’t be undone.',
+        },
+        errorBoundary: {
+          title: 'This screen could not load',
+          description: 'Your household data is safe. Try opening it again.',
+          retry: 'Open again',
+          goHome: 'Back to Overview',
+          notFoundTitle: 'Page not found',
+          notFoundDescription: 'This link may have changed.',
         },
       },
       // Relative timestamps (design.md §10.5).
@@ -3676,6 +3930,17 @@ export const resources = {
           saleUpdated: 'Sale updated.',
           sellFailed: 'Could not sell the asset.',
           saleUpdateFailed: 'Could not update the sale.',
+        },
+        autoPrice: {
+          label: 'Automatic pricing',
+          on: 'Oursight refreshes this price every day.',
+          off: 'You record this value yourself.',
+          manualChip: 'Manual',
+          atLimit:
+            'Your plan keeps {{limit}} assets priced automatically, and they go to the ones you added first.',
+          willBeManualTitle: 'This one updates manually',
+          willBeManual:
+            'Your plan already keeps {{limit}} assets priced automatically. You can still add this one and record its value yourself.',
         },
         marketPrice: {
           label: 'Market price',
@@ -4532,6 +4797,135 @@ export const resources = {
           },
         },
       },
+      billing: {
+        checkout: {
+          payNote: 'A single payment through PayOS. Plans do not auto-renew.',
+          failed: 'Could not open the payment page. Please try again shortly.',
+          checking: {
+            title: 'Confirming your payment',
+            description: 'This usually takes a few seconds. Please keep this page open.',
+          },
+          paid: {
+            title: 'Payment received',
+            description: 'Your household has Oursight Premium. You are both unlocked.',
+          },
+          still_confirming: {
+            title: 'Waiting on the bank',
+            description:
+              'Your money is safe. The plan opens as soon as the bank confirms — usually within a few minutes.',
+          },
+          cancelled: {
+            title: 'Payment stopped',
+            description: 'Nothing was charged. You can choose a plan again whenever you like.',
+          },
+          expired: {
+            title: 'The payment link expired',
+            description: 'Nothing was charged. Choose a plan again for a fresh link.',
+          },
+        },
+        paywall: {
+          eyebrow: 'OURSIGHT PREMIUM',
+          headerSubtitle: 'Upgrade to Premium for unlimited',
+          title: {
+            goal_quota: 'Your household has {{limit}} goals',
+            whatif_quota: 'You have used {{used}}/{{limit}} what-ifs this month',
+            auto_price_quota: 'Prices update automatically for {{limit}} assets',
+            forecast_horizon: 'See 60 and 90 days ahead',
+            history: 'Read back your full history',
+            export: 'Export your household data',
+            trial_ending: 'Your trial is ending',
+            expired: 'Your household Premium has expired',
+            manage: 'Your household plan',
+            general: 'Unlock Oursight Premium',
+          },
+          subtitle: {
+            goal_quota: 'Premium removes the limit on goals, for both of you.',
+            whatif_quota: 'Premium gives you unlimited what-ifs every month.',
+            auto_price_quota:
+              'Premium keeps prices current for every gold, stock and crypto asset.',
+            forecast_horizon:
+              'Premium opens the 60 and 90-day view, early enough to act on.',
+            history: 'Premium keeps your whole history.',
+            export: 'Premium lets you download everything.',
+            trial_ending: 'Keep what your household is already using.',
+            expired: 'Activate again to keep going.',
+            manage: 'Extend any time — the days are added on top.',
+            general: 'One plan for both of you.',
+          },
+          expiredOn: 'Expired {{date}}',
+          youGet: 'What you get',
+          benefit: {
+            horizon: { label: 'See further ahead', detail: 'Know when things could get tight', value: '90 days' },
+            price: { label: 'Prices stay current', detail: 'Gold, stocks and crypto, always right', value: 'Automatic' },
+            whatif: { label: 'What-if without limits', detail: 'See the consequence before you spend', value: 'What-if' },
+            goals: { label: 'Unlimited goals', detail: 'Room for everything you are planning', value: 'Unlimited' },
+          },
+          household: {
+            title: 'One Premium plan for both of you',
+            detail: 'You are both unlocked. No need to buy it twice.',
+          },
+          cta: 'Choose {{plan}} · {{amount}}',
+          ctaLoading: 'Opening…',
+          later: 'Maybe later',
+          trial: {
+            cta: 'Try {{days}} days free',
+            starting: 'Starting your trial…',
+            note: 'No card needed. It returns to Free after {{days}} days.',
+            started: 'Your {{days}}-day Premium trial has started.',
+            failed: 'Could not start the trial. Please try again.',
+          },
+          payNote: 'One payment, no auto-renewal.',
+          mobileNote: 'Open oursight.vn in a browser to upgrade.',
+          store: {
+            buy: 'Buy {{plan}} · {{price}}',
+            purchasing: 'Processing…',
+            confirming: 'Activating Premium…',
+            done: 'Premium is active for your household.',
+            slow: 'Payment received. Premium unlocks in a few minutes — you can close and reopen the app.',
+            pending: 'The purchase is awaiting approval. Premium unlocks as soon as it goes through.',
+            failed: 'The purchase did not go through. You have not been charged.',
+            restore: 'Restore purchases',
+            restoring: 'Checking…',
+            restoreEmpty: 'No purchases found on this account.',
+            renewNote: 'Renews automatically. Manage or cancel in your {{store}} settings.',
+            appStore: 'App Store',
+            playStore: 'Google Play',
+          },
+        },
+        redeem: {
+          title: 'Enter an activation code',
+          description: 'Codes look like OURS-XXXX-XXXX.',
+          placeholder: 'OURS-XXXX-XXXX',
+          submit: 'Check code',
+          submitting: 'Working on it…',
+          paste: 'Paste',
+          haveCode: 'Have an activation code?',
+          preview: {
+            title: 'Code is valid',
+            forHousehold: 'Activates {{name}}.',
+            description: 'This code adds {{days}} days of Oursight Premium.',
+            stacked:
+              'Your household has Premium until {{current}}. This adds {{days}} days, through {{after}}.',
+            lifetime: 'This code unlocks Oursight Premium forever.',
+            confirm: 'Activate',
+            back: 'Try another code',
+          },
+          success: {
+            title: 'Premium activated',
+            description: 'Your household has Oursight Premium until {{date}}.',
+            lifetime: 'Your household has Oursight Premium forever.',
+            done: 'Done',
+          },
+          error: {
+            invalid: 'That code is not right. Check the message and try again.',
+            expired: 'This code has expired. Get in touch and we will help.',
+            exhausted: 'This code has no activations left.',
+            alreadyUsed: 'Your household has already used this code.',
+            noEffect: 'Your current plan is already better than this code, so it is unused.',
+            rateLimited: 'Too many attempts in a row. Wait a moment and try again.',
+          },
+        },
+      },
       whatif: {
         cta: 'Try a purchase',
         title: 'What if we spend this?',
@@ -4539,6 +4933,17 @@ export const resources = {
           'See what changes afterwards. Nothing is saved, and this is not advice about whether to buy.',
         arrow: '→',
         error: 'Could not work that out just now. Please try again.',
+        quota: {
+          lastOne: '1 what-if run left this month.',
+          // Only ever rendered for 2+ — `lastOne` owns the singular — but keyed
+          // for plurals so a bare-key fallback cannot read "1 runs".
+          remaining_one: '{{count}} what-if run left this month.',
+          remaining_other: '{{count}} what-if runs left this month.',
+          badge: '{{count}} left',
+          badgeExhausted: 'None left this month',
+          exhausted:
+            "That is all {{limit}} what-if runs for this month. They reset at the start of next month.",
+        },
         form: {
           amount: 'Amount',
           plannedDate: 'Planned for',
@@ -4853,6 +5258,7 @@ export const resources = {
           days7: 'Next 7 days',
           days30: 'Next 30 days',
           days60: 'Next 60 days',
+          days90: 'Next 90 days',
           thisMonth: 'This month',
           nextMonth: 'Next month',
           custom: 'Custom range',
@@ -5249,6 +5655,9 @@ export const resources = {
         },
         header: {
           title: 'Goals',
+        },
+        quota: {
+          used: '{{used}}/{{limit}} goals',
         },
         demo: {
           overview: 'Overview',
@@ -5986,6 +6395,7 @@ export const resources = {
           pending: 'Pending',
           active: 'Active',
           holdsSources: '{{count}} money sources',
+          owner: 'Household owner',
           memberMenu: 'Options for {{name}}',
           soloPrompt: 'Invite another member to manage your household finances together.',
           removed: 'Member removed.',
@@ -6120,6 +6530,10 @@ export const resources = {
           createdAt:
             'This household was created on {{date}}. The selected currency applies to all figures in this space.',
           spaceTitle: 'Household space',
+          editName: 'Rename space',
+        },
+        other: {
+          title: 'Other settings',
         },
         reminders: {
           eyebrow: 'Reminders',
@@ -6129,6 +6543,43 @@ export const resources = {
           updatesTitle: 'Recurring updates',
           updatesDescription: 'Remind both of us to refresh the snapshot on the chosen rhythm.',
         },
+        billing: {
+          eyebrow: 'Plan',
+          free: 'Free plan',
+          premium: 'Oursight Premium',
+          trial: 'Premium trial',
+          lifetime: 'Premium, forever',
+          activeUntil: 'Active until {{date}}',
+          daysRemaining_one: '{{count}} day left',
+          daysRemaining_other: '{{count}} days left',
+          expiredOn: 'Expired on {{date}}',
+          forBothOfYou: 'One plan for both of you',
+          freeDescription:
+            'Your household has {{goals}} goals and {{whatIf}} what-if runs a month.',
+          freeDescriptionUnlimited: 'Your household has every feature.',
+          viewPlans: 'See plans',
+          viewPlan: 'View current plan: {{plan}}',
+          manage: 'Manage plan',
+          plans: 'Plans',
+          plan: {
+            premium_monthly: 'Monthly',
+            premium_yearly: 'Yearly',
+            premium_lifetime: 'Lifetime',
+          },
+          savings: 'Save {{amount}}',
+          perMonth: '≈{{amount}}/month for both of you',
+          payHint: 'Renew at oursight.vn in a browser.',
+          orders: {
+            title: 'Payment history',
+            meta: 'What your household has bought',
+            status: {
+              paid: 'Paid',
+              pending: 'Awaiting payment',
+              cancelled: 'Stopped',
+              expired: 'Expired',
+            },
+          },
+        },
         data: {
           eyebrow: 'Data',
           title: 'Export or delete data',
@@ -6136,6 +6587,8 @@ export const resources = {
           export: 'Export household data',
           exportDescription: 'Download assets, debts, goals, and financial events.',
           exportAction: 'Export data',
+          exporting: 'Preparing your file…',
+          exportFailed: 'Could not download the file. Please try again shortly.',
           delete: 'Delete household space',
           deleteDescription: 'Delete all data and remove member access.',
           deleteConsequence:
@@ -6482,16 +6935,39 @@ export const resources = {
         callback: {
           signingIn: 'Completing sign-in...',
         },
+        forgotPassword: {
+          title: 'Reset your password',
+          description: 'Enter your email and Oursight will send you a reset link.',
+          submit: 'Send link',
+          submitting: 'Sending...',
+          backToLogin: 'Back to sign in',
+          sentTitle: 'Link sent',
+          sentDescription:
+            'If {{email}} has an account, a reset link is on its way. The link works for 1 hour.',
+        },
+        resetPassword: {
+          title: 'Choose a new password',
+          description: 'You will use this password the next time you sign in.',
+          submit: 'Save password',
+          submitting: 'Saving...',
+          invalidTitle: 'This link no longer works',
+          invalidDescription:
+            'The reset link has expired or has already been used. Request a new one.',
+          requestAgain: 'Send a new link',
+        },
         toast: {
           loginSuccess: 'Signed in successfully',
           signupSuccess: 'Hi {{name}}, your account is ready.',
           confirmEmail: 'Check your email to confirm your account.',
+          passwordUpdated: 'Password updated',
         },
         errors: {
           notConfigured: 'Sign-in is not configured. Please contact your admin.',
           loginFailed: 'Could not sign in. Check your email and password.',
           signupFailed: 'Could not create the account.',
           googleFailed: 'Could not sign in with Google.',
+          resetRequestFailed: 'Could not send the link. Try again in a few minutes.',
+          resetFailed: 'Could not reset the password.',
         },
       },
       onboarding: {

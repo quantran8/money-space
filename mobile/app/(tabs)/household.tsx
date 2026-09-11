@@ -15,6 +15,7 @@ import { useNavigate } from '@money-space/core/shared/navigation'
 import { notify } from '@money-space/core/shared/notify'
 
 import { ConfirmDialog, Panel, Screen, Sections, Skeleton } from '@/components/ui'
+import { SubscriptionSection } from '@/features/billing/ui/subscription-section'
 import { HouseholdIdentitySection } from '@/features/household/ui/household-identity-section'
 import { SpaceSwitcherSection } from '@/features/household/ui/space-switcher-section'
 import { InviteQrSheet } from '@/features/invites/ui/invite-qr-sheet'

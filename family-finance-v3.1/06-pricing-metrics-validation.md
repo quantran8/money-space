@@ -1,5 +1,14 @@
 # 06 — Pricing, Metrics & Validation
 
+> ⚠️ **§1–§3 (pricing) đã LỖI THỜI.** Viết trước khi sản phẩm được build, và
+> chúng bán những thứ nay không tồn tại. Tham chiếu hiện tại:
+> **[09-pricing-implemented.md](09-pricing-implemented.md)** (giá đang chạy) và
+> **[10-feature-gating.md](10-feature-gating.md)** (ranh giới Free/Premium).
+> `09 §8` liệt kê từng điểm sai và vì sao.
+>
+> **§4–§7 (metrics, north star, validation) vẫn dùng được** — nhưng chưa đo
+> được: repo chưa có analytics. Xem `09 §9`.
+
 ## 1. Pricing Principle
 
 Pricing theo:

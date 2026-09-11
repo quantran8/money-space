@@ -12,6 +12,13 @@ import { hydrateAuth } from '@money-space/core/shared/stores/auth-store'
 import { configureNavigation } from '@money-space/core/shared/navigation'
 import { configureNotifier } from '@money-space/core/shared/notify'
 import { configureStorage } from '@money-space/core/shared/storage'
+import {
+  analytics,
+  configureAnalytics,
+} from '@money-space/core/shared/analytics'
+import { installAnalyticsIdentity } from '@money-space/core/shared/analytics-identity'
+import { noteAppOpened } from '@money-space/core/shared/analytics-session'
+import { createWebAnalytics } from '@/shared/web-analytics'
 import { webNavigation } from '@/shared/web-navigation'
 import { webNotifier } from '@/shared/web-notify'
 import { webStorage } from '@/shared/web-storage'
@@ -39,6 +46,28 @@ configureJoinUrlBase(window.location.origin)
 
 // Wire the HTTP client to the auth store before any request runs.
 installAuthBridge()
+
+// Analytics. With no VITE_POSTHOG_KEY this installs a no-op adapter and makes
+// no network request at all — which is the state CI and every dev machine run
+// in. See ../../memory/analytics.md.
+configureAnalytics(createWebAnalytics())
+installAnalyticsIdentity()
+void noteAppOpened('web')
+
+/**
+ * The gap the route-scoped error boundary cannot see.
+ *
+ * `RouteErrorBoundary` catches anything thrown under the router, deliberately
+ * leaving the shell alive. But a throw ABOVE the router — here, or in App —
+ * reaches neither it nor any React boundary, so these two listeners are the
+ * only thing that would ever record it.
+ */
+window.addEventListener('error', (event) => {
+  analytics.captureException(event.error ?? event.message, { surface: 'window' })
+})
+window.addEventListener('unhandledrejection', (event) => {
+  analytics.captureException(event.reason, { surface: 'promise' })
+})
 
 initI18n(window.navigator.language)
 void restoreLanguage()

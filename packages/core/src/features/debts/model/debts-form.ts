@@ -39,25 +39,32 @@ export type DebtSummary = {
   monthlyPlanned: number
 }
 
-export const defaultValues: DebtForm = {
-  name: '',
-  lenderType: 'relative',
-  lenderName: '',
-  originalAmount: '',
-  outstandingAmount: '',
-  borrowedAt: '2026-07-08',
-  firstPaymentDate: '',
-  expectedFinalDueDate: '',
-  ownerMemberId: '',
-  receivedToAssetId: '',
-  repaymentAssetId: '',
-  paymentFrequency: 'none',
-  fixedPaymentAmount: '',
-  fixedPaymentTouched: false,
-  hasInterest: false,
-  interestCalc: 'fixed',
-  interestPeriods: [{ ratePct: '', months: '' }],
-  note: '',
+/**
+ * A blank debt form. This is a function, not a constant, because `borrowedAt`
+ * defaults to today — a literal date froze every new debt to the day this file
+ * was written. Mirrors `defaultCashflowFormValues`.
+ */
+export function defaultDebtFormValues(): DebtForm {
+  return {
+    name: '',
+    lenderType: 'relative',
+    lenderName: '',
+    originalAmount: '',
+    outstandingAmount: '',
+    borrowedAt: new Date().toISOString().slice(0, 10),
+    firstPaymentDate: '',
+    expectedFinalDueDate: '',
+    ownerMemberId: '',
+    receivedToAssetId: '',
+    repaymentAssetId: '',
+    paymentFrequency: 'none',
+    fixedPaymentAmount: '',
+    fixedPaymentTouched: false,
+    hasInterest: false,
+    interestCalc: 'fixed',
+    interestPeriods: [{ ratePct: '', months: '' }],
+    note: '',
+  }
 }
 
 /**

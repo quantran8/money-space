@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useAssetDetail, type AssetEventEntry } from '@money-space/core/features/assets/hooks/use-asset-detail'
+import { AutoPriceRow } from '@/features/assets/ui/components/auto-price-row'
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import {
   canUpdatePriceManually,
@@ -543,6 +544,10 @@ export function AssetDetailPage() {
                   />
                 </p>
               ) : null}
+
+              {/* How the price stays current, and the switch that moves the
+                  plan's automation onto this asset. */}
+              <AutoPriceRow asset={asset} />
             </div>
 
             <div className="grid gap-8 self-end sm:grid-cols-2 lg:grid-cols-3">
