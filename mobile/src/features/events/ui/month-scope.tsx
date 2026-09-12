@@ -1,5 +1,5 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable, Text, View } from 'react-native'
-import { ChevronLeft, ChevronRight } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -59,7 +59,7 @@ function MonthStep({
   onPress: () => void
   direction: 'previous' | 'next'
 }) {
-  const Icon = direction === 'previous' ? ChevronLeft : ChevronRight
+  const glyph = direction === 'previous' ? 'chevron-back' : 'chevron-forward'
   return (
     <Pressable
       onPress={onPress}
@@ -68,7 +68,7 @@ function MonthStep({
       style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
       className="items-center justify-center rounded-control active:bg-wash"
     >
-      <Icon size={18} color={colors.ink2} strokeWidth={1.75} />
+      <Ionicons name={glyph} size={18} color={colors.ink2} />
     </Pressable>
   )
 }

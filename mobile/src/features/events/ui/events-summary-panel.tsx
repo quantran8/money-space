@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native'
-import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from 'lucide-react-native'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useTranslation } from 'react-i18next'
 
 import type { PeriodSummary } from '@money-space/core/features/events/model/events-form'
@@ -8,7 +8,6 @@ import { formatVndScale } from '@money-space/core/shared/lib/format-money'
 import { Label, Money, Panel, PanelHeader } from '@/components/ui'
 import { colors } from '@/theme/tokens'
 
-import type { LucideIcon } from 'lucide-react-native'
 
 /**
  * What this month came to, above the timeline that lists it row by row.
@@ -45,7 +44,7 @@ export function EventsSummaryPanel({ summary }: { summary: PeriodSummary }) {
       <View className="mt-5 gap-5">
         <View>
           <MetricLabel
-            icon={ArrowLeftRight}
+            icon="swap-horizontal"
             tone={colors.dataPrimary}
             label={t('events.summary.net')}
           />
@@ -62,7 +61,7 @@ export function EventsSummaryPanel({ summary }: { summary: PeriodSummary }) {
 
         <View>
           <MetricLabel
-            icon={ArrowDownLeft}
+            icon="arrow-down"
             tone={colors.protect}
             label={t('events.summary.moneyIn')}
           />
@@ -71,7 +70,7 @@ export function EventsSummaryPanel({ summary }: { summary: PeriodSummary }) {
 
         <View>
           <MetricLabel
-            icon={ArrowUpRight}
+            icon="arrow-up"
             tone={colors.ink2}
             label={t('events.summary.moneyOut')}
           />
@@ -83,17 +82,17 @@ export function EventsSummaryPanel({ summary }: { summary: PeriodSummary }) {
 }
 
 function MetricLabel({
-  icon: Icon,
+  icon,
   tone,
   label,
 }: {
-  icon: LucideIcon
+  icon: React.ComponentProps<typeof Ionicons>['name']
   tone: string
   label: string
 }) {
   return (
     <View className="flex-row items-center gap-2">
-      <Icon size={18} color={tone} strokeWidth={1.75} />
+      <Ionicons name={icon} size={18} color={tone} />
       <Text className="t-body-sm text-ink2">{label}</Text>
     </View>
   )

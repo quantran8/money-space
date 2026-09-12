@@ -1,12 +1,11 @@
 import { View } from 'react-native'
-import { ChessQueen, Star } from 'lucide-react-native'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useTranslation } from 'react-i18next'
 
 import type { GoalPriority } from '@money-space/core/features/goals/model/goals'
 
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
 
-import type { LucideIcon } from 'lucide-react-native'
 
 /**
  * Priority, as a rank rather than a flag: a high-priority goal is funded first
@@ -21,9 +20,11 @@ import type { LucideIcon } from 'lucide-react-native'
  * (§2.10). `size` is the only thing that differs between them — Home's rows are
  * denser and cannot spend a 44pt tap target on a non-interactive mark.
  */
-const PRIORITY_ICON: Partial<Record<GoalPriority, LucideIcon>> = {
-  high: ChessQueen,
-  medium: Star,
+type IoniconName = React.ComponentProps<typeof Ionicons>['name']
+
+const PRIORITY_ICON: Partial<Record<GoalPriority, IoniconName>> = {
+  high: 'ribbon',
+  medium: 'star',
 }
 
 export function GoalPriorityMark({
@@ -35,8 +36,8 @@ export function GoalPriorityMark({
   size?: 'default' | 'compact'
 }) {
   const { t } = useTranslation()
-  const Icon = PRIORITY_ICON[priority]
-  if (!Icon) return null
+  const icon = PRIORITY_ICON[priority]
+  if (!icon) return null
 
   const box = size === 'compact' ? 18 : TOUCH_TARGET
 
@@ -47,10 +48,10 @@ export function GoalPriorityMark({
       accessibilityRole="image"
       accessibilityLabel={t(`options.priority.${priority}`)}
     >
-      <Icon
+      <Ionicons
+        name={icon}
         size={18}
         color={priority === 'high' ? colors.attentionInk : colors.ink3}
-        strokeWidth={1.75}
       />
     </View>
   )

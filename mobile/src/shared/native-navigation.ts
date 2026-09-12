@@ -43,9 +43,15 @@ function useNativeNavigate(): Navigate {
     const href = withState(to, options?.state) as Parameters<typeof router.push>[0]
     if (options?.replace) {
       router.replace(href)
-    } else {
-      router.push(href)
+      return
     }
+    /**
+     * `navigate`, not `push`: it reuses a matching screen already in the stack
+     * instead of stacking a second copy. Going Tổng quan → Tài sản with `push`
+     * left two Tài sản entries and played a forward animation on the way back.
+     * See ../../../memory/mobile-back-must-pop.md.
+     */
+    router.navigate(href)
   }, [])
 }
 

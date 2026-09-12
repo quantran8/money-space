@@ -1,6 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { Check, ChevronDown } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import type { ForecastRange } from '@money-space/core/features/forecast/model/forecast-range'
@@ -78,7 +78,7 @@ export function RangePicker({
             {`${formatDayMonth(bounds.start)} — ${formatDayMonth(bounds.end)}`}
           </Text>
         </View>
-        <ChevronDown size={16} color={colors.ink2} strokeWidth={1.75} />
+        <Ionicons name="chevron-down" size={16} color={colors.ink2} />
       </Pressable>
 
       <BottomSheet open={open} onClose={() => setOpen(false)} title={t('upcoming.range.label')}>
@@ -105,7 +105,7 @@ export function RangePicker({
                   <Text className={cn('t-body-sm text-ink', active && 'font-medium')}>
                     {t(`upcoming.range.${preset.key}`)}
                   </Text>
-                  {active ? <Check size={16} color={colors.ink} strokeWidth={1.75} /> : null}
+                  {active ? <Ionicons name="checkmark" size={16} color={colors.ink} /> : null}
                 </Pressable>
               </View>
             )

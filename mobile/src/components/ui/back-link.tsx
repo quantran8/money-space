@@ -1,5 +1,5 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable, Text } from 'react-native'
-import { ChevronLeft } from 'lucide-react-native'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
@@ -30,7 +30,7 @@ export function BackLink({
       style={{ minHeight: TOUCH_TARGET }}
       className={cn('-ml-2 flex-row items-center gap-1 self-start rounded-control px-2', className)}
     >
-      <ChevronLeft size={18} color={colors.interactive} strokeWidth={1.75} />
+      <Ionicons name="chevron-back" size={18} color={colors.interactive} />
       <Text className="t-body-sm font-medium text-action">{label}</Text>
     </Pressable>
   )

@@ -10,7 +10,7 @@ import { useScheduledOutflowImpact } from '@money-space/core/features/goals/hook
 import { hasProjectedDate } from '@money-space/core/features/goals/model/goal-projection.types'
 import { goalAmount } from '@money-space/core/features/goals/model/goals-form'
 import { formatVndScale, splitVndScale } from '@money-space/core/shared/lib/format-money'
-import { useNavigate, useSearchParam } from '@money-space/core/shared/navigation'
+import { useSearchParam } from '@money-space/core/shared/navigation'
 
 import {
   BackLink,
@@ -30,6 +30,7 @@ import { GoalMonthlyProgressSection } from '@/features/goals/ui/goal-monthly-pro
 import { GoalProgressChange } from '@/features/goals/ui/goal-progress-change'
 import { GoalRoadSection } from '@/features/goals/ui/goal-road-section'
 import { GoalScheduledOutflowsSection } from '@/features/goals/ui/goal-scheduled-outflows-section'
+import { useGoBack } from '@/shared/use-go-back'
 
 /**
  * One goal, in full.
@@ -50,7 +51,7 @@ import { GoalScheduledOutflowsSection } from '@/features/goals/ui/goal-scheduled
  */
 export default function GoalDetailScreen() {
   const { t, i18n } = useTranslation()
-  const navigate = useNavigate()
+  const goBack = useGoBack('/goals')
   const goalId = useSearchParam('goalId') ?? undefined
   const locale = dateLocale(i18n.resolvedLanguage)
 
@@ -115,7 +116,7 @@ export default function GoalDetailScreen() {
   if (!goal) {
     return (
       <Screen withoutTabBar>
-        <BackLink label={t('goals.detail.back')} onPress={() => navigate('/goals')} />
+        <BackLink label={t('goals.detail.back')} onPress={goBack} />
         <Panel className="mt-3">
           <Text className="t-body font-medium text-ink">
             {t('goals.detail.notFound.title')}
@@ -152,7 +153,7 @@ export default function GoalDetailScreen() {
 
   return (
     <Screen>
-      <BackLink label={t('goals.detail.back')} onPress={() => navigate('/goals')} />
+      <BackLink label={t('goals.detail.back')} onPress={goBack} />
 
       <View className="mb-4 mt-2 flex-row items-start justify-between gap-3">
         <View className="flex-1">

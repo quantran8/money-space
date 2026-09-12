@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { LineChart } from 'react-native-gifted-charts'
 
 import type { GoalMonthProgress } from '@money-space/core/features/goals/api/goals.repository'
 import {
@@ -10,29 +11,23 @@ import { formatVndScale } from '@money-space/core/shared/lib/format-money'
 
 import { Collapsible, Label, Panel, PanelHeader, StatusChip, Sunk } from '@/components/ui'
 import { formatGoalMonth, isRealDate } from '@/features/goals/lib/goal-dates'
+import { colors } from '@/theme/tokens'
 
 import type { StatusTone } from '@/components/ui'
 
 /**
  * "Đường tới mục tiêu" — is this pace going to get there in time?
  *
- * ## What was left behind, and why
+ * ## The figure leads, the chart follows
  *
- * The web draws two lines on an SVG chart: the goal's actual frozen history
- * against a plan line rising at the declared pace, with the gap between them at
- * the current month called out. That chart is 400 lines of geometry, and on a
- * 375pt screen it is a thumbnail — the two lines converge into one smudge well
- * before the axis labels become unreadable.
+ * The headline is a number (how far from plan, right now) and a date (when this
+ * pace lands) — both computed on the server and read straight off `projection`.
+ * `RoadChart` below adds the SHAPE those two cannot carry: whether the gap has
+ * been widening or closing. It renders only with ≥2 closed months, so a goal
+ * with nothing to compare shows the figures alone.
  *
- * The chart's headline was never the shape, though. It was one number (how far
- * from plan, right now) and one date (when this pace lands). Both are computed
- * on the server and handed over in `projection`, so both survive the move
- * intact; only the drawing is gone. §9 of the chart rules says as much: render
- * a chart when it answers better than a list, and here it does not.
- *
- * The `vsPlan` figure is the one thing the chart supplied that the projection
- * does not, so it is derived from the same monthly points the chart used — the
- * last closed month's `gap`, which core already computes.
+ * The `vsPlan` figure is derived from the same monthly points the chart plots —
+ * the last closed month's `gap`, which core already computes.
  *
  * ## What must not drift
  *
@@ -118,6 +113,10 @@ export function GoalRoadSection({
           </Text>
         )}
 
+        {/* The shape behind the figure above: what was actually held each month
+            against the pace the household declared. */}
+        <RoadChart months={months} target={target} pace={pace} />
+
         {/* The date, and what it would take to move it. Kept apart from the
             figure above: what is held now and what is being aimed at are two
             kinds of number and must never read as one series. */}
@@ -193,7 +192,7 @@ function paceVerdict({
   remaining: number
 }): { label: string; tone: StatusTone } | null {
   if (remaining <= 0) {
-    return { label: t('goals.detail.road.complete'), tone: 'interactive' }
+    return { label: t('goals.detail.road.complete'), tone: 'positive' }
   }
   if (!hasDeadline) {
     return { label: t('goals.detail.road.noDeadline'), tone: 'neutral' }
@@ -205,8 +204,129 @@ function paceVerdict({
   if (gapMonths < 0) {
     return {
       label: t('goals.detail.road.earlyBy', { count: Math.abs(gapMonths) }),
-      tone: 'interactive',
+      tone: 'positive',
     }
   }
-  return { label: t('goals.detail.road.onTime'), tone: 'interactive' }
+  return { label: t('goals.detail.road.onTime'), tone: 'positive' }
+}
+
+/** The well's plotting height. Two lines need room to separate. */
+const CHART_HEIGHT = 148
+
+/** At most this many months are plotted; older ones compress into noise. */
+const MAX_POINTS = 14
+
+/**
+ * Actual progress against the declared plan.
+ *
+ * Renders ONLY with ≥2 closed months (§9): one point is not a trend, and a
+ * chart drawn to look financial is what the chart rules forbid. The figure
+ * above already carries the headline, so this adds the SHAPE or nothing.
+ *
+ * Actual is `--data-primary`; the plan is `--committed` and dashed — a plan is
+ * not a measurement, and the dash is what says so without a legend. The plan
+ * line is straight by construction (a declared rate compounds linearly), so it
+ * takes no curve, and the actual line is drawn straight too: this library
+ * offers only a cardinal spline, which overshoots a local extreme and would
+ * draw a month the household never had.
+ */
+function RoadChart({
+  months,
+  target,
+  pace,
+}: {
+  months: GoalMonthProgress[]
+  target: number
+  pace: number | null
+}) {
+  const { t } = useTranslation()
+
+  // Closed months only: a running month is partial, and plotting it makes the
+  // last segment read as a fall.
+  const closed = months.filter((month) => !month.inProgress).slice(-MAX_POINTS)
+  if (closed.length < 2) return null
+
+  const actual = closed.map((month) => month.endAmount)
+  // The plan rises at the declared rate from where the record starts. Without a
+  // declared pace there is no plan to draw — inferring one from past behaviour
+  // would present a guess as a fact.
+  const plan =
+    pace != null ? closed.map((_, index) => actual[0] + pace * index) : null
+
+  // The target is in frame so "how far along" stays readable; without it two
+  // lines near each other fill the well and say nothing about the distance left.
+  const peak = Math.max(...actual, ...(plan ?? []), target, 1)
+
+  const last = actual[actual.length - 1]
+  const lastPlanned = plan ? plan[plan.length - 1] : 0
+
+  return (
+    <View className="mt-6">
+      <View
+        accessibilityRole="image"
+        // §9: a chart owes a text reading to anyone who cannot see the shape.
+        // The no-pace variant exists because a goal with no declared rate has
+        // no plan line to describe.
+        accessibilityLabel={
+          plan != null
+            ? t('goals.detail.road.chartAriaCompare', {
+                current: formatVndScale(last),
+                // The same two words the figure above uses, so the reading and
+                // the sighted headline never disagree.
+                state:
+                  last < lastPlanned
+                    ? t('goals.detail.road.behindWord')
+                    : t('goals.detail.road.aheadWord'),
+                gap: formatVndScale(Math.abs(last - lastPlanned)),
+                month: monthTick(closed[closed.length - 1].month),
+                target: formatVndScale(target),
+              })
+            : t('goals.detail.road.chartAriaNoPace', {
+                current: formatVndScale(last),
+                target: formatVndScale(target),
+              })
+        }
+      >
+        <LineChart
+          data={actual.map((value) => ({ value }))}
+          data2={plan ? plan.map((value) => ({ value })) : undefined}
+          height={CHART_HEIGHT}
+          maxValue={peak}
+          color={colors.dataPrimary}
+          color2={colors.committed}
+          thickness={2}
+          thickness2={1.5}
+          strokeDashArray2={[4, 4]}
+          hideDataPoints
+          adjustToWidth
+          initialSpacing={0}
+          endSpacing={0}
+          hideRules
+          hideYAxisText
+          yAxisThickness={0}
+          xAxisThickness={1}
+          xAxisColor={colors.divider}
+          isAnimated={false}
+          disableScroll
+        />
+      </View>
+
+      {/* Two labelled ends rather than a tick scale: at this width a full axis
+          is overlapping numbers, and the endpoints are what gets compared. */}
+      <View className="mt-1.5 flex-row items-center justify-between">
+        <Text className="font-mono t-caption-sm text-ink3">
+          {monthTick(closed[0].month)}
+        </Text>
+        <Text className="font-mono t-caption-sm text-ink3">
+          {monthTick(closed[closed.length - 1].month)}
+        </Text>
+      </View>
+    </View>
+  )
+}
+
+/** `08/26` — ASCII, so the mono face is safe. */
+function monthTick(month: string): string {
+  const [year, monthPart] = month.split('-')
+  return year && monthPart ? `${monthPart}/${year.slice(2)}` : month
 }

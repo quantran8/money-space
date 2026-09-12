@@ -1,49 +1,43 @@
 import { Pressable, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { BarChart } from 'react-native-gifted-charts'
 
-import type {
-  MoneyLocationBar,
-  MoneyLocationMap,
-} from '@money-space/core/features/dashboard/model/home-derivations'
+import type { MoneyLocationMap } from '@money-space/core/features/dashboard/model/home-derivations'
 import { formatVndScale } from '@money-space/core/shared/lib/format-money'
 
 import { EmptyState, Label, Money, Panel, PanelHeader } from '@/components/ui'
 import { colors, TOUCH_TARGET } from '@/theme/tokens'
 
 /**
- * One fill per bar, darkest first, stepping down the neutral ramp by RANK.
+ * One fill per bar, deepest first, stepping down by RANK.
  *
- * Weight, not hue (§5.4): the largest source carries the interactive colour and
- * each one below recedes a step, so the eye lands on the concentration before
- * it reads a single figure. Amber stays reserved for `attention`. Past the
- * ramp's length every remaining bar sits at the palest step — by then the rank
- * is legible from length alone.
+ * Weight, not hue (§5.4): the largest source is deepest and each one below
+ * recedes a step, so the eye lands on the concentration before it reads a
+ * figure. Amber stays reserved for `attention`. Past the ramp's length every
+ * remaining bar sits at the palest step — by then rank is legible from length.
+ *
+ * The ramp is the DATA family, never `action`: v5 §4 split interaction from
+ * data, and a bar is drawn with `data-primary`, not with the colour of a thing
+ * you press.
  */
-const RANK_FILL = [colors.interactive, colors.ink2, colors.protect, colors.committed]
+const RANK_FILL = [colors.dataInk, colors.dataPrimary, colors.protect, colors.committed]
 
 const fillForRank = (index: number): string =>
   RANK_FILL[Math.min(index, RANK_FILL.length - 1)]
 
+/** Row pitch and bar thickness for the horizontal chart. */
+const BAR_HEIGHT = 22
+const BAR_GAP = 18
+
 /**
  * Home section 4 — Tiền đang ở đâu (§12.4).
  *
- * Ranked horizontal bars. Bar length carries the same proportional reading an
- * area map would, so CONCENTRATION reads at a glance — one long bar and a row
- * of stubs says "nearly everything is in one account" without a number being
- * read. What the bars add is that every source keeps a full row: a source
- * holding 0,03% still has its name and its amount at full size, which is
- * exactly what an area map cannot label.
+ * Ranked horizontal bars: one long bar beside a row of stubs says "nearly
+ * everything is in one account" before a figure is read.
  *
- * The web draws this with recharts and a real x-axis. On a phone the axis is
- * dropped: 335pt of width gives about four tick labels before they collide, and
- * each bar already states its own amount on its own row. What the axis was
- * for — comparing lengths as quantities — survives in the shared scale, since
- * every bar is drawn against the same largest value.
- *
- * Sources rank by value alone, with no liquidity split: the question here is
- * where the money SITS, and one continuous ranking answers it without asking
- * the reader to hold two orderings at once. Which sources count as usable is
- * stated in §12.1, where the figure that depends on it lives.
+ * Sources rank by value alone, with no liquidity split — the question is where
+ * the money SITS, and one ordering answers it. The holder is no longer shown
+ * per bar; it survives in the chart's accessibility reading.
  */
 export function MoneySourcesSection({
   map,
@@ -90,15 +84,49 @@ export function MoneySourcesSection({
             </Money>
           </View>
 
-          <View className="mt-5 gap-3.5">
-            {map.bars.map((bar, index) => (
-              <SourceBar
-                key={bar.id}
-                bar={bar}
-                fill={fillForRank(index)}
-                share={largest > 0 ? bar.value / largest : 0}
-              />
-            ))}
+          <View
+            className="mt-5"
+            accessibilityRole="image"
+            // §9: the chart owes a full reading to anyone who cannot see it —
+            // the names and amounts the rows used to carry live here now.
+            accessibilityLabel={map.bars
+              .map(
+                (bar) =>
+                  `${bar.name}${bar.holder ? `, ${bar.holder}` : ''}, ${formatVndScale(bar.value)}`,
+              )
+              .join('. ')}
+          >
+            <BarChart
+              horizontal
+              data={map.bars.map((bar, index) => ({
+                value: bar.value,
+                label: bar.name,
+                frontColor: fillForRank(index),
+              }))}
+              // A source too small to draw still gets a visible stub: seeing
+              // that it is nearly nothing is the point, seeing nothing is a bug.
+              minHeight={3}
+              maxValue={largest > 0 ? largest : 1}
+              barWidth={BAR_HEIGHT}
+              spacing={BAR_GAP}
+              initialSpacing={4}
+              barBorderRadius={5}
+              // The names sit in the axis lane; the amounts follow each bar.
+              yAxisLabelWidth={104}
+              yAxisTextStyle={{ color: colors.ink2, fontSize: 12 }}
+              yAxisThickness={0}
+              xAxisThickness={0}
+              // The x-axis SCALE is dropped — 335pt gives about four tick
+              // labels before they collide, and every bar states its own
+              // amount. `hideAxesAndRules` is NOT used: it would take the
+              // source names with it.
+              hideRules
+              hideYAxisText={false}
+              showValuesAsTopLabel
+              topLabelTextStyle={{ color: colors.ink, fontSize: 12 }}
+              isAnimated={false}
+              disableScroll
+            />
           </View>
 
           {map.hiddenCount > 0 ? (
@@ -109,70 +137,5 @@ export function MoneySourcesSection({
         </>
       )}
     </Panel>
-  )
-}
-
-/**
- * One source: its name and who is responsible for it, its amount, and the bar.
- *
- * The name and the amount share a row and the bar sits under both, rather than
- * the web's name-lane / bar / value-lane triple. Three lanes across 335pt gives
- * the bar itself about 120pt, at which point the proportional reading the
- * section exists for is gone — and money in a 68pt lane truncates (§6).
- *
- * The holder is who is RESPONSIBLE for a source, never who spent from it
- * (§0.2, §16.4), and it stays visibly secondary — that is what keeps this a
- * shared picture rather than an attribution.
- */
-function SourceBar({
-  bar,
-  fill,
-  share,
-}: {
-  bar: MoneyLocationBar
-  fill: string
-  share: number
-}) {
-  return (
-    <View
-      accessibilityRole="image"
-      accessibilityLabel={`${bar.name}${bar.holder ? `, ${bar.holder}` : ''}, ${formatVndScale(bar.value)}`}
-    >
-      <View className="flex-row items-baseline gap-3">
-        <View className="flex-1">
-          <Text className="t-body-sm text-ink" numberOfLines={1}>
-            {bar.name}
-          </Text>
-          {bar.holder ? (
-            <Text className="mt-0.5 t-caption-sm text-ink3" numberOfLines={1}>
-              {bar.holder}
-            </Text>
-          ) : null}
-        </View>
-
-        <Text
-          className="t-body-sm font-medium text-ink"
-          style={{ fontVariant: ['tabular-nums'] }}
-        >
-          {formatVndScale(bar.value)}
-        </Text>
-      </View>
-
-      <View
-        className="mt-1.5 overflow-hidden rounded-full"
-        style={{ height: 6, backgroundColor: colors.sunk }}
-      >
-        <View
-          style={{
-            height: 6,
-            // A source too small to draw still gets a visible stub: seeing that
-            // it is nearly nothing is the point, seeing nothing at all is a bug.
-            width: `${Math.max(share * 100, 1.5)}%`,
-            borderRadius: 6,
-            backgroundColor: fill,
-          }}
-        />
-      </View>
-    </View>
   )
 }

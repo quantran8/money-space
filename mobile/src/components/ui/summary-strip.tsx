@@ -32,15 +32,12 @@ export function SummaryStrip({
           <View
             key={item.key}
             // Half the row minus the gap; a third tile wraps below.
-            className="min-w-[47%] flex-1 rounded-control bg-wash p-3.5"
+            className="min-w-[47%] flex-1 gap-1.5 rounded-card bg-card s-card"
           >
-            <Text className="t-caption text-ink2" numberOfLines={1}>
+            <Text className="t-body-sm text-ink2" numberOfLines={1}>
               {item.label}
             </Text>
-            <Text
-              className={cn('mt-1 t-subtitle', tone)}
-              style={{ fontVariant: ['tabular-nums'] }}
-            >
+            <Text className={cn('t-metric', tone)} style={{ fontVariant: ['tabular-nums'] }}>
               {item.value}
             </Text>
           </View>

@@ -1,5 +1,5 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable, Text, View } from 'react-native'
-import { ChevronDown, ChevronUp } from 'lucide-react-native'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
@@ -38,9 +38,9 @@ export function Disclosure({
       >
         <Text className="t-body-sm font-medium text-action">{label}</Text>
         {open ? (
-          <ChevronUp size={16} color={colors.interactive} strokeWidth={1.75} />
+          <Ionicons name="chevron-up" size={16} color={colors.interactive} />
         ) : (
-          <ChevronDown size={16} color={colors.interactive} strokeWidth={1.75} />
+          <Ionicons name="chevron-down" size={16} color={colors.interactive} />
         )}
       </Pressable>
 

@@ -654,7 +654,7 @@ function MarketFields({
           event when more was bought, and recorded a corrected typo as the PRICE
           having moved. Mirrors the web form. */}
       {isEditing ? (
-        <View className="gap-3 rounded-2xl bg-wash px-4 py-3">
+        <View className="gap-3 rounded-control bg-wash px-4 py-3">
           <View className="flex-row items-baseline justify-between">
             <Text className="text-ink2">{t(`${fieldPrefix}.quantity`)}</Text>
             <Controller

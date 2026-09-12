@@ -1,6 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Platform, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { CalendarClock, Calculator, RefreshCw, Target } from 'lucide-react-native'
 
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
 import { usePlans } from '@money-space/core/features/billing/hooks/use-plans'
@@ -17,11 +17,11 @@ import { colors } from '@/theme/tokens'
 type BenefitKey = 'horizon' | 'price' | 'whatif' | 'goals'
 
 const BENEFIT_ICONS = {
-  horizon: CalendarClock,
-  price: RefreshCw,
-  whatif: Calculator,
-  goals: Target,
-} as const
+  horizon: 'time',
+  price: 'refresh',
+  whatif: 'calculator',
+  goals: 'flag',
+} as const satisfies Record<BenefitKey, React.ComponentProps<typeof Ionicons>['name']>
 
 const BENEFIT_ORDER: BenefitKey[] = ['horizon', 'price', 'whatif', 'goals']
 
@@ -152,7 +152,7 @@ export function PaywallSheet() {
       <Text className="mt-5 t-body-sm text-ink2">{t('billing.paywall.youGet')}</Text>
       <View className="mt-2 rounded-card bg-card">
         {benefits.map((key, index) => {
-          const Icon = BENEFIT_ICONS[key]
+          const glyph = BENEFIT_ICONS[key]
           return (
             <View
               key={key}
@@ -161,7 +161,7 @@ export function PaywallSheet() {
               }`}
             >
               <View className="size-9 items-center justify-center rounded-pill bg-accent-soft">
-                <Icon size={18} strokeWidth={1.5} color={colors.ink2} />
+                <Ionicons name={glyph} size={18} color={colors.ink2} />
               </View>
               <View className="min-w-0 flex-1">
                 <Text className="t-body-sm text-ink">

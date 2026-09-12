@@ -1,9 +1,9 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable, Text, View } from 'react-native'
-import { Check } from 'lucide-react-native'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
-import { TOUCH_TARGET } from '@/theme/tokens'
+import { TOUCH_TARGET, colors } from '@/theme/tokens'
 
 /**
  * A checkbox with its label.
@@ -40,7 +40,7 @@ export function Checkbox({
             checked ? 'border-action bg-action' : 'border-divider bg-card',
           )}
         >
-          {checked ? <Check size={14} color="#FFFFFF" strokeWidth={2.5} /> : null}
+          {checked ? <Ionicons name="checkmark" size={14} color={colors.actionInverse} /> : null}
         </View>
         <Text className="flex-1 t-body-sm leading-5 text-ink2">{label}</Text>
       </Pressable>

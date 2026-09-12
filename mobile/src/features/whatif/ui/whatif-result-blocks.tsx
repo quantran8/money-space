@@ -1,14 +1,7 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useState } from 'react'
 import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import {
-  ChartNoAxesColumnIncreasing,
-  CircleHelp,
-  Clock3,
-  ReceiptText,
-  Target,
-  WalletCards,
-} from 'lucide-react-native'
 
 import type {
   AssumptionCode,
@@ -186,7 +179,7 @@ export function WhatIfResultBlocks({
       <Panel>
         <PanelHead
           icon={
-            <ChartNoAxesColumnIncreasing size={20} color={colors.ink2} strokeWidth={1.7} />
+            <Ionicons name="bar-chart" size={20} color={colors.ink2} />
           }
           title={t('whatif.cashflow.title')}
           meta={formatFullDate(result.input.plannedDate)}
@@ -403,7 +396,7 @@ function BillsBlock({ bills }: { bills: WhatIfAtRisk[] }) {
   return (
     <Panel>
       <PanelHead
-        icon={<ReceiptText size={20} color={colors.alertInk} strokeWidth={1.7} />}
+        icon={<Ionicons name="receipt" size={20} color={colors.alertInk} />}
         title={t('whatif.bills.title')}
         meta={t('whatif.bills.count', { count: bills.length })}
       />
@@ -485,7 +478,7 @@ function GoalsBlock({
   return (
     <Panel>
       <PanelHead
-        icon={<Target size={20} color={colors.attentionInk} strokeWidth={1.7} />}
+        icon={<Ionicons name="flag" size={20} color={colors.attentionInk} />}
         title={t('whatif.goals.title')}
         meta={t('whatif.goals.count', { count: goals.length })}
       />
@@ -543,7 +536,7 @@ function GoalsBlock({
 
             {goal.delayDays !== null ? (
               <View className="mt-1.5 flex-row items-center gap-1.5">
-                <Clock3 size={15} color={colors.attentionInk} strokeWidth={1.7} />
+                <Ionicons name="time" size={15} color={colors.attentionInk} />
                 <Text
                   className="t-subhead text-attention-ink"
                   style={{ fontVariant: ['tabular-nums'] }}
@@ -553,7 +546,7 @@ function GoalsBlock({
               </View>
             ) : (
               <View className="mt-1.5 flex-row items-center gap-1.5">
-                <CircleHelp size={15} color={colors.ink3} strokeWidth={1.7} />
+                <Ionicons name="help-circle" size={15} color={colors.ink3} />
                 <Text className="t-body-sm text-ink3">{t('whatif.goals.noDelay')}</Text>
               </View>
             )}
@@ -640,7 +633,7 @@ function FundingSourceBlock({
   return (
     <Panel>
       <PanelHead
-        icon={<WalletCards size={20} color={colors.ink2} strokeWidth={1.7} />}
+        icon={<Ionicons name="wallet" size={20} color={colors.ink2} />}
         title={t('whatif.source.title', { amount: formatVndShort(spend) })}
         meta={
           uncovered > 0

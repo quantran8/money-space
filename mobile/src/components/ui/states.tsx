@@ -1,9 +1,10 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useEffect, useState } from 'react'
-import { Animated, Text, View } from 'react-native'
+import { Animated, Pressable, Text, View } from 'react-native'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
-import { Button } from '@/components/ui/button'
+import { colors } from '@/theme/tokens'
 
 import type { ReactNode } from 'react'
 
@@ -49,20 +50,26 @@ export function EmptyState({
   message,
   action,
   onAction,
+  icon = 'file-tray',
   className,
 }: {
+  /** Spoken, not drawn: it becomes the icon's label. */
   message: string
   action?: string
   onAction?: () => void
+  icon?: React.ComponentProps<typeof Ionicons>['name']
   className?: string
 }) {
+  // Not a sub-card — it sits directly inside the top-level card. The sentence
+  // became a glyph: it only restated the emptiness the blank area already
+  // showed. What stays in words is what an icon cannot say — the action.
   return (
-    <View className={cn('rounded-control bg-wash p-4', className)}>
-      <Text className="t-body-sm leading-5 text-ink2">{message}</Text>
+    <View className={cn('items-center gap-3.5 pb-5 pt-6', className)}>
+      <Ionicons name={icon} size={28} color={colors.ink3} accessibilityLabel={message} />
       {action && onAction ? (
-        <Button className="mt-3 self-start" variant="ghost" onPress={onAction}>
-          {action}
-        </Button>
+        <Pressable onPress={onAction} accessibilityRole="button" className="s-tap justify-center">
+          <Text className="t-body-sm font-medium text-ink">{action}</Text>
+        </Pressable>
       ) : null}
     </View>
   )
@@ -81,12 +88,16 @@ export function ErrorState({
   className?: string
 }) {
   return (
-    <View className={cn('rounded-control bg-wash p-4', className)}>
-      <Text className="t-body-sm leading-5 text-alert-ink">{message}</Text>
+    <View className={cn('gap-2', className)}>
+      <Text className="t-body-sm text-alert-ink">{message}</Text>
       {retryLabel && onRetry ? (
-        <Button className="mt-3 self-start" variant="ghost" onPress={onRetry}>
-          {retryLabel}
-        </Button>
+        <Pressable
+          onPress={onRetry}
+          accessibilityRole="button"
+          className="s-tap self-start justify-center"
+        >
+          <Text className="t-body-sm font-medium text-ink">{retryLabel}</Text>
+        </Pressable>
       ) : null}
     </View>
   )
@@ -100,9 +111,12 @@ export function ErrorState({
  * because one input is old would hide the answer the household came for.
  */
 export function CaveatNote({ children, className }: { children: ReactNode; className?: string }) {
+  // No tinted box: the notice sits on the card and names what is missing. The
+  // figure it qualifies stays undimmed beside it, and never becomes a zero.
   return (
-    <View className={cn('rounded-control bg-attention-soft p-3.5', className)}>
-      <Text className="t-caption leading-5 text-ink2">{children}</Text>
+    <View className={cn('flex-row items-center gap-2', className)}>
+      <Ionicons name="cloud-offline" size={22} color={colors.ink2} />
+      <Text className="flex-1 t-body-sm text-ink2">{children}</Text>
     </View>
   )
 }

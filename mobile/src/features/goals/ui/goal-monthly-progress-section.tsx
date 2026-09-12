@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { BarChart } from 'react-native-gifted-charts'
 
 import type { GoalMonthProgress } from '@money-space/core/features/goals/api/goals.repository'
 import { useGoalMonthlyProgress } from '@money-space/core/features/goals/hooks/use-goal-monthly-progress'
@@ -8,6 +9,7 @@ import { formatAmount } from '@money-space/core/features/goals/model/goals-form'
 import {
   CaveatNote,
   GroupedRow,
+  Label,
   Panel,
   PanelHeader,
   ProgressBar,
@@ -15,6 +17,7 @@ import {
   Skeleton,
   Sunk,
 } from '@/components/ui'
+import { colors } from '@/theme/tokens'
 
 /** How many closed months the list shows. Older months live on the web. */
 const HISTORY_MONTHS = 6
@@ -120,11 +123,19 @@ export function GoalMonthlyProgressSection({ goalId }: { goalId: string }) {
               <Text className="t-body-sm text-ink2">{t('goals.monthly.historyEmpty')}</Text>
             </Sunk>
           ) : (
-            <View className="mt-2">
-              {closed.map((month) => (
-                <ClosedMonthRow key={month.month} month={month} />
-              ))}
-            </View>
+            <>
+              {/* The shape first, the figures under it. Six months of "did we
+                  keep the pace" is a comparison against one line, which an arc
+                  of bars answers at a glance and a column of numbers does not.
+                  The rows stay: the chart carries no exact amounts. */}
+              <RecentMonthsChart months={closed} plannedRate={plannedRate} />
+
+              <View className="mt-2">
+                {closed.map((month) => (
+                  <ClosedMonthRow key={month.month} month={month} />
+                ))}
+              </View>
+            </>
           )}
 
           {/* Assets repricing is not the household saving. Said once, under the
@@ -223,6 +234,106 @@ function RunningMonthCard({ month }: { month: GoalMonthProgress }) {
  * right. The planned figure is not repeated per row — the panel header already
  * states the rate, and §5 forbids one fact in two places.
  */
+/** The well's plotting height. Six bars need room to differ, not to impress. */
+const CHART_HEIGHT = 132
+
+/**
+ * Six closed months against the declared pace.
+ *
+ * The bars are `--data-primary`: this is DATA, never the action colour (§4).
+ * A short month is not tinted — the rate line above it already says the month
+ * fell under, and colouring the bar would turn a reading into a verdict on how
+ * a household spent its own money.
+ *
+ * The rate line is `--committed`, dashed, and absent entirely when no pace was
+ * declared: a goal backed only by gold has no plan to miss, and drawing a line
+ * at zero would invent one.
+ *
+ * Scaled against the PEAK of bars and rate together, so a month that overshot
+ * the pace is not clipped flat at the top.
+ */
+function RecentMonthsChart({
+  months,
+  plannedRate,
+}: {
+  /** Newest first, as the rows below receive them. */
+  months: GoalMonthProgress[]
+  plannedRate: number | null
+}) {
+  const { t } = useTranslation()
+
+  // The rows read newest-first; a chart reads left-to-right in time.
+  const chronological = [...months].reverse()
+
+  // Negative months floor at zero for the BAR only — a bar below the axis needs
+  // an axis to hang from, and the row beside it states the real figure.
+  const values = chronological.map((month) => Math.max(month.delta ?? 0, 0))
+  const peak = Math.max(...values, plannedRate ?? 0, 1)
+
+  const ariaLabel = chronological
+    .map((month) => `${monthLabel(month.month)} ${formatAmount(Math.max(month.delta ?? 0, 0))}`)
+    .join(', ')
+
+  return (
+    <View className="mt-4">
+      {plannedRate != null ? (
+        <Label>{t('goals.monthly.legendPlanned')}</Label>
+      ) : null}
+
+      <View
+        className="mt-2"
+        accessibilityRole="image"
+        accessibilityLabel={ariaLabel}
+      >
+        <BarChart
+          data={chronological.map((month) => ({
+            value: Math.max(month.delta ?? 0, 0),
+            label: monthLabel(month.month),
+            frontColor: colors.dataPrimary,
+          }))}
+          height={CHART_HEIGHT}
+          maxValue={peak}
+          barWidth={26}
+          spacing={18}
+          initialSpacing={12}
+          endSpacing={4}
+          roundedTop
+          barBorderRadius={5}
+          // The axis is the baseline every bar is read from; the grid and the
+          // value scale are noise the rows below already carry precisely.
+          hideRules
+          hideYAxisText
+          yAxisThickness={0}
+          xAxisThickness={1}
+          xAxisColor={colors.divider}
+          xAxisLabelTextStyle={{
+            color: colors.ink3,
+            fontSize: 11,
+            fontFamily: 'IBMPlexMono_400Regular',
+          }}
+          isAnimated={false}
+          // The pace, as one dashed rule. Omitted when nothing was declared.
+          showReferenceLine1={plannedRate != null}
+          referenceLine1Position={plannedRate ?? 0}
+          referenceLine1Config={{
+            color: colors.committed,
+            thickness: 1,
+            type: 'dashed',
+            dashWidth: 4,
+            dashGap: 4,
+          }}
+        />
+      </View>
+    </View>
+  )
+}
+
+/** `08/26` — ASCII only, so the mono face is safe on it. */
+function monthLabel(month: string): string {
+  const [year, monthPart] = month.split('-')
+  return year && monthPart ? `${monthPart}/${year.slice(2)}` : month
+}
+
 function ClosedMonthRow({ month }: { month: GoalMonthProgress }) {
   const { t } = useTranslation()
 

@@ -1,6 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useMemo, useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { ChevronLeft, ChevronRight } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -93,7 +93,7 @@ export function MonthField({
             style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
             className="items-center justify-center rounded-control active:bg-wash"
           >
-            <ChevronLeft size={18} color={colors.ink3} strokeWidth={1.75} />
+            <Ionicons name="chevron-back" size={18} color={colors.ink3} />
           </Pressable>
           <Text className="t-body font-medium text-ink">{viewYear}</Text>
           <Pressable
@@ -103,7 +103,7 @@ export function MonthField({
             style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
             className="items-center justify-center rounded-control active:bg-wash"
           >
-            <ChevronRight size={18} color={colors.ink3} strokeWidth={1.75} />
+            <Ionicons name="chevron-forward" size={18} color={colors.ink3} />
           </Pressable>
         </View>
 

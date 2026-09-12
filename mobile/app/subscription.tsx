@@ -5,7 +5,6 @@ import { useEntitlement } from '@money-space/core/features/billing/hooks/use-ent
 import { usePlans } from '@money-space/core/features/billing/hooks/use-plans'
 import { useStorePurchase } from '@money-space/core/features/billing/hooks/use-store-purchase'
 import { formatMoney } from '@money-space/core/shared/lib/format-money'
-import { useNavigate } from '@money-space/core/shared/navigation'
 
 import {
   BackLink,
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui'
 import { PurchaseStatus } from '@/features/billing/ui/purchase-status'
 import { RedeemCodeForm } from '@/features/billing/ui/redeem-code-form'
+import { useGoBack } from '@/shared/use-go-back'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('vi-VN')
@@ -36,7 +36,7 @@ function formatDate(iso: string) {
  */
 export default function SubscriptionScreen() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
+  const goBack = useGoBack('/household')
   const { entitlement, isPremium, isLoading, refetch, isRefetching } =
     useEntitlement()
   const { plans, isLoading: plansLoading } = usePlans()
@@ -57,7 +57,7 @@ export default function SubscriptionScreen() {
       onRefresh={() => void refetch()}
       refreshing={isRefetching}
     >
-      <BackLink label={t('nav.household')} onPress={() => navigate('/household')} />
+      <BackLink label={t('nav.household')} onPress={goBack} />
 
       <Sections>
         <Panel>

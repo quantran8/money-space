@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { CalendarDays, LayoutGrid, Target, Timeline, Wallet } from 'lucide-react-native'
+import Ionicons from '@expo/vector-icons/Ionicons'
+import type { ColorValue } from 'react-native'
 
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 
@@ -81,35 +82,35 @@ function TabBar() {
           name="index"
           options={{
             title: t('nav.dashboard'),
-            tabBarIcon: ({ color }) => <LayoutGrid size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="grid" color={color} focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="upcoming"
           options={{
             title: t('nav.upcoming'),
-            tabBarIcon: ({ color }) => <CalendarDays size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="calendar" color={color} focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="goals"
           options={{
             title: t('nav.goals'),
-            tabBarIcon: ({ color }) => <Target size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="flag" color={color} focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="networth"
           options={{
             title: t('nav.assetsDebts'),
-            tabBarIcon: ({ color }) => <Wallet size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="wallet" color={color} focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="events"
           options={{
             title: t('nav.events'),
-            tabBarIcon: ({ color }) => <Timeline size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="receipt" color={color} focused={focused} />,
           }}
         />
 
@@ -129,4 +130,17 @@ function TabBar() {
       <PaywallSheet />
     </>
   )
+}
+
+/** Glyphs used in the bar; each has a matching `-outline` counterpart. */
+type IoniconName = 'grid' | 'calendar' | 'flag' | 'wallet' | 'receipt'
+
+/**
+ * Outline when resting, solid when active.
+ *
+ * Ionicons ships each glyph as a real outline/solid pair, so only the weight
+ * changes between states and the silhouette stays put.
+ */
+function TabIcon({ name, color, focused }: { name: IoniconName; color: ColorValue; focused: boolean }) {
+  return <Ionicons name={focused ? name : `${name}-outline`} size={22} color={color} />
 }

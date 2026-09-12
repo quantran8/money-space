@@ -32,16 +32,15 @@ export function MetricCell({
     alert: 'text-alert-ink',
   }[tone]
 
+  // No rounded box inside a card: metrics separate by divider and spacing,
+  // which is what §6 means by hierarchy from type and alignment.
   return (
-    <View className={cn('rounded-control bg-wash p-4', className)}>
+    <View className={cn('gap-0.5', className)}>
       <Text className="t-body-sm text-ink2">{label}</Text>
-      <Text
-        className={cn('mt-1 t-metric', valueTone)}
-        style={{ fontVariant: ['tabular-nums'] }}
-      >
+      <Text className={cn('t-metric', valueTone)} style={{ fontVariant: ['tabular-nums'] }}>
         {value}
       </Text>
-      {hint ? <Text className="mt-1 t-caption-sm leading-4 text-ink3">{hint}</Text> : null}
+      {hint ? <Text className="t-caption text-ink3">{hint}</Text> : null}
     </View>
   )
 }

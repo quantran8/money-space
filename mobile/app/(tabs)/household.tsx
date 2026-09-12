@@ -1,7 +1,7 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useState } from 'react'
 import { Pressable, Text } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight } from 'lucide-react-native'
 
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useHouseholdInvite } from '@money-space/core/features/invites/hooks/use-household-invite'
@@ -273,7 +273,7 @@ function HubLink({ label, onPress }: { label: string; onPress: () => void }) {
       className="-mx-2 flex-row items-center justify-between gap-3 rounded-control px-2 active:bg-wash"
     >
       <Text className="flex-1 t-body-sm text-ink">{label}</Text>
-      <ChevronRight size={18} color={colors.ink3} strokeWidth={1.75} />
+      <Ionicons name="chevron-forward" size={18} color={colors.ink3} />
     </Pressable>
   )
 }

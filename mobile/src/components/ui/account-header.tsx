@@ -1,5 +1,5 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Image, Pressable, Text, View } from 'react-native'
-import { Settings } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import { useSession } from '@money-space/core/features/auth/hooks/use-session'
@@ -56,7 +56,7 @@ export function AccountHeader() {
         style={{ width: TOUCH_TARGET, height: TOUCH_TARGET, marginRight: -12 }}
         className="items-center justify-center rounded-pill active:bg-wash"
       >
-        <Settings size={20} color={colors.ink2} strokeWidth={1.75} />
+        <Ionicons name="settings" size={20} color={colors.ink2} />
       </Pressable>
     </View>
   )

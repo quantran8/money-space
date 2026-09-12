@@ -44,6 +44,7 @@ import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
 import { AssetValueChart } from '@/features/assets/components/asset-value-chart'
 import { AutoPriceRow } from '@/features/assets/components/auto-price-row'
 import { SavingWithdrawalPanel } from '@/features/assets/components/saving-withdrawal-panel'
+import { useGoBack } from '@/shared/use-go-back'
 
 /**
  * Months of history the chart shows. A string union because `Segmented` keys
@@ -63,6 +64,7 @@ const MAX_CHART_MARKERS = 4
 export default function AssetDetailScreen() {
   const { assetId } = useLocalSearchParams<{ assetId: string }>()
   const router = useRouter()
+  const goBack = useGoBack('/networth')
   const { t } = useTranslation()
 
   const [priceSheetOpen, setPriceSheetOpen] = useState(false)
@@ -163,7 +165,7 @@ export default function AssetDetailScreen() {
   if (isLoading && !asset) {
     return (
       <Screen withoutTabBar>
-        <BackLink label={t('assets.detail.back')} onPress={() => router.back()} />
+        <BackLink label={t('assets.detail.back')} onPress={goBack} />
         <View className="mt-4 gap-3">
           <Skeleton height={28} />
           <Skeleton height={180} />
@@ -175,7 +177,7 @@ export default function AssetDetailScreen() {
   if (!asset) {
     return (
       <Screen withoutTabBar>
-        <BackLink label={t('assets.detail.back')} onPress={() => router.back()} />
+        <BackLink label={t('assets.detail.back')} onPress={goBack} />
         <Panel className="mt-4">
           <Text className="t-body font-medium text-ink">
             {t('assets.detail.notFound.title')}
@@ -211,7 +213,7 @@ export default function AssetDetailScreen() {
 
   return (
     <Screen>
-      <BackLink label={t('assets.detail.back')} onPress={() => router.back()} />
+      <BackLink label={t('assets.detail.back')} onPress={goBack} />
 
       <View className="mb-4 mt-3 flex-row items-start justify-between gap-3">
         <View className="flex-1">

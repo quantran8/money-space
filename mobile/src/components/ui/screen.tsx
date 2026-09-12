@@ -66,7 +66,7 @@ export function Screen({
     <ScrollView
       className={cn('flex-1 bg-canvas', className)}
       contentContainerStyle={{
-        paddingTop: insets.top + spacing.tight + 4,
+        paddingTop: insets.top + spacing.cardGap,
         paddingBottom:
           insets.bottom + (withoutTabBar ? spacing.section : TAB_BAR + TAB_BAR_CLEARANCE),
       }}
@@ -81,7 +81,7 @@ export function Screen({
         ) : undefined
       }
     >
-      <View style={{ paddingHorizontal: spacing.panel }}>
+      <View style={{ paddingHorizontal: spacing.page }}>
         {withAccountHeader ? <AccountHeader /> : null}
         {title ? (
           <View className="mb-4 flex-row items-center justify-between gap-3">
@@ -96,7 +96,7 @@ export function Screen({
 }
 
 /**
- * Vertical rhythm between sections: 16px (§7).
+ * Vertical rhythm between sections: `.s-section-gap` (20).
  *
  * Sections are separated by space, never by a divider — spacing is the first
  * tool, and a border means spacing and alignment already failed.
@@ -111,5 +111,5 @@ export function Screen({
  * both off entirely under reduced motion.
  */
 export function Sections({ children, className }: { children: ReactNode; className?: string }) {
-  return <AppearGroup className={cn('gap-4', className)}>{children}</AppearGroup>
+  return <AppearGroup className={cn('s-section-gap', className)}>{children}</AppearGroup>
 }

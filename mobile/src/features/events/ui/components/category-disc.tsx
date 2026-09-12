@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 
 import {
   CATEGORY_ICON_DEFAULT_COLOR,
@@ -37,7 +38,7 @@ export function CategoryDisc({
   /** 36 on a list row; a forecast row uses 32 beside its stacked lines. */
   size?: number
 }) {
-  const Icon = (visual?.iconKey && CATEGORY_ICONS[visual.iconKey]) || CATEGORY_ICON_FALLBACK
+  const glyph = (visual?.iconKey && CATEGORY_ICONS[visual.iconKey]) || CATEGORY_ICON_FALLBACK
 
   return (
     <View
@@ -51,7 +52,7 @@ export function CategoryDisc({
         justifyContent: 'center',
       }}
     >
-      <Icon size={Math.round(size * 0.44)} color="#ffffff" strokeWidth={1.75} />
+      <MaterialCommunityIcons name={glyph} size={Math.round(size * 0.44)} color="#ffffff" />
     </View>
   )
 }

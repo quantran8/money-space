@@ -1,6 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { ChevronDown } from 'lucide-react-native'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
@@ -57,10 +57,9 @@ export function Collapsible({
           <Text className="t-body-sm font-medium text-action">
             {open ? hideLabel : showLabel}
           </Text>
-          <ChevronDown
+          <Ionicons name="chevron-down"
             size={16}
             color={colors.interactive}
-            strokeWidth={2}
             style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }}
           />
         </View>
