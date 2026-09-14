@@ -39,7 +39,6 @@ export default function NetWorthScreen() {
     asOf,
     totals,
     total,
-    assetCount,
     filteredAssets,
     isLoading,
     query,
@@ -56,7 +55,10 @@ export default function NetWorthScreen() {
     submit,
     formOpen,
     openCreate,
+    openEdit,
     handleFormOpenChange,
+    openSale,
+    openPurchase,
     sale,
     deleteId,
     setDeleteId,
@@ -111,9 +113,7 @@ export default function NetWorthScreen() {
         <AssetsSummary
           totals={totals}
           total={total}
-          assetCount={assetCount}
           totalDebt={totalDebt}
-          debtCount={activeDebts.length}
           asOf={asOf || AS_OF}
         />
 
@@ -133,6 +133,10 @@ export default function NetWorthScreen() {
               onLiquidityFilterChange={setLiquidityFilter}
               onOpen={(assetId) => router.push(`/assets/${assetId}`)}
               onAdd={() => openCreate()}
+              onEdit={openEdit}
+              onDelete={setDeleteId}
+              onSell={openSale}
+              onBuyMore={openPurchase}
             />
           ) : (
             // ── SEAM: the debts half ────────────────────────────────────────

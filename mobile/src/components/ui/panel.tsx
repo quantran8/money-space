@@ -36,8 +36,10 @@ export function PanelHeader({
   className?: string
 }) {
   return (
-    <View className={cn('flex-row items-center justify-between gap-3', className)}>
-      <Text className="t-body font-medium text-ink">{title}</Text>
+    // `t-title` — the same rank the web gives a section header. The step
+    // already states its weight, so never `font-medium` on top of it.
+    <View className={cn('flex-row items-baseline justify-between gap-4', className)}>
+      <Text className="flex-1 t-title text-ink">{title}</Text>
       {right}
     </View>
   )

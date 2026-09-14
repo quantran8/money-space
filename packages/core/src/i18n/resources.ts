@@ -3459,6 +3459,8 @@ export const resources = {
           },
         },
         legal: 'Bằng cách tiếp tục, bạn đồng ý với Điều khoản sử dụng và Chính sách quyền riêng tư.',
+        terms: 'Điều khoản',
+        privacy: 'Quyền riêng tư',
         tabs: {
           login: 'Đăng nhập',
           signup: 'Tạo tài khoản',
@@ -6889,6 +6891,8 @@ export const resources = {
           },
         },
         legal: 'By continuing, you agree to the Terms of Use and the Privacy Policy.',
+        terms: 'Terms',
+        privacy: 'Privacy',
         tabs: {
           login: 'Sign in',
           signup: 'Create account',

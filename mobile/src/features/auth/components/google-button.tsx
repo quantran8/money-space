@@ -26,7 +26,7 @@ export function GoogleButton({
       accessibilityRole="button"
       accessibilityState={{ busy: pending }}
       style={{ minHeight: TOUCH_TARGET }}
-      className="flex-row items-center justify-center gap-3 rounded-pill border border-committed bg-card px-5 active:opacity-80"
+      className="flex-row items-center justify-center gap-3 rounded-control bg-wash px-5 active:opacity-80"
     >
       {pending ? (
         <ActivityIndicator size="small" color={colors.ink} />
@@ -44,7 +44,7 @@ export function GoogleButton({
 export function AuthDivider() {
   const { t } = useTranslation()
   return (
-    <View className="my-5 flex-row items-center gap-4">
+    <View className="my-6 flex-row items-center gap-4">
       <View className="h-px flex-1 bg-divider" />
       <Text className="t-caption-sm uppercase text-ink3" style={{ letterSpacing: 1.2 }}>
         {t('auth.or')}

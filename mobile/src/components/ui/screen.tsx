@@ -84,8 +84,15 @@ export function Screen({
       <View style={{ paddingHorizontal: spacing.page }}>
         {withAccountHeader ? <AccountHeader /> : null}
         {title ? (
-          <View className="mb-4 flex-row items-center justify-between gap-3">
-            <Text className="flex-1 t-subtitle text-ink">{title}</Text>
+          <View className="mb-4 flex-row items-end justify-between gap-3">
+            {/* `t-metric` with the web's page tracking — the rank every
+                `CompactPageHeader` title carries at phone width. */}
+            <Text
+              className="flex-1 t-metric text-ink"
+              style={{ letterSpacing: -0.98, lineHeight: 30 }}
+            >
+              {title}
+            </Text>
             {right}
           </View>
         ) : null}
@@ -96,7 +103,9 @@ export function Screen({
 }
 
 /**
- * Vertical rhythm between sections: `.s-section-gap` (20).
+ * Vertical rhythm between sections: `.s-card-gap` (12), the gap the web stacks
+ * its panels at. At 20 the cards drift apart into separate objects instead of
+ * reading as one surface.
  *
  * Sections are separated by space, never by a divider — spacing is the first
  * tool, and a border means spacing and alignment already failed.
@@ -111,5 +120,5 @@ export function Screen({
  * both off entirely under reduced motion.
  */
 export function Sections({ children, className }: { children: ReactNode; className?: string }) {
-  return <AppearGroup className={cn('s-section-gap', className)}>{children}</AppearGroup>
+  return <AppearGroup className={cn('s-card-gap', className)}>{children}</AppearGroup>
 }

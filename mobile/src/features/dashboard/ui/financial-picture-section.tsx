@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -13,7 +13,6 @@ import { cn } from '@money-space/core/shared/lib/utils'
 
 import { Label, MoneyCompositionRing, Panel } from '@/components/ui'
 import { CoverageBlock } from '@/features/freshness/ui/coverage-block'
-import { TOUCH_TARGET } from '@/theme/tokens'
 
 /**
  * Home section 1 — Bức tranh hôm nay (§12.1).
@@ -38,14 +37,11 @@ export function FinancialPictureSection({
   freshness,
   onQuickUpdate,
   isConfirming = false,
-  onSimulate,
 }: {
   flexibleMoney: FlexibleMoneyResult
   freshness?: DataFreshnessResult
   onQuickUpdate: () => void
   isConfirming?: boolean
-  /** Opens what-if. Omitted → the entry is not offered (§2.9). */
-  onSimulate?: () => void
 }) {
   const { t } = useTranslation()
 
@@ -82,27 +78,25 @@ export function FinancialPictureSection({
 
   return (
     <Panel>
-      <Text className="t-body font-medium text-ink">{t('home.picture.title')}</Text>
+      <Text className="t-title text-ink">{t('home.picture.title')}</Text>
 
-      <View className="mt-5">
+      <View className="mt-7">
         <Label>{t('home.picture.flexibleLabel')}</Label>
 
         {/* Never dimmed when a source is stale — this is still the best figure
             the household has, and a caveat names what is missing (§23). */}
         <View className="mt-2.5 flex-row flex-wrap items-end gap-x-2">
           <Text
-            className={cn('t-hero', isNegative ? 'text-alert-ink' : 'text-ink')}
-            style={{
-              fontVariant: ['tabular-nums'],
-              lineHeight: 50,
-            }}
+            className={cn('t-display', isNegative ? 'text-alert-ink' : 'text-ink')}
+            // The web hero overrides the step's tracking with -.045em.
+            style={{ fontVariant: ['tabular-nums'], letterSpacing: -3.24 }}
           >
             {hero.amount}
           </Text>
           {hero.unit ? (
             <Text
               className={cn(
-                'pb-1 t-subtitle',
+                'pb-2 t-metric',
                 isNegative ? 'text-alert-ink' : 'text-ink',
               )}
             >
@@ -118,19 +112,8 @@ export function FinancialPictureSection({
         </Text>
       </View>
 
-      {/* The sources both the hero and the bar are computed from, so the block
-          spans the whole section rather than sitting beside either one. */}
-      {coverage ? (
-        <CoverageBlock
-          className="mt-5"
-          coverage={coverage}
-          onQuickUpdate={onQuickUpdate}
-          isUpdating={isConfirming}
-        />
-      ) : null}
-
       <MoneyCompositionRing
-        className="mt-5"
+        className="mt-8"
         segments={composition.segments}
         formatAmount={formatVndScale}
         centerLabel={t('home.picture.composition.ringCenter')}
@@ -140,21 +123,17 @@ export function FinancialPictureSection({
         })}
       />
 
-      {/* What-if is an ACTION inside this section, never a sixth section: a
-          consequence must not render before the household asks for it (§2.9).
-          The sheet itself belongs to the what-if feature. */}
-      {onSimulate ? (
-        <Pressable
-          onPress={onSimulate}
-          accessibilityRole="button"
-          style={{ minHeight: TOUCH_TARGET }}
-          className="mt-2 justify-center active:opacity-70"
-        >
-          <Text className="t-body-sm font-medium text-action">
-            {t('home.picture.simulate')}
-          </Text>
-        </Pressable>
+      {/* Last in the section, as on the web: the sources both the hero and the
+          ring are computed from, naming what the figures above rest on. */}
+      {coverage ? (
+        <CoverageBlock
+          className="mt-6"
+          coverage={coverage}
+          onQuickUpdate={onQuickUpdate}
+          isUpdating={isConfirming}
+        />
       ) : null}
+
     </Panel>
   )
 }

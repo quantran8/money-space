@@ -6,17 +6,12 @@ import { useTranslation } from 'react-i18next'
 import { useSignupPage } from '@money-space/core/features/auth/hooks/use-auth-page'
 
 import { Button, Checkbox, Field } from '@/components/ui'
-import {
-  AuthHeading,
-  AuthLegalNote,
-  AuthScreenShell,
-} from '@/features/auth/components/auth-screen'
-import { AuthDivider, GoogleButton } from '@/features/auth/components/google-button'
+import { AuthHeading, AuthScreenShell } from '@/features/auth/components/auth-screen'
 
 export default function SignupScreen() {
   const { t } = useTranslation()
   const { next } = useLocalSearchParams<{ next?: string }>()
-  const { form, submit, onGoogle, googlePending } = useSignupPage()
+  const { form, submit } = useSignupPage()
   const {
     control,
     formState: { errors, isSubmitting },
@@ -27,22 +22,19 @@ export default function SignupScreen() {
     : '/auth'
 
   return (
-    <AuthScreenShell>
-      <AuthHeading
-        eyebrow={t('auth.signup.eyebrow')}
-        title={t('auth.signup.title')}
-        description={t('auth.signup.description')}
-      />
+    <AuthScreenShell
+      footer={
+        <View className="flex-row items-center justify-center gap-1">
+          <Text className="t-body-sm text-ink3">{t('auth.signup.haveAccount')}</Text>
+          <Link href={loginHref} className="t-body-sm font-medium text-action">
+            {t('auth.tabs.login')}
+          </Link>
+        </View>
+      }
+    >
+      <AuthHeading title={t('auth.signup.title')} />
 
-      <View className="mt-6 rounded-card bg-card p-5">
-        <GoogleButton
-          label={t('auth.signup.googleCta')}
-          pending={googlePending}
-          onPress={onGoogle}
-        />
-
-        <AuthDivider />
-
+      <View className="mt-6 gap-5">
         <Controller
           control={control}
           name="fullName"
@@ -65,7 +57,6 @@ export default function SignupScreen() {
           name="email"
           render={({ field }) => (
             <Field
-              className="mt-4"
               label={t('auth.fields.email')}
               placeholder={t('auth.fields.emailPlaceholder')}
               value={field.value}
@@ -85,9 +76,11 @@ export default function SignupScreen() {
           name="password"
           render={({ field }) => (
             <Field
-              className="mt-4"
               label={t('auth.fields.password')}
-              placeholder={t('auth.fields.newPasswordPlaceholder')}
+              placeholder={t('auth.fields.passwordPlaceholder')}
+              // The length rule is a standing requirement, not an error, so it
+              // sits under the field rather than in the placeholder.
+              hint={t('auth.fields.newPasswordPlaceholder')}
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
@@ -105,7 +98,6 @@ export default function SignupScreen() {
           name="confirmPassword"
           render={({ field }) => (
             <Field
-              className="mt-4"
               label={t('auth.fields.confirmPassword')}
               placeholder={t('auth.fields.confirmPasswordPlaceholder')}
               value={field.value}
@@ -125,7 +117,6 @@ export default function SignupScreen() {
           name="agreeTerms"
           render={({ field }) => (
             <Checkbox
-              className="mt-4"
               checked={field.value}
               onChange={field.onChange}
               // The web renders <terms>/<privacy> as links; there is nowhere
@@ -137,19 +128,10 @@ export default function SignupScreen() {
           )}
         />
 
-        <Button className="mt-6" onPress={submit} loading={isSubmitting}>
+        <Button onPress={submit} loading={isSubmitting}>
           {t('auth.signup.submit')}
         </Button>
       </View>
-
-      <View className="mt-4 flex-row items-center justify-center gap-1">
-        <Text className="t-body-sm text-ink2">{t('auth.signup.haveAccount')}</Text>
-        <Link href={loginHref} className="t-body-sm font-medium text-action">
-          {t('auth.tabs.login')}
-        </Link>
-      </View>
-
-      <AuthLegalNote />
     </AuthScreenShell>
   )
 }

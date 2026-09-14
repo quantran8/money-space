@@ -8,7 +8,7 @@ import { useLoginPage } from '@money-space/core/features/auth/hooks/use-auth-pag
 import { Button, Checkbox, Field } from '@/components/ui'
 import {
   AuthHeading,
-  AuthLegalNote,
+  AuthLegalLinks,
   AuthScreenShell,
 } from '@/features/auth/components/auth-screen'
 import { AuthDivider, GoogleButton } from '@/features/auth/components/google-button'
@@ -30,22 +30,10 @@ export default function AuthScreen() {
     : '/signup'
 
   return (
-    <AuthScreenShell>
-      <AuthHeading
-        eyebrow={t('auth.login.eyebrow')}
-        title={t('auth.login.title')}
-        description={t('auth.login.description')}
-      />
+    <AuthScreenShell footer={<AuthLegalLinks />}>
+      <AuthHeading eyebrow={t('auth.login.eyebrow')} title={t('auth.login.title')} />
 
-      <View className="mt-6 rounded-card bg-card p-5">
-        <GoogleButton
-          label={t('auth.login.googleCta')}
-          pending={googlePending}
-          onPress={onGoogle}
-        />
-
-        <AuthDivider />
-
+      <View className="mt-6 gap-5">
         <Controller
           control={control}
           name="email"
@@ -70,7 +58,6 @@ export default function AuthScreen() {
           name="password"
           render={({ field }) => (
             <Field
-              className="mt-4"
               label={t('auth.fields.password')}
               labelAction={
                 <Link
@@ -98,7 +85,6 @@ export default function AuthScreen() {
           name="remember"
           render={({ field }) => (
             <Checkbox
-              className="mt-4"
               checked={field.value}
               onChange={field.onChange}
               label={t('auth.login.remember')}
@@ -107,19 +93,25 @@ export default function AuthScreen() {
         />
 
         {/* Always enabled (§22.10) — pressing it reports what is missing. */}
-        <Button className="mt-6" onPress={submit} loading={isSubmitting}>
+        <Button onPress={submit} loading={isSubmitting}>
           {t('auth.login.submit')}
         </Button>
       </View>
 
-      <View className="mt-4 flex-row items-center justify-center gap-1">
-        <Text className="t-body-sm text-ink2">{t('auth.login.noAccount')}</Text>
+      <AuthDivider />
+
+      <GoogleButton
+        label={t('auth.login.googleCta')}
+        pending={googlePending}
+        onPress={onGoogle}
+      />
+
+      <View className="mt-6 flex-row items-center justify-center gap-1">
+        <Text className="t-body-sm text-ink3">{t('auth.login.noAccount')}</Text>
         <Link href={signupHref} className="t-body-sm font-medium text-action">
           {t('auth.tabs.signup')}
         </Link>
       </View>
-
-      <AuthLegalNote />
     </AuthScreenShell>
   )
 }

@@ -53,7 +53,7 @@ export function EmptyState({
   icon = 'file-tray',
   className,
 }: {
-  /** Spoken, not drawn: it becomes the icon's label. */
+  /** Drawn AND spoken — the web prints this sentence, so it is not a label. */
   message: string
   action?: string
   onAction?: () => void
@@ -61,11 +61,12 @@ export function EmptyState({
   className?: string
 }) {
   // Not a sub-card — it sits directly inside the top-level card. The sentence
-  // became a glyph: it only restated the emptiness the blank area already
-  // showed. What stays in words is what an icon cannot say — the action.
+  // is DRAWN, as on the web: a lone glyph says something is absent but never
+  // which absence this is, and those mean opposite things to a household.
   return (
-    <View className={cn('items-center gap-3.5 pb-5 pt-6', className)}>
-      <Ionicons name={icon} size={28} color={colors.ink3} accessibilityLabel={message} />
+    <View className={cn('items-center gap-3 pb-5 pt-6', className)}>
+      <Ionicons name={icon} size={28} color={colors.ink3} accessibilityElementsHidden />
+      <Text className="text-center t-body-sm text-ink2">{message}</Text>
       {action && onAction ? (
         <Pressable onPress={onAction} accessibilityRole="button" className="s-tap justify-center">
           <Text className="t-body-sm font-medium text-ink">{action}</Text>

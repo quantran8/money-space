@@ -84,26 +84,36 @@ export function GroupedRow({
           ) : null}
         </View>
       ) : null}
-
-      {right}
     </View>
   )
 
   if (!onPress) {
-    return <View className={cn('py-2.5', className)}>{body}</View>
+    return (
+      <View className={cn('flex-row items-center py-2.5', className)}>
+        <View className="flex-1">{body}</View>
+        {right}
+      </View>
+    )
   }
 
+  /**
+   * `right` sits OUTSIDE the pressable, as its sibling — nesting it made the
+   * menu a target inside a target, and a tap on it opened the row instead.
+   */
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      style={{ minHeight: TOUCH_TARGET }}
-      // An interactive row highlights on the sunk surface — the same band a
-      // table row uses on the web.
-      className={cn('justify-center rounded-control py-2.5 active:bg-wash', className)}
-    >
-      {body}
-    </Pressable>
+    <View className={cn('flex-row items-center', className)}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        style={{ minHeight: TOUCH_TARGET }}
+        // An interactive row highlights on the sunk surface — the same band a
+        // table row uses on the web.
+        className="flex-1 justify-center rounded-control py-2.5 active:bg-wash"
+      >
+        {body}
+      </Pressable>
+      {right}
+    </View>
   )
 }
 

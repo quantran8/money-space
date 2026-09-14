@@ -6,7 +6,7 @@ import { liquidityOrder } from '@money-space/core/features/assets/model/assets'
 import type { AssetTotals } from '@money-space/core/features/assets/model/assets-form'
 import { formatVndScale, formatVndShort } from '@money-space/core/shared/lib/format-money'
 
-import { GroupedRow, Label, Money, Panel, PanelHeader, RowMetaMono, Sunk } from '@/components/ui'
+import { GroupedRow, Money, Panel, PanelHeader, RowMetaMono } from '@/components/ui'
 import { liquidityColors } from '@/theme/tokens'
 
 const RING_RADIUS = 78
@@ -30,17 +30,13 @@ const RING_INNER_RADIUS = 54
 export function AssetsSummary({
   totals,
   total,
-  assetCount,
   totalDebt,
-  debtCount,
   asOf,
 }: {
   totals: AssetTotals
   total: number
-  assetCount: number
   /** From the debts tab, which another screen owns. 0 until it lands. */
   totalDebt: number
-  debtCount: number
   asOf: string
 }) {
   const { t } = useTranslation()
@@ -52,44 +48,38 @@ export function AssetsSummary({
     <Panel>
       {/* One thing beside the title (§2.1): the scope date, not an action —
           the screen header already carries the action. */}
-      <PanelHeader title={t('assets.demo.overview')} right={<RowMetaMono>{displayDate(asOf)}</RowMetaMono>} />
+      <PanelHeader
+        title={t('assets.demo.netWorth')}
+        right={<RowMetaMono>{displayDate(asOf)}</RowMetaMono>}
+      />
 
-      {/* Net worth is the section's anchor, so it sits above the strip rather
-          than being one tile styled larger inside it. */}
-      <View className="mt-6">
-        <Label>{t('assets.demo.netWorth')}</Label>
-        {/* Money can be NEGATIVE and is never clamped — a household that owes
-            more than it holds is exactly who needs to see the real figure. */}
-        <Money className="mt-1.5" step="metric">
-          {formatVndScale(netWorth)}
-        </Money>
-        <RowMetaMono>{t('assets.demo.netWorthNote')}</RowMetaMono>
-      </View>
+      {/* Money can be NEGATIVE and is never clamped — a household that owes
+          more than it holds is exactly who needs to see the real figure. */}
+      <Money className="mt-6" step="hero">
+        {formatVndScale(netWorth)}
+      </Money>
 
-      <View className="mt-5 flex-row gap-2">
-        <Sunk className="flex-1 p-3.5">
-          <Label>{t('assets.demo.assets')}</Label>
-          <Money className="mt-1" step="subtitle">
-            {formatVndScale(total)}
-          </Money>
-          <RowMetaMono>{t('assets.demo.assetCount', { count: assetCount })}</RowMetaMono>
-        </Sunk>
-        <Sunk className="flex-1 p-3.5">
-          <Label>{t('assets.demo.debt')}</Label>
-          <Money className="mt-1" step="subtitle">
-            {formatVndScale(totalDebt)}
-          </Money>
-          <RowMetaMono>{t('assets.demo.debtCount', { count: debtCount })}</RowMetaMono>
-        </Sunk>
+      {/* The two operands, stated once and small: they explain the figure above
+          without competing with it. Tiles gave them a weight that made the page
+          read as three figures instead of one answer. */}
+      <View className="mt-3 flex-row flex-wrap gap-x-4 gap-y-1">
+        <Text className="t-caption text-ink3">
+          {t('assets.demo.totalAssets', { value: formatVndScale(total) })}
+        </Text>
+        <Text className="t-caption text-ink3">
+          {t('assets.demo.totalDebt', { value: formatVndScale(totalDebt) })}
+        </Text>
       </View>
 
       {/* The composition, when there is anything to compose. A ring of one
           segment says nothing, and a ring of nothing is not an honest zero — it
           is "no data yet", which the list's own empty state already covers. */}
       {bucketTotal > 0 ? (
-        <View className="mt-5">
+        <View className="mt-7">
+          <Text className="t-subtitle text-ink">{t('assets.demo.byLiquidity')}</Text>
+
           <View
-            className="items-center"
+            className="mt-5 items-center"
             accessibilityRole="image"
             accessibilityLabel={liquidityOrder
               .map(
@@ -132,18 +122,32 @@ export function AssetsSummary({
           {/* The rows stay: liquidity is a LOOKUP ("how much is usable now"),
               and identity is never colour-alone (§24). The ring adds the
               proportion; it does not replace the figures. */}
-          <View className="mt-4">
+          <View className="mt-6">
             {liquidityOrder.map((bucket) => (
               <GroupedRow
                 key={bucket}
                 title={t(`options.liquidity.${bucket}`)}
-                value={formatVndShort(totals[bucket])}
-                valueTone={bucket === 'usable_now' ? 'default' : 'muted'}
-                right={
+                // The swatch LEADS the row, as on the web: it is the key to the
+                // ring above, so it sits where the eye enters the line.
+                leading={
                   <View
-                    className="ml-2 h-2 w-2 rounded-full"
+                    className="h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: liquidityColors[bucket] }}
                   />
+                }
+                value={formatVndShort(totals[bucket])}
+                // The share the ring draws, in words — a proportion read off an
+                // arc is an estimate, and this is the figure behind it.
+                right={
+                  <Text
+                    className="w-10 text-right t-caption text-ink3"
+                    style={{ fontVariant: ['tabular-nums'] }}
+                  >
+                    {bucketTotal > 0
+                      ? Math.round((Math.max(totals[bucket], 0) / bucketTotal) * 100)
+                      : 0}
+                    %
+                  </Text>
                 }
               />
             ))}

@@ -1,3 +1,4 @@
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import { Pressable, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
@@ -8,7 +9,6 @@ import {
   type OverdueSummary,
   type TimelineRow,
 } from '@money-space/core/features/dashboard/model/home-derivations'
-import type { EventsSummaryResponse } from '@money-space/core/features/events/api/events.repository'
 import { canProjectBalance } from '@money-space/core/features/forecast/model/forecast-presentation'
 import type { ForecastResult } from '@money-space/core/features/forecast/model/forecast.types'
 import {
@@ -30,7 +30,7 @@ import {
 } from '@/components/ui'
 import { CashflowDeltaChart } from '@/features/dashboard/ui/cashflow-delta-chart'
 import { formatDayMonth } from '@/features/dashboard/lib/home-dates'
-import { TOUCH_TARGET } from '@/theme/tokens'
+import { colors, TOUCH_TARGET } from '@/theme/tokens'
 
 /**
  * The chart earns its place only once the sequence stops being readable as a
@@ -54,7 +54,6 @@ const MIN_EVENTS_FOR_CHART = 6
  */
 export function UpcomingSection({
   forecast,
-  eventsSummary,
   cashflowEvents = [],
   onCompleteOverdue,
   completingEventId,
@@ -62,8 +61,6 @@ export function UpcomingSection({
   onAddSource,
 }: {
   forecast: ForecastResult
-  /** Thu/chi already RECORDED this month. Omitted → the block is skipped. */
-  eventsSummary?: EventsSummaryResponse
   /** Source events, joined for an overdue row's real due date. */
   cashflowEvents?: { id: string; expectedDate: string }[]
   /** Marks one overdue occurrence resolved. The ONLY way it leaves the list. */
@@ -114,12 +111,8 @@ export function UpcomingSection({
         pendingId={completingEventId}
       />
 
-      {/* What already happened, before what is projected — the section then
-          reads in the order the household lives it. */}
-      <RecordedThisMonth summary={eventsSummary} asOfDate={forecast.asOfDate} />
-
-      <View className="mt-7">
-        <View className="flex-row flex-wrap items-baseline justify-between gap-2">
+      <View className="mt-2">
+        {/* <View className="flex-row flex-wrap items-baseline justify-between gap-2">
           <Text className="t-body-sm font-medium text-ink">{t('home.upcoming.title')}</Text>
           <Text className="font-mono t-caption-sm text-ink3">
             {t('home.upcoming.meta', {
@@ -127,7 +120,7 @@ export function UpcomingSection({
               count: totalCount,
             })}
           </Text>
-        </View>
+        </View> */}
 
         <View className="mt-5">
           <Label>{t('home.upcoming.lowestLabel')}</Label>
@@ -170,6 +163,9 @@ export function UpcomingSection({
             </Sunk>
           ) : null}
 
+          {/* What the horizon is MADE of, under the one figure it resolves to. */}
+          <HorizonTotals forecast={forecast} />
+
           {showChart ? (
             <CashflowDeltaChart
               points={points}
@@ -184,11 +180,16 @@ export function UpcomingSection({
           ) : null}
         </View>
 
-        <View className="mt-5">
+        <View className="mt-7">
+          <View className="flex-row items-center gap-2">
+            <MaterialCommunityIcons name="sign-direction" size={16} color={colors.dataPrimary} />
+            <Text className="t-subtitle text-ink">{t('home.upcoming.sequenceTitle')}</Text>
+          </View>
+
           {rows.length === 0 ? (
-            <Text className="py-2 t-body-sm text-ink2">{t('home.upcoming.empty')}</Text>
+            <Text className="py-6 t-body-sm text-ink2">{t('home.upcoming.empty')}</Text>
           ) : (
-            <View className="gap-0.5">
+            <View className="mt-3 gap-0.5">
               {rows.map((row) => (
                 <TimelineEventRow key={row.key} row={row} />
               ))}
@@ -273,62 +274,80 @@ function TimelineEventRow({ row }: { row: TimelineRow }) {
 }
 
 /**
- * The month so far: what has ACTUALLY been recorded, as context for the
- * forecast below it.
+ * What the 30 days are made of — money in against money out.
  *
- * Deliberately quiet. This is the past, and the section's primary answer is
- * "thấp nhất dự kiến" — giving the recorded figures hero weight puts two big
- * numbers above the one number the section exists for.
- *
- * There is no "ròng" figure: vào minus ra is the same fact a third time, and
- * the net result the household acts on is the projected low point below.
- *
- * Renders nothing when the summary is unavailable. Two zeroes would state that
- * nothing moved this month, which is a different claim from not knowing (§23).
+ * Direction carries a colour here because these two are read AGAINST each
+ * other, which is the case §5.2 allows a tone for. Ink counterparts, not the
+ * fills: a fill-weight green fails contrast as text.
  */
-function RecordedThisMonth({
-  summary,
-  asOfDate,
-}: {
-  summary?: EventsSummaryResponse
-  asOfDate: string
-}) {
+function HorizonTotals({ forecast }: { forecast: ForecastResult }) {
   const { t } = useTranslation()
 
-  if (!summary) return null
+  const counted = forecast.timeline.filter((occurrence) => occurrence.countedInBalance)
+
+  const sum = (direction: 'incoming' | 'outgoing') =>
+    counted
+      .filter((occurrence) => occurrence.direction === direction)
+      .reduce((total, occurrence) => total + occurrence.amount, 0)
+
+  const count = (direction: 'incoming' | 'outgoing') =>
+    counted.filter((occurrence) => occurrence.direction === direction).length
 
   return (
-    <Sunk className="mt-6">
-      <Label>{t('home.cashflow.recordedEyebrow')}</Label>
-      <Text className="mt-1.5 t-body-sm text-ink2">
-        {t('home.cashflow.recordedNote', { date: formatDayMonth(asOfDate) })}
-      </Text>
-
-      <View className="mt-3.5 flex-row gap-8">
-        {/* `formatVndCellSigned` owns the sign, including the real U+2212
-            minus (§10.4) — `totalOutcome` arrives positive, so negate it. */}
-        <RecordedFigure label={t('home.cashflow.in')} value={summary.totalIncome} />
-        <RecordedFigure label={t('home.cashflow.out')} value={-summary.totalOutcome} />
-      </View>
-    </Sunk>
+    <View className="mt-6 flex-row gap-6">
+      <HorizonTotal
+        icon="arrow-bottom-left"
+        label={t('home.cashflow.in')}
+        value={formatVndCellSigned(sum('incoming'))}
+        count={count('incoming')}
+        tone="text-positive-ink"
+        glyph={colors.positiveInk}
+      />
+      <HorizonTotal
+        icon="arrow-top-right"
+        label={t('home.cashflow.out')}
+        value={formatVndCellSigned(-sum('outgoing'))}
+        count={count('outgoing')}
+        tone="text-alert-ink"
+        glyph={colors.alertInk}
+      />
+    </View>
   )
 }
 
-function RecordedFigure({ label, value }: { label: string; value: number }) {
+function HorizonTotal({
+  icon,
+  label,
+  value,
+  count,
+  tone,
+  glyph,
+}: {
+  icon: 'arrow-bottom-left' | 'arrow-top-right'
+  label: string
+  value: string
+  count: number
+  tone: string
+  glyph: string
+}) {
   const { t } = useTranslation()
 
   return (
-    <View>
-      <Text className="t-caption text-ink3">{label}</Text>
-      <View className="mt-0.5 flex-row items-baseline gap-1">
-        <Text
-          className="t-subtitle text-ink"
-          style={{ fontVariant: ['tabular-nums'] }}
-        >
-          {formatVndCellSigned(value)}
+    <View className="min-w-0 flex-1 flex-row items-start gap-3">
+      {/* Decorative — the label beside it already names the direction (§24). */}
+      <MaterialCommunityIcons name={icon} size={16} color={glyph} style={{ marginTop: 2 }} />
+      <View className="min-w-0 flex-1">
+        <Text className="t-caption text-ink3">{label}</Text>
+        <View className="mt-0.5 flex-row items-baseline gap-1">
+          <Text className={cn('t-metric', tone)} style={{ fontVariant: ['tabular-nums'] }}>
+            {value}
+          </Text>
+          {/* §10.4 — the unit is stated beside the figure, never baked in. */}
+          <Text className="font-mono t-caption-sm text-ink3">{t('units.million')}</Text>
+        </View>
+        <Text className="mt-1 t-caption text-ink2">
+          {t('home.upcoming.horizonCount', { count })}
         </Text>
-        {/* §10.4 — the unit is stated beside the figure, not baked into it. */}
-        <Text className="font-mono t-caption-sm text-ink3">{t('units.million')}</Text>
       </View>
     </View>
   )

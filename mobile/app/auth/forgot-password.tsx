@@ -31,7 +31,7 @@ export default function ForgotPasswordScreen() {
   if (sent) {
     return (
       <AuthScreenShell>
-        <View className="items-center gap-4 rounded-card bg-card p-5 py-8">
+        <View className="items-center gap-4 py-3">
           <Ionicons name="mail-open" size={28} color={colors.action} />
           <Text className="t-title text-center text-ink">
             {t('auth.forgotPassword.sentTitle')}
@@ -48,13 +48,21 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <AuthScreenShell>
+    <AuthScreenShell
+      footer={
+        <View className="items-center">
+          <Link href="/auth" className="t-body-sm font-medium text-action">
+            {t('auth.forgotPassword.backToLogin')}
+          </Link>
+        </View>
+      }
+    >
       <AuthHeading
         title={t('auth.forgotPassword.title')}
         description={t('auth.forgotPassword.description')}
       />
 
-      <View className="mt-6 rounded-card bg-card p-5">
+      <View className="mt-6">
         <Controller
           control={control}
           name="email"
@@ -77,12 +85,6 @@ export default function ForgotPasswordScreen() {
         <Button className="mt-6" onPress={submit} loading={isSubmitting}>
           {t('auth.forgotPassword.submit')}
         </Button>
-      </View>
-
-      <View className="mt-4 items-center">
-        <Link href="/auth" className="t-body-sm font-medium text-action">
-          {t('auth.forgotPassword.backToLogin')}
-        </Link>
       </View>
     </AuthScreenShell>
   )

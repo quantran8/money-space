@@ -42,7 +42,7 @@ export default function ResetPasswordScreen() {
   if (!hasToken) {
     return (
       <AuthScreenShell>
-        <View className="items-center gap-4 rounded-card bg-card p-5 py-8">
+        <View className="items-center gap-4 py-3">
           <Ionicons name="key" size={28} color={colors.ink3} />
           <Text className="t-title text-center text-ink">
             {t('auth.resetPassword.invalidTitle')}
@@ -65,7 +65,7 @@ export default function ResetPasswordScreen() {
         description={t('auth.resetPassword.description')}
       />
 
-      <View className="mt-6 rounded-card bg-card p-5">
+      <View className="mt-6">
         <Controller
           control={control}
           name="password"

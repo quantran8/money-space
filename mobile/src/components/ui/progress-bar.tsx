@@ -41,7 +41,7 @@ export function ProgressBar({
   /** 0–100. Clamped here so a caller cannot overflow the track. */
   percent,
   label,
-  height = 6,
+  height = 20,
   tone = 'data',
   className,
 }: {

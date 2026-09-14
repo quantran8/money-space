@@ -26,7 +26,14 @@ const ERROR_KEYS = {
  * transaction, so it does not fall under the App Store's rule about linking out
  * to purchase.
  */
-export function RedeemCodeForm({ onRedeemed }: { onRedeemed?: () => void }) {
+export function RedeemCodeForm({
+  onRedeemed,
+  withHeading = true,
+}: {
+  onRedeemed?: () => void
+  /** Off inside a sheet, whose own header already states the title. */
+  withHeading?: boolean
+}) {
   const { t } = useTranslation()
   const {
     input,
@@ -106,13 +113,17 @@ export function RedeemCodeForm({ onRedeemed }: { onRedeemed?: () => void }) {
 
   return (
     <View>
-      <Text className="t-subtitle text-ink">{t('billing.redeem.title')}</Text>
-      <Text className="mt-1 t-body-sm leading-5 text-ink2">
-        {t('billing.redeem.description')}
-      </Text>
+      {withHeading ? (
+        <>
+          <Text className="t-subtitle text-ink">{t('billing.redeem.title')}</Text>
+          <Text className="mt-1 t-body-sm leading-5 text-ink2">
+            {t('billing.redeem.description')}
+          </Text>
+        </>
+      ) : null}
 
       <Field
-        className="mt-4"
+        className={withHeading ? 'mt-4' : undefined}
         value={input}
         onChangeText={onChange}
         placeholder={t('billing.redeem.placeholder')}

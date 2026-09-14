@@ -12,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated'
 
 import type { ReactNode } from 'react'
+import type { LayoutChangeEvent } from 'react-native'
 
 /**
  * Shared motion primitives, the RN counterpart of `web/src/components/ui/motion.tsx`.
@@ -74,13 +75,25 @@ export function useReducedMotion() {
  * exactly as on web — but the height is MEASURED rather than animated to
  * `auto`, which RN has no equivalent for. The child is laid out once at its
  * natural size, `onLayout` reports it, and that number is what the container
- * animates to. Until the first measurement the height is left undriven so the
- * content can size itself; after it, opacity runs shorter than height so the
- * text is not readable while it is still sliding.
+ * animates to.
+ *
+ * Two traps, both of which show as a panel that opens onto nothing:
+ *
+ *  - The measured child must never sit inside the clipped box while the height
+ *    is still unknown. RN fires no `onLayout` on the children of a zero-height
+ *    `overflow: hidden` view, so a panel that starts closed would never learn
+ *    its size. It is parked out of flow at zero opacity until it reports one.
+ *  - The height must be a SHARED value, not React state. `useAnimatedStyle`
+ *    re-runs only when a shared value it reads changes, so a plain `useState`
+ *    height stays captured at its first value and the box never grows.
+ *
+ * See memory/collapse-measures-before-it-clips.md.
  */
 export function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
   const reduced = useReducedMotion()
-  const [height, setHeight] = useState<number | null>(null)
+  // Drives the animation. `measured` only re-renders to swap the wrapper.
+  const height = useSharedValue(0)
+  const [measured, setMeasured] = useState(false)
   const progress = useSharedValue(open ? 1 : 0)
 
   useEffect(() => {
@@ -92,16 +105,45 @@ export function Collapse({ open, children }: { open: boolean; children: ReactNod
   }, [open, reduced, progress])
 
   const containerStyle = useAnimatedStyle(() => ({
-    height: height === null ? undefined : progress.value * height,
+    height: progress.value * height.value,
     opacity: progress.value,
-    overflow: 'hidden',
   }))
+
+  const onLayout = (event: LayoutChangeEvent) => {
+    height.value = event.nativeEvent.layout.height
+    if (!measured) setMeasured(true)
+  }
+
+  // Unmeasured: laid out for real (so onLayout fires) but invisible and out of
+  // flow, so it occupies nothing while it is being sized.
+  if (!measured) {
+    return (
+      <View style={{ height: 0 }} pointerEvents="none">
+        <View
+          onLayout={onLayout}
+          style={{ position: 'absolute', left: 0, right: 0, opacity: 0 }}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          {children}
+        </View>
+      </View>
+    )
+  }
 
   // Nothing collapsed is reachable by a screen reader: it is not absent, it is
   // just not open yet.
   return (
-    <Animated.View style={containerStyle} accessibilityElementsHidden={!open} importantForAccessibility={open ? 'auto' : 'no-hide-descendants'}>
-      <View onLayout={(event) => setHeight(event.nativeEvent.layout.height)}>{children}</View>
+    <Animated.View
+      style={[containerStyle, { overflow: 'hidden' }]}
+      accessibilityElementsHidden={!open}
+      importantForAccessibility={open ? 'auto' : 'no-hide-descendants'}
+    >
+      {/* Absolute, so its own height never feeds back into the animated box it
+          is being measured for. */}
+      <View onLayout={onLayout} style={{ position: 'absolute', left: 0, right: 0 }}>
+        {children}
+      </View>
     </Animated.View>
   )
 }
