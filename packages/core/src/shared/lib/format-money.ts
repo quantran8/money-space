@@ -213,6 +213,34 @@ export function formatVndCellSigned(value: number): string {
 }
 
 /**
+ * A percentage at one decimal place, e.g. `12,4%`.
+ *
+ * Always one digit: a bare "12%" beside "0,8%" reads as a different precision.
+ */
+export function formatPercent(value: number, locale = 'vi-VN'): string {
+  const amount = Number.isFinite(value) ? value : 0
+  return `${amount.toLocaleString(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })}%`
+}
+
+/**
+ * Signed percentage, e.g. `+1,2%` / `−0,8%` / `0,0%`.
+ *
+ * Real minus sign U+2212, like `formatVndCellSigned`. Zero carries no sign —
+ * "+0,0%" claims a direction the figure does not have.
+ */
+export function formatPercentSigned(value: number, locale = 'vi-VN'): string {
+  const amount = Number.isFinite(value) ? value : 0
+  // Round first: −0,04 must not print as "−0,0%".
+  const rounded = Math.round(amount * 10) / 10
+  const formatted = formatPercent(Math.abs(rounded), locale)
+  if (rounded === 0) return formatted
+  return rounded < 0 ? `−${formatted}` : `+${formatted}`
+}
+
+/**
  * A goal/projection date as "Th10 2029" (vi) or "Oct 2029" (en). Goal
  * projections are month-precision by nature — showing an exact day would imply
  * an accuracy the projection does not have.

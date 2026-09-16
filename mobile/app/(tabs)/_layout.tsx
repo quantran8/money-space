@@ -1,14 +1,17 @@
 import { Tabs } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { CalendarDays, LayoutGrid, Target, Timeline, Wallet } from 'lucide-react-native'
+import Ionicons from '@expo/vector-icons/Ionicons'
+import type { ColorValue } from 'react-native'
 
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 
 import { RequireAuth } from '@/features/auth/require-auth'
 import { RequireHousehold } from '@/features/onboarding/require-household'
 import { PaywallSheet } from '@/features/billing/ui/paywall-sheet'
+import { RedeemSheet } from '@/features/billing/ui/redeem-sheet'
 import { WhatIfSheet } from '@/features/whatif'
 import { RouteErrorBoundary } from '@/components/route-error-boundary'
+import { WhatIfFab } from '@/components/ui/whatif-fab'
 import { colors } from '@/theme/tokens'
 
 /**
@@ -65,6 +68,9 @@ function TabBar() {
           headerShown: false,
           tabBarActiveTintColor: colors.ink,
           tabBarInactiveTintColor: colors.ink2,
+          // `t-caption-sm` (11) in Urbanist, medium when active — React
+          // Navigation defaults to the system face, which the bar never uses.
+          tabBarLabelStyle: { fontSize: 11, fontFamily: 'Urbanist_300Light' },
           tabBarStyle: {
             backgroundColor: colors.panel,
             // The bottom bar is one of the two places v4.2 still allows a
@@ -72,44 +78,45 @@ function TabBar() {
             borderTopColor: colors.hair,
             borderTopWidth: 1,
           },
-          tabBarLabelStyle: { fontSize: 11 },
-          // §9 accessibility: 44pt minimum touch target.
-          tabBarItemStyle: { minHeight: 44, paddingVertical: 4 },
+          // §9 accessibility: 44pt minimum touch target. `py-2.5` and the 4px
+          // icon→label gap match the web bar's item box.
+          tabBarItemStyle: { minHeight: 44, paddingVertical: 10 },
+          tabBarIconStyle: { marginBottom: 4 },
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
             title: t('nav.dashboard'),
-            tabBarIcon: ({ color }) => <LayoutGrid size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="grid" color={color} focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="upcoming"
           options={{
             title: t('nav.upcoming'),
-            tabBarIcon: ({ color }) => <CalendarDays size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="calendar" color={color} focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="goals"
           options={{
             title: t('nav.goals'),
-            tabBarIcon: ({ color }) => <Target size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="flag" color={color} focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="networth"
           options={{
             title: t('nav.assetsDebts'),
-            tabBarIcon: ({ color }) => <Wallet size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="wallet" color={color} focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="events"
           options={{
             title: t('nav.events'),
-            tabBarIcon: ({ color }) => <Timeline size={20} color={color} strokeWidth={1.75} />,
+            tabBarIcon: ({ color, focused }) => <TabIcon name="receipt" color={color} focused={focused} />,
           }}
         />
 
@@ -117,6 +124,11 @@ function TabBar() {
             `/household` deep links must keep resolving — but NOT a bar item. */}
         <Tabs.Screen name="household" options={{ href: null }} />
       </Tabs>
+
+      {/* The only entry point to what-if, on every tab — the counterpart of the
+          web's mobile FAB. It floats above the bar rather than sitting in it:
+          five tabs are the cap (§8) and what-if is an action, not a route. */}
+      <WhatIfFab />
 
       {/* What-if, mounted ONCE — the mobile equivalent of the web's AppShell
           mount. It is a contextual action with no route of its own (a sixth
@@ -127,6 +139,23 @@ function TabBar() {
       {/* Same reasoning, and the global 402 handler in core opens it from
           anywhere — so it has to be mounted where every tab is. */}
       <PaywallSheet />
+
+      {/* A SIBLING of the paywall, never nested inside it: `openRedeem` closes
+          that sheet as it opens this one. */}
+      <RedeemSheet />
     </>
   )
+}
+
+/** Glyphs used in the bar; each has a matching `-outline` counterpart. */
+type IoniconName = 'grid' | 'calendar' | 'flag' | 'wallet' | 'receipt'
+
+/**
+ * Outline when resting, solid when active.
+ *
+ * Ionicons ships each glyph as a real outline/solid pair, so only the weight
+ * changes between states and the silhouette stays put.
+ */
+function TabIcon({ name, color, focused }: { name: IoniconName; color: ColorValue; focused: boolean }) {
+  return <Ionicons name={focused ? name : `${name}-outline`} size={22} color={color} />
 }

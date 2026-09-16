@@ -12,6 +12,11 @@ import {
 } from '#/features/auth/api/auth.repository'
 import { authHandoffState, resolveNextPath } from '#/features/auth/model/next-path'
 import {
+  exchangeGoogleCode,
+  readGoogleCallbackParams,
+} from '#/features/auth/model/google-exchange'
+import { oauth } from '#/shared/oauth'
+import {
   buildLoginSchema,
   buildSignupSchema,
   loginDefaultValues,
@@ -46,14 +51,26 @@ function useAuthShared() {
   async function onGoogle() {
     setGooglePending(true)
     try {
-      // Carry `next` through the Google round-trip; the callback reads it back
-      // off its own URL, since nothing of ours survives the hop otherwise.
-      const callback = new URL(GOOGLE_REDIRECT_PATH, window.location.origin)
+      // Carry `next` through the Google round-trip; nothing of ours survives
+      // the hop otherwise.
+      const callback = new URL(oauth.buildRedirectUri(GOOGLE_REDIRECT_PATH))
       if (nextPath !== '/') callback.searchParams.set('next', nextPath)
       const redirectTo = callback.toString()
       const { url } = await getGoogleAuthUrl(redirectTo)
-      // Hand off to Google; the browser returns to GOOGLE_REDIRECT_PATH with a code.
-      window.location.assign(url)
+
+      // Web never returns from this — the page is gone. Native hands back the
+      // callback URL, or null if the user dismissed the sheet.
+      const returnedUrl = await oauth.start(url, redirectTo)
+      if (!returnedUrl) {
+        setGooglePending(false)
+        return
+      }
+
+      const params = readGoogleCallbackParams(returnedUrl)
+      if (params.error) throw new Error(params.error)
+      await exchangeGoogleCode(params, t)
+      notify.success(t('auth.toast.loginSuccess'))
+      navigate(nextPath, { replace: true, state: authHandoffState })
     } catch (error) {
       notify.error(getErrorMessage(error, t('auth.errors.googleFailed')))
       setGooglePending(false)

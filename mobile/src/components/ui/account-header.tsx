@@ -1,9 +1,9 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Image, Pressable, Text, View } from 'react-native'
-import { Settings } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import { useSession } from '@money-space/core/features/auth/hooks/use-session'
-import { useNavigate } from '@money-space/core/shared/navigation'
+import { useLocation, useNavigate } from '@money-space/core/shared/navigation'
 
 import { TOUCH_TARGET, colors } from '@/theme/tokens'
 
@@ -34,12 +34,16 @@ export function AccountHeader() {
   const { t } = useTranslation()
   const { user } = useSession()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const isOnSettings = pathname.includes('/household')
 
   const name =
     user?.displayName ?? user?.fullName ?? user?.email?.split('@')[0] ?? t('shell.guest')
 
+  // The header gutter is 20, deliberately wider than the page's 16, so the row
+  // insets by 4 from the page box (web: `px-5` against `.s-page` 16).
   return (
-    <View className="mb-3 flex-row items-center gap-2.5">
+    <View className="mb-3 mx-1 flex-row items-center gap-2.5">
       <AccountAvatar name={name} avatarUrl={user?.avatarUrl ?? null} />
 
       {/* Truncates rather than pushing the gear off the row. */}
@@ -56,7 +60,8 @@ export function AccountHeader() {
         style={{ width: TOUCH_TARGET, height: TOUCH_TARGET, marginRight: -12 }}
         className="items-center justify-center rounded-pill active:bg-wash"
       >
-        <Settings size={20} color={colors.ink2} strokeWidth={1.75} />
+        {/* Lit when its own destination is open, as on the web. */}
+        <Ionicons name="settings" size={20} color={isOnSettings ? colors.ink : colors.ink2} />
       </Pressable>
     </View>
   )

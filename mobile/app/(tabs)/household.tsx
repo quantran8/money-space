@@ -1,7 +1,7 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useState } from 'react'
 import { Pressable, Text } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight } from 'lucide-react-native'
 
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useHouseholdInvite } from '@money-space/core/features/invites/hooks/use-household-invite'
@@ -15,11 +15,14 @@ import { useNavigate } from '@money-space/core/shared/navigation'
 import { notify } from '@money-space/core/shared/notify'
 
 import { ConfirmDialog, Panel, Screen, Sections, Skeleton } from '@/components/ui'
-import { SubscriptionSection } from '@/features/billing/ui/subscription-section'
-import { HouseholdIdentitySection } from '@/features/household/ui/household-identity-section'
+import {
+  HouseholdIdentitySection,
+  OtherSettingsSection,
+} from '@/features/household/ui/household-identity-section'
 import { SpaceSwitcherSection } from '@/features/household/ui/space-switcher-section'
 import { InviteQrSheet } from '@/features/invites/ui/invite-qr-sheet'
 import { MembersSection } from '@/features/members/ui/members-section'
+import { CategoriesSection } from '@/features/settings/ui/categories-section'
 import { FeedbackSection } from '@/features/settings/ui/feedback-section'
 import { HouseholdDataSection } from '@/features/settings/ui/household-data-section'
 import { SignOutSection } from '@/features/settings/ui/sign-out-section'
@@ -125,24 +128,43 @@ export default function HouseholdScreen() {
             <Skeleton height={46} className="mt-3 rounded-control" />
           </Panel>
         ) : (
+          /* Members share this card: they belong to the space, so a rule
+             separates them rather than a second panel. */
           <HouseholdIdentitySection
+            form={settingsForm}
+            isSaving={settingsSaving}
+            onSave={() => void submitSettings()}
+            memberCount={members.length}
+            sourceCount={assets.length}
+          >
+            <MembersSection
+              asBlock
+              members={members}
+              isLoading={isLoading}
+              invitedCount={invitedCount}
+              holdsByMember={holdsByMember}
+              ownerMemberId={ownerMemberId}
+              viewerMemberId={viewerMemberId}
+              isViewerOwner={isViewerOwner}
+              onInvite={invite.openQr}
+              onRemoveMember={setRemoveId}
+            />
+          </HouseholdIdentitySection>
+        )}
+
+        {/* After the space and its members, as on the web: categories are how
+            this space classifies money, so they belong to its setup. */}
+        <CategoriesSection />
+
+        {/* Currency and language: a different question from "what is this space
+            and who is in it", so a card of their own. */}
+        {isSettingsLoading ? null : (
+          <OtherSettingsSection
             form={settingsForm}
             isSaving={settingsSaving}
             onSave={() => void submitSettings()}
           />
         )}
-
-        <MembersSection
-          members={members}
-          isLoading={isLoading}
-          invitedCount={invitedCount}
-          holdsByMember={holdsByMember}
-          ownerMemberId={ownerMemberId}
-          viewerMemberId={viewerMemberId}
-          isViewerOwner={isViewerOwner}
-          onInvite={invite.openQr}
-          onRemoveMember={setRemoveId}
-        />
 
         {/* The one destination that is not a tab. Sự kiện used to be listed
             here too; it is a tab of its own now, so a second door to it would
@@ -273,7 +295,7 @@ function HubLink({ label, onPress }: { label: string; onPress: () => void }) {
       className="-mx-2 flex-row items-center justify-between gap-3 rounded-control px-2 active:bg-wash"
     >
       <Text className="flex-1 t-body-sm text-ink">{label}</Text>
-      <ChevronRight size={18} color={colors.ink3} strokeWidth={1.75} />
+      <Ionicons name="chevron-forward" size={18} color={colors.ink3} />
     </Pressable>
   )
 }

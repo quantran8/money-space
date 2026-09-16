@@ -19,7 +19,10 @@ import { AutoPriceRow } from '@/features/assets/ui/components/auto-price-row'
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import {
   canUpdatePriceManually,
+  computeCostBasisProfitLoss,
+  isPreviousDayOf,
   isWalletAssetType,
+  toneForValueChange,
 } from '@money-space/core/features/assets/model/assets'
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
 import { AssetPurchaseDialog } from '@/features/assets/ui/components/asset-purchase-dialog'
@@ -35,6 +38,8 @@ import { formatDate } from '@money-space/core/features/debts/model/debts-form'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
 import {
+  formatPercent,
+  formatPercentSigned,
   formatQuantity,
   formatQuotePrice,
   formatVndExact,
@@ -167,6 +172,22 @@ function ActivityCard({
       </p>
     </article>
   )
+}
+
+/** A bare `YYYY-MM-DD` as a short local date, for the day-change label. */
+function formatDayLabel(isoDate: string, locale: string) {
+  return new Date(`${isoDate}T00:00:00`).toLocaleDateString(locale, {
+    day: '2-digit',
+    month: '2-digit',
+  })
+}
+
+/** Two-sided colouring, the assets feature's one exception — see memory/asset-valuation.md. */
+function dayChangeToneClass(delta: number): string | undefined {
+  const tone = toneForValueChange(delta)
+  if (tone === 'positive') return 'text-positive-ink'
+  if (tone === 'alert') return 'text-alert-ink'
+  return undefined
 }
 
 function formatUpdatedAt(value: string, locale: string) {
@@ -353,80 +374,77 @@ export function AssetDetailPage() {
     }
     return null
   })()
-  /**
-   * Today's rate for the position's own currency, so a USD cost basis can be
-   * compared against a đồng `currentValue`.
-   *
-   * `currentValue / (quantity × unit price)` is the most reliable form: the
-   * server computed that value from that very price, so the ratio IS the rate it
-   * used — and it works whether or not both currency quotes came back.
-   */
-  const positionFxToVnd = (() => {
-    if (!position || position.quoteCurrency === 'VND') return 1
-    const nativeUnit =
-      position.nativeMarketPrice?.price ??
-      (position.marketPriceCurrency && position.marketPriceCurrency !== 'VND'
-        ? position.marketPrice
-        : undefined) ??
-      position.lastPrice
-    if (!nativeUnit || quantity <= 0 || currentValue <= 0) return null
-    return currentValue / (quantity * nativeUnit)
-  })()
-  const costBasis =
-    position?.purchasePrice && positionFxToVnd !== null
-      ? position.purchasePrice * quantity * positionFxToVnd
-      : asset.calculationTerm?.principalAmount ?? currentValue
-  const profitLoss = currentValue - costBasis
-  const profitLossPercent = costBasis > 0 ? (profitLoss / costBasis) * 100 : 0
+  const { costBasis, profitLoss, profitLossPercent } = computeCostBasisProfitLoss(
+    asset,
+    currentValue,
+  )
   const share = householdAssetTotal > 0 ? (currentValue / householdAssetTotal) * 100 : 0
   const holderName = asset.holderMemberId
     ? members.find((member) => member.id === asset.holderMemberId)?.name
     : undefined
   const holderLabel = holderName ?? t('assets.demo.householdOwner')
   const updatedAt = asset.valueUpdatedAt ? formatUpdatedAt(asset.valueUpdatedAt, locale) : null
-  const percentText = (value: number) =>
-    `${value >= 0 ? '+' : '−'}${Math.abs(value).toLocaleString(locale, { maximumFractionDigits: 1 })}%`
+  const valueChange = asset.valueChange ?? null
 
   /**
-   * The readings that sit beside the headline value.
-   *
-   * Only a market-priced holding has a cost to compare against, so profit and
-   * cost basis are its alone; share of the household picture is true of every
-   * asset and is always last.
+   * How the holding has PERFORMED — the two readings that compare it against
+   * something. Only a market-priced holding has a cost or a previous close to
+   * compare against, so this column is its alone and collapses away entirely
+   * for a balance or a manual estimate.
    */
-  const secondaryMetrics = [
+  const performanceMetrics = [
     ...(isMarketPriced
       ? [
-          {
-            label: t('assets.detail.hero.costBasis'),
-            // Exact, not compact: this sits beside the profit/loss computed
-            // FROM it, and at the compact scale a 70.000đ loss rounds both
-            // figures to the same "15,1 tr" — the card then reads as a loss
-            // between two identical numbers. See `formatVndExact`.
-            value: formatVndExact(costBasis),
-            note: null as string | null,
-            tone: undefined as string | undefined,
-          },
           {
             label: t(
               profitLoss < 0
                 ? 'assets.detail.hero.estimatedLoss'
                 : 'assets.detail.hero.estimatedProfit',
             ),
+            // Exact, not compact: at the compact scale a 70.000đ loss rounds to
+            // the same "15,1 tr" as the cost basis it is measured from, and the
+            // card then reads as a loss between two identical numbers.
             value: `${profitLoss > 0 ? '+' : profitLoss < 0 ? '−' : ''}${formatVndExact(Math.abs(profitLoss))}`,
-            note: percentText(profitLossPercent),
+            note: profitLossPercent === null ? null : formatPercentSigned(profitLossPercent, locale),
             // Colour marks what needs a look (§5.2). A loss does; a gain is the
-            // expected case and stays ink.
+            // expected case and stays ink. The day-change metric below is the
+            // one exception — see memory/asset-valuation.md.
             tone: profitLoss < 0 ? 'text-alert-ink' : undefined,
           },
         ]
       : []),
-    {
-      label: t('assets.detail.hero.share'),
-      value: `${share.toLocaleString(locale, { maximumFractionDigits: 1 })}%`,
-      note: null as string | null,
-      tone: undefined as string | undefined,
-    },
+    ...(isMarketPriced && valueChange
+      ? [
+          {
+            label: isPreviousDayOf(valueChange.previousDate, asOf)
+              ? t('assets.detail.hero.dayChange')
+              : t('assets.detail.hero.changeSince', {
+                  date: formatDayLabel(valueChange.previousDate, locale),
+                }),
+            // Exact for the same reason as the profit above: a 70.000đ day
+            // rounds to "0,0 tr" and reads as nothing having happened.
+            value: `${valueChange.delta > 0 ? '+' : valueChange.delta < 0 ? '−' : ''}${formatVndExact(Math.abs(valueChange.delta))}`,
+            note:
+              valueChange.deltaPercent === null
+                ? null
+                : formatPercentSigned(valueChange.deltaPercent, locale),
+            tone: dayChangeToneClass(valueChange.delta),
+          },
+        ]
+      : []),
+  ]
+
+  /**
+   * Reference readings, under the value rather than beside it: neither is a
+   * judgement on the holding, so neither competes with the performance column.
+   * Cost basis belongs to a market holding; share of the household picture is
+   * true of every asset.
+   */
+  const referenceMetrics = [
+    ...(isMarketPriced
+      ? [{ label: t('assets.detail.hero.costBasis'), value: formatVndExact(costBasis) }]
+      : []),
+    { label: t('assets.detail.hero.shareOfPortfolio'), value: formatPercent(share, locale) },
   ]
 
   function handlePrimaryUpdate() {
@@ -507,62 +525,101 @@ export function AssetDetailPage() {
             meta={updatedAt ?? undefined}
           />
 
-          <div className="s-head-body grid gap-8 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.5fr)] lg:gap-12">
-            <div className="min-w-0">
-              <p className="t-body-sm text-ink2">
-                {t(isBalanceAsset ? 'assets.detail.hero.balance' : 'assets.detail.hero.currentValue')}
-              </p>
-              {/* Exact for a market holding and a balance: the first is the
-                  product of the quantity and unit price stated right below it,
-                  the second is a real account balance — both are known to the
-                  đồng and both sit beside figures derived FROM them (cost basis,
-                  profit/loss), so a rounded hero is the one number in the set
-                  that cannot be reconciled. A manual estimate keeps the compact
-                  scale: §6 forbids showing more precision than the input. */}
-              <p className="money-number mt-2 t-figure lg:t-hero">
-                {isAutoPriced || isBalanceAsset
-                  ? formatVndExact(currentValue)
-                  : formatVndShort(currentValue)}
-              </p>
-              {/* The live unit price, plus the native one for a foreign-quoted
-                  instrument. Exact: it is what the hero divides back into.
-                  Quantity dropped — it is in the info panel below. */}
-              {isMarketPriced && position && quantity > 0 ? (
-                <p className="mt-2 t-body-sm text-ink3">
-                  <Trans
-                    i18nKey={
-                      nativeUnitPrice
-                        ? 'assets.detail.hero.holdingLineNative'
-                        : 'assets.detail.hero.holdingLine'
-                    }
-                    values={{
-                      unit: position.unit,
-                      price: formatVndExact(currentUnitPrice),
-                      nativePrice: nativeUnitPrice ?? '',
-                    }}
-                    components={{ 1: <span className="num text-ink2" /> }}
-                  />
+          {/* §7.2 split: left is the ANSWER (what it is worth now), right the
+              DETAIL (how it has performed). The right column only exists for a
+              market holding, so a balance or manual estimate gets the full
+              width rather than a lone empty column. */}
+          <div
+            className={cn(
+              's-head-body s-split-gap grid',
+              performanceMetrics.length > 0 &&
+                'lg:grid-cols-[minmax(0,1.55fr)_minmax(0,.85fr)]',
+            )}
+          >
+            <div className="flex min-w-0 flex-col justify-between gap-6">
+              <div className="min-w-0">
+                <p className="t-body-sm text-ink2">
+                  {t(
+                    isBalanceAsset
+                      ? 'assets.detail.hero.balance'
+                      : 'assets.detail.hero.currentValue',
+                  )}
                 </p>
-              ) : null}
+                {/* Exact for a market holding and a balance: the first is the
+                    product of the quantity and unit price stated right below it,
+                    the second is a real account balance — both are known to the
+                    đồng and both sit beside figures derived FROM them (cost
+                    basis, profit/loss), so a rounded hero is the one number in
+                    the set that cannot be reconciled. A manual estimate keeps
+                    the compact scale: §6 forbids showing more precision than the
+                    input. */}
+                <p className="money-number mt-2 t-figure lg:t-hero">
+                  {isAutoPriced || isBalanceAsset
+                    ? formatVndExact(currentValue)
+                    : formatVndShort(currentValue)}
+                </p>
+                {/* The live unit price, plus the native one for a foreign-quoted
+                    instrument. Exact: it is what the hero divides back into.
+                    Quantity dropped — it is in the info panel below. */}
+                {isMarketPriced && position && quantity > 0 ? (
+                  <p className="mt-2 t-body-sm text-ink3">
+                    <Trans
+                      i18nKey={
+                        nativeUnitPrice
+                          ? 'assets.detail.hero.holdingLineNative'
+                          : 'assets.detail.hero.holdingLine'
+                      }
+                      values={{
+                        unit: position.unit,
+                        price: formatVndExact(currentUnitPrice),
+                        nativePrice: nativeUnitPrice ?? '',
+                      }}
+                      components={{ 1: <span className="num text-ink2" /> }}
+                    />
+                  </p>
+                ) : null}
 
-              {/* How the price stays current, and the switch that moves the
-                  plan's automation onto this asset. */}
-              <AutoPriceRow asset={asset} />
+                {/* How the price stays current, and the switch that moves the
+                    plan's automation onto this asset. */}
+                <AutoPriceRow asset={asset} />
+              </div>
+
+              {/* Reference figures, at label size: they describe the holding
+                  rather than judge it, so they sit under the value instead of
+                  competing with the performance column. */}
+              <div className="flex flex-wrap items-baseline gap-x-7 gap-y-2.5">
+                {referenceMetrics.map((metric) => (
+                  <div key={metric.label} className="flex items-baseline gap-2">
+                    <p className="t-caption text-ink3">{metric.label}</p>
+                    <p className="money-number t-body-sm text-ink2">{metric.value}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="grid gap-8 self-end sm:grid-cols-2 lg:grid-cols-3">
-              {secondaryMetrics.map((metric) => (
-                <div key={metric.label} className="min-w-0">
-                  <p className="t-caption text-ink3">{metric.label}</p>
-                  <p className={cn('money-number mt-2 t-metric', metric.tone)}>{metric.value}</p>
-                  {metric.note ? (
-                    <p className={cn('num mt-1 t-caption', metric.tone ?? 'text-ink3')}>
-                      {metric.note}
-                    </p>
-                  ) : null}
+            {performanceMetrics.length > 0 ? (
+              <div className="flex flex-col justify-center lg:border-l lg:border-divider lg:pl-8">
+                <p className="t-body-sm text-ink2">{t('assets.detail.hero.performance')}</p>
+                <div className="mt-4 flex flex-col gap-3">
+                  {performanceMetrics.map((metric) => (
+                    <div
+                      key={metric.label}
+                      className="grid grid-cols-[1fr_auto] items-baseline gap-6 max-sm:grid-cols-1 max-sm:gap-1"
+                    >
+                      <p className="t-body-sm text-ink2">{metric.label}</p>
+                      <div className="max-sm:text-left sm:text-right">
+                        <p className={cn('money-number t-metric', metric.tone)}>{metric.value}</p>
+                        {metric.note ? (
+                          <p className={cn('num mt-1 t-caption', metric.tone ?? 'text-ink3')}>
+                            {metric.note}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : null}
           </div>
         </Panel>
 
@@ -626,7 +683,9 @@ export function AssetDetailPage() {
                   {formatVndShort(Math.abs(rangeDelta))}
                 </p>
                 {rangeDeltaPercent !== null ? (
-                  <p className="num mt-1 t-caption text-ink3">{percentText(rangeDeltaPercent)}</p>
+                  <p className="num mt-1 t-caption text-ink3">
+                    {formatPercentSigned(rangeDeltaPercent, locale)}
+                  </p>
                 ) : null}
               </div>
 

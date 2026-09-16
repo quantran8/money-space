@@ -133,6 +133,8 @@ export function useAssetSale() {
     setSaleOpen(false)
     setSellingAsset(null)
     setEditingEvent(null)
+    // Leave the form clean rather than relying on the next open to re-seed it.
+    reset(defaultAssetSaleValues)
   }
 
   function handleOpenChange(open: boolean) {

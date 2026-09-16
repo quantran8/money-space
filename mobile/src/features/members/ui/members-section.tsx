@@ -31,6 +31,7 @@ export function MembersSection({
   isViewerOwner,
   onInvite,
   onRemoveMember,
+  asBlock = false,
 }: {
   members: MemberItem[]
   isLoading: boolean
@@ -45,13 +46,16 @@ export function MembersSection({
   isViewerOwner: boolean
   onInvite: () => void
   onRemoveMember: (memberId: string) => void
+  /** Rendered INSIDE the space card, under its divider — so no panel of its own. */
+  asBlock?: boolean
 }) {
   const { t } = useTranslation()
 
   const isSolo = !isLoading && members.length < 2
+  const Shell = asBlock ? View : Panel
 
   return (
-    <Panel>
+    <Shell>
       <PanelHeader
         title={t('household.merged.membersTitle')}
         right={
@@ -109,6 +113,6 @@ export function MembersSection({
           </Text>
         </View>
       ) : null}
-    </Panel>
+    </Shell>
   )
 }

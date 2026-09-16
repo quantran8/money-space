@@ -1,6 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight } from 'lucide-react-native'
 
 import { useEntitlement } from '@money-space/core/features/billing/hooks/use-entitlement'
 import { useNavigate } from '@money-space/core/shared/navigation'
@@ -64,7 +64,7 @@ export function SubscriptionSection() {
         onPress={() => navigate('/subscription')}
       >
         <Text className="t-subtitle text-ink">{title}</Text>
-        <ChevronRight size={18} strokeWidth={1.75} color={colors.ink3} />
+        <Ionicons name="chevron-forward" size={18} color={colors.ink3} />
       </Pressable>
 
       {isLifetime ? null : hasLapsed && expiresAt ? (

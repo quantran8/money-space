@@ -58,6 +58,7 @@ export function NetWorthPage() {
     asOf,
     total,
     totals,
+    valueChangeTotal,
     filteredAssets,
     isLoading,
     query,
@@ -136,6 +137,7 @@ export function NetWorthPage() {
         totals={totals}
         totalDebt={totalDebt}
         asOf={asOf || AS_OF}
+        valueChange={onAssets ? valueChangeTotal : null}
       />
 
       <SwitchPane activeKey={onAssets ? 'assets' : 'debts'} className="space-y-4">

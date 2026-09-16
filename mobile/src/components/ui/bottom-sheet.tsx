@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
-import { TOUCH_TARGET } from '@/theme/tokens'
+import { TOUCH_TARGET, colors, overlayShadow } from '@/theme/tokens'
 
 import type { ReactNode } from 'react'
 
@@ -74,20 +74,20 @@ function SheetBody({
     <>
       {showGrabber ? (
         <View className="items-center pt-2.5">
-          <View className="h-1 w-9 rounded-full bg-hair" />
+          <View className="h-1 w-9 rounded-full bg-divider" />
         </View>
       ) : null}
 
       {title ? (
         <View className="flex-row items-center justify-between gap-3 px-5 pb-1 pt-4">
-          <Text className="flex-1 text-[19px] font-medium text-ink">{title}</Text>
+          <Text className="flex-1 t-subtitle text-ink">{title}</Text>
           <Pressable
             onPress={onClose}
             accessibilityRole="button"
             style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
             className="items-end justify-center"
           >
-            <Text className="text-[14px] text-ink2">✕</Text>
+            <Text className="t-body-sm text-ink2">✕</Text>
           </Pressable>
         </View>
       ) : null}
@@ -193,13 +193,15 @@ function AndroidSheet({ open, onClose, title, children, footer, className }: Bot
             accessibilityLabel={title}
             onPress={onClose}
             className="flex-1"
-            style={{ backgroundColor: 'rgba(21, 24, 28, 0.34)' }}
+            style={{ backgroundColor: colors.scrim }}
           />
         </Animated.View>
 
-        {/* Only the panel travels. */}
+        {/* Only the panel travels. The elevation rides here rather than on the
+            panel, which clips its own overflow. */}
         <Animated.View
           style={{
+            ...overlayShadow,
             transform: [
               {
                 translateY: progress.interpolate({

@@ -39,7 +39,7 @@ export default function NetWorthScreen() {
     asOf,
     totals,
     total,
-    assetCount,
+    valueChangeTotal,
     filteredAssets,
     isLoading,
     query,
@@ -56,7 +56,10 @@ export default function NetWorthScreen() {
     submit,
     formOpen,
     openCreate,
+    openEdit,
     handleFormOpenChange,
+    openSale,
+    openPurchase,
     sale,
     deleteId,
     setDeleteId,
@@ -111,10 +114,9 @@ export default function NetWorthScreen() {
         <AssetsSummary
           totals={totals}
           total={total}
-          assetCount={assetCount}
           totalDebt={totalDebt}
-          debtCount={activeDebts.length}
           asOf={asOf || AS_OF}
+          valueChange={onAssets ? valueChangeTotal : null}
         />
 
         {/* Tài sản ↔ Nợ is a swap in one slot, not two lists appearing: the
@@ -133,6 +135,10 @@ export default function NetWorthScreen() {
               onLiquidityFilterChange={setLiquidityFilter}
               onOpen={(assetId) => router.push(`/assets/${assetId}`)}
               onAdd={() => openCreate()}
+              onEdit={openEdit}
+              onDelete={setDeleteId}
+              onSell={openSale}
+              onBuyMore={openPurchase}
             />
           ) : (
             // ── SEAM: the debts half ────────────────────────────────────────

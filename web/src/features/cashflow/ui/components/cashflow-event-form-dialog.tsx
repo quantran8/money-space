@@ -81,7 +81,21 @@ const selectClass =
  * The compact default view asks only for the three facts needed to place an
  * event on the timeline; recurrence and confidence remain one disclosure away.
  */
-export function CashflowEventFormDialog({
+export function CashflowEventFormDialog(props: CashflowEventFormDialogProps) {
+  const [openCount, setOpenCount] = useState(0)
+  const [wasOpen, setWasOpen] = useState(props.open)
+  // Keyed on each open so the disclosure state is discarded by the remount:
+  // closing after a successful save happens in the page hook and never reaches
+  // this component's own close handler. Adjusting state during render is the
+  // supported way to reset on a prop change.
+  if (wasOpen !== props.open) {
+    setWasOpen(props.open)
+    if (!props.open) setOpenCount((count) => count + 1)
+  }
+  return <CashflowEventFormDialogContent key={openCount} {...props} />
+}
+
+function CashflowEventFormDialogContent({
   open,
   onOpenChange,
   form,
@@ -192,7 +206,6 @@ export function CashflowEventFormDialog({
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    if (isValid) setDetailsOpen(false)
     // `onSubmit` is RHF's handleSubmit(), which calls preventDefault() itself —
     // but only when it receives the event. Forward it, or the browser performs a
     // native submit and reloads the page.

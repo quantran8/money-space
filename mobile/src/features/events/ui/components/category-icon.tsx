@@ -1,6 +1,6 @@
 /**
  * Mirror of `web/src/features/events/ui/components/category-icon.tsx`, drawn
- * with `lucide-react-native`.
+ * with `@expo/vector-icons`.
  *
  * The KEYS are the contract — a category's `iconKey` is stored by the backend
  * and read by both clients, so a key present here and absent there (or vice
@@ -8,89 +8,13 @@
  * to both files or neither.
  */
 
-import {
-  Activity,
-  Apple,
-  ArrowDownLeft,
-  Baby,
-  Backpack,
-  BarChart,
-  Bike,
-  BookOpen,
-  Briefcase,
-  Building,
-  Bus,
-  BusFront,
-  Cake,
-  Car,
-  CarTaxiFront,
-  Carrot,
-  Cat,
-  ChartPie,
-  CircleDashed,
-  Coffee,
-  Coins,
-  CreditCard,
-  Cross,
-  Dog,
-  Drill,
-  Dumbbell,
-  FileText,
-  Film,
-  Flame,
-  Fuel,
-  Gamepad2,
-  Gem,
-  Gift,
-  Globe,
-  GraduationCap,
-  Hammer,
-  HandCoins,
-  HeartPulse,
-  Home,
-  Hospital,
-  House,
-  Landmark,
-  Laptop,
-  LineChart,
-  Luggage,
-  Music,
-  PartyPopper,
-  PawPrint,
-  PenTool,
-  Percent,
-  PiggyBank,
-  Pill,
-  Pizza,
-  Plane,
-  PlaneTakeoff,
-  Receipt,
-  School,
-  Scissors,
-  ShieldCheck,
-  Shirt,
-  ShoppingBag,
-  ShoppingBasket,
-  ShoppingCart,
-  Sparkles,
-  Stethoscope,
-  Store,
-  Syringe,
-  Tent,
-  TrendingDown,
-  TrendingUp,
-  Trophy,
-  Umbrella,
-  User,
-  Users,
-  UtensilsCrossed,
-  Wallet,
-  Warehouse,
-  Watch,
-  Wrench,
-} from 'lucide-react-native'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 
-import type { LucideIcon } from 'lucide-react-native'
+import { colors } from '@/theme/tokens'
+
+/** A Material Community glyph name — what a category's key resolves to. */
+export type CategoryGlyphName = React.ComponentProps<typeof MaterialCommunityIcons>['name']
+
 
 /**
  * Every glyph a category can wear, grouped by theme rather than one-per-code.
@@ -105,8 +29,9 @@ import type { LucideIcon } from 'lucide-react-native'
  *
  * Keyed by the stored key rather than by category CODE, which is what lets a
  * household's own custom category carry any glyph in the set — a code-based
- * map only ever covers the seeded system rows. Keys are kebab-case lucide
- * names, so adding one is a one-line change on both sides. The 16 keys the
+ * map only ever covers the seeded system rows. Keys stay the kebab-case lucide
+ * names the web still writes — they are the stored contract, so only the glyph
+ * each one resolves to changed here. The 16 keys the
  * system categories were seeded with (see the backend migration) are each
  * still present, just no longer the only option for their theme.
  *
@@ -117,169 +42,169 @@ import type { LucideIcon } from 'lucide-react-native'
  * the web's `category-icon.tsx` for the same map: the two must stay in
  * lockstep, because the KEYS are the cross-client contract, not the file.
  */
-export const CATEGORY_ICON_GROUPS: { labelKey: string; icons: Record<string, LucideIcon> }[] = [
+export const CATEGORY_ICON_GROUPS: { labelKey: string; icons: Record<string, CategoryGlyphName> }[] = [
   {
     labelKey: 'settings.categories.iconGroup.housing',
     icons: {
-      house: House,
-      home: Home,
-      building: Building,
-      warehouse: Warehouse,
+      house: 'home',
+      home: 'home-variant',
+      building: 'office-building',
+      warehouse: 'warehouse',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.transport',
     icons: {
-      bus: Bus,
-      'bus-front': BusFront,
-      car: Car,
-      'car-taxi-front': CarTaxiFront,
-      bike: Bike,
-      fuel: Fuel,
-      luggage: Luggage,
+      bus: 'bus',
+      'bus-front': 'bus-side',
+      car: 'car',
+      'car-taxi-front': 'taxi',
+      bike: 'bike',
+      fuel: 'gas-station',
+      luggage: 'bag-suitcase',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.food',
     icons: {
-      'utensils-crossed': UtensilsCrossed,
-      coffee: Coffee,
-      pizza: Pizza,
-      apple: Apple,
-      carrot: Carrot,
+      'utensils-crossed': 'silverware-fork-knife',
+      coffee: 'coffee',
+      pizza: 'pizza',
+      apple: 'food-apple',
+      carrot: 'carrot',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.health',
     icons: {
-      'heart-pulse': HeartPulse,
-      stethoscope: Stethoscope,
-      pill: Pill,
-      cross: Cross,
-      syringe: Syringe,
-      hospital: Hospital,
-      activity: Activity,
+      'heart-pulse': 'heart-pulse',
+      stethoscope: 'stethoscope',
+      pill: 'pill',
+      cross: 'hospital-box',
+      syringe: 'needle',
+      hospital: 'hospital-building',
+      activity: 'pulse',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.family',
     icons: {
-      users: Users,
-      user: User,
-      baby: Baby,
-      dog: Dog,
-      cat: Cat,
-      'paw-print': PawPrint,
+      users: 'account-group',
+      user: 'account',
+      baby: 'baby-carriage',
+      dog: 'dog',
+      cat: 'cat',
+      'paw-print': 'paw',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.protection',
     icons: {
-      'shield-check': ShieldCheck,
-      umbrella: Umbrella,
+      'shield-check': 'shield-check',
+      umbrella: 'umbrella',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.money',
     icons: {
-      'piggy-bank': PiggyBank,
-      wallet: Wallet,
-      coins: Coins,
-      'hand-coins': HandCoins,
-      'credit-card': CreditCard,
-      receipt: Receipt,
-      'file-text': FileText,
+      'piggy-bank': 'piggy-bank',
+      wallet: 'wallet',
+      coins: 'cash-multiple',
+      'hand-coins': 'hand-coin',
+      'credit-card': 'credit-card',
+      receipt: 'receipt',
+      'file-text': 'file-document',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.investing',
     icons: {
-      'trending-up': TrendingUp,
-      'trending-down': TrendingDown,
-      'bar-chart': BarChart,
-      'line-chart': LineChart,
-      'chart-pie': ChartPie,
-      percent: Percent,
-      gem: Gem,
+      'trending-up': 'trending-up',
+      'trending-down': 'trending-down',
+      'bar-chart': 'chart-bar',
+      'line-chart': 'chart-line',
+      'chart-pie': 'chart-pie',
+      percent: 'percent',
+      gem: 'diamond-stone',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.debt',
     icons: {
-      landmark: Landmark,
+      landmark: 'bank',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.income',
     icons: {
-      'arrow-down-left': ArrowDownLeft,
-      briefcase: Briefcase,
+      'arrow-down-left': 'arrow-bottom-left',
+      briefcase: 'briefcase',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.repair',
     icons: {
-      wrench: Wrench,
-      hammer: Hammer,
-      drill: Drill,
-      'pen-tool': PenTool,
+      wrench: 'wrench',
+      hammer: 'hammer',
+      drill: 'screwdriver',
+      'pen-tool': 'fountain-pen',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.household',
     icons: {
-      'shopping-basket': ShoppingBasket,
-      'shopping-cart': ShoppingCart,
-      'shopping-bag': ShoppingBag,
-      store: Store,
-      shirt: Shirt,
-      scissors: Scissors,
-      watch: Watch,
+      'shopping-basket': 'basket',
+      'shopping-cart': 'cart',
+      'shopping-bag': 'shopping',
+      store: 'storefront',
+      shirt: 'tshirt-crew',
+      scissors: 'content-cut',
+      watch: 'watch',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.children',
     icons: {
-      backpack: Backpack,
-      'graduation-cap': GraduationCap,
-      'book-open': BookOpen,
-      school: School,
+      backpack: 'bag-personal',
+      'graduation-cap': 'school',
+      'book-open': 'book-open-variant',
+      school: 'school',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.travel',
     icons: {
-      plane: Plane,
-      'plane-takeoff': PlaneTakeoff,
-      globe: Globe,
-      tent: Tent,
+      plane: 'airplane',
+      'plane-takeoff': 'airplane-takeoff',
+      globe: 'earth',
+      tent: 'tent',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.leisure',
     icons: {
-      music: Music,
-      film: Film,
-      'gamepad-2': Gamepad2,
-      dumbbell: Dumbbell,
-      trophy: Trophy,
-      'party-popper': PartyPopper,
-      cake: Cake,
-      gift: Gift,
-      sparkles: Sparkles,
-      flame: Flame,
-      laptop: Laptop,
+      music: 'music',
+      film: 'movie',
+      'gamepad-2': 'gamepad-variant',
+      dumbbell: 'dumbbell',
+      trophy: 'trophy',
+      'party-popper': 'party-popper',
+      cake: 'cake-variant',
+      gift: 'gift',
+      sparkles: 'shimmer',
+      flame: 'fire',
+      laptop: 'laptop',
     },
   },
   {
     labelKey: 'settings.categories.iconGroup.other',
     icons: {
-      'circle-dashed': CircleDashed,
+      'circle-dashed': 'circle-outline',
     },
   },
 ]
 
-export const CATEGORY_ICONS: Record<string, LucideIcon> = Object.fromEntries(
+export const CATEGORY_ICONS: Record<string, CategoryGlyphName> = Object.fromEntries(
   CATEGORY_ICON_GROUPS.flatMap((group) => Object.entries(group.icons)),
 )
 
@@ -289,10 +214,10 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = Object.fromEntries(
  * heard of; a row seeded before the column existed carries none at all. Both
  * are normal, and neither may render a hole in the list.
  */
-export const CATEGORY_ICON_FALLBACK: LucideIcon = CircleDashed
+export const CATEGORY_ICON_FALLBACK: CategoryGlyphName = 'circle-outline'
 
 /** Accessible fallback fill: category glyphs are always white; only the disc changes. */
-export const CATEGORY_ICON_DEFAULT_COLOR = '#64748b'
+export const CATEGORY_ICON_DEFAULT_COLOR = colors.ink3
 
 /** Every key a household can pick from, flattened out of the groups above. */
 export const CATEGORY_ICON_KEYS = Object.keys(CATEGORY_ICONS)

@@ -1,7 +1,7 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Check, ChevronDown } from 'lucide-react-native'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 import type {
@@ -78,7 +78,7 @@ export function SymbolPicker({
         <Text className={cn('flex-1 t-body', value ? 'text-ink' : 'text-ink3')} numberOfLines={1}>
           {value || placeholder || ''}
         </Text>
-        <ChevronDown size={16} color={colors.ink3} strokeWidth={1.75} />
+        <Ionicons name="chevron-down" size={16} color={colors.ink3} />
       </Pressable>
 
       {error ? <Text className="mt-1.5 t-caption text-alert-ink">{error}</Text> : null}
@@ -124,7 +124,7 @@ export function SymbolPicker({
                   ) : null}
                 </View>
                 {item.symbol === value ? (
-                  <Check size={18} color={colors.interactive} strokeWidth={2} />
+                  <Ionicons name="checkmark" size={18} color={colors.interactive} />
                 ) : null}
               </Pressable>
             ))

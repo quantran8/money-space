@@ -129,6 +129,10 @@ export function useAssetQuantity() {
   function close() {
     setMode(null)
     setAsset(null)
+    // Re-opening the SAME asset leaves `[mode, asset]` unchanged, so the seeding
+    // effect never re-runs and the dialog kept the previous entry.
+    purchaseForm.reset(defaultAssetPurchaseValues)
+    adjustmentForm.reset(defaultAssetQuantityAdjustmentValues)
   }
 
   function handleOpenChange(open: boolean) {

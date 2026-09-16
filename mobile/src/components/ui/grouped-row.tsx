@@ -26,6 +26,7 @@ export function GroupedRow({
   value,
   valueMeta,
   valueTone = 'default',
+  valueMetaTone = 'muted',
   onPress,
   leading,
   right,
@@ -37,7 +38,9 @@ export function GroupedRow({
   value?: string
   /** Running balance or similar, under the amount. */
   valueMeta?: string
-  valueTone?: 'default' | 'attention' | 'alert' | 'muted'
+  valueTone?: 'default' | 'attention' | 'alert' | 'muted' | 'positive'
+  /** Its own tone: a day-over-day delta is coloured, a running balance is not. */
+  valueMetaTone?: 'muted' | 'alert' | 'positive'
   onPress?: () => void
   /**
    * A mark before the title — the category disc, today. A slot rather than a
@@ -53,7 +56,14 @@ export function GroupedRow({
     attention: 'text-attention-ink',
     alert: 'text-alert-ink',
     muted: 'text-ink2',
+    positive: 'text-positive-ink',
   }[valueTone]
+
+  const metaTone = {
+    muted: 'text-ink3',
+    alert: 'text-alert-ink',
+    positive: 'text-positive-ink',
+  }[valueMetaTone]
 
   const body = (
     <View className="flex-row items-center gap-3">
@@ -76,7 +86,7 @@ export function GroupedRow({
           </Text>
           {valueMeta ? (
             <Text
-              className="mt-0.5 t-caption-sm text-ink3"
+              className={cn('mt-0.5 t-caption-sm', metaTone)}
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {valueMeta}
@@ -84,26 +94,36 @@ export function GroupedRow({
           ) : null}
         </View>
       ) : null}
-
-      {right}
     </View>
   )
 
   if (!onPress) {
-    return <View className={cn('py-2.5', className)}>{body}</View>
+    return (
+      <View className={cn('flex-row items-center py-2.5', className)}>
+        <View className="flex-1">{body}</View>
+        {right}
+      </View>
+    )
   }
 
+  /**
+   * `right` sits OUTSIDE the pressable, as its sibling — nesting it made the
+   * menu a target inside a target, and a tap on it opened the row instead.
+   */
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      style={{ minHeight: TOUCH_TARGET }}
-      // An interactive row highlights on the sunk surface — the same band a
-      // table row uses on the web.
-      className={cn('justify-center rounded-control py-2.5 active:bg-wash', className)}
-    >
-      {body}
-    </Pressable>
+    <View className={cn('flex-row items-center', className)}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        style={{ minHeight: TOUCH_TARGET }}
+        // An interactive row highlights on the sunk surface — the same band a
+        // table row uses on the web.
+        className="flex-1 justify-center rounded-control py-2.5 active:bg-wash"
+      >
+        {body}
+      </Pressable>
+      {right}
+    </View>
   )
 }
 

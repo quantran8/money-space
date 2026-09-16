@@ -1,5 +1,5 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable, Text, View } from 'react-native'
-import { TriangleAlert } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 
 import type { OverdueSummary } from '@money-space/core/features/forecast/model/forecast-overdue'
@@ -64,7 +64,7 @@ export function OverdueSection({
           the figures below already count them. Everything under it is the same
           facts per item, so this is the only place the totals appear (§2.10). */}
       <View className="mt-5 flex-row items-start gap-3 rounded-control bg-attention-soft p-4">
-        <TriangleAlert size={20} color={colors.alertInk} strokeWidth={1.7} />
+        <Ionicons name="warning" size={20} color={colors.alertInk} />
         <View className="min-w-0 flex-1">
           <Text className="t-body-sm font-medium text-alert-ink">
             {overdue.oldestDays === undefined

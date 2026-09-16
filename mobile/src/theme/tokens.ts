@@ -88,20 +88,35 @@ export const radius = {
  * means a TIGHTER composition, never the same items stretched further apart.
  */
 export const spacing = {
-  /** Between sections of a screen. */
-  section: 16,
-  /** Panel padding on a phone. Desktop's 32 never applies here. */
+  /** `.s-section-gap` — between sections of a screen. */
+  section: 20,
+  /** `.s-card` — panel padding on a phone. Desktop's 24 never applies here. */
   panel: 20,
-  /** A section header and the body under it. */
-  header: 24,
-  /** Between blocks inside one panel. */
-  block: 16,
+  /** `.s-page` — the page edge. */
+  page: 16,
+  /** `.s-head-body` — a section header and the body under it. */
+  header: 28,
+  /** `.s-card-gap` — card to card. Small on purpose: a grid must read as one surface. */
+  cardGap: 12,
   /** Between a label and the control it names, or two lines of one thought. */
   tight: 8,
-  /** A dense row's vertical padding. */
+  /** `.s-row` — a dense row's vertical padding. */
   row: 10,
-  /** A list or table and the summary that closes it. */
-  summary: 16,
+} as const
+
+/**
+ * The one elevation v5 keeps (Foundations, "Radius & elevation").
+ *
+ * In-page cards carry no shadow — they separate by lightness. This belongs to
+ * modals, dialogs, sheets and popovers, which float above the scrim and need
+ * to read as detached. Stated as RN shadow props, not a CSS string.
+ */
+export const overlayShadow = {
+  shadowColor: '#14222B',
+  shadowOffset: { width: 0, height: 18 },
+  shadowOpacity: 0.16,
+  shadowRadius: 50,
+  elevation: 24,
 } as const
 
 /**

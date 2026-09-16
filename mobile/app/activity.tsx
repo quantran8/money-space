@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next'
 
 import { useActivity } from '@money-space/core/features/activity/hooks/use-activity'
-import { useNavigate } from '@money-space/core/shared/navigation'
 
 import { BackLink, Screen, Sections } from '@/components/ui'
+import { useGoBack } from '@/shared/use-go-back'
 import { ActivityListSection } from '@/features/activity/ui/activity-list-section'
 
 /**
@@ -19,7 +19,7 @@ import { ActivityListSection } from '@/features/activity/ui/activity-list-sectio
  */
 export default function ActivityScreen() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
+  const goBack = useGoBack('/household')
   const { entries, isLoading, isRefetching, refetch } = useActivity()
 
   return (
@@ -32,7 +32,7 @@ export default function ActivityScreen() {
       <Sections>
         {/* Named in words, not left to an arrow: a deep link can land here with
             no stack behind it, and the system gesture is invisible (§9). */}
-        <BackLink label={t('nav.household')} onPress={() => navigate('/household')} />
+        <BackLink label={t('nav.household')} onPress={goBack} />
 
         <ActivityListSection entries={entries} isLoading={isLoading} />
       </Sections>

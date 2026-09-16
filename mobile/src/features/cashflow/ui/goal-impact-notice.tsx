@@ -1,6 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight } from 'lucide-react-native'
 
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useAssetGoalUsage } from '@money-space/core/features/goals/hooks/use-asset-goal-usage'
@@ -283,7 +283,7 @@ function ChangeRow({
         <Text className="t-body-sm text-ink3" style={{ fontVariant: ['tabular-nums'] }}>
           {before}
         </Text>
-        <ArrowRight size={14} color={colors.ink3} strokeWidth={1.5} />
+        <Ionicons name="arrow-forward" size={14} color={colors.ink3} />
         <Text
           className="t-body font-medium text-ink"
           style={{ fontVariant: ['tabular-nums'] }}

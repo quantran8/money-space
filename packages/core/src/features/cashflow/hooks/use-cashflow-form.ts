@@ -104,7 +104,11 @@ export function useCashflowForm() {
 
   function handleFormOpenChange(open: boolean) {
     setFormOpen(open)
-    if (!open) setEditingId(null)
+    if (!open) {
+      setEditingId(null)
+      // Leave the form clean rather than relying on the next open to re-seed it.
+      reset({ ...defaultCashflowFormValues(), category: defaultCategoryId })
+    }
   }
 
   async function onSubmit(values: CashflowEventForm) {

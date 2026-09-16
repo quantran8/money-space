@@ -4,7 +4,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
 
 import { colors } from '@/theme/tokens'
 
-export type StatusTone = 'neutral' | 'interactive' | 'attention' | 'alert'
+export type StatusTone = 'neutral' | 'positive' | 'attention' | 'alert'
 
 /**
  * A dot and a word.
@@ -28,24 +28,23 @@ export function StatusChip({
 }) {
   const dot: Record<StatusTone, string> = {
     neutral: colors.ink3,
-    interactive: colors.interactive,
+    positive: colors.positive,
     attention: colors.attention,
     alert: colors.alert,
   }
 
+  // A state needing action states itself in ink at 500; a settled one recedes
+  // to ink2. The dot carries the tone, the word carries the meaning.
   const text: Record<StatusTone, string> = {
     neutral: 'text-ink2',
-    interactive: 'text-ink',
-    attention: 'text-attention-ink',
-    alert: 'text-alert-ink',
+    positive: 'text-ink2',
+    attention: 'font-medium text-ink',
+    alert: 'font-medium text-ink',
   }
 
   return (
-    <View className={cn('flex-row items-center gap-1.5', className)}>
-      <View
-        className="h-1.5 w-1.5 rounded-full"
-        style={{ backgroundColor: dot[tone] }}
-      />
+    <View className={cn('flex-row items-center gap-2', className)}>
+      <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: dot[tone] }} />
       <Text className={cn('t-body-sm', text[tone])}>{label}</Text>
     </View>
   )

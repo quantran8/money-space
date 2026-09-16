@@ -23,9 +23,8 @@ import type { ActionSheetItem } from '@/components/ui'
  * the money moved through is the useful context, and it is already on the meta
  * line.
  *
- * The dropdown becomes an ActionSheet: a menu anchored to an 18pt icon opens
- * under the thumb that is covering it, and every entry here clears 44pt in a
- * sheet instead.
+ * The dropdown becomes an ActionSheet — a popover anchored to the "…", with
+ * every entry at a full 44pt target.
  *
  * The CATEGORY disc does lead the row, and is not the avatar in disguise: the
  * title is a free-text note ("Đi chợ"), so without it the only thing saying

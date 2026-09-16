@@ -1,7 +1,7 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Minus, Plus } from 'lucide-react-native'
 
 import {
   computeSavingEarly,
@@ -184,7 +184,7 @@ function StepButton({
   label: string
   onPress: () => void
 }) {
-  const Icon = icon === 'minus' ? Minus : Plus
+  const glyph = icon === 'minus' ? 'remove' : 'add'
   return (
     <Pressable
       onPress={onPress}
@@ -193,7 +193,7 @@ function StepButton({
       style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
       className="items-center justify-center rounded-control bg-card active:opacity-80"
     >
-      <Icon size={16} color={colors.ink} strokeWidth={2} />
+      <Ionicons name={glyph} size={16} color={colors.ink} />
     </Pressable>
   )
 }

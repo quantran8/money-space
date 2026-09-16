@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { router, useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 
 import { useDebtDetail } from '@money-space/core/features/debts/hooks/use-debt-detail'
 import { useDebtsPage } from '@money-space/core/features/debts/hooks/use-debts-page'
@@ -32,6 +32,7 @@ import { RequireAuth } from '@/features/auth/require-auth'
 import { DebtFormSheet } from '@/features/debts/debt-form-sheet'
 import { DebtUpdateModeSheet } from '@/features/debts/debt-update-mode-sheet'
 import { RequireHousehold } from '@/features/onboarding/require-household'
+import { useGoBack } from '@/shared/use-go-back'
 
 import type { StatusTone } from '@/components/ui'
 import type { DebtStatus } from '@money-space/core/features/debts/model/debts.types'
@@ -39,7 +40,7 @@ import type { DebtStatus } from '@money-space/core/features/debts/model/debts.ty
 /** Colour marks what needs action — an active loan is not one of those. */
 const STATUS_TONE: Record<DebtStatus, StatusTone> = {
   active: 'neutral',
-  paid_off: 'interactive',
+  paid_off: 'positive',
   paused: 'neutral',
   overdue: 'alert',
   cancelled: 'neutral',
@@ -143,14 +144,7 @@ function DebtDetailScreen() {
     cancelUpdateMode,
   } = useDebtsPage()
 
-  const goBack = useCallback(() => {
-    if (router.canGoBack()) {
-      router.back()
-      return
-    }
-    // A deep link lands here with no stack behind it.
-    router.replace('/networth')
-  }, [])
+  const goBack = useGoBack('/networth')
 
   /**
    * Leave once the debt this screen is about is genuinely gone.

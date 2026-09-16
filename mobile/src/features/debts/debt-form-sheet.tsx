@@ -1,8 +1,8 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useEffect, useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { Controller, useFieldArray, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Plus, X } from 'lucide-react-native'
 
 import type {
   Control,
@@ -598,7 +598,7 @@ export function DebtFormSheet({
                       style={{ minHeight: TOUCH_TARGET }}
                       className="flex-row items-center gap-1"
                     >
-                      <Plus size={15} color={colors.interactive} strokeWidth={2} />
+                      <Ionicons name="add" size={15} color={colors.interactive} />
                       <Text className="t-body-sm font-medium text-action">
                         {t('debts.form.interestPeriods.add')}
                       </Text>
@@ -672,7 +672,7 @@ export function DebtFormSheet({
                                 style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
                                 className="items-center justify-center rounded-control"
                               >
-                                <X size={16} color={colors.alert} strokeWidth={2} />
+                                <Ionicons name="close" size={16} color={colors.alert} />
                               </Pressable>
                             ) : null}
                           </View>

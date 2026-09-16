@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
+import { useCategoryVisuals } from '@money-space/core/features/events/hooks/use-category-visuals'
 import { useDashboardPage } from '@money-space/core/features/dashboard/hooks/use-dashboard-page'
 import { buildCoverage } from '@money-space/core/features/dashboard/model/home-derivations'
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
@@ -11,7 +12,6 @@ import { useNavigate } from '@money-space/core/shared/navigation'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
 import { notify } from '@money-space/core/shared/notify'
 import { queryKeys } from '@money-space/core/shared/api/query-keys'
-import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
 
 import { Screen, Sections } from '@/components/ui'
 import { CompleteCashflowSheet } from '@/features/cashflow'
@@ -19,6 +19,7 @@ import { DashboardSkeleton } from '@/features/dashboard/ui/dashboard-skeleton'
 import { FinancialPictureSection } from '@/features/dashboard/ui/financial-picture-section'
 import { GoalsSection } from '@/features/dashboard/ui/goals-section'
 import { MoneySourcesSection } from '@/features/dashboard/ui/money-sources-section'
+import { SpendingSection } from '@/features/dashboard/ui/spending-section'
 import { UpcomingSection } from '@/features/dashboard/ui/upcoming-section'
 import { formatToday } from '@/features/dashboard/lib/home-dates'
 
@@ -52,12 +53,13 @@ export default function DashboardScreen() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { activeHouseholdId } = useActiveHousehold()
-  // The sheet is mounted once in `(tabs)/_layout`; Home only opens it.
-  const openWhatIf = useWhatIfStore((store) => store.openWhatIf)
 
   const state = useDashboardPage()
   // Before the early return — hooks cannot be called conditionally.
   const { cashflowEvents, completeCashflowEvent } = useCashflowEvents()
+  // Category id → its label and disc, so a spending row draws the same mark
+  // the Events timeline draws. An event carries only the FK.
+  const categoryVisualById = useCategoryVisuals()
   const [refreshing, setRefreshing] = useState(false)
   /** The overdue occurrence being confirmed, if any. */
   const [completing, setCompleting] = useState<{
@@ -123,10 +125,12 @@ export default function DashboardScreen() {
     flexibleMoney,
     freshness,
     eventsSummary,
+    recentEvents,
     goalTracks,
     earmarkedForGoals,
     goals,
     moneyLocation,
+    holderGroups,
     confirmUnchanged,
   } = state
 
@@ -154,16 +158,11 @@ export default function DashboardScreen() {
           freshness={freshness}
           onQuickUpdate={handleQuickUpdate}
           isConfirming={confirmUnchanged.isPending}
-          // What-if is an ACTION inside this section, never a sixth one: a
-          // consequence must not render before the household asks for it
-          // (§2.9). No capability check — running one is a READ.
-          onSimulate={() => openWhatIf({ source: 'home' })}
         />
 
         {forecast ? (
           <UpcomingSection
             forecast={forecast}
-            eventsSummary={eventsSummary}
             cashflowEvents={cashflowEvents}
             onViewTimeline={() => navigate('/upcoming')}
             onAddSource={() => navigate('/networth')}
@@ -177,6 +176,16 @@ export default function DashboardScreen() {
           />
         ) : null}
 
+        {/* The month that HAPPENED, its own card between the forecast and the
+            goals — the same slot the web gives it. */}
+        <SpendingSection
+          summary={eventsSummary}
+          recentEvents={recentEvents}
+          categoryVisualById={categoryVisualById}
+          asOfDate={forecast?.asOfDate ?? ''}
+          onViewAll={() => navigate('/events')}
+        />
+
         {goalTracks.length > 0 ? (
           <GoalsSection
             tracks={goalTracks}
@@ -187,7 +196,11 @@ export default function DashboardScreen() {
           />
         ) : null}
 
-        <MoneySourcesSection map={moneyLocation} onViewAll={() => navigate('/networth')} />
+        <MoneySourcesSection
+          map={moneyLocation}
+          holderGroups={holderGroups}
+          onViewAll={() => navigate('/networth')}
+        />
       </Sections>
 
       {/* Keyed on the occurrence so a new one is a NEW mount: the wallet

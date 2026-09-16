@@ -84,6 +84,32 @@ export type MarketPosition = {
   nativeMarketPrice?: { price: number; quoteCurrency: string }
 }
 
+/**
+ * What a market-priced holding has done since its last recorded point.
+ * Server-derived, never stored. See memory/asset-valuation.md.
+ */
+export type AssetValueChange = {
+  /** `YYYY-MM-DD` of the baseline. Often yesterday, but NOT guaranteed. */
+  previousDate: string
+  previousValue: number
+  /** Signed: negative when the holding lost value. */
+  delta: number
+  /** Null when the baseline was zero — a start has no percentage. */
+  deltaPercent: number | null
+}
+
+/** The same move summed across the portfolio's market-priced holdings. */
+export type AssetValueChangeTotal = {
+  delta: number
+  deltaPercent: number | null
+  /** Holdings counted in `delta`. */
+  assetCount: number
+  /** Market-priced holdings with no baseline: the total is PARTIAL. */
+  missingCount: number
+  /** Oldest baseline among the contributors. */
+  previousDate: string | null
+}
+
 /** How interest is paid out during the term (kỳ trả lãi). */
 export type InterestPayment = 'end_of_term' | 'monthly'
 
@@ -153,6 +179,8 @@ export type Asset = {
   calculationTerm?: CalculationTerm
   currentValue?: number
   valueUpdatedAt?: string
+  /** Market-priced assets only; null when there is no baseline to compare to. */
+  valueChange?: AssetValueChange | null
   /** Who is responsible for the money. Not a privacy field. */
   holderMemberId?: string | null
 }

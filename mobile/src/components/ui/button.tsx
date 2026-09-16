@@ -27,18 +27,22 @@ export function Button({
   loading?: boolean
   className?: string
 }) {
+  // The primary action is ink and fully round; secondary is a borderless sunk
+  // fill at the control radius — a stroke is not how a control is marked.
   const surface: Record<Variant, string> = {
-    primary: 'bg-action',
-    secondary: 'bg-wash',
-    ghost: 'bg-transparent',
-    destructive: 'bg-transparent',
+    primary: 'bg-action rounded-pill px-5',
+    secondary: 'bg-wash rounded-control px-5',
+    ghost: 'bg-transparent rounded-control px-2',
+    destructive: 'bg-alert rounded-pill px-5',
   }
 
   const label: Record<Variant, string> = {
-    primary: 'text-white',
+    primary: 'text-action-inverse',
     secondary: 'text-ink',
     ghost: 'text-action',
-    destructive: 'text-alert-ink',
+    // Ink on the alert fill: `alert` is a FILL tone, and `alert-ink` on it
+    // would be two reds with no contrast between them.
+    destructive: 'text-ink',
   }
 
   return (
@@ -49,7 +53,7 @@ export function Button({
       // §9: 44pt minimum. Applies to every action, not just nav.
       style={{ minHeight: TOUCH_TARGET }}
       className={cn(
-        'flex-row items-center justify-center rounded-control px-4',
+        'flex-row items-center justify-center',
         surface[variant],
         // Pressed state is opacity, not a second colour — colour is reserved
         // for things the user must act on.
@@ -60,10 +64,10 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' ? '#FFFFFF' : colors.interactive}
+          color={variant === 'primary' ? colors.actionInverse : colors.ink}
         />
       ) : (
-        <Text className={cn('t-body font-medium', label[variant])}>{children}</Text>
+        <Text className={cn('t-body-sm font-medium', label[variant])}>{children}</Text>
       )}
     </Pressable>
   )

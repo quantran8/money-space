@@ -80,7 +80,7 @@ export function AssetQuantitySheet({
             : t('assets.quantityAdjustment.description')}
         </Text>
 
-        <View className="rounded-2xl bg-wash px-4 py-3">
+        <View className="rounded-control bg-wash px-4 py-3">
           <Text className="text-ink2">
             {isPurchase
               ? t('assets.purchase.currentHolding', { quantity: holdingLabel })
@@ -158,7 +158,7 @@ export function AssetQuantitySheet({
             {/* States plainly what this is NOT for: choosing it for a real
                 purchase or sale is the mistake that leaves the ledger unable to
                 explain where the money went. */}
-            <Text className="rounded-2xl bg-wash px-4 py-3 text-ink2">
+            <Text className="rounded-control bg-wash px-4 py-3 text-ink2">
               {t('assets.quantityAdjustment.notAPurchase')}
             </Text>
           </>

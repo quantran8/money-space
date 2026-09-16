@@ -1,6 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Plus, X } from 'lucide-react-native'
 
 import type { GoalAllocationDraft } from '@money-space/core/features/goals/model/goals-form'
 import {
@@ -123,7 +123,7 @@ export function GoalAllocationsField({
                   style={{ minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
                   className="-mr-2 -mt-2 items-end justify-center"
                 >
-                  <X size={16} color={colors.ink3} strokeWidth={1.75} />
+                  <Ionicons name="close" size={16} color={colors.ink3} />
                 </Pressable>
               </View>
 
@@ -267,7 +267,7 @@ export function GoalAllocationsField({
                       {formatAmount(option.balance)}
                     </Text>
                   </View>
-                  <Plus size={16} color={colors.interactive} strokeWidth={1.75} />
+                  <Ionicons name="add" size={16} color={colors.interactive} />
                 </Pressable>
               ))}
             </View>

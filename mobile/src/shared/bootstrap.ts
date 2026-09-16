@@ -13,11 +13,13 @@ import { initI18n, restoreLanguage } from '@money-space/core/i18n/config'
 import { configureEnv } from '@money-space/core/shared/api/env'
 import { configureClipboard } from '@money-space/core/shared/clipboard'
 import { configureNavigation } from '@money-space/core/shared/navigation'
+import { configureOAuth } from '@money-space/core/shared/oauth'
 import { hydrateAuth, useAuthStore } from '@money-space/core/shared/stores/auth-store'
 import { configureStorage } from '@money-space/core/shared/storage'
 import { configureStorePurchases } from '@money-space/core/shared/store-purchases'
 
 import { nativeNavigation } from '@/shared/native-navigation'
+import { nativeOAuth } from '@/shared/native-oauth'
 import { createNativeAnalytics } from '@/shared/native-analytics'
 import { nativePurchases } from '@/shared/native-purchases'
 import { nativeStorage } from '@/shared/native-storage'
@@ -55,6 +57,9 @@ export function bootstrap(): Promise<void> {
   })
   configureStorage(nativeStorage)
   configureNavigation(nativeNavigation)
+  // Core's default reaches for `window.location`; on a phone the Google
+  // round-trip is an in-app tab returning to a deep link instead.
+  configureOAuth(nativeOAuth)
   // Core's default reaches for `navigator.clipboard`, which does not exist
   // here — without this the invite dialog's copy would report a failure it
   // never actually attempted.

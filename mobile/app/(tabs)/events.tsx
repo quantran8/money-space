@@ -11,6 +11,7 @@ import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-ho
 import { Button, ConfirmDialog, Screen, Sections } from '@/components/ui'
 import { AssetSaleSheet } from '@/features/assets/components/asset-sale-sheet'
 import { EventFormSheet } from '@/features/events/ui/event-form-sheet'
+import { EventsCategorySection } from '@/features/events/ui/events-category-section'
 import { EventsSummaryPanel } from '@/features/events/ui/events-summary-panel'
 import { EventsTimelineSection } from '@/features/events/ui/events-timeline-section'
 import { MonthScope } from '@/features/events/ui/month-scope'
@@ -88,6 +89,8 @@ export default function EventsScreen() {
     memberOptions,
     categoryOptions,
     categoryVisualById,
+    spendingByCategory,
+    incomeByCategory,
     actualControl,
     handleActualSubmit,
     actualErrors,
@@ -120,6 +123,15 @@ export default function EventsScreen() {
         <MonthScope month={selectedMonth} onChange={setSelectedMonth} />
 
         <EventsSummaryPanel summary={periodSummary} />
+
+        {/* Composition sits between the totals and the list: it answers "what
+            was this month mostly", which is read after the totals and before
+            hunting a single record. */}
+        <EventsCategorySection
+          spending={spendingByCategory}
+          income={incomeByCategory}
+          isLoading={isLoading}
+        />
 
         <EventsTimelineSection
           tab={tab}

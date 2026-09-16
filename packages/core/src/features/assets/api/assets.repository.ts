@@ -3,12 +3,15 @@ import type {
   Asset,
   AssetClass,
   AssetSnapshotPoint,
+  AssetValueChange,
+  AssetValueChangeTotal,
   MarketQuote,
 } from '#/features/assets/model/assets.types'
 
 type AssetRecord = Asset & {
   currentValue: number
   valueUpdatedAt: string
+  valueChange: AssetValueChange | null
 }
 
 type AssetListResponse = {
@@ -33,6 +36,8 @@ type AssetSummaryResponse = {
     long_term: number
     totalAssets: number
   }
+  /** Null when the household holds nothing market-priced. */
+  valueChangeTotal: AssetValueChangeTotal | null
   groups: Array<{
     liquidity: 'usable_now' | 'not_immediately_usable' | 'long_term'
     name: string

@@ -112,6 +112,7 @@ export function useAssetsPage() {
 
   const totals = summary?.totals ?? EMPTY_TOTALS
   const total = totals.usable_now + totals.not_immediately_usable + totals.long_term
+  const valueChangeTotal = summary?.valueChangeTotal ?? null
 
   const filteredAssets = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -159,7 +160,11 @@ export function useAssetsPage() {
 
   function handleFormOpenChange(open: boolean) {
     setFormOpen(open)
-    if (!open) setEditingId(null)
+    if (!open) {
+      setEditingId(null)
+      // Leave the form clean rather than relying on the next open to re-seed it.
+      reset(freshAssetFormValues())
+    }
   }
 
   async function onSubmit(values: AssetForm) {
@@ -244,6 +249,7 @@ export function useAssetsPage() {
     asOf,
     totals,
     total,
+    valueChangeTotal,
     assetCount: assets.length,
     filteredAssets,
     isLoading,

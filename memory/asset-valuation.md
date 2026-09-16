@@ -200,10 +200,38 @@ Frontend `use-asset-detail.ts` reads the endpoint for the chart; the
 related-events timeline is derived separately from the household's events.
 Money-event mutations invalidate the assets query prefix so the chart refreshes.
 
-**Known limitation** (accepted, Hướng A): a `market_priced` asset only gets a
-history point on days it has a money event — pure market-price drift between
-events produces no new point (no event to hook). A periodic snapshot worker
-would be needed to capture that; deliberately out of scope for now.
+~~**Known limitation**: a `market_priced` asset only gets a history point on days
+it has a money event.~~ **Closed** — `AssetsValuationCron` (23:45 VN) now writes
+one point per market asset per day, which is what the day-over-day figure below
+is measured against.
+
+## Day-over-day change (lãi/lỗ hôm nay)
+
+What a **market-priced** holding has done since its last recorded point. On the
+asset detail page, on every list row, and as one portfolio total. The backend
+derives it; the client only formats and colours it.
+
+- **The baseline is the last recorded point, not "yesterday".** Weekends,
+  holidays and a skipped nightly run leave it days old, so the payload carries
+  `previousDate` and the UI says "hôm qua" only when `isPreviousDayOf` agrees.
+  Otherwise it names the date. Never label a three-day move as yesterday's.
+- **Null is a real answer** — created today, auto-price off, the cron skipped the
+  household. The line is then absent; never a fabricated "0%" or "+0đ". The
+  portfolio total reports `missingCount` so a partial total says it is partial.
+- **Only market-priced.** A manual asset's "change" is the household retyping a
+  figure.
+- **Colour is two-sided here, and here only.** `toneForValueChange` →
+  `text-positive-ink` / `text-alert-ink`; an unchanged figure stays ink. This is
+  a deliberate exception to §5.2 (colour marks what needs a look): the figure is
+  a *signed delta shown as its own number*, and at a glance "+1,2 tr" and
+  "−1,2 tr" in the same ink are indistinguishable. `currentValue`, `costBasis`
+  and the cost-basis P/L keep the alert-only rule.
+- **Formatting follows the exact/compact rule below**: exact đồng on the detail
+  card (a 70.000đ day rounds to "0,0 tr" and reads as nothing), the cell/percent
+  form in a list column, and the compact scale beside the net-worth hero.
+
+Backend rules, the baseline query and the known limitation (a purchase since the
+baseline lands inside the delta) are in `backend/memory/asset-valuation.md`.
 
 ## Where it lives in code
 

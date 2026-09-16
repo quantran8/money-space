@@ -163,5 +163,39 @@ module.exports = {
         },
       })
     },
+
+    /**
+     * The named spacing roles, Foundations "Named roles" — the same eight the
+     * web ships in `web/src/index.css`.
+     *
+     * These are the positions the system makes a promise about, so they are
+     * classes rather than numbers; a plain `mt-4` between two paragraphs still
+     * carries no rule and stays a number. The web's responsive steps
+     * (`.s-card` 20→24, `.s-page` 16→28) collapse to their phone value here.
+     */
+    function ({ addUtilities }) {
+      addUtilities({
+        /** A card's inner padding. Desktop's 24 never applies on a phone. */
+        '.s-card': { padding: '20px' },
+        /** The page edge. */
+        '.s-page': { padding: '16px' },
+        /** Card → card. At this gap a grid reads as one surface; at ~28 the cards drift apart. */
+        '.s-card-gap': { gap: '12px' },
+        /** Section → section, when sections stack. */
+        '.s-section-gap': { gap: '20px' },
+        /** A section header to the body under it. 28, not 24: the header is a
+            heading plus its metadata line, so the gap is measured from a
+            two-line block. (Foundations' Rhythm table still says 20–24 — the
+            named role is the authority; web/src/index.css resolves it the same way.) */
+        '.s-head-body': { marginTop: '28px' },
+        /** The two columns of a split. */
+        '.s-split-gap': { columnGap: '48px', rowGap: '32px' },
+        /** One row of a dense list — vertical only; the row sets its own x. */
+        '.s-row': { paddingTop: '10px', paddingBottom: '10px' },
+        /** The minimum tappable box. A control may LOOK smaller than 44, but
+            the box a finger hits may not be. */
+        '.s-tap': { minWidth: '44px', minHeight: '44px' },
+      })
+    },
   ],
 }

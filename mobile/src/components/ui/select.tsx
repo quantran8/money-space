@@ -1,6 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useMemo, useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { Check, ChevronDown } from 'lucide-react-native'
 
 import { cn } from '@money-space/core/shared/lib/utils'
 
@@ -82,7 +82,7 @@ export function Select<T extends string>({
 
   return (
     <View className={className}>
-      {label ? <Text className="mb-1.5 t-body-sm text-ink2">{label}</Text> : null}
+      {label ? <Text className="mb-2 t-caption font-medium text-ink2">{label}</Text> : null}
 
       <Pressable
         onPress={() => {
@@ -95,7 +95,7 @@ export function Select<T extends string>({
         style={{ minHeight: TOUCH_TARGET }}
         className={cn(
           'flex-row items-center justify-between gap-2 rounded-control border px-3.5',
-          error ? 'border-alert-ink bg-card' : 'border-divider bg-wash',
+          error ? 'border-alert-ink bg-card' : 'border-committed bg-card',
         )}
       >
         {selected?.leading}
@@ -105,7 +105,7 @@ export function Select<T extends string>({
         >
           {selected?.label ?? placeholder ?? ''}
         </Text>
-        <ChevronDown size={16} color={colors.ink3} strokeWidth={1.75} />
+        <Ionicons name="chevron-down" size={16} color={colors.ink3} />
       </Pressable>
 
       {error ? <Text className="mt-1.5 t-caption text-alert-ink">{error}</Text> : null}
@@ -146,7 +146,7 @@ export function Select<T extends string>({
               {row.option.leading}
               <Text className="flex-1 t-body text-ink">{row.option.label}</Text>
               {row.option.value === value ? (
-                <Check size={18} color={colors.interactive} strokeWidth={2} />
+                <Ionicons name="checkmark" size={18} color={colors.interactive} />
               ) : null}
             </Pressable>
           ),

@@ -24,6 +24,14 @@ import { GoalPriorityMark } from '@/features/goals/ui/goal-priority-mark'
  * at 335pt a name, two money values and a percentage on one row is how money
  * ends up truncated (§6).
  */
+/** The track's height, passed to ProgressBar rather than left to its default,
+ *  so the pace mark below is sized against a number this file controls. */
+const TRACK_HEIGHT = 20
+/** The pace mark overhangs the track top and bottom, or it reads as just
+ *  another tick in the run. */
+const MARK_HEIGHT = TRACK_HEIGHT + 8
+const MARK_WIDTH = 3
+
 export function GoalsSection({
   tracks,
   goalCount,
@@ -84,9 +92,10 @@ export function GoalsSection({
 
       {hasMilestone ? (
         <View className="mt-4 flex-row items-center gap-2">
+          {/* The swatch is the mark itself, at the mark's own width. */}
           <View
-            className="h-3 w-0.5 rounded-full"
-            style={{ backgroundColor: colors.ink }}
+            className="h-3.5 rounded-full"
+            style={{ width: MARK_WIDTH, backgroundColor: colors.ink }}
           />
           <Text className="flex-1 t-caption leading-4 text-ink3">
             {t('home.goals.milestoneLegend')}
@@ -121,11 +130,6 @@ function GoalTrackRow({ track, onPress }: { track: GoalTrack; onPress: () => voi
         <Text className="flex-1 t-body-sm font-medium text-ink" numberOfLines={1}>
           {track.name}
         </Text>
-        {track.isMain ? (
-          <Text className="shrink-0 rounded-full bg-action-soft px-2 py-0.5 t-caption-sm font-medium text-action">
-            {t('home.goals.mainBadge')}
-          </Text>
-        ) : null}
       </View>
 
       <View className="mt-1.5 flex-row items-baseline gap-2">
@@ -145,11 +149,13 @@ function GoalTrackRow({ track, onPress }: { track: GoalTrack; onPress: () => voi
         </Text>
       </View>
 
-      {/* The track and the milestone share one box so the tick lands on the
-          same scale as the fill. */}
-      <View className="mt-2 justify-center" style={{ height: 12 }}>
+      {/* The track and the milestone share one box so the mark lands on the
+          same scale as the fill. The box is the marker's height, not the
+          track's, or the overhang is clipped. */}
+      <View className="mt-2 justify-center" style={{ height: MARK_HEIGHT }}>
         <ProgressBar
           percent={track.percent}
+          height={TRACK_HEIGHT}
           tone={track.behind ? 'attention' : 'data'}
           label={
             track.requiredPercent === undefined
@@ -167,9 +173,14 @@ function GoalTrackRow({ track, onPress }: { track: GoalTrack; onPress: () => voi
             number nobody set (§2.16). */}
         {track.requiredPercent === undefined ? null : (
           <View
-            className="absolute h-3 w-0.5 rounded-full"
+            className="absolute rounded-full"
             style={{
               left: `${track.requiredPercent}%`,
+              width: MARK_WIDTH,
+              height: MARK_HEIGHT,
+              // Pulled back by half its width so the mark straddles the
+              // position rather than starting at it.
+              marginLeft: -MARK_WIDTH / 2,
               backgroundColor: colors.ink,
             }}
           />

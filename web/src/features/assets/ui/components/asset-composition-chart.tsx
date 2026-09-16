@@ -18,6 +18,8 @@ type AssetCompositionChartProps = {
    * caller that supplies this owns the whole encoding.
    */
   colors?: Record<AssetLiquidity, string>
+  /** Caption above the legend, when the chart carries no heading of its own. */
+  legendLabel?: string
 }
 
 type Slice = {
@@ -30,6 +32,7 @@ type Slice = {
 export function AssetCompositionChart({
   totals,
   colors = liquidityColors,
+  legendLabel,
 }: AssetCompositionChartProps) {
   const { t } = useTranslation()
 
@@ -106,7 +109,9 @@ export function AssetCompositionChart({
       </div>
 
       {/* Legend + direct labels (identity never color-alone) */}
-      <ul className="min-w-0 flex-1 space-y-4">
+      <div className="min-w-0 flex-1">
+        {legendLabel ? <p className="mb-2 t-caption text-ink3">{legendLabel}</p> : null}
+        <ul className="space-y-4">
         {slices.map((slice) => {
           const share = Math.round((slice.value / total) * 100)
           return (
@@ -129,7 +134,8 @@ export function AssetCompositionChart({
             </li>
           )
         })}
-      </ul>
+        </ul>
+      </div>
     </div>
   )
 }
