@@ -21,15 +21,29 @@ import { BottomSheet, Button, MoneyInput } from '@/components/ui'
  * somewhere (`canUpdatePriceManually`); a bank balance is edited through the
  * form, not here.
  */
-export function AssetPriceUpdateSheet({
-  open,
-  onOpenChange,
-  asset,
-}: {
+export function AssetPriceUpdateSheet(props: AssetPriceUpdateSheetProps) {
+  const [openCount, setOpenCount] = useState(0)
+  const [wasOpen, setWasOpen] = useState(props.open)
+  // Keyed on each open so the typed price and its error are discarded by the
+  // remount — the lazy initial price only ever runs on the first mount.
+  if (wasOpen !== props.open) {
+    setWasOpen(props.open)
+    if (!props.open) setOpenCount((count) => count + 1)
+  }
+  return <AssetPriceUpdateSheetContent key={openCount} {...props} />
+}
+
+type AssetPriceUpdateSheetProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   asset: Asset
-}) {
+}
+
+function AssetPriceUpdateSheetContent({
+  open,
+  onOpenChange,
+  asset,
+}: AssetPriceUpdateSheetProps) {
   const { t } = useTranslation()
   const { updateAsset } = useAssets()
   const [price, setPrice] = useState(() => currentRawPrice(asset))

@@ -39,6 +39,7 @@ export default function NetWorthScreen() {
     asOf,
     totals,
     total,
+    valueChangeTotal,
     filteredAssets,
     isLoading,
     query,
@@ -115,6 +116,7 @@ export default function NetWorthScreen() {
           total={total}
           totalDebt={totalDebt}
           asOf={asOf || AS_OF}
+          valueChange={onAssets ? valueChangeTotal : null}
         />
 
         {/* Tài sản ↔ Nợ is a swap in one slot, not two lists appearing: the

@@ -290,6 +290,13 @@ export function useDebtsPage() {
     if (!open) {
       setEditingId(null)
       setShowMoreDetails(false)
+      // Leave the form clean rather than relying on the next open to re-seed it.
+      reset({
+        ...defaultDebtFormValues(),
+        ownerMemberId: creatorMemberId ?? '',
+        receivedToAssetId: '',
+        repaymentAssetId: '',
+      })
     }
   }
 
@@ -386,7 +393,7 @@ export function useDebtsPage() {
             name: payload.name,
           },
         })
-        setDialogOpen(false)
+        onOpenChange(false)
         return
       }
 

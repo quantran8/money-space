@@ -2,9 +2,19 @@ import { Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { PieChartPro } from 'react-native-gifted-charts'
 
-import { liquidityOrder } from '@money-space/core/features/assets/model/assets'
+import {
+  isPreviousDayOf,
+  liquidityOrder,
+  toneForValueChange,
+} from '@money-space/core/features/assets/model/assets'
 import type { AssetTotals } from '@money-space/core/features/assets/model/assets-form'
-import { formatVndScale, formatVndShort } from '@money-space/core/shared/lib/format-money'
+import type { AssetValueChangeTotal } from '@money-space/core/features/assets/model/assets.types'
+import {
+  formatPercentSigned,
+  formatVndScale,
+  formatVndShort,
+} from '@money-space/core/shared/lib/format-money'
+import { cn } from '@money-space/core/shared/lib/utils'
 
 import { GroupedRow, Money, Panel, PanelHeader, RowMetaMono } from '@/components/ui'
 import { liquidityColors } from '@/theme/tokens'
@@ -32,16 +42,35 @@ export function AssetsSummary({
   total,
   totalDebt,
   asOf,
+  valueChange = null,
 }: {
   totals: AssetTotals
   total: number
   /** From the debts tab, which another screen owns. 0 until it lands. */
   totalDebt: number
   asOf: string
+  /** Assets tab only: a market move says nothing about the debts half. */
+  valueChange?: AssetValueChangeTotal | null
 }) {
   const { t } = useTranslation()
 
   const netWorth = total - totalDebt
+  // Scale, not exact: this sits beside the hero and is never reconciled here.
+  const dayChangeText = valueChange
+    ? `${valueChange.delta > 0 ? '+' : valueChange.delta < 0 ? '−' : ''}${formatVndScale(Math.abs(valueChange.delta))}${
+        valueChange.deltaPercent === null
+          ? ''
+          : ` · ${formatPercentSigned(valueChange.deltaPercent)}`
+      }`
+    : ''
+  // Two-sided colouring — see memory/asset-valuation.md.
+  const dayChangeToneClass = valueChange
+    ? {
+        positive: 'text-positive-ink',
+        alert: 'text-alert-ink',
+        default: 'text-ink3',
+      }[toneForValueChange(valueChange.delta)]
+    : 'text-ink3'
   const bucketTotal = liquidityOrder.reduce((sum, bucket) => sum + Math.max(totals[bucket], 0), 0)
 
   return (
@@ -69,6 +98,20 @@ export function AssetsSummary({
         <Text className="t-caption text-ink3">
           {t('assets.demo.totalDebt', { value: formatVndScale(totalDebt) })}
         </Text>
+        {valueChange ? (
+          <Text className={cn('t-caption', dayChangeToneClass)}>
+            {isPreviousDayOf(valueChange.previousDate ?? '', asOf)
+              ? t('assets.summary.dayChange', { value: dayChangeText })
+              : t('assets.summary.changeSince', {
+                  date: displayDate(valueChange.previousDate ?? ''),
+                  value: dayChangeText,
+                })}
+            {/* The total covers only the holdings that had a baseline. */}
+            {valueChange.missingCount > 0
+              ? ` ${t('assets.summary.dayChangePartial', { count: valueChange.missingCount })}`
+              : ''}
+          </Text>
+        ) : null}
       </View>
 
       {/* The composition, when there is anything to compose. A ring of one

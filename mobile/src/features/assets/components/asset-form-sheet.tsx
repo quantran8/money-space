@@ -86,21 +86,20 @@ type Errors = UseFormReturn<AssetForm>['formState']['errors']
  * Every field, schema and conversion here comes from core; this file only
  * decides what is on screen and in what order.
  */
-export function AssetFormSheet({
-  open,
-  onOpenChange,
-  form,
-  setValue,
-  mode,
-  walletOptions,
-  isEditing,
-  onBuyMore,
-  onAdjustQuantity,
-  isSubmitting,
-  onSubmit,
-  editingAsset,
-  onRemove,
-}: {
+export function AssetFormSheet(props: AssetFormSheetProps) {
+  const [openCount, setOpenCount] = useState(0)
+  const [wasOpen, setWasOpen] = useState(props.open)
+  // Keyed on each open so the disclosure state is discarded by the remount:
+  // closing after a successful save happens in the page hook and never reaches
+  // this component. Adjusting state during render is the supported reset.
+  if (wasOpen !== props.open) {
+    setWasOpen(props.open)
+    if (!props.open) setOpenCount((count) => count + 1)
+  }
+  return <AssetFormSheetContent key={openCount} {...props} />
+}
+
+type AssetFormSheetProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   form: UseFormReturn<AssetForm>
@@ -118,7 +117,23 @@ export function AssetFormSheet({
   editingAsset?: Asset
   /** §22.11 destructive action, on edit only. */
   onRemove?: () => void
-}) {
+}
+
+function AssetFormSheetContent({
+  open,
+  onOpenChange,
+  form,
+  setValue,
+  mode,
+  walletOptions,
+  isEditing,
+  onBuyMore,
+  onAdjustQuantity,
+  isSubmitting,
+  onSubmit,
+  editingAsset,
+  onRemove,
+}: AssetFormSheetProps) {
   const { t } = useTranslation()
   const [showMore, setShowMore] = useState(false)
   const {

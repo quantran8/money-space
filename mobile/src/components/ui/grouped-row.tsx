@@ -26,6 +26,7 @@ export function GroupedRow({
   value,
   valueMeta,
   valueTone = 'default',
+  valueMetaTone = 'muted',
   onPress,
   leading,
   right,
@@ -37,7 +38,9 @@ export function GroupedRow({
   value?: string
   /** Running balance or similar, under the amount. */
   valueMeta?: string
-  valueTone?: 'default' | 'attention' | 'alert' | 'muted'
+  valueTone?: 'default' | 'attention' | 'alert' | 'muted' | 'positive'
+  /** Its own tone: a day-over-day delta is coloured, a running balance is not. */
+  valueMetaTone?: 'muted' | 'alert' | 'positive'
   onPress?: () => void
   /**
    * A mark before the title — the category disc, today. A slot rather than a
@@ -53,7 +56,14 @@ export function GroupedRow({
     attention: 'text-attention-ink',
     alert: 'text-alert-ink',
     muted: 'text-ink2',
+    positive: 'text-positive-ink',
   }[valueTone]
+
+  const metaTone = {
+    muted: 'text-ink3',
+    alert: 'text-alert-ink',
+    positive: 'text-positive-ink',
+  }[valueMetaTone]
 
   const body = (
     <View className="flex-row items-center gap-3">
@@ -76,7 +86,7 @@ export function GroupedRow({
           </Text>
           {valueMeta ? (
             <Text
-              className="mt-0.5 t-caption-sm text-ink3"
+              className={cn('mt-0.5 t-caption-sm', metaTone)}
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {valueMeta}

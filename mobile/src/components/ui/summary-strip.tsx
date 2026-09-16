@@ -16,7 +16,12 @@ export function SummaryStrip({
   items,
   className,
 }: {
-  items: { key: string; label: string; value: string; tone?: 'default' | 'attention' | 'alert' }[]
+  items: {
+    key: string
+    label: string
+    value: string
+    tone?: 'default' | 'attention' | 'alert' | 'positive'
+  }[]
   className?: string
 }) {
   return (
@@ -26,6 +31,7 @@ export function SummaryStrip({
           default: 'text-ink',
           attention: 'text-attention-ink',
           alert: 'text-alert-ink',
+          positive: 'text-positive-ink',
         }[item.tone ?? 'default']
 
         return (

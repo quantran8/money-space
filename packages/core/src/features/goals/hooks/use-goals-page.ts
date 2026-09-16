@@ -244,7 +244,11 @@ export function useGoalsPage() {
 
   function handleFormOpenChange(open: boolean) {
     setFormOpen(open)
-    if (!open) setEditingId(null)
+    if (!open) {
+      setEditingId(null)
+      // Leave the form clean rather than relying on the next open to re-seed it.
+      reset(defaultGoalFormValues)
+    }
   }
 
   async function onSubmit(values: GoalForm) {

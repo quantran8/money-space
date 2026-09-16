@@ -10,13 +10,20 @@ import {
 import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-assets-page'
 import {
   canUpdatePriceManually,
+  computeCostBasisProfitLoss,
+  isPreviousDayOf,
   isSellableAssetType,
   isWalletAssetType,
+  toneForValueChange,
 } from '@money-space/core/features/assets/model/assets'
 import { AS_OF } from '@money-space/core/features/assets/model/assets-form'
 import { formatDate } from '@money-space/core/features/debts/model/debts-form'
 import { useMembers } from '@money-space/core/features/members/hooks/use-members'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import {
+  formatPercent,
+  formatPercentSigned,
+  formatVndShort,
+} from '@money-space/core/shared/lib/format-money'
 
 import {
   ActionSheet,
@@ -200,11 +207,11 @@ export default function AssetDetailScreen() {
   const position = asset.marketPosition
   const quantity = position?.quantity ?? 0
   const currentUnitPrice = quantity > 0 ? currentValue / quantity : 0
-  const costBasis = position?.purchasePrice
-    ? position.purchasePrice * quantity
-    : (asset.calculationTerm?.principalAmount ?? currentValue)
-  const profitLoss = currentValue - costBasis
-  const profitLossPercent = costBasis > 0 ? (profitLoss / costBasis) * 100 : 0
+  const { costBasis, profitLoss, profitLossPercent } = computeCostBasisProfitLoss(
+    asset,
+    currentValue,
+  )
+  const valueChange = asset.valueChange ?? null
   const share = householdAssetTotal > 0 ? (currentValue / householdAssetTotal) * 100 : 0
   const holderName = asset.holderMemberId
     ? members.find((member) => member.id === asset.holderMemberId)?.name
@@ -303,24 +310,46 @@ export default function AssetDetailScreen() {
                       ),
                       value: `${profitLoss >= 0 ? '+' : '−'}${formatVndShort(Math.abs(profitLoss))}`,
                       // Alert only for a real loss; a gain is not "good news"
-                      // the app colours in, it is just the number.
+                      // the app colours in, it is just the number. The day
+                      // change below is the exception — see
+                      // memory/asset-valuation.md.
                       tone: (profitLoss < 0 ? 'alert' : 'default') as 'alert' | 'default',
                     },
                   ]
                 : []),
-              {
-                key: 'share',
-                label: t('assets.detail.hero.shareOfTotal'),
-                value: `${round1(share)}%`,
-              },
+              ...(isMarketPriced && valueChange
+                ? [
+                    {
+                      key: 'dayChange',
+                      label: isPreviousDayOf(valueChange.previousDate, asOf)
+                        ? t('assets.detail.hero.dayChange')
+                        : t('assets.detail.hero.changeSince', {
+                            date: displayDate(valueChange.previousDate),
+                          }),
+                      value: `${valueChange.delta > 0 ? '+' : valueChange.delta < 0 ? '−' : ''}${formatVndShort(Math.abs(valueChange.delta))}`,
+                      tone: toneForValueChange(valueChange.delta),
+                    },
+                  ]
+                : []),
             ]}
           />
 
-          {isMarketPriced && costBasis > 0 ? (
-            <RowMetaMono>
-              {`${profitLossPercent >= 0 ? '+' : '−'}${round1(Math.abs(profitLossPercent))}%`}
-            </RowMetaMono>
-          ) : null}
+          {/* The percentages behind the tiles, plus the share — which moves down
+              here so a fourth tile does not wrap the strip onto a third row.
+              `RowMeta`, not mono: the labels are Vietnamese. */}
+          <RowMeta>
+            {[
+              isMarketPriced && profitLossPercent !== null
+                ? `${t('assets.detail.hero.profitLoss')} ${formatPercentSigned(profitLossPercent)}`
+                : null,
+              valueChange && valueChange.deltaPercent !== null
+                ? `${t('assets.detail.hero.dayChange')} ${formatPercentSigned(valueChange.deltaPercent)}`
+                : null,
+              `${t('assets.detail.hero.shareOfTotal')} ${formatPercent(share)}`,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </RowMeta>
 
           {/* How the price stays current, and the switch that moves the plan's
               automation onto this asset. */}
@@ -368,7 +397,7 @@ export default function AssetDetailScreen() {
               </Money>
               {rangeDeltaPercent !== null ? (
                 <RowMetaMono>
-                  {`${rangeDeltaPercent >= 0 ? '+' : '−'}${round1(Math.abs(rangeDeltaPercent))}%`}
+                  {formatPercentSigned(rangeDeltaPercent)}
                 </RowMetaMono>
               ) : null}
 
@@ -596,9 +625,4 @@ function EventRow({ entry, actor }: { entry: AssetEventEntry; actor: string }) {
 function displayDate(iso: string): string {
   const [year, month, day] = iso.slice(0, 10).split('-')
   return year && month && day ? `${day}/${month}/${year}` : ''
-}
-
-/** One decimal place, comma separator — never more precision than the input. */
-function round1(value: number): string {
-  return (Math.round(value * 10) / 10).toString().replace('.', ',')
 }

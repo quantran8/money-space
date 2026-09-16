@@ -9,11 +9,16 @@ import {
   sectionForAsset,
   sectionMatchesLiquidity,
   sectionOrder,
+  toneForValueChange,
   type Asset,
   type AssetLiquidity,
 } from '@money-space/core/features/assets/model/assets'
 import type { MemberItem } from '@money-space/core/features/members/model/members.types'
-import { formatVndShort } from '@money-space/core/shared/lib/format-money'
+import {
+  formatPercentSigned,
+  formatVndCellSigned,
+  formatVndShort,
+} from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 import {
@@ -153,6 +158,18 @@ export function AssetsListSection({
       (asset.holderMemberId ? memberNameById.get(asset.holderMemberId) : undefined) ??
       t('assets.demo.householdOwner')
     const freshness = formatFreshness(asset.valueUpdatedAt, t)
+    const change = asset.valueChange ?? null
+    // Percent, not đồng: it compares across rows of very different sizes.
+    const dayChange = change
+      ? change.deltaPercent === null
+        ? formatVndCellSigned(change.delta)
+        : formatPercentSigned(change.deltaPercent)
+      : null
+    const dayChangeTone = change
+      ? ({ positive: 'positive', alert: 'alert', default: 'muted' } as const)[
+          toneForValueChange(change.delta)
+        ]
+      : 'muted'
 
     return (
       <GroupedRow
@@ -190,8 +207,12 @@ export function AssetsListSection({
         // past tense rather than as a live holding. Staleness is NOT toned here:
         // it qualifies the figure's AGE, which the meta line already says — an
         // amber amount would read as "this money needs attention".
-        valueMeta={isSold ? t('options.assetStatus.sold') : undefined}
+        // Sold wins the slot: a live delta on a closed holding would say it is
+        // still moving. The delta's tone is about DIRECTION, not attention,
+        // which is why colour is allowed here where amber is not.
+        valueMeta={isSold ? t('options.assetStatus.sold') : (dayChange ?? undefined)}
         valueTone={isSold ? 'muted' : 'default'}
+        valueMetaTone={isSold || !change ? 'muted' : dayChangeTone}
         right={
           <ActionSheet
             title={asset.name}

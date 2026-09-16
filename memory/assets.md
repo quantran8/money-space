@@ -163,3 +163,23 @@ market-priced asset with no quote has no figure the household could check.
 
 `ForecastLiquidSource` carries `type` for this; the forecast bundle already
 loads every active asset, so it costs no extra query.
+
+## The net-worth strip leads with one figure
+
+The summary strip at the top of Tài sản & Nợ used to be three metrics of equal
+weight — assets, debt, net worth — side by side. Two of them are the arithmetic
+of the third, so the block asked the household to do the subtraction before it
+could answer the question it exists to answer.
+
+Net worth is the single hero figure. Its two operands stay visible as tiles
+beneath it rather than disappearing, because "341tr" means something different
+when it is 341tr of assets against no debt than against 48tr of debt — but they
+are demoted, not co-equal. The space that bought back goes to the liquidity
+split beside it: how much of the total is actually reachable, which is the one
+thing the headline cannot tell you.
+
+The day-change pill is two-sided. A drop is not an error state, so it takes
+`--alert-ink` on `--alert-tint` with a down-arrow, the same weight the rise
+gets — see the tone rule in [[asset-valuation]]. The figure is scale, not exact
+(`formatVndScale`): nothing here is reconciled against a ledger, and an exact
+dong figure beside a hero invites a reconciliation the strip cannot support.

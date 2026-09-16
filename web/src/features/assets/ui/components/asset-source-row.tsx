@@ -12,9 +12,14 @@ import { AssetTypeIcon } from '@/features/assets/ui/components/asset-type-icon'
 import {
   computeCurrentValue,
   isSellableAssetType,
+  toneForValueChange,
   type Asset,
 } from '@money-space/core/features/assets/model/assets'
-import { formatVndCell } from '@money-space/core/shared/lib/format-money'
+import {
+  formatPercentSigned,
+  formatVndCell,
+  formatVndCellSigned,
+} from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 type AssetSourceRowProps = {
@@ -59,6 +64,19 @@ export function AssetSourceRow({
   // INTO — a balance asset has none.
   const canBuyMore = !isSold && !!asset.marketPosition
   const freshness = formatFreshness(asset.valueUpdatedAt, t)
+  const change = asset.valueChange ?? null
+  // Percent, not đồng: it compares across rows of very different sizes. Falls
+  // back to the amount when there is no base to divide by.
+  const dayChange = change
+    ? change.deltaPercent === null
+      ? formatVndCellSigned(change.delta)
+      : formatPercentSigned(change.deltaPercent)
+    : null
+  const dayChangeTone = change
+    ? { positive: 'text-positive-ink', alert: 'text-alert-ink', default: 'text-ink3' }[
+        toneForValueChange(change.delta)
+      ]
+    : undefined
 
   return (
     <div className="group grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-x-3 rounded-control py-3 transition hover:bg-canvas sm:px-2">
@@ -90,13 +108,21 @@ export function AssetSourceRow({
       </button>
 
       <div className="flex items-center gap-1">
-        <span
-          className={cn(
-            'num whitespace-nowrap t-body-sm font-medium',
-            isSold && 'text-ink3 line-through',
-          )}
-        >
-          {value === null ? t('assets.list.priceUnavailable') : formatVndCell(value)}
+        <span className="flex flex-col items-end">
+          <span
+            className={cn(
+              'num whitespace-nowrap t-body-sm font-medium',
+              isSold && 'text-ink3 line-through',
+            )}
+          >
+            {value === null ? t('assets.list.priceUnavailable') : formatVndCell(value)}
+          </span>
+          {/* A sold holding is history; a live delta on it would say otherwise. */}
+          {dayChange && !isSold ? (
+            <span className={cn('num whitespace-nowrap t-caption', dayChangeTone)}>
+              {dayChange}
+            </span>
+          ) : null}
         </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

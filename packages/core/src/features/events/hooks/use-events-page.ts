@@ -528,6 +528,10 @@ export function useEventsPage() {
       setQuickAction(null)
       setShowMoreDetails(false)
       setEditingEventId(null)
+      // Clears `isDirty` too, which the seeding effect above refuses to run
+      // through. Without it the form stays dirty forever after the first
+      // submit and every later open kept the previous entry.
+      resetActual(actualDefaults)
     }
   }
 

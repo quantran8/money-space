@@ -445,6 +445,84 @@ export function computeCurrentValue(asset: Asset, asOf: string): number | null {
   }
 }
 
+/**
+ * Today's rate for the position's own currency, so a USD cost basis can be
+ * compared against a đồng `currentValue`. `1` for a VND position, `null` when
+ * no native unit price is known.
+ *
+ * `currentValue / (quantity × unit price)`: the server computed that value from
+ * that very price, so the ratio IS the rate it used.
+ */
+export function computePositionFxToVnd(
+  asset: Asset,
+  currentValue: number,
+): number | null {
+  const position = asset.marketPosition
+  if (!position || position.quoteCurrency === 'VND') return 1
+
+  const quantity = position.quantity ?? 0
+  const nativeUnit =
+    position.nativeMarketPrice?.price ??
+    (position.marketPriceCurrency && position.marketPriceCurrency !== 'VND'
+      ? position.marketPrice
+      : undefined) ??
+    position.lastPrice
+  if (!nativeUnit || quantity <= 0 || currentValue <= 0) return null
+  return currentValue / (quantity * nativeUnit)
+}
+
+/** What the household paid, in đồng. Falls back to the value itself. */
+export function computeCostBasis(asset: Asset, currentValue: number): number {
+  const position = asset.marketPosition
+  const fxToVnd = computePositionFxToVnd(asset, currentValue)
+  if (position?.purchasePrice && fxToVnd !== null) {
+    return position.purchasePrice * (position.quantity ?? 0) * fxToVnd
+  }
+  return asset.calculationTerm?.principalAmount ?? currentValue
+}
+
+/**
+ * Profit/loss against the cost basis — the long-run figure, not the day's move.
+ * `profitLossPercent` is null when there is no cost to measure against.
+ */
+export function computeCostBasisProfitLoss(
+  asset: Asset,
+  currentValue: number,
+): { costBasis: number; profitLoss: number; profitLossPercent: number | null } {
+  const costBasis = computeCostBasis(asset, currentValue)
+  const profitLoss = currentValue - costBasis
+  return {
+    costBasis,
+    profitLoss,
+    profitLossPercent: costBasis > 0 ? (profitLoss / costBasis) * 100 : null,
+  }
+}
+
+/**
+ * Is `previousDate` the day right before `asOf`? Decides whether a day-change
+ * line may say "hôm qua" or must name the date — markets close at weekends, so
+ * the baseline is often older. See memory/asset-valuation.md.
+ */
+export function isPreviousDayOf(previousDate: string, asOf: string): boolean {
+  const previous = Date.parse(`${previousDate}T00:00:00Z`)
+  const current = Date.parse(`${asOf.slice(0, 10)}T00:00:00Z`)
+  if (Number.isNaN(previous) || Number.isNaN(current)) return false
+  return current - previous === 86_400_000
+}
+
+/**
+ * Colour for a signed day-over-day figure. The one place the assets feature
+ * colours a gain: see memory/asset-valuation.md.
+ */
+export function toneForValueChange(
+  delta: number,
+): 'positive' | 'alert' | 'default' {
+  if (delta > 0) return 'positive'
+  if (delta < 0) return 'alert'
+  // Unchanged is not a gain; colouring it would claim one.
+  return 'default'
+}
+
 /** Expected value at maturity for a formula asset, for display (§15). */
 export function computeMaturityValue(term: CalculationTerm): number | null {
   if (!term.maturityDate) return null

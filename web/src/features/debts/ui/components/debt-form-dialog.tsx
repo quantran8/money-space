@@ -232,7 +232,23 @@ type DebtFormDialogProps = {
   pasteAmountFromClipboard: () => void
 }
 
-export function DebtFormDialog({
+/**
+ * Keyed on each open so the wizard state (step, furthest step, touched flags)
+ * is discarded by the remount. Closing after a successful save happens in the
+ * page hook and never reaches this component's own close handler.
+ */
+export function DebtFormDialog(props: DebtFormDialogProps) {
+  const [openCount, setOpenCount] = useState(0)
+  const [wasOpen, setWasOpen] = useState(props.open)
+  // Adjusting state during render, the supported way to reset on a prop change.
+  if (wasOpen !== props.open) {
+    setWasOpen(props.open)
+    if (!props.open) setOpenCount((count) => count + 1)
+  }
+  return <DebtFormDialogContent key={openCount} {...props} />
+}
+
+function DebtFormDialogContent({
   open,
   onOpenChange,
   editingId,
