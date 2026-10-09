@@ -312,6 +312,7 @@ export function AssetFormDialog({
                 control={control}
                 errors={errors}
                 walletOptions={walletOptions}
+                isLoan={selectedType === 'loan_receivable'}
                 t={t}
               />
             ) : null}
@@ -574,14 +575,17 @@ function AcquisitionFields({
   control,
   errors,
   walletOptions,
+  isLoan,
   t,
 }: {
   control: Control
   errors: Errors
   walletOptions: WalletOption[]
+  isLoan: boolean
   t: Translate
 }) {
   const acquisition = useWatch({ control, name: 'acquisition' })
+  const loanKey = (key: string) => (isLoan ? `assets.form.loan.${key}` : `assets.form.${key}`)
 
   return (
     <>
@@ -594,8 +598,11 @@ function AcquisitionFields({
               value={field.value}
               onChange={field.onChange}
               options={[
-                { value: 'owned', label: t('assets.form.acquisitionOwned') },
-                { value: 'purchased', label: t('assets.form.acquisitionPurchased') },
+                { value: 'owned', label: t(loanKey('acquisitionOwned')) },
+                {
+                  value: 'purchased',
+                  label: t(isLoan ? 'assets.form.loan.acquisitionLent' : 'assets.form.acquisitionPurchased'),
+                },
               ]}
             />
           )}
@@ -603,7 +610,7 @@ function AcquisitionFields({
       </Field>
 
       {acquisition === 'purchased' ? (
-        <Field label={t('assets.form.payFrom')} error={errors.fundingAssetId?.message}>
+        <Field label={t(loanKey('payFrom'))} error={errors.fundingAssetId?.message}>
           <div className={cn(fieldShell, errors.fundingAssetId && 'border-alert-ink')}>
             <Controller
               control={control}
@@ -611,7 +618,7 @@ function AcquisitionFields({
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className={fieldControlReset}>
-                    <SelectValue placeholder={t('assets.form.payFromPlaceholder')} />
+                    <SelectValue placeholder={t(loanKey('payFromPlaceholder'))} />
                   </SelectTrigger>
                   <SelectContent>
                     {walletOptions.map((option) => (

@@ -48,6 +48,7 @@ export type RecordType =
   | 'transfer'
   | 'asset_purchase'
   | 'asset_sale'
+  | 'loan_collection'
   | 'payment_paid'
   | 'debt_update'
   | 'adjustment'
@@ -713,6 +714,7 @@ export function buildActualSchema() {
         'transfer',
         'asset_purchase',
         'asset_sale',
+        'loan_collection',
         'payment_paid',
         'debt_update',
         'adjustment',

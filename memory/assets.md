@@ -129,6 +129,7 @@ CRUD over `Asset`, with a derived current value. On create, `valuationMode` defa
   - Entry points: the asset form, and the **"Mua tài sản"** quick action on the
     events page — which opens that form already set to "vừa mua", mirroring
     "Bán tài sản". See [[money-events]].
+- **Loan receivable** — "Vừa cho vay" trừ ví theo gốc; "Đánh dấu đã trả" ghi `loan_collection` và đóng khoản vay (`closed`, giá trị 0). See [[loan-receivable]].
 - **Delete** = soft-delete (`deletedAt`) + also delete the asset's valuations + unlink the asset from any money events.
 - **Status / lifecycle**: `status` (`active` | `sold` | `closed`, default `active`) + `soldAt`. Distinct from `deletedAt`: a **sold** asset is kept (quantity/value 0) for history, excluded from the liquidity buckets and net worth, but still listed (with a "Đã bán" badge; the list dropdown shows a "Bán" action for sellable, still-active assets). Selling is driven by an `asset_sale` money event — see [[asset-sale]].
 

@@ -430,6 +430,7 @@ export function computeCurrentValue(asset: Asset, asOf: string): number | null {
   if (typeof asset.currentValue === 'number') {
     return asset.currentValue
   }
+  if (asset.status === 'closed') return 0
 
   switch (asset.valuationMode) {
     case 'manual':

@@ -169,6 +169,7 @@ const purchasableTypes: ReadonlySet<AssetType> = new Set<AssetType>([
   'real_estate',
   'foreign_currency',
   'saving_deposit',
+  'loan_receivable',
 ])
 
 export function canBePurchased(type: AssetType): boolean {
@@ -662,12 +663,17 @@ export function buildAssetSchema(
           ctx.addIssue({
             path: ['fundingAssetId'],
             code: 'custom',
-            message: t('assets.form.payFromInsufficient', {
-              // Exact: the check is exact, so this fires on a one-đồng shortfall. The
-      // compact scale printed the same figure as the total it rejected, leaving
-      // the user no way to see how much they are short.
-      balance: formatVndExact(balance),
-            }),
+            message: t(
+              values.type === 'loan_receivable'
+                ? 'assets.form.loan.payFromInsufficient'
+                : 'assets.form.payFromInsufficient',
+              {
+                // Exact: the check is exact, so this fires on a one-đồng shortfall. The
+                // compact scale printed the same figure as the total it rejected, leaving
+                // the user no way to see how much they are short.
+                balance: formatVndExact(balance),
+              },
+            ),
           })
         }
       }
