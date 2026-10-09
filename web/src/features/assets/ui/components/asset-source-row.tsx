@@ -30,6 +30,7 @@ type AssetSourceRowProps = {
   onOpen?: (assetId: string) => void
   onEdit: (assetId: string) => void
   onSell?: (assetId: string) => void
+  onCollectLoan?: (asset: Asset) => void
   /** Buy more of a held position — re-averages its cost basis. */
   onBuyMore?: (assetId: string) => void
   onDelete: (assetId: string) => void
@@ -53,6 +54,7 @@ export function AssetSourceRow({
   onOpen,
   onEdit,
   onSell,
+  onCollectLoan,
   onBuyMore,
   onDelete,
 }: AssetSourceRowProps) {
@@ -63,6 +65,8 @@ export function AssetSourceRow({
   // Buying more re-averages a cost basis, so it needs a position to average
   // INTO — a balance asset has none.
   const canBuyMore = !isSold && !!asset.marketPosition
+  const canCollectLoan =
+    asset.type === 'loan_receivable' && asset.status !== 'closed' && !!asset.calculationTerm
   const freshness = formatFreshness(asset.valueUpdatedAt, t)
   const change = asset.valueChange ?? null
   // Percent, not đồng: it compares across rows of very different sizes. Falls
@@ -150,6 +154,12 @@ export function AssetSourceRow({
               <DropdownMenuItem onSelect={() => onSell(asset.id)}>
                 <HandCoins className="size-4" />
                 {t('assets.sale.action')}
+              </DropdownMenuItem>
+            ) : null}
+            {canCollectLoan && onCollectLoan ? (
+              <DropdownMenuItem onSelect={() => onCollectLoan(asset)}>
+                <HandCoins className="size-4" />
+                {t('assets.loanCollection.action')}
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem

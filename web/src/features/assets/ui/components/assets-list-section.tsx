@@ -39,6 +39,7 @@ type AssetsListSectionProps = {
   onOpen: (assetId: string) => void
   onEdit: (assetId: string) => void
   onSell: (assetId: string) => void
+  onCollectLoan: (asset: Asset) => void
   onBuyMore: (assetId: string) => void
   onDelete: (assetId: string) => void
 }
@@ -76,6 +77,7 @@ export function AssetsListSection({
   onOpen,
   onEdit,
   onSell,
+  onCollectLoan,
   onBuyMore,
   onDelete,
 }: AssetsListSectionProps) {
@@ -223,6 +225,7 @@ export function AssetsListSection({
                       onOpen={onOpen}
                       onEdit={onEdit}
                       onSell={onSell}
+                      onCollectLoan={onCollectLoan}
                       onBuyMore={onBuyMore}
                       onDelete={onDelete}
                     />
@@ -244,6 +247,7 @@ function SourceRow({
   onOpen,
   onEdit,
   onSell,
+  onCollectLoan,
   onBuyMore,
   onDelete,
 }: {
@@ -253,6 +257,7 @@ function SourceRow({
   onOpen: (assetId: string) => void
   onEdit: (assetId: string) => void
   onSell: (assetId: string) => void
+  onCollectLoan: (asset: Asset) => void
   onBuyMore: (assetId: string) => void
   onDelete: (assetId: string) => void
 }) {
@@ -268,6 +273,7 @@ function SourceRow({
       onOpen={onOpen}
       onEdit={onEdit}
       onSell={onSell}
+      onCollectLoan={onCollectLoan}
       onBuyMore={onBuyMore}
       onDelete={onDelete}
     />

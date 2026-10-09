@@ -26,6 +26,8 @@ export type MoneyEventItem = {
     // moved, this says the QUANTITY did. Reporting a re-count as a price move is
     // what made correcting 10 chỉ to 1 chỉ look like a market loss.
     | 'asset_quantity_adjustment'
+    // A loan_receivable repaid in full into a wallet. See memory/loan-receivable.md.
+    | 'loan_collection'
     | 'payment_paid'
       | 'debt_update'
     | 'adjustment'

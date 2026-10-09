@@ -1,4 +1,4 @@
-import { ChevronLeft, Pencil, Plus, RefreshCw, Timeline } from 'lucide-react'
+import { ChevronLeft, HandCoins, Pencil, Plus, RefreshCw, Timeline } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -31,6 +31,8 @@ import { AssetPriceUpdateDialog } from '@/features/assets/ui/components/asset-pr
 import { AssetValueChart } from '@/features/assets/ui/components/asset-value-chart'
 import { SavingWithdrawalPanel } from '@/features/assets/ui/components/saving-withdrawal-panel'
 import { SavingWithdrawDialog } from '@/features/assets/ui/components/saving-withdraw-dialog'
+import { LoanCollectionDialog } from '@/features/assets/ui/components/loan-collection-dialog'
+import { useLoanCollection } from '@money-space/core/features/assets/hooks/use-loan-collection'
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { notify } from '@money-space/core/shared/notify'
 import { EVENT_TYPE_ICONS } from '@/features/events/ui/components/event-type-icon'
@@ -216,6 +218,7 @@ export function AssetDetailPage() {
   const { members } = useMembers()
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const { withdrawSavingDeposit } = useAssets()
+  const loanCollection = useLoanCollection()
 
   const {
     total: householdAssetTotal,
@@ -350,6 +353,9 @@ export function AssetDetailPage() {
   // a household makes, and the dialog prices it before they commit.
   const canWithdraw =
     !isSold && asset.type === 'saving_deposit' && !!asset.calculationTerm
+  const isLoan = asset.type === 'loan_receivable'
+  const isRepaidLoan = isLoan && asset.status === 'closed'
+  const canCollectLoan = isLoan && asset.status !== 'closed' && !!asset.calculationTerm
   const position = asset.marketPosition
   const quantity = position?.quantity ?? 0
   const currentUnitPrice = quantity > 0 ? currentValue / quantity : 0
@@ -476,6 +482,11 @@ export function AssetDetailPage() {
                 {t('options.assetStatus.sold')}
               </span>
             ) : null}
+            {isRepaidLoan ? (
+              <span className="mt-2 inline-block rounded-full bg-wash px-2 py-1 t-caption-sm font-medium text-ink2">
+                {t('assets.loanCollection.badge')}
+              </span>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -485,6 +496,12 @@ export function AssetDetailPage() {
               <Button onClick={() => openPurchase(asset.id)}>
                 <Plus className="size-[17px]" strokeWidth={1.75} />
                 {t('assets.purchase.title')}
+              </Button>
+            ) : null}
+            {canCollectLoan ? (
+              <Button onClick={() => loanCollection.openCollection(asset)}>
+                <HandCoins className="size-[17px]" strokeWidth={1.75} />
+                {t('assets.loanCollection.action')}
               </Button>
             ) : null}
             {canWithdraw ? (
@@ -929,6 +946,7 @@ export function AssetDetailPage() {
         />
       ) : null}
 
+      <LoanCollectionDialog flow={loanCollection} />
       {canWithdraw && asset.calculationTerm ? (
         <SavingWithdrawDialog
           open={withdrawOpen}

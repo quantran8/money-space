@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   Circle,
   Gem,
+  HandCoins,
   Landmark,
   ReceiptText,
   RefreshCw,
@@ -36,6 +37,7 @@ export const EVENT_TYPE_ICONS: Record<EventTypeKey, LucideIcon> = {
   asset_update: RefreshCw,
   // Scales, not arrows: a corrected holding is a re-weighing, not money moving.
   asset_quantity_adjustment: Scale,
+  loan_collection: HandCoins,
   payment_paid: ReceiptText,
   debt_update: Landmark,
   adjustment: RefreshCw,

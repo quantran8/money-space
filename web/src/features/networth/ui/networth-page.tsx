@@ -11,6 +11,8 @@ import { useAssetsPage } from '@money-space/core/features/assets/hooks/use-asset
 import { AssetFormDialog } from '@/features/assets/ui/components/asset-form-dialog'
 import { AssetPurchaseDialog } from '@/features/assets/ui/components/asset-purchase-dialog'
 import { AssetSaleDialog } from '@/features/assets/ui/components/asset-sale-dialog'
+import { LoanCollectionDialog } from '@/features/assets/ui/components/loan-collection-dialog'
+import { useLoanCollection } from '@money-space/core/features/assets/hooks/use-loan-collection'
 import { AssetsListSection } from '@/features/assets/ui/components/assets-list-section'
 import { AssetsSummaryStrip } from '@/features/assets/ui/components/assets-summary-strip'
 import { AS_OF } from '@money-space/core/features/assets/model/assets-form'
@@ -52,6 +54,7 @@ export function NetWorthPage() {
   const { debts: allDebts } = useDebts()
   const { members } = useMembers()
   const assetsPage = useAssetsPage()
+  const loanCollection = useLoanCollection()
   const debtsPage = useDebtsPage()
 
   const {
@@ -155,6 +158,7 @@ export function NetWorthPage() {
             onOpen={(assetId) => navigate(`/assets/${assetId}`)}
             onEdit={openEdit}
             onSell={openSale}
+            onCollectLoan={loanCollection.openCollection}
             onBuyMore={openPurchase}
             onDelete={setDeleteId}
           />
@@ -221,6 +225,8 @@ export function NetWorthPage() {
         isSubmitting={sale.isSubmitting}
         onSubmit={sale.submit}
       />
+
+      <LoanCollectionDialog flow={loanCollection} />
 
       {/* §22.11 — "Gỡ nguồn tiền", not "Xoá tài khoản", and the consequence
           stated in money. Confirmed by a small dialog, never by retyping. */}

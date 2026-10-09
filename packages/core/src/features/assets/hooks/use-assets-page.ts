@@ -117,6 +117,8 @@ export function useAssetsPage() {
   const filteredAssets = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return assets.filter((asset) => {
+      // A repaid loan is history, not a source. See memory/loan-receivable.md.
+      if (asset.status === 'closed') return false
       if (liquidityFilter !== 'all' && asset.liquidity !== liquidityFilter) return false
       if (!needle) return true
       return (
