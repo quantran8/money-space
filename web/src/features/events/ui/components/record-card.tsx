@@ -1,4 +1,4 @@
-import { MoreVertical, User, Wallet } from 'lucide-react'
+import { Landmark, MoreVertical, User, Wallet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -111,6 +111,12 @@ export function RecordCard({
               <span className="flex min-w-0 items-center gap-1 t-caption text-ink3">
                 <Wallet className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
                 <span className="truncate">{relatedName}</span>
+              </span>
+            ) : null}
+            {record.fromBank ? (
+              <span className="flex items-center gap-1 t-caption text-ink3">
+                <Landmark className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+                {t('bankSync.originBadge')}
               </span>
             ) : null}
           </div>

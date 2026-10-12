@@ -19,6 +19,7 @@ export const SERVER_PAYWALL_REASONS = [
   'forecast_horizon',
   'history',
   'export',
+  'bank_sync',
   'expired',
   'general',
 ] as const

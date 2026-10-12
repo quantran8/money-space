@@ -23,6 +23,8 @@ import { RequireHousehold } from '@/features/onboarding/ui/require-household'
 import { RequireNoHousehold } from '@/features/onboarding/ui/require-no-household'
 import { RouteErrorBoundary } from '@/app/route-error-boundary'
 import { SubscriptionPage } from '@/features/billing/ui/subscription-page'
+import { BankSyncPage } from '@/features/bank-sync/ui/bank-sync-page'
+import { BankInboxPage } from '@/features/bank-sync/ui/bank-inbox-page'
 
 /**
  * `/assets` and `/debts` → `/networth`, carrying navigation state across.
@@ -126,6 +128,8 @@ export const router = createBrowserRouter([
       // Its own route, not a sixth card: the settings page is long, and a
       // route can be linked to from the paywall and from a message.
       { path: 'settings/subscription', element: <SubscriptionPage /> },
+      { path: 'settings/bank-sync', element: <BankSyncPage /> },
+      { path: 'bank-inbox', element: <BankInboxPage /> },
       // Not a nav item — the bar is pinned at five (§14.9). Reached from Home.
       { path: 'activity', element: <ActivityPage /> },
       // v3.1 redirects (Phase 10): the old routes are gone, not aliased.

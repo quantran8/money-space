@@ -13,6 +13,7 @@ import { deleteHousehold } from '@money-space/core/features/settings/api/setting
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { getErrorMessage } from '@money-space/core/shared/lib/get-error-message'
 import { CategoriesCard } from '@/features/settings/ui/components/categories-card'
+import { BankSyncCard } from '@/features/bank-sync/ui/components/bank-sync-card'
 import { FeedbackCard } from '@/features/settings/ui/components/feedback-card'
 import {
   DangerCard,
@@ -143,6 +144,8 @@ export function SettingsPage() {
         <CategoriesCard />
 
         {!isSettingsLoading ? <OtherSettingsCard form={settingsForm} /> : null}
+
+        <BankSyncCard />
 
         <DataCard />
 

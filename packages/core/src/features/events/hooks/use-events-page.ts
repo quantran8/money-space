@@ -230,6 +230,7 @@ export function useEventsPage() {
       // system-generated event (saving interest) correctly shows.
       ownerMemberId: event.createdById ? memberByProfileId.get(event.createdById)?.id : undefined,
       ownerName: event.createdById ? memberByProfileId.get(event.createdById)?.name : undefined,
+      fromBank: event.origin === 'bank_notification',
     }))
 
     return actualRecords.sort((left, right) => {

@@ -58,4 +58,5 @@ Each file is a focused Markdown doc. Link related files with `[[name]]` (the fil
 - [snapshots-and-networth.md](snapshots-and-networth.md) — net-worth history & attention items
 - [market-data.md](market-data.md) — market prices & FX reference data
 - [settings-and-sharing.md](settings-and-sharing.md) — household config, reminders, sharing
+- [bank-sync.md](bank-sync.md) — bank notification → inbox → money event; device tokens, linked accounts
 - [auth.md](auth.md) — authentication & session gating

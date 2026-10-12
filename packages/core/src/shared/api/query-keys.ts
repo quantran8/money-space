@@ -116,6 +116,16 @@ export const queryKeys = {
   forecastBundleAll: (householdId: string) =>
     ['households', householdId, 'forecast-bundle'] as const,
   freshness: (householdId: string) => ['households', householdId, 'data-freshness'] as const,
+  /** Bank notification sync; one prefix so any write refreshes all of it. */
+  bankSync: (householdId: string) => ['households', householdId, 'bank-sync'] as const,
+  bankCredentials: (householdId: string) =>
+    ['households', householdId, 'bank-sync', 'credentials'] as const,
+  bankSources: (householdId: string) =>
+    ['households', householdId, 'bank-sync', 'sources'] as const,
+  bankEvents: (householdId: string, tab: string) =>
+    ['households', householdId, 'bank-sync', 'events', tab] as const,
+  bankEventCounts: (householdId: string) =>
+    ['households', householdId, 'bank-sync', 'events', 'counts'] as const,
   events: (householdId: string, month?: string) =>
     ['households', householdId, 'events', month ?? 'all'] as const,
   eventsSummary: (householdId: string, month?: string) =>

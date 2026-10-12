@@ -83,6 +83,7 @@ export type LocalMoneyEvent = {
   /** Profile id of whoever recorded it, carried from the API for the timeline to
    *  resolve against the household's members. See `MoneyEventItem.createdById`. */
   createdById?: string
+  origin?: 'manual' | 'bank_notification'
 }
 
 /**
@@ -124,6 +125,8 @@ export type FinancialRecordItem = {
   ownerName?: string
   frequency?: 'once' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
   note?: string
+  /** True when the row was posted from a bank notification. */
+  fromBank?: boolean
 }
 
 export type TimelineGroupKey = 'upcoming' | 'today' | 'week' | 'month' | 'older'
@@ -529,6 +532,7 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
     // Who recorded it. Carried as the raw profile id — naming the person is the
     // timeline's job, against the member list it already holds.
     createdById: event.createdById,
+    origin: event.origin,
   }
 }
 
