@@ -7,6 +7,7 @@ import {
   House,
   LogOut,
   PanelLeft,
+  Inbox,
   Settings,
   Target,
   Timeline,
@@ -54,6 +55,7 @@ import { useSpaceSwitcher } from '@money-space/core/features/settings/hooks/use-
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
 import { sourceForPathname } from '@money-space/core/features/whatif/model/whatif-source'
+import { useBankInboxCounts } from '@money-space/core/features/bank-sync/hooks/use-bank-inbox'
 
 type NavItem = {
   to: string
@@ -375,7 +377,15 @@ function SidebarHead() {
   )
 }
 
+// Shown only while something waits, so households not using bank sync never see it.
+const BANK_INBOX_ITEM: NavItem = { to: '/bank-inbox', labelKey: 'nav.bankInbox', icon: Inbox }
+
 function AppSidebar() {
+  const { total: pendingBankEvents } = useBankInboxCounts()
+  const items =
+    pendingBankEvents > 0
+      ? [...NAV_ITEMS.slice(0, -1), BANK_INBOX_ITEM, NAV_ITEMS[NAV_ITEMS.length - 1]]
+      : NAV_ITEMS
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="py-4">
@@ -385,7 +395,7 @@ function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {NAV_ITEMS.map((item) => (
+            {items.map((item) => (
               <NavMenuItem key={item.to} item={item} />
             ))}
           </SidebarMenu>

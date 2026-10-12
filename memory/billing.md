@@ -115,3 +115,8 @@ asset-sale funding step, and recording gold/stocks/crypto on the balance sheet.
 The first three are the core loop; the last is what a Vietnamese household opens
 the app for. What Premium sells is *automation and decisions*, not the right to
 keep records.
+
+**Bank sync is Premium** (`limits.bankSync`, paywall reason `bank_sync`): creating
+a device code and linking an account go through `usePremiumAction`. Listing,
+revoking and the inbox stay open after a lapse so a household can clean up.
+See [[bank-sync]].

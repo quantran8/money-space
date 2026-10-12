@@ -52,4 +52,6 @@ export type MoneyEventItem = {
    * for events a person actually recorded.
    */
   createdById?: string
+  /** `bank_notification` rows came from the bank inbox. See memory/bank-sync.md. */
+  origin?: 'manual' | 'bank_notification'
 }

@@ -20,6 +20,8 @@ export type PlanLimits = {
   forecastHorizons: number[]
   historyMonths: number | null
   exportData: boolean
+  /** Bank notification sync. See memory/bank-sync.md. */
+  bankSync: boolean
 }
 
 export type EntitlementUsage = {
