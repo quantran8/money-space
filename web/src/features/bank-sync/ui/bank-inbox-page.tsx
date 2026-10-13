@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@money-space/core/shared/lib/utils'
 import { BankEventRow } from '@/features/bank-sync/ui/components/bank-event-row'
 import { EventDetailDialog } from '@/features/bank-sync/ui/components/event-detail-dialog'
-import { WalletDriftNotice } from '@/features/bank-sync/ui/components/wallet-drift-notice'
 import {
   useBankInbox,
   useBankInboxCounts,
@@ -41,9 +40,6 @@ export function BankInboxPage() {
     <div className="s-page">
       <CompactPageHeader title={t('bankSync.inbox.title')} />
       <p className="mt-1 max-w-[680px] t-body-sm text-ink2">{t('bankSync.inbox.subtitle')}</p>
-      <div className="mt-3">
-        <WalletDriftNotice />
-      </div>
 
       <div role="tablist" className="s-head-body flex flex-wrap gap-2">
         {TABS.map((key) => (

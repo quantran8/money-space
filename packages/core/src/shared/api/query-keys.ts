@@ -126,8 +126,6 @@ export const queryKeys = {
     ['households', householdId, 'bank-sync', 'events', tab] as const,
   bankEventCounts: (householdId: string) =>
     ['households', householdId, 'bank-sync', 'events', 'counts'] as const,
-  bankWalletDrift: (householdId: string) =>
-    ['households', householdId, 'bank-sync', 'wallet-drift'] as const,
   cashflowLinkCandidates: (householdId: string, eventId: string, q: string) =>
     ['households', householdId, 'cashflow-events', eventId, 'link-candidates', q] as const,
   cashflowSettlements: (householdId: string, eventId: string) =>
