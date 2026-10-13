@@ -34,9 +34,8 @@ backend `memory/bank-sync.md`. Premium (`bank_sync`) — [[billing]].
 - **Home có card "Từ ngân hàng · cần xác nhận"** (`bank-review-section`), đặt ngay
   dưới card Quá hạn, chỉ tab `review` (REVIEW + FAILED). Không có gì chờ thì
   card biến mất — như Quá hạn, đây là lời gọi hành động chứ không phải thông tin.
-  Tối đa 3 dòng, bấm mở cùng `EventDetailDialog` với hộp thư. Cảnh báo lệch số
-  dư (`WalletDriftNotice`) nằm chung card, phía trên; card hiện khi có một
-  trong hai. Tab `unmapped` /
+  Tối đa 3 dòng, bấm mở cùng `EventDetailDialog` với hộp thư. Không có cảnh báo
+  lệch số dư: backend tự đồng bộ ví theo ngân hàng. Tab `unmapped` /
   `parse_failed` không lên Home: cần cài đặt nguồn, không phải xác nhận.
 - Dòng sự kiện có `origin = bank_notification` hiện nhãn "Từ ngân hàng"; note
   là nội dung thông báo của ngân hàng, số tài khoản đã được server che còn 4

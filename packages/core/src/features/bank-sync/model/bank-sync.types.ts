@@ -91,19 +91,6 @@ export type BankResolvePayload =
   | { action: 'replace_manual'; assetId?: string; cashflowEventId: string }
   | { action: 'ignore' }
 
-/** Bank-reported balance vs the ledger right after the same transaction. */
-export type WalletDrift = {
-  assetId: string
-  assetName: string
-  bankEventId: string
-  observedAt: string
-  timeSource: string | null
-  reportedBalance: number
-  ledgerBalance: number
-  drift: number
-  suggestedValue: number
-}
-
 export type BankEventPage = {
   items: BankNotificationEvent[]
   nextCursor: string | null

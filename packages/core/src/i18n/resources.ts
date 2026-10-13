@@ -1708,12 +1708,6 @@ export const resources = {
           noLink: 'Không gắn',
           note: 'Nội dung',
         },
-        drift: {
-          badge: 'Lệch {{amount}} so với ngân hàng',
-          description: 'Ngân hàng báo số dư {{reported}} lúc {{time}}, sổ ghi {{ledger}}. Có thể do thiếu một thông báo, hoặc một khoản vừa ghi tay vừa có giao dịch ngân hàng.',
-          adjust: 'Cập nhật theo ngân hàng',
-          adjusted: 'Đã cập nhật số dư',
-        },
       },
       upcoming: {
         rowActions: {
@@ -5518,12 +5512,6 @@ export const resources = {
           linkTo: 'Link to a scheduled item',
           noLink: 'No link',
           note: 'Note',
-        },
-        drift: {
-          badge: '{{amount}} off from the bank',
-          description: 'The bank reported {{reported}} at {{time}}; the ledger shows {{ledger}}. A notification may be missing, or one item was entered by hand and also arrived from the bank.',
-          adjust: 'Update to the bank balance',
-          adjusted: 'Balance updated',
         },
       },
       upcoming: {
