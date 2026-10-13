@@ -69,6 +69,7 @@ export function useAssets() {
       // An asset moves liquid money, so the flexible-money figure the forms
       // quote back (§22.7) is stale until this refetches.
       queryKeys.forecastBundleAll(activeHouseholdId),
+      queryKeys.bankWalletDrift(activeHouseholdId),
     ]
     for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey })
   }

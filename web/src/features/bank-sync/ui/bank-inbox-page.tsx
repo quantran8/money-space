@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Panel } from '@/components/ui/panel'
 import { Skeleton } from '@/components/ui/skeleton'
-import { StatusChip } from '@/components/ui/status-chip'
 import { cn } from '@money-space/core/shared/lib/utils'
+import { BankEventRow } from '@/features/bank-sync/ui/components/bank-event-row'
 import { EventDetailDialog } from '@/features/bank-sync/ui/components/event-detail-dialog'
 import { WalletDriftNotice } from '@/features/bank-sync/ui/components/wallet-drift-notice'
 import {
@@ -17,16 +17,10 @@ import {
 } from '@money-space/core/features/bank-sync/hooks/use-bank-inbox'
 import { useBankSources } from '@money-space/core/features/bank-sync/hooks/use-bank-sources'
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
-import {
-  eventTime,
-  reasonText,
-  signedEventAmount,
-} from '@money-space/core/features/bank-sync/model/bank-sync'
 import type {
   BankInboxTab,
   BankNotificationEvent,
 } from '@money-space/core/features/bank-sync/model/bank-sync.types'
-import { formatVndSigned } from '@money-space/core/shared/lib/format-money'
 
 const TABS: BankInboxTab[] = ['review', 'unmapped', 'parse_failed']
 
@@ -77,54 +71,11 @@ export function BankInboxPage() {
           <EmptyState icon={Inbox}>{t(`bankSync.inbox.empty.${tab}`)}</EmptyState>
         ) : (
           <ul className="divide-y divide-divider">
-            {inbox.events.map((event) => {
-              const signed = signedEventAmount(event)
-              return (
-                <li key={event.id}>
-                  <button
-                    type="button"
-                    className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3 text-left"
-                    onClick={() => setSelected(event)}
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate t-body-sm font-medium text-ink">
-                        {event.providerCode
-                          ? t(`bankSync.providers.${event.providerCode}`)
-                          : event.appName}
-                        {' · '}
-                        <span className="num">
-                          {event.last4
-                            ? t('bankSync.sources.account', { last4: event.last4 })
-                            : t('bankSync.inbox.noAccount')}
-                        </span>
-                      </p>
-                      <StatusChip
-                        tone={event.status === 'FAILED' ? 'alert' : 'attention'}
-                        className="mt-1"
-                      >
-                        {reasonText(t, event.statusReason)}
-                      </StatusChip>
-                    </div>
-                    <div className="text-right">
-                      <p
-                        className={cn(
-                          'num t-body-sm font-medium',
-                          signed !== null && signed > 0 ? 'text-positive-ink' : 'text-ink',
-                        )}
-                      >
-                        {signed === null ? '—' : formatVndSigned(signed)}
-                      </p>
-                      <p className="num t-caption text-ink3">
-                        {new Date(eventTime(event)).toLocaleString('vi-VN', {
-                          dateStyle: 'short',
-                          timeStyle: 'short',
-                        })}
-                      </p>
-                    </div>
-                  </button>
-                </li>
-              )
-            })}
+            {inbox.events.map((event) => (
+              <li key={event.id}>
+                <BankEventRow event={event} onSelect={setSelected} />
+              </li>
+            ))}
           </ul>
         )}
         {inbox.hasMore ? (

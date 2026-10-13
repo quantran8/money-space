@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { FinancialRecordItem, RecordTab } from '@money-space/core/features/events/model/events-form'
-import { TODAY } from '@money-space/core/features/events/model/events-form'
+import { compareNewestFirst, TODAY } from '@money-space/core/features/events/model/events-form'
 import { RecordCard } from '@/features/events/ui/components/record-card'
 import { cn } from '@money-space/core/shared/lib/utils'
 
@@ -93,7 +93,7 @@ export function EventsTimelineCard({
     () =>
       groupedRecords
         .flatMap(([, items]) => items)
-        .sort((left, right) => right.date.localeCompare(left.date)),
+        .sort(compareNewestFirst),
     [groupedRecords],
   )
 

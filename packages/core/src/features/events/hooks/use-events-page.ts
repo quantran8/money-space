@@ -17,6 +17,7 @@ import {
   areEventsEqual,
   buildActualSchema,
   formatAmountInput,
+  compareNewestFirst,
   getDirectionFromEventType,
   getQuickActionFromEventType,
   getTimelineGroupKey,
@@ -211,6 +212,7 @@ export function useEventsPage() {
       amount: Math.abs(event.amount),
       currency: event.currency,
       date: event.date,
+      createdAt: event.createdAt,
       displayDate: event.displayDate,
       status: event.status,
       attentionLevel: event.attentionLevel,
@@ -240,7 +242,7 @@ export function useEventsPage() {
         return getTimelineGroupOrder(leftGroup) - getTimelineGroupOrder(rightGroup)
       }
       // Newest first — a ledger reads backwards from now.
-      return right.date.localeCompare(left.date)
+      return compareNewestFirst(left, right)
     })
   }, [categoryVisualById, events, memberByProfileId, seedEvents])
 

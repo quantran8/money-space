@@ -12,6 +12,7 @@ import {
   buildCoverage,
   buildOverdue,
 } from '@money-space/core/features/dashboard/model/home-derivations'
+import { BankReviewSection } from '@/features/dashboard/ui/components/bank-review-section'
 import { DashboardSkeleton } from '@/features/dashboard/ui/components/dashboard-skeleton'
 import { FinancialPictureSection } from '@/features/dashboard/ui/components/financial-picture-section'
 import { GoalsSection } from '@/features/dashboard/ui/components/goals-section'
@@ -145,6 +146,10 @@ export function DashboardPage() {
           />
         </AppearItem>
       ) : null}
+
+      <AppearItem>
+        <BankReviewSection cashflowEvents={cashflowEvents} />
+      </AppearItem>
 
       <AppearItem>
         <UpcomingSection forecast={forecast} categoryVisualById={categoryVisualById} />
