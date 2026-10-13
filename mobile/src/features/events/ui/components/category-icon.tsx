@@ -114,6 +114,7 @@ export const CATEGORY_ICON_GROUPS: { labelKey: string; icons: Record<string, Cat
       'credit-card': 'credit-card',
       receipt: 'receipt',
       'file-text': 'file-document',
+      'arrow-left-right': 'swap-horizontal',
     },
   },
   {

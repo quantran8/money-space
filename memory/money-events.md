@@ -62,6 +62,12 @@ only for internal auto-classified flows). The `interest` code
 (saving-deposit interest events) is a seeded system category — the old enum
 omitted it, so it was silently rewritten to `other` (fixed).
 
+**Transfer category.** A transfer has no category picker. The client sends
+`categoryId: undefined` for it (so the household default never leaks in) and the
+backend assigns the SYSTEM category `transfer`. Code `transfer`
+(`TRANSFER_CATEGORY_CODE`) is filtered out of the event and cashflow pickers.
+See backend memory/money-events.md.
+
 **Category UI (not free-text).** The record form's "Danh mục" field is a
 `<Select>` bound to the category **code**, sourced from the
 `money_event_categories` table via `useEventCategories` → `categoryOptions` in
