@@ -54,6 +54,7 @@ import { useMarketQuote } from '@money-space/core/features/assets/hooks/use-mark
 import type { MarketQuote } from '@money-space/core/features/assets/api/symbols.repository'
 import { AssetClassificationFields } from '@/features/assets/ui/components/asset-classification-fields'
 import { AutoPriceNotice } from '@/features/assets/ui/components/auto-price-notice'
+import { BankSyncFields } from '@/features/assets/ui/components/bank-sync-fields'
 import { SavingDepositFormDialog } from '@/features/assets/ui/components/saving-deposit-form-dialog'
 import {
   canBePurchased,
@@ -303,6 +304,8 @@ export function AssetFormDialog({
                 t={t}
               />
             ) : null}
+
+            {!isEditing && selectedType === 'bank_account' ? <BankSyncFields form={form} /> : null}
 
             {/* Which act is this? It decides whether net worth moves, so it
                 belongs in the main section — not folded into the disclosure

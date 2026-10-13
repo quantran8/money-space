@@ -118,7 +118,7 @@ export async function getAssetValueHistory(householdId: string, assetId: string)
 }
 
 export function createAsset(householdId: string, payload: AssetPayload) {
-  return apiRequest(`/households/${householdId}/assets`, {
+  return apiRequest<AssetRecord>(`/households/${householdId}/assets`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })

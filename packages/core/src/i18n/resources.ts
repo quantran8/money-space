@@ -346,6 +346,9 @@ export const resources = {
       assets: {
         toast: {
           created: 'Đã tạo tài sản.',
+          createdWithBankSync: 'Đã tạo tài khoản và gắn với ngân hàng.',
+          bankSyncFailed:
+            'Đã tạo tài khoản nhưng chưa gắn được với ngân hàng. Gắn lại trong Cài đặt › Tự ghi nhận từ ngân hàng.',
           updated: 'Đã cập nhật tài sản.',
           deleted: 'Đã xóa tài sản.',
           createFailed: 'Chưa tạo được tài sản.',
@@ -547,6 +550,12 @@ export const resources = {
           // Gia đình tự quyết khoản nào là tiền dùng được, không để loại tài sản quyết thay.
           countsAsFlexible: 'Tính vào tiền linh hoạt',
           countsAsFlexibleHint: 'Giá trị nguồn này được tính vào số tiền có thể dùng.',
+          bankSync: {
+            toggle: 'Đồng bộ với tài khoản ngân hàng',
+            toggleHint: 'Thông báo biến động số dư trên iPhone được ghi vào tài khoản này.',
+            noDevice: 'Bạn chưa thiết lập iPhone để gửi thông báo.',
+            setupDevice: 'Thiết lập iPhone',
+          },
           valuePlaceholder: 'Ví dụ: 20.000.000',
           areaSqm: 'Diện tích',
           areaSqmPlaceholder: 'Ví dụ: 80',
@@ -1334,6 +1343,7 @@ export const resources = {
             history: 'Xem lại toàn bộ lịch sử',
             export: 'Tải dữ liệu của gia đình',
             bank_sync: 'Tự ghi nhận từ thông báo ngân hàng',
+            space_quota: 'Bạn đã tạo {{limit}} không gian ở gói Free',
             trial_ending: 'Bản dùng thử sắp hết',
             expired: 'Gói Premium của gia đình đã hết hạn',
             manage: 'Gói của gia đình',
@@ -1349,6 +1359,8 @@ export const resources = {
             history: 'Gói Premium giữ lại toàn bộ lịch sử của gia đình.',
             export: 'Gói Premium cho phép tải toàn bộ dữ liệu về máy.',
             bank_sync: 'Gói Premium biến thông báo biến động số dư thành ghi chép, không cần nhập tay.',
+            space_quota:
+              'Không gian dùng Premium không tính vào giới hạn này. Nâng cấp không gian đang mở để tạo thêm.',
             trial_ending: 'Giữ lại những gì gia đình đang dùng.',
             expired: 'Kích hoạt lại để dùng tiếp.',
             manage: 'Gia hạn thêm bất cứ lúc nào — thời gian được cộng dồn.',
@@ -3191,6 +3203,18 @@ export const resources = {
           count: '{{count}} không gian',
           description:
             'Bạn đang ở trong nhiều không gian. Chọn không gian muốn xem — mọi số liệu, thành viên và mục tiêu bên dưới đều thuộc về không gian đang mở.',
+          single:
+            'Mỗi không gian có số liệu, thành viên và mục tiêu riêng. Tạo thêm khi cần theo dõi riêng một nhóm tài chính khác.',
+          create: {
+            action: 'Tạo không gian mới',
+            title: 'Tạo không gian mới',
+            description:
+              'Không gian mới có số liệu, thành viên và gói dịch vụ riêng. Không gian hiện tại vẫn giữ nguyên.',
+            submit: 'Tạo không gian',
+            created: 'Đã tạo và mở “{{name}}”.',
+            limitOtherSpaces:
+              'Bạn đã tạo {{limit}} không gian ở gói Free. Nâng cấp một trong số đó lên Premium để tạo thêm.',
+          },
         },
         household: {
           eyebrow: 'Thông tin chung',
@@ -4218,6 +4242,9 @@ export const resources = {
       assets: {
         toast: {
           created: 'Asset created.',
+          createdWithBankSync: 'Account created and linked to your bank.',
+          bankSyncFailed:
+            'Account created, but the bank link did not go through. Link it again in Settings › Record from bank notifications.',
           updated: 'Asset updated.',
           deleted: 'Asset deleted.',
           createFailed: 'Could not create the asset.',
@@ -4403,6 +4430,12 @@ export const resources = {
           balance: 'Balance',
           countsAsFlexible: 'Counts towards flexible money',
           countsAsFlexibleHint: 'This source\'s value counts towards the money you can spend.',
+          bankSync: {
+            toggle: 'Sync with the bank account',
+            toggleHint: 'Balance notifications on your iPhone are recorded into this account.',
+            noDevice: 'You have not set up an iPhone to send notifications yet.',
+            setupDevice: 'Set up iPhone',
+          },
           valuePlaceholder: 'Example: 20.000.000',
           areaSqm: 'Area',
           areaSqmPlaceholder: 'Example: 80',
@@ -5165,6 +5198,7 @@ export const resources = {
             history: 'Read back your full history',
             export: 'Export your household data',
             bank_sync: 'Record from bank notifications',
+            space_quota: 'You have created {{limit}} spaces on Free',
             trial_ending: 'Your trial is ending',
             expired: 'Your household Premium has expired',
             manage: 'Your household plan',
@@ -5180,6 +5214,8 @@ export const resources = {
             history: 'Premium keeps your whole history.',
             export: 'Premium lets you download everything.',
             bank_sync: 'Premium turns balance-change notifications into records, no typing needed.',
+            space_quota:
+              'Premium spaces do not count towards this limit. Upgrade the open space to create more.',
             trial_ending: 'Keep what your household is already using.',
             expired: 'Activate again to keep going.',
             manage: 'Extend any time — the days are added on top.',
@@ -6917,6 +6953,18 @@ export const resources = {
           count: '{{count}} spaces',
           description:
             'You belong to more than one space. Choose which one to look at — every figure, member and goal below belongs to the space that is open.',
+          single:
+            'Each space has its own figures, members and goals. Create another when you want to keep a separate set of finances.',
+          create: {
+            action: 'New space',
+            title: 'Create a new space',
+            description:
+              'A new space has its own figures, members and plan. Your current space stays as it is.',
+            submit: 'Create space',
+            created: 'Created and opened “{{name}}”.',
+            limitOtherSpaces:
+              'You have created {{limit}} spaces on Free. Upgrade one of them to Premium to create more.',
+          },
         },
         household: {
           eyebrow: 'General information',

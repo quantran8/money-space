@@ -20,6 +20,30 @@ household, or join one.
    `/household` after the fact — but the backend path remains for other clients.
 5. Write a `household.created` audit log with `{ invitedPartner }` metadata.
 
+## Tạo thêm không gian từ trong app
+
+Một tài khoản có thể thuộc nhiều không gian (household). Ngoài onboarding, user
+đã có không gian vẫn tạo thêm được ở hai chỗ: menu tài khoản cuối sidebar
+("Tạo không gian mới") và card "Không gian của bạn" trong Cài đặt. Card này giờ
+**luôn hiện**: có một không gian thì chỉ có câu giới thiệu + nút tạo, có từ hai
+trở lên thì thêm bộ chọn. Lý do card luôn hiện: trên web hẹp không có menu
+sidebar, nên Cài đặt là lối vào duy nhất.
+
+Cùng API `POST /households`, cùng schema với onboarding (tên ≤ 40, tiền tệ).
+Tạo xong: refetch danh sách (`exact`), đóng what-if, đặt không gian mới làm
+active rồi về `/`. Refetch phải xong **trước** khi đổi active, vì
+`useActiveHousehold` tự đưa một id không có trong danh sách về không gian đầu.
+Không gian mới bắt đầu ở Free; gói tính theo từng không gian ([[billing]]).
+
+**Tối đa 2 không gian Free do mình tạo** (backend `memory/billing-and-entitlement.md`).
+`useCreateSpace.openDialog` đọc `spaceQuota` từ `GET /households`; chạm trần thì
+refetch danh sách một lần (có thể vừa nâng cấp) rồi: không gian đang mở là Free
+→ paywall `space_quota`; đang mở đã Premium → toast "nâng cấp một trong số đó",
+vì nâng cấp không gian đang mở không giúp gì. 402 khi submit → đóng dialog, để
+handler 402 chung mở paywall.
+Code: `core/features/settings/hooks/use-create-space.ts`,
+`web/.../settings/ui/components/create-space-dialog.tsx`.
+
 ## Validation
 
 - `name` required (frontend ≤ 40 chars; settings allows ≤ 60).

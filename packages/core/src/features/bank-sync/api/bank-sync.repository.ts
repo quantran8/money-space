@@ -65,6 +65,22 @@ export function linkBankSource(
   return post<BankSource & { reprocessed: number }>(`${base(householdId)}/sources/${id}/link`, payload)
 }
 
+/** AUTO only after the user confirmed it. See memory/bank-sync.md. */
+export async function connectBankAccount(
+  householdId: string,
+  payload: {
+    providerCode: BankProviderCode
+    accountNumber: string
+    displayLabel?: string
+    assetId: string
+    postingMode?: BankPostingMode
+  },
+) {
+  const { assetId, postingMode = 'REVIEW', ...source } = payload
+  const created = await createBankSource(householdId, source)
+  return linkBankSource(householdId, created.id, { assetId, postingMode })
+}
+
 export function unlinkBankSource(householdId: string, id: string) {
   return apiRequest<BankSource>(`${base(householdId)}/sources/${id}/link`, { method: 'DELETE' })
 }

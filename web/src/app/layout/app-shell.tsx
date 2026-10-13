@@ -7,6 +7,7 @@ import {
   House,
   LogOut,
   PanelLeft,
+  Plus,
   Inbox,
   Settings,
   Target,
@@ -52,6 +53,8 @@ import { useLogout } from '@money-space/core/features/auth/hooks/use-logout'
 import { useSession } from '@money-space/core/features/auth/hooks/use-session'
 import { cn } from '@money-space/core/shared/lib/utils'
 import { useSpaceSwitcher } from '@money-space/core/features/settings/hooks/use-space-switcher'
+import { useCreateSpace } from '@money-space/core/features/settings/hooks/use-create-space'
+import { CreateSpaceDialog } from '@/features/settings/ui/components/create-space-dialog'
 import { useActiveHousehold } from '@money-space/core/shared/hooks/use-active-household'
 import { useWhatIfStore } from '@money-space/core/shared/stores/whatif-store'
 import { sourceForPathname } from '@money-space/core/features/whatif/model/whatif-source'
@@ -230,6 +233,7 @@ function SidebarAccount() {
   const logout = useLogout()
   const { name, email, avatarUrl } = useAccountIdentity()
   const { spaces, activeSpaceId, canSwitch, switchTo } = useSpaceSwitcher()
+  const createSpace = useCreateSpace()
 
   return (
     <SidebarMenu>
@@ -307,6 +311,11 @@ function SidebarAccount() {
               </>
             ) : null}
 
+            <DropdownMenuItem onSelect={createSpace.openDialog}>
+              <Plus strokeWidth={1.5} />
+              {t('settings.spaces.create.action')}
+            </DropdownMenuItem>
+
             <DropdownMenuSeparator />
 
             <DropdownMenuItem onSelect={() => void logout()}>
@@ -315,6 +324,7 @@ function SidebarAccount() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <CreateSpaceDialog space={createSpace} />
       </SidebarMenuItem>
     </SidebarMenu>
   )

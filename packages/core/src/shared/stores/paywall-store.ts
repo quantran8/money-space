@@ -20,6 +20,7 @@ export const SERVER_PAYWALL_REASONS = [
   'history',
   'export',
   'bank_sync',
+  'space_quota',
   'expired',
   'general',
 ] as const
