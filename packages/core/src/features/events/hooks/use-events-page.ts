@@ -9,6 +9,7 @@ import { useAssets } from '#/features/assets/hooks/use-assets'
 import { useAssetSale } from '#/features/assets/hooks/use-asset-sale'
 import { isWalletAssetType } from '#/features/assets/model/assets'
 import { useCategoryVisuals } from '#/features/events/hooks/use-category-visuals'
+import { TRANSFER_CATEGORY_CODE } from '#/features/events/api/event-categories.repository'
 import { useEventCategories } from '#/features/events/hooks/use-event-categories'
 import { useEvents } from '#/features/events/hooks/use-events'
 import { useEventsSummary } from '#/features/events/hooks/use-events-summary'
@@ -123,7 +124,8 @@ export function useEventsPage() {
   // server's sortOrder.
   const categoryOptions = useMemo(
     () =>
-      [...categories]
+      categories
+        .filter((category) => category.code !== TRANSFER_CATEGORY_CODE)
         .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
         .map((category) => ({
           // The ID is the value now — events carry a real FK, not a code. The
@@ -603,7 +605,7 @@ export function useEventsPage() {
       isoDate: values.eventDate,
       type: resolvedEventType,
       direction: getDirectionFromEventType(resolvedEventType),
-      categoryId: values.category.trim(),
+      categoryId: resolvedEventType === 'transfer' ? undefined : values.category.trim(),
       fromAssetId: values.fromAssetId || undefined,
       toAssetId: values.toAssetId || undefined,
       // Carry the linked debt through so the backend still reduces the right

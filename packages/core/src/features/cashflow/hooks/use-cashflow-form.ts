@@ -6,6 +6,7 @@ import { notify } from '#/shared/notify'
 
 import type { CashflowEventPayload } from '#/features/cashflow/api/cashflow-events.repository'
 import { useCashflowEvents } from '#/features/cashflow/hooks/use-cashflow-events'
+import { TRANSFER_CATEGORY_CODE } from '#/features/events/api/event-categories.repository'
 import { useEventCategories } from '#/features/events/hooks/use-event-categories'
 import {
   buildCashflowSchema,
@@ -38,7 +39,8 @@ export function useCashflowForm() {
   // rather than in the UI so both forms translate a category the same way.
   const categoryOptions = useMemo(
     () =>
-      [...categories]
+      categories
+        .filter((category) => category.code !== TRANSFER_CATEGORY_CODE)
         .sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
         .map((category) => ({
           // The ID is the value — an event carries a real FK, not a code.

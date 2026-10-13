@@ -2,6 +2,7 @@ import {
   Activity,
   Apple,
   ArrowDownLeft,
+  ArrowLeftRight,
   Baby,
   Backpack,
   BarChart,
@@ -179,6 +180,7 @@ export const CATEGORY_ICON_GROUPS: { labelKey: string; icons: Record<string, Luc
       'credit-card': CreditCard,
       receipt: Receipt,
       'file-text': FileText,
+      'arrow-left-right': ArrowLeftRight,
     },
   },
   {

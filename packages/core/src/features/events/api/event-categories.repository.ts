@@ -1,5 +1,8 @@
 import { apiRequest } from '#/shared/api/http'
 
+// System category the backend assigns to transfers; never offered in a picker.
+export const TRANSFER_CATEGORY_CODE = 'transfer'
+
 export type EventCategoryItem = {
   id: string
   /** NULL for system/global categories; a household id for custom ones. */

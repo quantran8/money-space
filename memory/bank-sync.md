@@ -42,6 +42,14 @@ backend `memory/bank-sync.md`. Premium (`bank_sync`) — [[billing]].
   là nội dung thông báo của ngân hàng, số tài khoản đã được server che còn 4
   số cuối.
 
+## Chuyển tiền giữa hai tài khoản của household
+
+TCB `-x` và VCB `+x` của cùng một lần chuyển được backend gộp thành **một**
+money event `transfer`; event còn lại thành `PROCESSED` với lý do
+`TRANSFER_PAIRED` (không có money event riêng). `TRANSFER_REVIEW` = nhận ra là
+transfer nhưng một bên đang duyệt tay — bấm Ghi nhận sẽ ra transfer. Chi tiết
+nghiệp vụ: backend `memory/bank-sync.md`.
+
 ## Where it lives in code
 
 - core: `packages/core/src/features/bank-sync/{api,hooks,model}`; query keys
