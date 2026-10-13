@@ -141,3 +141,96 @@ export function cancelCashflowEvent(
     { method: 'POST', body: JSON.stringify(payload) },
   )
 }
+
+/** Bank money not yet settling anything; see backend memory/cashflow-settlement.md. */
+export type CashflowLinkCandidate = {
+  kind: 'money_event' | 'bank_event'
+  id: string
+  amount: number
+  date: string
+  assetId: string | null
+  note: string
+}
+
+export type CashflowSettlement = {
+  moneyEventId: string
+  occurrenceDate: string
+  amount: number
+  assetId: string | null
+  settledAt: string
+  settledById: string | null
+  settledVia: 'manual_complete' | 'manual_link' | 'auto_note'
+  notificationEventId: string | null
+}
+
+export type CashflowMatchRule = {
+  id: string
+  cashflowEventId: string
+  phrase: string
+  phraseNormalized: string
+  createdAt: string
+}
+
+export type MatchRulePreviewRow = {
+  bankEventId: string
+  note: string
+  receivedAt: string
+  matches: boolean
+}
+
+const eventPath = (householdId: string, eventId: string) =>
+  `/households/${householdId}/cashflow-events/${eventId}`
+
+export function listLinkCandidates(householdId: string, eventId: string, q = '') {
+  const query = q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ''
+  return apiRequest<CashflowLinkCandidate[]>(`${eventPath(householdId, eventId)}/link-candidates${query}`)
+}
+
+export function listCashflowSettlements(householdId: string, eventId: string) {
+  return apiRequest<CashflowSettlement[]>(`${eventPath(householdId, eventId)}/settlements`)
+}
+
+export function linkCashflowEvent(householdId: string, eventId: string, moneyEventId: string) {
+  return apiRequest<{ event: CashflowEvent; advancedTo: string | null }>(
+    `${eventPath(householdId, eventId)}/link`,
+    { method: 'POST', body: JSON.stringify({ moneyEventId }) },
+  )
+}
+
+export function replaceManualCompletion(householdId: string, eventId: string, moneyEventId: string) {
+  return apiRequest<{ event: CashflowEvent }>(`${eventPath(householdId, eventId)}/replace-manual`, {
+    method: 'POST',
+    body: JSON.stringify({ moneyEventId }),
+  })
+}
+
+export function unlinkCashflowEvent(householdId: string, eventId: string, moneyEventId: string) {
+  return apiRequest<{ event: CashflowEvent }>(`${eventPath(householdId, eventId)}/unlink`, {
+    method: 'POST',
+    body: JSON.stringify({ moneyEventId }),
+  })
+}
+
+export function listHouseholdMatchRules(householdId: string) {
+  return apiRequest<CashflowMatchRule[]>(`/households/${householdId}/cashflow-events/match-rules`)
+}
+
+export function createMatchRule(householdId: string, eventId: string, phrase: string) {
+  return apiRequest<CashflowMatchRule>(`${eventPath(householdId, eventId)}/match-rules`, {
+    method: 'POST',
+    body: JSON.stringify({ phrase }),
+  })
+}
+
+export function deleteMatchRule(householdId: string, eventId: string, ruleId: string) {
+  return apiRequest<{ deleted: boolean }>(`${eventPath(householdId, eventId)}/match-rules/${ruleId}`, {
+    method: 'DELETE',
+  })
+}
+
+export function previewMatchRule(householdId: string, phrase: string) {
+  return apiRequest<MatchRulePreviewRow[]>(
+    `/households/${householdId}/cashflow-events/match-rules/preview`,
+    { method: 'POST', body: JSON.stringify({ phrase }) },
+  )
+}

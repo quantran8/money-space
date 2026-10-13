@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Plus, Trash2, UserRound } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Link2, MoreHorizontal, Pencil, Plus, Trash2, UserRound } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -42,6 +42,7 @@ type ForecastTimelineProps = {
   onAdd?: () => void
   /** Row actions. Keyed by `sourceEventId` — occurrences are not rows (§18). */
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
+  onLinkBank?: (sourceEventId: string) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
 }
@@ -97,6 +98,7 @@ export function ForecastTimeline({
   usableNowAssetCount,
   onAdd,
   onComplete,
+  onLinkBank,
   onEdit,
   onDelete,
 }: ForecastTimelineProps) {
@@ -179,6 +181,7 @@ export function ForecastTimeline({
                     ownerName={ownerNameByEventId[occurrence.sourceEventId]}
                     categoryVisual={categoryVisualByEventId[occurrence.sourceEventId]}
                     onComplete={onComplete}
+              onLinkBank={onLinkBank}
                     onEdit={onEdit}
                     onDelete={onDelete}
                   />
@@ -253,6 +256,7 @@ function OccurrenceRow({
   ownerName,
   categoryVisual,
   onComplete,
+  onLinkBank,
   onEdit,
   onDelete,
 }: {
@@ -261,6 +265,7 @@ function OccurrenceRow({
   ownerName?: string
   categoryVisual?: ForecastCategoryVisual
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
+  onLinkBank?: (sourceEventId: string) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
 }) {
@@ -356,6 +361,12 @@ function OccurrenceRow({
                 >
                   <Check className="mr-2 size-4" />
                   {t('upcoming.rowActions.complete')}
+                </DropdownMenuItem>
+              ) : null}
+              {onLinkBank ? (
+                <DropdownMenuItem onClick={() => onLinkBank(occurrence.sourceEventId)}>
+                  <Link2 className="mr-2 size-4" />
+                  {t('settlement.rowActions.linkBank')}
                 </DropdownMenuItem>
               ) : null}
               {onEdit && !isDebtDerived ? (

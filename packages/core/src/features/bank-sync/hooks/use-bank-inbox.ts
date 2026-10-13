@@ -10,6 +10,7 @@ import {
 import {
   BANK_INBOX_TAB_STATUSES,
   type BankInboxTab,
+  type BankResolvePayload,
 } from '#/features/bank-sync/model/bank-sync.types'
 import { queryKeys } from '#/shared/api/query-keys'
 import { useActiveHousehold } from '#/shared/hooks/use-active-household'
@@ -65,9 +66,7 @@ export function useBankInbox(tab: BankInboxTab) {
     queryClient.invalidateQueries({ queryKey: queryKeys.household(activeHouseholdId!) })
 
   const resolveMutation = useMutation({
-    mutationFn: (
-      p: { id: string; action: 'post'; assetId?: string } | { id: string; action: 'ignore' },
-    ) => {
+    mutationFn: (p: BankResolvePayload & { id: string }) => {
       const { id, ...payload } = p
       return resolveBankEvent(activeHouseholdId!, id, payload)
     },
@@ -95,8 +94,10 @@ export function useBankInbox(tab: BankInboxTab) {
     hasMore: query.hasNextPage,
     loadMore: () => void query.fetchNextPage(),
     isLoadingMore: query.isFetchingNextPage,
-    post: (id: string, assetId?: string) =>
-      resolveMutation.mutateAsync({ id, action: 'post', assetId }),
+    post: (id: string, assetId?: string, cashflowEventId?: string) =>
+      resolveMutation.mutateAsync({ id, action: 'post', assetId, cashflowEventId }),
+    replaceManual: (id: string, cashflowEventId: string, assetId?: string) =>
+      resolveMutation.mutateAsync({ id, action: 'replace_manual', assetId, cashflowEventId }),
     ignore: (id: string) => resolveMutation.mutateAsync({ id, action: 'ignore' }),
     isResolving: resolveMutation.isPending,
     reparse: (id: string) => reparseMutation.mutateAsync(id),

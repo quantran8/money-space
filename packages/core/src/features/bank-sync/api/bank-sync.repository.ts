@@ -7,8 +7,10 @@ import type {
   BankNotificationEvent,
   BankPostingMode,
   BankProviderCode,
+  BankResolvePayload,
   BankSource,
   CreatedBankCredential,
+  WalletDrift,
 } from '#/features/bank-sync/model/bank-sync.types'
 
 const base = (householdId: string) => `/households/${householdId}/bank-sync`
@@ -86,9 +88,13 @@ export function getBankEventCounts(householdId: string) {
 export function resolveBankEvent(
   householdId: string,
   id: string,
-  payload: { action: 'post'; assetId?: string } | { action: 'ignore' },
+  payload: BankResolvePayload,
 ) {
   return post<BankNotificationEvent>(`${base(householdId)}/events/${id}/resolve`, payload)
+}
+
+export function getWalletDrift(householdId: string) {
+  return apiRequest<WalletDrift[]>(`${base(householdId)}/wallet-drift`)
 }
 
 export function reparseBankEvent(householdId: string, id: string) {

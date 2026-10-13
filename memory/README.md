@@ -47,6 +47,7 @@ Each file is a focused Markdown doc. Link related files with `[[name]]` (the fil
 - [debts.md](debts.md) — debts / liabilities & interest maths
 - [money-events.md](money-events.md) — money events + upcoming payments (unified events)
 - [cashflow-events.md](cashflow-events.md) — expected future money movements (v3.1; replaces upcoming payments)
+- [cashflow-settlement.md](cashflow-settlement.md) — linking bank transactions to scheduled items, note rules, balance drift
 - [forecast-and-flexible-money.md](forecast-and-flexible-money.md) — running balance, flexible money, financial state (§26)
 - [what-if.md](what-if.md) — spend simulation: consequence, never a verdict (§26D)
 - [data-freshness.md](data-freshness.md) — how much the numbers can be trusted (04 §12)

@@ -25,11 +25,15 @@ import {
 import type { BankNotificationEvent } from '@money-space/core/features/bank-sync/model/bank-sync.types'
 import { formatVndExact, formatVndSigned } from '@money-space/core/shared/lib/format-money'
 
+const NO_LINK = '__none'
+
 type Props = {
   event: BankNotificationEvent | null
   onOpenChange: (open: boolean) => void
   walletOptions: { value: string; label: string }[]
-  onPost: (id: string, assetId?: string) => Promise<unknown>
+  cashflowOptions: { value: string; label: string; direction: 'incoming' | 'outgoing' }[]
+  onPost: (id: string, assetId?: string, cashflowEventId?: string) => Promise<unknown>
+  onReplaceManual: (id: string, cashflowEventId: string, assetId?: string) => Promise<unknown>
   onIgnore: (id: string) => Promise<unknown>
   onReparse: (id: string) => Promise<unknown>
   busy: boolean
@@ -54,7 +58,9 @@ function EventDetail({
   event,
   onOpenChange,
   walletOptions,
+  cashflowOptions,
   onPost,
+  onReplaceManual,
   onIgnore,
   onReparse,
   busy,
@@ -65,6 +71,18 @@ function EventDetail({
   const signed = signedEventAmount(event)
   const canPost = signed !== null && !!assetId
   const close = () => onOpenChange(false)
+
+  // Note-rule suggestion is pre-selected only when unique. See backend memory/cashflow-settlement.md.
+  const suggested =
+    event.matchStatus === 'matched' || event.matchStatus === 'replace_manual'
+      ? (event.suggestedCashflowEventId ?? undefined)
+      : undefined
+  const [cashflowEventId, setCashflowEventId] = useState<string>(suggested ?? NO_LINK)
+  const linkTo = cashflowEventId === NO_LINK ? undefined : cashflowEventId
+  const eventDirection = event.direction === 'IN' ? 'incoming' : 'outgoing'
+  const linkOptions = cashflowOptions.filter((o) => o.direction === eventDirection)
+  const linkLabel = linkOptions.find((o) => o.value === linkTo)?.label
+  const replacing = event.matchStatus === 'replace_manual' && !!linkTo && linkTo === suggested
 
   return (
     <ResponsiveDialog open onOpenChange={onOpenChange}>
@@ -92,6 +110,9 @@ function EventDetail({
             <Row label={t('bankSync.inbox.detail.balance')}>
               <span className="num">{formatVndExact(event.reportedBalance)}</span>
             </Row>
+          ) : null}
+          {event.note ? (
+            <Row label={t('settlement.inbox.note')}>{event.note}</Row>
           ) : null}
           <Row label={t('bankSync.inbox.detail.time')}>
             <span className="num">{new Date(eventTime(event)).toLocaleString('vi-VN')}</span>
@@ -122,6 +143,34 @@ function EventDetail({
             </Select>
           </div>
         )}
+
+        {signed !== null && linkOptions.length > 0 ? (
+          <div className="mt-4">
+            <p className="label mb-2">{t('settlement.inbox.linkTo')}</p>
+            <Select value={cashflowEventId} onValueChange={setCashflowEventId}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_LINK}>{t('settlement.inbox.noLink')}</SelectItem>
+                {linkOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="mt-2 t-caption text-ink2">
+              {event.matchStatus === 'ambiguous'
+                ? t('settlement.inbox.ambiguous')
+                : replacing
+                  ? t('settlement.inbox.replaceManual', { name: linkLabel })
+                  : linkTo && linkTo === suggested
+                    ? t('settlement.inbox.suggestion', { name: linkLabel })
+                    : null}
+            </p>
+          </div>
+        ) : null}
 
         {!event.canReparse ? (
           <p className="mt-3 t-caption text-ink3">{t('bankSync.inbox.detail.noRaw')}</p>
@@ -159,9 +208,18 @@ function EventDetail({
             <Button
               type="button"
               disabled={busy || !canPost}
-              onClick={() => void onPost(event.id, assetId).then(close)}
+              onClick={() =>
+                void (replacing
+                  ? onReplaceManual(event.id, linkTo, assetId)
+                  : onPost(event.id, assetId, linkTo)
+                ).then(close)
+              }
             >
-              {t('bankSync.inbox.detail.post')}
+              {replacing
+                ? t('settlement.inbox.replace')
+                : linkLabel
+                  ? t('settlement.inbox.postAndLink', { name: linkLabel })
+                  : t('bankSync.inbox.detail.post')}
             </Button>
           ) : null}
         </div>

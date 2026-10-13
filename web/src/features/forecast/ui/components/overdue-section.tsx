@@ -1,4 +1,4 @@
-import { ArrowUpRight, Loader2, MoreHorizontal, Pencil, Trash2, TriangleAlert, UserRound } from 'lucide-react'
+import { ArrowUpRight, Link2, Loader2, MoreHorizontal, Pencil, Trash2, TriangleAlert, UserRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -43,6 +43,7 @@ import { cn } from '@money-space/core/shared/lib/utils'
 export function OverdueSection({
   overdue,
   onComplete,
+  onLinkBank,
   onEdit,
   onDelete,
   pendingId,
@@ -53,6 +54,7 @@ export function OverdueSection({
   overdue: OverdueSummary
   /** Marks one occurrence resolved. The ONLY way an item leaves this list (§18). */
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
+  onLinkBank?: (sourceEventId: string) => void
   /**
    * Sửa/xoá khoản gốc — cùng menu ⋯ như hàng trên dòng thời gian, vì một khoản
    * quá hạn thường sai ngày hoặc sai số chứ không phải đã trả (§18).
@@ -126,6 +128,7 @@ export function OverdueSection({
               key={row.key}
               row={row}
               onComplete={onComplete}
+              onLinkBank={onLinkBank}
               onEdit={onEdit}
               onDelete={onDelete}
               pending={pendingId === row.sourceEventId}
@@ -158,6 +161,7 @@ export function OverdueSection({
 function OverdueRowItem({
   row,
   onComplete,
+  onLinkBank,
   onEdit,
   onDelete,
   pending,
@@ -166,6 +170,7 @@ function OverdueRowItem({
 }: {
   row: OverdueSummary['rows'][number]
   onComplete?: (sourceEventId: string, occurrenceDate: string) => void
+  onLinkBank?: (sourceEventId: string) => void
   onEdit?: (sourceEventId: string) => void
   onDelete?: (sourceEventId: string) => void
   pending: boolean
@@ -247,7 +252,7 @@ function OverdueRowItem({
           </button>
         ) : null}
 
-        {(onEdit || onDelete) && !isDebtDerived ? (
+        {onLinkBank || ((onEdit || onDelete) && !isDebtDerived) ? (
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label={t('upcoming.rowActions.label')}
@@ -256,13 +261,19 @@ function OverdueRowItem({
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {onEdit ? (
+              {onLinkBank ? (
+                <DropdownMenuItem onClick={() => onLinkBank(row.sourceEventId)}>
+                  <Link2 className="mr-2 size-4" />
+                  {t('settlement.rowActions.linkBank')}
+                </DropdownMenuItem>
+              ) : null}
+              {onEdit && !isDebtDerived ? (
                 <DropdownMenuItem onClick={() => onEdit(row.sourceEventId)}>
                   <Pencil className="mr-2 size-4" />
                   {t('upcoming.rowActions.edit')}
                 </DropdownMenuItem>
               ) : null}
-              {onDelete ? (
+              {onDelete && !isDebtDerived ? (
                 <DropdownMenuItem
                   className="text-alert-ink focus:text-alert-ink"
                   onClick={() => onDelete(row.sourceEventId)}
