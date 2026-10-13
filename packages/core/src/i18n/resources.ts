@@ -3468,7 +3468,7 @@ export const resources = {
           },
           loadMore: 'Xem thêm',
           home: {
-            title: 'Giao dịch chờ xác nhận',
+            title: 'Từ ngân hàng · cần xác nhận',
             count: '{{count}} thông báo',
             note: 'Thông báo từ ngân hàng chưa được ghi vào ví. Chưa tính vào số dư cho tới khi gia đình xác nhận.',
             viewAll: 'Mở hộp thư',
@@ -7196,7 +7196,7 @@ export const resources = {
           },
           loadMore: 'Show more',
           home: {
-            title: 'Transactions to confirm',
+            title: 'From the bank · to confirm',
             count: '{{count}} notifications',
             note: 'Bank notifications not recorded into a wallet yet. They do not count toward a balance until confirmed.',
             viewAll: 'Open inbox',

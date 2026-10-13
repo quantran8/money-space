@@ -6,26 +6,30 @@ import { Link } from 'react-router-dom'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { BankEventRow } from '@/features/bank-sync/ui/components/bank-event-row'
 import { EventDetailDialog } from '@/features/bank-sync/ui/components/event-detail-dialog'
+import { WalletDriftNotice } from '@/features/bank-sync/ui/components/wallet-drift-notice'
 import {
   useBankInbox,
   useBankInboxCounts,
 } from '@money-space/core/features/bank-sync/hooks/use-bank-inbox'
 import { useBankSources } from '@money-space/core/features/bank-sync/hooks/use-bank-sources'
+import { useWalletDrift } from '@money-space/core/features/bank-sync/hooks/use-wallet-drift'
 import type { BankNotificationEvent } from '@money-space/core/features/bank-sync/model/bank-sync.types'
 import type { CashflowEvent } from '@money-space/core/features/cashflow/model/cashflow.types'
 
 const VISIBLE = 3
 
-// Renders nothing when no notification waits on the household. See memory/bank-sync.md.
+// Renders nothing when no notification or balance drift waits on the household. See memory/bank-sync.md.
 export function BankReviewSection({ cashflowEvents }: { cashflowEvents: CashflowEvent[] }) {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<BankNotificationEvent | null>(null)
   const { byTab } = useBankInboxCounts()
   const inbox = useBankInbox('review')
   const { walletOptions } = useBankSources()
+  const { drifts } = useWalletDrift()
 
   const count = byTab.review
-  if (count === 0 || inbox.events.length === 0) return null
+  const hasReview = count > 0 && inbox.events.length > 0
+  if (!hasReview && drifts.length === 0) return null
 
   const cashflowOptions = cashflowEvents
     .filter((e) => e.status !== 'completed' && e.status !== 'cancelled')
@@ -35,7 +39,7 @@ export function BankReviewSection({ cashflowEvents }: { cashflowEvents: Cashflow
     <Panel>
       <PanelHeader
         title={t('bankSync.inbox.home.title')}
-        meta={t('bankSync.inbox.home.count', { count })}
+        meta={hasReview ? t('bankSync.inbox.home.count', { count }) : undefined}
         action={
           <Link
             to="/bank-inbox"
@@ -46,20 +50,29 @@ export function BankReviewSection({ cashflowEvents }: { cashflowEvents: Cashflow
           </Link>
         }
       />
-      <p className="mt-2 max-w-[760px] t-body-sm leading-5 text-ink2">
-        {t('bankSync.inbox.home.note')}
-      </p>
-      <ul className="mt-2 divide-y divide-divider">
-        {inbox.events.slice(0, VISIBLE).map((event) => (
-          <li key={event.id}>
-            <BankEventRow event={event} onSelect={setSelected} />
-          </li>
-        ))}
-      </ul>
-      {count > VISIBLE ? (
-        <p className="mt-3 t-caption text-ink2">
-          {t('bankSync.inbox.home.more', { count: count - VISIBLE })}
-        </p>
+      {drifts.length > 0 ? (
+        <div className="mt-3">
+          <WalletDriftNotice />
+        </div>
+      ) : null}
+      {hasReview ? (
+        <>
+          <p className="mt-3 max-w-[760px] t-body-sm leading-5 text-ink2">
+            {t('bankSync.inbox.home.note')}
+          </p>
+          <ul className="mt-2 divide-y divide-divider">
+            {inbox.events.slice(0, VISIBLE).map((event) => (
+              <li key={event.id}>
+                <BankEventRow event={event} onSelect={setSelected} />
+              </li>
+            ))}
+          </ul>
+          {count > VISIBLE ? (
+            <p className="mt-3 t-caption text-ink2">
+              {t('bankSync.inbox.home.more', { count: count - VISIBLE })}
+            </p>
+          ) : null}
+        </>
       ) : null}
 
       <EventDetailDialog

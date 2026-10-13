@@ -25,3 +25,7 @@
 ## Mobile app parity notes
 
 - Mobile chưa port bank-sync; khi port, Home cũng cần card này với cùng điều kiện ẩn.
+
+## Follow-up
+
+- Card Home gộp thêm `WalletDriftNotice` (cảnh báo lệch số dư); hiện khi có thông báo chờ hoặc có drift. Tiêu đề đổi thành "Từ ngân hàng · cần xác nhận".
