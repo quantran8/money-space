@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
-  createBankSource,
+  connectBankAccount,
   linkBankSource,
   listBankSources,
   unlinkBankSource,
@@ -61,18 +61,13 @@ export function useBankSources() {
   }
 
   const addMutation = useMutation({
-    mutationFn: async (values: SourceFormValues) => {
-      const source = await createBankSource(activeHouseholdId!, {
+    mutationFn: (values: SourceFormValues) =>
+      connectBankAccount(activeHouseholdId!, {
         providerCode: values.providerCode as BankProviderCode,
         accountNumber: normalizeAccountNumber(values.accountNumber)!,
         displayLabel: values.displayLabel || undefined,
-      })
-      // New links always start in REVIEW; AUTO is a separate, confirmed step.
-      return linkBankSource(activeHouseholdId!, source.id, {
         assetId: values.assetId,
-        postingMode: 'REVIEW',
-      })
-    },
+      }),
     onSuccess: (result) => {
       notify.success(
         result.reprocessed > 0

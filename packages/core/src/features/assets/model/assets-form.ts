@@ -15,6 +15,8 @@ import {
 import { formatVndExact } from '#/shared/lib/format-money'
 import { parseRawDecimal, parseRawMoney } from '#/shared/lib/number-format'
 import { localizedOptionalText } from '#/shared/lib/validation'
+import { normalizeAccountNumber } from '#/features/bank-sync/model/bank-sync.schemas'
+import { BANK_PROVIDERS } from '#/features/bank-sync/model/bank-sync.types'
 
 /**
  * The fallback "as of" date for reading a value when the server has not told us
@@ -106,6 +108,11 @@ export type AssetForm = {
   acquisition: 'owned' | 'purchased'
   /** The wallet a purchase was paid from. Only read when `acquisition` is `purchased`. */
   fundingAssetId: string
+  /** Create-only: link a new `bank_account` to its real account. See memory/bank-sync.md. */
+  bankSyncEnabled: boolean
+  bankProviderCode: string
+  bankAccountNumber: string
+  bankAutoPost: boolean
 }
 
 export const defaultAssetFormValues: AssetForm = {
@@ -137,6 +144,10 @@ export const defaultAssetFormValues: AssetForm = {
   holderMemberId: '',
   acquisition: 'owned',
   fundingAssetId: '',
+  bankSyncEnabled: false,
+  bankProviderCode: '',
+  bankAccountNumber: '',
+  bankAutoPost: false,
 }
 
 /**
@@ -468,6 +479,10 @@ export function buildAssetSchema(
       holderMemberId: z.string().trim(),
       acquisition: z.enum(['owned', 'purchased']),
       fundingAssetId: z.string().trim(),
+      bankSyncEnabled: z.boolean(),
+      bankProviderCode: z.string().trim(),
+      bankAccountNumber: z.string().trim(),
+      bankAutoPost: z.boolean(),
     })
     .superRefine((values, ctx) => {
       const mode = valuationModeForType(values.type)
@@ -677,7 +692,31 @@ export function buildAssetSchema(
           })
         }
       }
+
+      if (wantsBankSync(values)) {
+        if (!(BANK_PROVIDERS as readonly string[]).includes(values.bankProviderCode)) {
+          ctx.addIssue({
+            path: ['bankProviderCode'],
+            code: 'custom',
+            message: t('bankSync.sources.form.providerRequired'),
+          })
+        }
+        if (normalizeAccountNumber(values.bankAccountNumber) === null) {
+          ctx.addIssue({
+            path: ['bankAccountNumber'],
+            code: 'custom',
+            message: t('bankSync.sources.form.accountInvalid'),
+          })
+        }
+      }
     })
+}
+
+/** Only a bank account can be linked to a real one. */
+export function wantsBankSync(
+  values: Pick<AssetForm, 'type' | 'bankSyncEnabled'>,
+): boolean {
+  return values.type === 'bank_account' && values.bankSyncEnabled
 }
 
 /**

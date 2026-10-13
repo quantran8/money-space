@@ -21,9 +21,13 @@ export type HouseholdSummary = {
   createdAt: string
 }
 
-type HouseholdListResponse = {
+/** Free spaces this account created, against its ceiling. See memory/billing.md. */
+export type SpaceQuota = { used: number; limit: number }
+
+export type HouseholdListResponse = {
   items: HouseholdSummary[]
   total: number
+  spaceQuota?: SpaceQuota
 }
 
 export function useActiveHousehold() {
@@ -77,6 +81,7 @@ export function useActiveHousehold() {
     activeHousehold,
     activeHouseholdId: activeHousehold?.id ?? null,
     households: items ?? [],
+    spaceQuota: householdsQuery.data?.spaceQuota ?? null,
     ...householdsQuery,
   }
 }

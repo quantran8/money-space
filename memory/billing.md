@@ -120,3 +120,7 @@ keep records.
 a device code and linking an account go through `usePremiumAction`. Listing,
 revoking and the inbox stay open after a lapse so a household can clean up.
 See [[bank-sync]].
+
+**Số không gian Free mỗi tài khoản: tối đa 2** (paywall reason `space_quota`).
+Giới hạn theo tài khoản, không theo household; con số đến từ `spaceQuota` trong
+`GET /households`, không hardcode. Chi tiết: [[households-and-onboarding]].

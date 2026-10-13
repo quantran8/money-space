@@ -12,8 +12,17 @@ backend `memory/bank-sync.md`. Premium (`bank_sync`) — [[billing]].
 - **Token thiết bị chỉ hiện một lần.** `useBankDevices.created` giữ raw token
   trong state tới khi dialog đóng, rồi bỏ đi. Không lưu vào storage, không log.
   Danh sách chỉ hiện prefix.
-- **Gắn tài khoản luôn bắt đầu ở REVIEW.** Form không có lựa chọn AUTO; bật
-  "Tự ghi" là bước riêng, có xác nhận. Tắt thì không cần xác nhận.
+- **Bật "Tự ghi" (AUTO) luôn qua hộp xác nhận**; tắt thì không cần. Form "Gắn
+  tài khoản" ở Cài đặt luôn tạo link REVIEW; form tạo asset (dưới) có công tắc
+  Tự ghi, mặc định tắt, bật phải xác nhận (quyết định chủ sản phẩm 2026-10-13).
+- **Gắn ngay lúc tạo tài khoản ngân hàng.** Form tạo asset loại `bank_account`
+  có công tắc "Đồng bộ với tài khoản ngân hàng" (chỉ khi tạo, không có khi sửa):
+  chọn ngân hàng + số TK đầy đủ. Submit tạo asset trước, rồi
+  `connectBankAccount` (tạo source + link REVIEW) — hai request, không atomic.
+  Gắn lỗi thì asset vẫn giữ, toast báo gắn lại ở Cài đặt; không rollback asset.
+  Bật công tắc mà chưa Premium → mở paywall, công tắc giữ tắt. Công tắc "Tự
+  ghi" mặc định tắt → link REVIEW; bật qua xác nhận → link AUTO. Chưa có thiết bị ACTIVE của chính user →
+  dòng nhắc kèm link `/settings/bank-sync` mở tab mới để không mất form.
 - **Số tài khoản phải đủ** (6–19 chữ số, cùng quy tắc chuẩn hoá với backend).
   Server chỉ trả `last4`; UI không bao giờ có số đầy đủ sau khi gửi.
 - **Ví đích** chỉ là wallet (`cash`/`bank_account`) đang `active` — cùng

@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -14,6 +15,7 @@ import {
   fromAsset,
   submittedCountsAsFlexible,
   toAsset,
+  wantsBankSync,
   type AssetForm,
   type AssetTotals,
 } from '#/features/assets/model/assets-form'
@@ -22,6 +24,12 @@ import {
   valuationModeForType,
   type AssetLiquidity,
 } from '#/features/assets/model/assets'
+import { connectBankAccount } from '#/features/bank-sync/api/bank-sync.repository'
+import { normalizeAccountNumber } from '#/features/bank-sync/model/bank-sync.schemas'
+import type { BankProviderCode } from '#/features/bank-sync/model/bank-sync.types'
+import { ApiError } from '#/shared/api/http'
+import { queryKeys } from '#/shared/api/query-keys'
+import { useActiveHousehold } from '#/shared/hooks/use-active-household'
 import { createId } from '#/shared/lib/create-id'
 import { getErrorMessage } from '#/shared/lib/get-error-message'
 
@@ -41,6 +49,14 @@ export function useAssetsPage() {
   // three together are the complete set of things that may change a quantity —
   // the asset form no longer does.
   const quantity = useAssetQuantity()
+  const queryClient = useQueryClient()
+  const { activeHouseholdId } = useActiveHousehold()
+  const connectBank = useMutation({
+    mutationFn: (p: Parameters<typeof connectBankAccount>[1]) =>
+      connectBankAccount(activeHouseholdId!, p),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.bankSync(activeHouseholdId!) }),
+  })
 
   function openSale(assetId: string) {
     const asset = assets.find((item) => item.id === assetId)
@@ -66,7 +82,7 @@ export function useAssetsPage() {
   const [liquidityFilter, setLiquidityFilter] = useState<AssetLiquidity | 'all'>('all')
 
   const isEditing = editingId !== null
-  const isSubmitting = createAsset.isPending || updateAsset.isPending
+  const isSubmitting = createAsset.isPending || updateAsset.isPending || connectBank.isPending
 
   // Wallet (cash/bank) assets: they receive auto-credited saving interest, and
   // they are what a purchase can be paid from. `balance` rides along so the
@@ -213,8 +229,12 @@ export function useAssetsPage() {
         await updateAsset.mutateAsync({ assetId: editingId, payload })
         notify.success(t('assets.toast.updated'))
       } else {
-        await createAsset.mutateAsync(payload)
-        notify.success(t('assets.toast.created'))
+        const created = await createAsset.mutateAsync(payload)
+        if (wantsBankSync(values)) {
+          await linkCreatedWallet(created.id, values)
+        } else {
+          notify.success(t('assets.toast.created'))
+        }
       }
       handleFormOpenChange(false)
     } catch (error) {
@@ -224,6 +244,25 @@ export function useAssetsPage() {
           editingId ? t('assets.toast.updateFailed') : t('assets.toast.createFailed'),
         ),
       )
+    }
+  }
+
+  // The asset already exists, so a failed link must not fail the create.
+  async function linkCreatedWallet(assetId: string, values: AssetForm) {
+    try {
+      await connectBank.mutateAsync({
+        providerCode: values.bankProviderCode as BankProviderCode,
+        accountNumber: normalizeAccountNumber(values.bankAccountNumber)!,
+        assetId,
+        postingMode: values.bankAutoPost ? 'AUTO' : 'REVIEW',
+      })
+      notify.success(t('assets.toast.createdWithBankSync'))
+    } catch (error) {
+      if (error instanceof ApiError && error.statusCode === 402) {
+        notify.success(t('assets.toast.created'))
+        return
+      }
+      notify.error(getErrorMessage(error, t('assets.toast.bankSyncFailed')))
     }
   }
 
