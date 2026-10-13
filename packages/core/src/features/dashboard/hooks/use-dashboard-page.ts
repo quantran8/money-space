@@ -6,6 +6,7 @@ import {
 } from '#/features/dashboard/model/home-derivations'
 import { useEvents } from '#/features/events/hooks/use-events'
 import { useEventsSummary } from '#/features/events/hooks/use-events-summary'
+import { compareNewestFirst } from '#/features/events/model/events-form'
 import { useFlexibleMoney, useForecast } from '#/features/forecast/hooks/use-forecast'
 import { useFreshness } from '#/features/freshness/hooks/use-freshness'
 import { useMembers } from '#/features/members/hooks/use-members'
@@ -84,7 +85,12 @@ export function useDashboardPage({
      * Events page.
      */
     recentEvents: [...events]
-      .sort((a, b) => b.isoDate.localeCompare(a.isoDate))
+      .sort((a, b) =>
+        compareNewestFirst(
+          { date: a.isoDate, createdAt: a.createdAt },
+          { date: b.isoDate, createdAt: b.createdAt },
+        ),
+      )
       .slice(0, 3),
     /** Needed to pick the wallet a confirmed cashflow event moves through. */
     assets,

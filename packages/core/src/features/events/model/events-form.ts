@@ -59,6 +59,7 @@ export type LocalMoneyEvent = {
   amount: number
   currency: string
   date: string
+  createdAt?: string
   displayDate: string
   status: RecordStatus
   attentionLevel: AttentionLevel
@@ -100,6 +101,7 @@ export type FinancialRecordItem = {
    *  back to a translated category label when the note is empty. Derived — not a
    *  stored field on the event. */
   title: string
+  createdAt?: string
   /** True when `title` fell back to the category label because the record has no
    *  note. A row that draws the category as a subtitle must skip it then — the
    *  same name twice, stacked, reads as a rendering fault, not as detail. */
@@ -503,6 +505,7 @@ export function toMoneyEventSeed(event: MoneyEventItem): LocalMoneyEvent {
     amount: event.amount,
     currency: 'VND',
     date: event.isoDate,
+    createdAt: event.createdAt,
     displayDate: event.date,
     status: 'recorded',
     attentionLevel: event.direction === 'outflow' ? 'important' : 'normal',
@@ -551,6 +554,17 @@ export function areEventsEqual(left: LocalMoneyEvent[], right: LocalMoneyEvent[]
   })
 }
 
+
+// Not yet saved (no `createdAt`) counts as the newest of its day.
+export function compareNewestFirst(
+  left: { date: string; createdAt?: string },
+  right: { date: string; createdAt?: string },
+) {
+  return (
+    right.date.localeCompare(left.date) ||
+    (right.createdAt ?? '\uffff').localeCompare(left.createdAt ?? '\uffff')
+  )
+}
 
 export function getTimelineGroupKey(record: FinancialRecordItem): TimelineGroupKey {
   if (record.date === TODAY) return 'today'

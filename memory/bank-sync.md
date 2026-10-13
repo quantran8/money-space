@@ -31,6 +31,11 @@ backend `memory/bank-sync.md`. Premium (`bank_sync`) — [[billing]].
   mọi thao tác ghi tiền khác.
 - **Mục "Hộp thư giao dịch" trên sidebar chỉ hiện khi có thông báo chờ**, để
   household không dùng tính năng này không thấy thêm một mục nav.
+- **Home có card "Giao dịch chờ xác nhận"** (`bank-review-section`), đặt ngay
+  dưới card Quá hạn, chỉ tab `review` (REVIEW + FAILED). Không có gì chờ thì
+  card biến mất — như Quá hạn, đây là lời gọi hành động chứ không phải thông tin.
+  Tối đa 3 dòng, bấm mở cùng `EventDetailDialog` với hộp thư. Tab `unmapped` /
+  `parse_failed` không lên Home: cần cài đặt nguồn, không phải xác nhận.
 - Dòng sự kiện có `origin = bank_notification` hiện nhãn "Từ ngân hàng"; note
   là nội dung thông báo của ngân hàng, số tài khoản đã được server che còn 4
   số cuối.

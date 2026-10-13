@@ -12,6 +12,8 @@ export type MoneyEventItem = {
   date: string
   /** Full ISO date (YYYY-MM-DD) used for month grouping and filtering. */
   isoDate: string
+  /** Server timestamp; orders events that share an `isoDate`. */
+  createdAt?: string
   type:
     | 'expense'
     | 'income'
