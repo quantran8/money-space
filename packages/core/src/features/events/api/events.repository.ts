@@ -17,7 +17,8 @@ export type EventPayload = {
   note?: string
   isoDate: string
   type: 'expense' | 'income' | 'transfer' | 'asset_purchase' | 'asset_sale' | 'asset_update' | 'loan_collection' | 'payment_paid' | 'debt_update' | 'adjustment' | 'other'
-  categoryId: string
+  /** Omitted for a transfer — the backend assigns the system `transfer` category. */
+  categoryId?: string
   direction?: 'inflow' | 'outflow' | 'neutral'
   fromAssetId?: string
   toAssetId?: string
