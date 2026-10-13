@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
+import { WalletDriftNotice } from '@/features/bank-sync/ui/components/wallet-drift-notice'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import {
@@ -530,6 +531,12 @@ export function AssetDetailPage() {
           </div>
         </div>
       </header>
+
+      {asset.type === 'bank_account' || asset.type === 'cash' ? (
+        <div className="mt-3">
+          <WalletDriftNotice assetId={asset.id} />
+        </div>
+      ) : null}
 
       <div className="s-card-gap mt-5 flex flex-col">
         {/* What it is worth, what it cost, what that difference is, and how much

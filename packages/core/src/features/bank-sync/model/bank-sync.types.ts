@@ -75,7 +75,33 @@ export type BankNotificationEvent = {
   sourceId: string | null
   matchedAssetId: string | null
   moneyEventId: string | null
+  /** Transfer content extracted from the body. */
+  note: string
+  /** Note-rule suggestion; see backend memory/cashflow-settlement.md. */
+  suggestedCashflowEventId: string | null
+  matchStatus: BankMatchStatus | null
+  matchReason: string | null
   canReparse: boolean
+}
+
+export type BankMatchStatus = 'none' | 'matched' | 'ambiguous' | 'blocked' | 'replace_manual'
+
+export type BankResolvePayload =
+  | { action: 'post'; assetId?: string; cashflowEventId?: string }
+  | { action: 'replace_manual'; assetId?: string; cashflowEventId: string }
+  | { action: 'ignore' }
+
+/** Bank-reported balance vs the ledger right after the same transaction. */
+export type WalletDrift = {
+  assetId: string
+  assetName: string
+  bankEventId: string
+  observedAt: string
+  timeSource: string | null
+  reportedBalance: number
+  ledgerBalance: number
+  drift: number
+  suggestedValue: number
 }
 
 export type BankEventPage = {

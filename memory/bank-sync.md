@@ -18,17 +18,22 @@ backend `memory/bank-sync.md`. Premium (`bank_sync`) — [[billing]].
   Server chỉ trả `last4`; UI không bao giờ có số đầy đủ sau khi gửi.
 - **Ví đích** chỉ là wallet (`cash`/`bank_account`) đang `active` — cùng
   `isWalletAssetType` với form sự kiện ([[money-events]]).
+- **Thông báo quảng cáo/hệ thống của ngân hàng không bao giờ vào hộp thư** —
+  server bỏ trước khi lưu (`NOT_TRANSACTION`). Xem backend `memory/bank-sync.md`.
 - **Hộp thư hiển thị status thật từ server.** Không suy ra "đã ghi" từ việc
   Shortcut nhận 202. Tab: Cần xác nhận (`REVIEW`+`FAILED`), Chưa liên kết
   (`UNMAPPED`), Chưa đọc được (`PARSE_FAILED`).
 - **Lý do chờ** là mã từ server (`statusReason`) → `bankSync.inbox.reason.*`;
   mã lạ rơi về câu chung (`reasonText`).
+- **Gợi ý gắn khoản** (`suggestedCashflowEventId`, `matchStatus`) chỉ được chọn
+  sẵn khi khớp duy nhất; `ambiguous` để user tự chọn — [[cashflow-settlement]].
 - **Ghi từ hộp thư là một money write** → invalidate cả prefix household, giống
   mọi thao tác ghi tiền khác.
 - **Mục "Hộp thư giao dịch" trên sidebar chỉ hiện khi có thông báo chờ**, để
   household không dùng tính năng này không thấy thêm một mục nav.
 - Dòng sự kiện có `origin = bank_notification` hiện nhãn "Từ ngân hàng"; note
-  vẫn để trống như người dùng không nhập (không chèn chữ giả).
+  là nội dung thông báo của ngân hàng, số tài khoản đã được server che còn 4
+  số cuối.
 
 ## Where it lives in code
 

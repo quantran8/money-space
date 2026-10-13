@@ -6,6 +6,7 @@ import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { CashflowEventFormDialog } from '@/features/cashflow/ui/components/cashflow-event-form-dialog'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
+import { LinkBankTransactionDialog } from '@/features/cashflow/ui/components/link-bank-transaction-dialog'
 import { useAssets } from '@money-space/core/features/assets/hooks/use-assets'
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { useCashflowForm } from '@money-space/core/features/cashflow/hooks/use-cashflow-form'
@@ -31,6 +32,31 @@ export function UpcomingPage() {
     amount: number
     direction: 'incoming' | 'outgoing'
   } | null>(null)
+
+  const [linkingId, setLinkingId] = useState<string | null>(null)
+  const linkingEvent = cashflowEvents.find((event) => event.id === linkingId)
+
+  // Timeline and overdue share this, so neither completes without a wallet.
+  const handleComplete = (eventId: string, occurrenceDate: string) => {
+    const source = cashflowEvents.find((event) => event.id === eventId)
+    if (!source) return
+
+    if (source.settlementAssetId) {
+      completeCashflowEvent.mutate({
+        eventId,
+        payload: { occurrenceDate, assetId: source.settlementAssetId },
+      })
+      return
+    }
+
+    setCompleting({
+      eventId,
+      occurrenceDate,
+      name: source.name,
+      amount: source.amount,
+      direction: source.direction,
+    })
+  }
 
   const memberNameById = new Map(members.map((member) => [member.id, member.name]))
   const ownerNameByEventId = Object.fromEntries(
@@ -76,26 +102,8 @@ export function UpcomingPage() {
               ? completeCashflowEvent.variables?.eventId
               : null
           }
-          onComplete={(eventId, occurrenceDate) => {
-            const source = cashflowEvents.find((event) => event.id === eventId)
-            if (!source) return
-
-            if (source.settlementAssetId) {
-              completeCashflowEvent.mutate({
-                eventId,
-                payload: { occurrenceDate, assetId: source.settlementAssetId },
-              })
-              return
-            }
-
-            setCompleting({
-              eventId,
-              occurrenceDate,
-              name: source.name,
-              amount: source.amount,
-              direction: source.direction,
-            })
-          }}
+          onComplete={handleComplete}
+          onLinkBank={setLinkingId}
           onEdit={cashflowForm.openEdit}
           onDelete={cashflowForm.handleDelete}
           ownerNameByEventId={ownerNameByEventId}
@@ -111,14 +119,8 @@ export function UpcomingPage() {
         isEmpty={isEmpty}
         usableNowAssetCount={forecast?.usableNowAssetCount}
         onAdd={() => cashflowForm.openCreate('outgoing')}
-        onComplete={(sourceEventId, occurrenceDate) =>
-          // `occurrenceDate` is the idempotency key — passing it stops a
-          // double-tap advancing a recurring series twice (§18).
-          completeCashflowEvent.mutate({
-            eventId: sourceEventId,
-            payload: { occurrenceDate },
-          })
-        }
+        onComplete={handleComplete}
+        onLinkBank={setLinkingId}
         onEdit={cashflowForm.openEdit}
         onDelete={cashflowForm.handleDelete}
       />
@@ -142,6 +144,21 @@ export function UpcomingPage() {
               },
               { onSuccess: () => setCompleting(null) },
             )
+          }}
+        />
+      ) : null}
+
+      {linkingEvent ? (
+        <LinkBankTransactionDialog
+          event={linkingEvent}
+          assets={assets}
+          members={members}
+          onOpenChange={(next) => {
+            if (!next) setLinkingId(null)
+          }}
+          onCompleteManually={() => {
+            setLinkingId(null)
+            handleComplete(linkingEvent.id, linkingEvent.expectedDate)
           }}
         />
       ) : null}

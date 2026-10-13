@@ -7,6 +7,7 @@ import { CompactPageHeader } from '@/app/layout/compact-page-header'
 import { Button } from '@/components/ui/button'
 import { Panel, PanelHeader } from '@/components/ui/panel'
 import { DevicesPanel } from '@/features/bank-sync/ui/components/devices-panel'
+import { MatchRulesPanel } from '@/features/bank-sync/ui/components/match-rules-panel'
 import { SourcesPanel } from '@/features/bank-sync/ui/components/sources-panel'
 import { useBankInboxCounts } from '@money-space/core/features/bank-sync/hooks/use-bank-inbox'
 
@@ -40,6 +41,7 @@ export function BankSyncPage() {
       <div className="s-card-gap s-head-body flex flex-col">
         <DevicesPanel />
         <SourcesPanel addOpen={addSourceOpen} onAddOpenChange={onAddOpenChange} />
+        <MatchRulesPanel />
         <Panel>
           <PanelHeader title={t('bankSync.limits.title')} />
           <ul className="s-head-body list-disc space-y-2 pl-5 t-body-sm leading-5 text-ink2">

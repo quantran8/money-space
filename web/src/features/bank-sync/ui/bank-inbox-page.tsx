@@ -10,11 +10,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { StatusChip } from '@/components/ui/status-chip'
 import { cn } from '@money-space/core/shared/lib/utils'
 import { EventDetailDialog } from '@/features/bank-sync/ui/components/event-detail-dialog'
+import { WalletDriftNotice } from '@/features/bank-sync/ui/components/wallet-drift-notice'
 import {
   useBankInbox,
   useBankInboxCounts,
 } from '@money-space/core/features/bank-sync/hooks/use-bank-inbox'
 import { useBankSources } from '@money-space/core/features/bank-sync/hooks/use-bank-sources'
+import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import {
   eventTime,
   reasonText,
@@ -36,11 +38,18 @@ export function BankInboxPage() {
   const counts = useBankInboxCounts()
   const inbox = useBankInbox(tab)
   const { walletOptions } = useBankSources()
+  const { cashflowEvents } = useCashflowEvents()
+  const cashflowOptions = cashflowEvents
+    .filter((e) => e.status !== 'completed' && e.status !== 'cancelled')
+    .map((e) => ({ value: e.id, label: e.name, direction: e.direction }))
 
   return (
     <div className="s-page">
       <CompactPageHeader title={t('bankSync.inbox.title')} />
       <p className="mt-1 max-w-[680px] t-body-sm text-ink2">{t('bankSync.inbox.subtitle')}</p>
+      <div className="mt-3">
+        <WalletDriftNotice />
+      </div>
 
       <div role="tablist" className="s-head-body flex flex-wrap gap-2">
         {TABS.map((key) => (
@@ -136,7 +145,9 @@ export function BankInboxPage() {
         event={selected}
         onOpenChange={(open) => !open && setSelected(null)}
         walletOptions={walletOptions}
+        cashflowOptions={cashflowOptions}
         onPost={inbox.post}
+        onReplaceManual={inbox.replaceManual}
         onIgnore={inbox.ignore}
         onReparse={inbox.reparse}
         busy={inbox.isResolving || inbox.isReparsing}
