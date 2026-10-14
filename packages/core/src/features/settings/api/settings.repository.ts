@@ -1,3 +1,4 @@
+import type { DashboardWidgetItem } from '#/features/dashboard/model/dashboard-layout'
 import { apiRequest } from '#/shared/api/http'
 import type { HouseholdSummary } from '#/shared/hooks/use-active-household'
 
@@ -7,7 +8,12 @@ import type { HouseholdSummary } from '#/shared/hooks/use-active-household'
  */
 export function updateHouseholdConfig(
   householdId: string,
-  payload: { currency?: string; name?: string },
+  payload: {
+    currency?: string
+    name?: string
+    /** `null` returns Home to the default layout. */
+    dashboardLayout?: DashboardWidgetItem[] | null
+  },
 ) {
   return apiRequest<HouseholdSummary>(`/households/${householdId}/config`, {
     method: 'PATCH',

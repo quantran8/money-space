@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
+import type { DashboardWidgetItem } from '#/features/dashboard/model/dashboard-layout'
 import { apiRequest } from '#/shared/api/http'
 import { queryKeys } from '#/shared/api/query-keys'
 import { useAuthStore } from '#/shared/stores/auth-store'
@@ -20,6 +21,7 @@ export type HouseholdSummary = {
    */
   createdBy: string
   createdAt: string
+  config?: { dashboardLayout?: DashboardWidgetItem[] }
 }
 
 /** Free spaces this account created, against its ceiling. See memory/billing.md. */
