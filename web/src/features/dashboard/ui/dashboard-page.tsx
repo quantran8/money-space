@@ -1,9 +1,25 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { LayoutGrid, Plus, RotateCcw } from 'lucide-react'
 
 import { useCashflowEvents } from '@money-space/core/features/cashflow/hooks/use-cashflow-events'
 import { useCashflowForm } from '@money-space/core/features/cashflow/hooks/use-cashflow-form'
 import { useCategoryVisuals } from '@money-space/core/features/events/hooks/use-category-visuals'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { DashboardWidgetGrid } from '@/features/dashboard/ui/components/dashboard-widget-grid'
+import {
+  DASHBOARD_WIDGET_IDS,
+  DEFAULT_DASHBOARD_LAYOUT,
+  type DashboardWidgetId,
+  type DashboardWidgetItem,
+} from '@money-space/core/features/dashboard/model/dashboard-layout'
+import { useDashboardLayout } from '@money-space/core/features/dashboard/hooks/use-dashboard-layout'
 import { AppearGroup, AppearItem } from '@/components/ui/motion'
 import { CashflowEventFormDialog } from '@/features/cashflow/ui/components/cashflow-event-form-dialog'
 import { CompleteCashflowDialog } from '@/features/cashflow/ui/components/complete-cashflow-dialog'
@@ -62,6 +78,11 @@ export function DashboardPage() {
   // and sending the reader to /upcoming to fix it is a detour.
   const cashflowForm = useCashflowForm()
   const categoryVisualById = useCategoryVisuals()
+  const layoutState = useDashboardLayout()
+  // A draft exists only while arranging; nothing persists until Done picks a scope.
+  const [draft, setDraft] = useState<DashboardWidgetItem[] | null>(null)
+  const editing = draft !== null
+  const layout = draft ?? layoutState.layout
   /**
    * The occurrence awaiting a wallet choice. Confirming MOVES MONEY, so it
    * cannot fire straight from the row — without a wallet the API has nothing
@@ -101,31 +122,19 @@ export function DashboardPage() {
     if (staleIds.length > 0) confirmUnchanged.mutate(staleIds)
   }
 
-  return (
-    <AppearGroup className="space-y-3">
-      {/* No hero card. It carried the household name and "Tình hình hiện tại"
-          over a coverage line that §12.1 already states beside the figure it
-          qualifies — a full-width blue band to say what the first card says
-          better, and it pushed the one number the page exists for below the
-          fold. The page now opens on the answer. */}
-      <AppearItem>
-        <FinancialPictureSection
-          flexibleMoney={flexibleMoney}
-          freshness={freshness}
-          onQuickUpdate={handleQuickUpdate}
-        />
-      </AppearItem>
-
-      {/* Second, and above the forecast that already counts these: the only
-          thing on Home waiting on a person, and every figure in §12.2 is
-          computed as if it were already settled.
-
-          The ONE section allowed to disappear. Every other card holds its place
-          empty, because a household needs to see that the thing exists; this
-          one is a call to act, and an empty "nothing is overdue" card would be
-          a permanent reminder of a problem nobody has. */}
-      {forecast ? (
-        <AppearItem>
+  const renderWidget = (id: DashboardWidgetId): ReactNode => {
+    switch (id) {
+      case 'picture':
+        return (
+          <FinancialPictureSection
+            flexibleMoney={flexibleMoney}
+            freshness={freshness}
+            onQuickUpdate={handleQuickUpdate}
+          />
+        )
+      case 'overdue':
+        // The one section allowed to disappear: it is a call to act.
+        return forecast ? (
           <OverdueSection
             overdue={buildOverdue(forecast, cashflowEvents)}
             pendingId={completeCashflowEvent.isPending ? completing?.eventId : null}
@@ -144,40 +153,115 @@ export function DashboardPage() {
             onEdit={cashflowForm.openEdit}
             onDelete={cashflowForm.handleDelete}
           />
-        </AppearItem>
-      ) : null}
+        ) : null
+      case 'bankReview':
+        return <BankReviewSection cashflowEvents={cashflowEvents} />
+      case 'upcoming':
+        return <UpcomingSection forecast={forecast} categoryVisualById={categoryVisualById} />
+      case 'spending':
+        return (
+          <SpendingSection
+            summary={eventsSummary}
+            recentEvents={recentEvents}
+            categoryVisualById={categoryVisualById}
+            asOfDate={forecast?.asOfDate ?? ''}
+          />
+        )
+      case 'goals':
+        return (
+          <GoalsSection
+            tracks={goalTracks}
+            goalCount={goals.length}
+            earmarkedForGoals={earmarkedForGoals}
+          />
+        )
+      case 'moneySources':
+        return <MoneySourcesSection map={moneyLocation} holderGroups={holderGroups} />
+    }
+  }
 
-      <AppearItem>
-        <BankReviewSection cashflowEvents={cashflowEvents} />
+  const hiddenIds = DASHBOARD_WIDGET_IDS.filter((id) => !layout.some((w) => w.id === id))
+
+  return (
+    <AppearGroup className="space-y-3">
+      <AppearItem className="flex flex-wrap items-center justify-end gap-2">
+        {editing ? (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="sm" disabled={hiddenIds.length === 0}>
+                  <Plus />
+                  {t('home.layout.add')}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {hiddenIds.map((id) => (
+                  <DropdownMenuItem key={id} onSelect={() => setDraft([...layout, { id, size: 'full' }])}>
+                    {t(`home.layout.widget.${id}`)}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {layoutState.hasLocal ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  layoutState.clearLocal()
+                  setDraft(null)
+                }}
+              >
+                {t('home.layout.useShared')}
+              </Button>
+            ) : null}
+            <Button variant="ghost" size="sm" onClick={() => setDraft(DEFAULT_DASHBOARD_LAYOUT)}>
+              <RotateCcw />
+              {t('home.layout.reset')}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setDraft(null)}>
+              {t('home.layout.cancel')}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm">{t('home.layout.done')}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onSelect={() => {
+                    layoutState.saveLocal(draft)
+                    setDraft(null)
+                  }}
+                >
+                  {t('home.layout.applyMe')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    layoutState.saveShared(draft)
+                    setDraft(null)
+                  }}
+                >
+                  {t('home.layout.applyAll')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        ) : (
+          <Button variant="ghost" size="sm" onClick={() => setDraft(layout)}>
+            <LayoutGrid />
+            {t('home.layout.edit')}
+          </Button>
+        )}
       </AppearItem>
 
       <AppearItem>
-        <UpcomingSection forecast={forecast} categoryVisualById={categoryVisualById} />
-      </AppearItem>
-
-      {/* Spending and goals share one row: the month that happened beside the
-          money already pointed somewhere. Both are narrower than a full-width
-          section needs, and neither is the page's primary answer. */}
-      <AppearItem className="grid gap-3 xl:grid-cols-[minmax(0,.82fr)_minmax(0,1.18fr)] xl:items-stretch">
-        <SpendingSection
-          summary={eventsSummary}
-          recentEvents={recentEvents}
-          categoryVisualById={categoryVisualById}
-          asOfDate={forecast?.asOfDate ?? ''}
+        <DashboardWidgetGrid
+          layout={layout}
+          editing={editing}
+          render={renderWidget}
+          onReorder={(next) => setDraft(next)}
+          onResize={(id, size) => setDraft(layout.map((w) => (w.id === id ? { ...w, size } : w)))}
+          onRemove={(id) => setDraft(layout.filter((w) => w.id !== id))}
         />
-
-        <GoalsSection
-          tracks={goalTracks}
-          goalCount={goals.length}
-          earmarkedForGoals={earmarkedForGoals}
-        />
-      </AppearItem>
-
-      {/* Full width, and last: this is a table of where money sits, not an
-          answer to today's question — the ranking only reads as a comparison
-          when every bar has the same full width to run in (§12.4). */}
-      <AppearItem>
-        <MoneySourcesSection map={moneyLocation} holderGroups={holderGroups} />
       </AppearItem>
 
       {completing ? (
