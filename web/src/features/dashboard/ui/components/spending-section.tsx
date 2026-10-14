@@ -10,7 +10,7 @@ import {
 } from '@/features/events/ui/components/category-icon'
 import type { EventsSummaryResponse } from '@money-space/core/features/events/api/events.repository'
 import type { MoneyEventItem } from '@money-space/core/features/events/model/events.types'
-import { formatVndCellSigned, formatVndScale } from '@money-space/core/shared/lib/format-money'
+import { formatVndCellAdaptive, formatVndScale } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
@@ -232,8 +232,10 @@ function RecentEventRow({
           event.amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
         )}
       >
-        {formatVndCellSigned(event.amount)}{' '}
-        <span className="font-mono t-caption-sm text-ink3">{t('units.million')}</span>
+        {formatVndCellAdaptive(event.amount).text}
+        {formatVndCellAdaptive(event.amount).scaled ? (
+          <span className="font-mono t-caption-sm text-ink3"> {t('units.million')}</span>
+        ) : null}
       </span>
     </li>
   )
