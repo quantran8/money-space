@@ -72,9 +72,15 @@ export function EventRecordRow({
       // mono must never touch accented text (§5).
       meta={<RowMeta>{meta}</RowMeta>}
       value={formatRecordAmount(record, formatVndShort)}
-      // Outflow reads attention, everything else the neutral ink. Colour marks
-      // direction here, and never a verdict on the amount.
-      valueTone={record.direction === 'outflow' ? 'attention' : 'default'}
+      // Out red, in green, anything else neutral ink. Colour marks direction
+      // here, and never a verdict on the amount.
+      valueTone={
+        record.direction === 'outflow'
+          ? 'alert'
+          : record.direction === 'inflow'
+            ? 'positive'
+            : 'default'
+      }
       right={
         <ActionSheet
           title={record.title}

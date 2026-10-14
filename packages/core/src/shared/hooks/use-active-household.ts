@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { apiRequest } from '#/shared/api/http'
 import { queryKeys } from '#/shared/api/query-keys'
+import { useAuthStore } from '#/shared/stores/auth-store'
 import { useAppStore } from '#/shared/stores/household-store'
 import { setDisplayCurrency } from '#/shared/lib/format-money'
 
@@ -33,6 +34,8 @@ export type HouseholdListResponse = {
 export function useActiveHousehold() {
   const activeHouseholdId = useAppStore((state) => state.activeHouseholdId)
   const setActiveHouseholdId = useAppStore((state) => state.setActiveHouseholdId)
+  const userId = useAuthStore((state) => state.user?.id)
+  const lastId = useAppStore((state) => (userId ? state.lastByUser[userId] : undefined))
 
   const householdsQuery = useQuery({
     queryKey: queryKeys.households,
@@ -47,7 +50,7 @@ export function useActiveHousehold() {
    * Two cases, deliberately one effect: nothing stored yet, and a stored id
    * that has stopped being a membership — the space was deleted, this member
    * was removed from it, or it belongs to a DIFFERENT user who signed in on
-   * this device. Both end the same way: the oldest space, the list being
+   * this device. Both end the same way: the user's last-picked space, else the oldest, the list being
    * `createdAt: asc`.
    *
    * An empty list is left alone. Nobody-has-a-space is `RequireHousehold`'s
@@ -57,8 +60,9 @@ export function useActiveHousehold() {
   useEffect(() => {
     if (!items?.length) return
     if (activeHouseholdId && items.some((item) => item.id === activeHouseholdId)) return
-    setActiveHouseholdId(items[0].id)
-  }, [activeHouseholdId, items, setActiveHouseholdId])
+    const remembered = items.find((item) => item.id === lastId)
+    setActiveHouseholdId((remembered ?? items[0]).id)
+  }, [activeHouseholdId, items, lastId, setActiveHouseholdId])
 
   /**
    * Strict: the stored id, or nothing.

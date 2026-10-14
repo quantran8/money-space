@@ -555,14 +555,15 @@ export function areEventsEqual(left: LocalMoneyEvent[], right: LocalMoneyEvent[]
 }
 
 
-// Not yet saved (no `createdAt`) counts as the newest of its day.
+// Newest `createdAt` first; `date` only breaks ties. Not yet saved (no
+// `createdAt`) counts as the newest.
 export function compareNewestFirst(
   left: { date: string; createdAt?: string },
   right: { date: string; createdAt?: string },
 ) {
   return (
-    right.date.localeCompare(left.date) ||
-    (right.createdAt ?? '\uffff').localeCompare(left.createdAt ?? '\uffff')
+    (right.createdAt ?? '\uffff').localeCompare(left.createdAt ?? '\uffff') ||
+    right.date.localeCompare(left.date)
   )
 }
 

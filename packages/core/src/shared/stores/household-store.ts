@@ -2,9 +2,12 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 import { storage } from '#/shared/storage'
+import { useAuthStore } from '#/shared/stores/auth-store'
 
 type AppState = {
   activeHouseholdId: string | null
+  /** Last space each signed-in user picked; survives logout, never crosses accounts. */
+  lastByUser: Record<string, string>
   setActiveHouseholdId: (householdId: string | null) => void
 }
 
@@ -23,7 +26,16 @@ export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
       activeHouseholdId: null,
-      setActiveHouseholdId: (activeHouseholdId) => set({ activeHouseholdId }),
+      lastByUser: {},
+      setActiveHouseholdId: (activeHouseholdId) =>
+        set((state) => {
+          const userId = useAuthStore.getState().user?.id
+          if (!activeHouseholdId || !userId) return { activeHouseholdId }
+          return {
+            activeHouseholdId,
+            lastByUser: { ...state.lastByUser, [userId]: activeHouseholdId },
+          }
+        }),
     }),
     {
       name: 'money-space-household',
@@ -39,7 +51,10 @@ export const useAppStore = create<AppState>()(
        */
       storage: createJSONStorage(() => storage),
       // Only what must survive a reload. Everything else is derived.
-      partialize: (state) => ({ activeHouseholdId: state.activeHouseholdId }),
+      partialize: (state) => ({
+        activeHouseholdId: state.activeHouseholdId,
+        lastByUser: state.lastByUser,
+      }),
       /**
        * v2 drops `onboardingStep`. It has to be actively deleted rather than
        * ignored: a stored step used to divert its owner to `/onboarding` on every
@@ -47,10 +62,13 @@ export const useAppStore = create<AppState>()(
        * carry that value forever — pinned to a screen that no longer exists,
        * with the gate that reads it gone and nothing left to clear it.
        */
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<AppState> & { onboardingStep?: unknown }
-        return { activeHouseholdId: state.activeHouseholdId ?? null } as AppState
+        return {
+          activeHouseholdId: state.activeHouseholdId ?? null,
+          lastByUser: state.lastByUser ?? {},
+        } as AppState
       },
     },
   ),
