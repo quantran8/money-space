@@ -213,6 +213,18 @@ export function formatVndCellSigned(value: number): string {
 }
 
 /**
+ * Signed cell money that never rounds a small amount to "0,0": under a million
+ * it is whole đồng ("−126.000đ", unit baked in), otherwise `formatVndCellSigned`
+ * and `scaled` is true so the caller appends its million unit.
+ */
+export function formatVndCellAdaptive(value: number): { text: string; scaled: boolean } {
+  if (Math.abs(value) >= 1_000_000) return { text: formatVndCellSigned(value), scaled: true }
+  const exact = formatVndExact(Math.abs(value), 'VND')
+  const text = value === 0 ? exact : value < 0 ? `−${exact}` : `+${exact}`
+  return { text, scaled: false }
+}
+
+/**
  * A percentage at one decimal place, e.g. `12,4%`.
  *
  * Always one digit: a bare "12%" beside "0,8%" reads as a different precision.

@@ -28,7 +28,7 @@ import {
 import type { ForecastResult } from '@money-space/core/features/forecast/model/forecast.types'
 import { canProjectBalance } from '@money-space/core/features/forecast/model/forecast-presentation'
 import { chartAxis, chartGrid, chartSeparator } from '@money-space/core/shared/constants/colors'
-import { formatVndCell, formatVndCellSigned, formatVndScale } from '@money-space/core/shared/lib/format-money'
+import { formatVndCellAdaptive, formatVndScale } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
 
 /**
@@ -315,14 +315,14 @@ function HorizonTotals({ forecast }: { forecast: ForecastResult }) {
       <HorizonTotal
         icon={ArrowDownLeft}
         label={t('home.cashflow.in')}
-        value={formatVndCellSigned(sum('incoming'))}
+        value={formatVndCellAdaptive(sum('incoming'))}
         count={count('incoming')}
         tone="text-positive-ink"
       />
       <HorizonTotal
         icon={ArrowUpRight}
         label={t('home.cashflow.out')}
-        value={formatVndCellSigned(-sum('outgoing'))}
+        value={formatVndCellAdaptive(-sum('outgoing'))}
         count={count('outgoing')}
         tone="text-alert-ink"
       />
@@ -339,7 +339,7 @@ function HorizonTotal({
 }: {
   icon: typeof ArrowDownLeft
   label: string
-  value: string
+  value: { text: string; scaled: boolean }
   count: number
   tone?: string
 }) {
@@ -359,11 +359,11 @@ function HorizonTotal({
       <div className="min-w-0">
         <p className="t-caption text-ink3">{label}</p>
         <p className={cn('num mt-0.5 t-metric leading-tight', tone)}>
-          {value}{' '}
+          {value.text}
           {/* §10.4 — the unit is stated once beside the figure, never baked in. */}
-          <span className="font-mono t-caption-sm text-ink3">
-            {t('units.million')}
-          </span>
+          {value.scaled ? (
+            <span className="font-mono t-caption-sm text-ink3"> {t('units.million')}</span>
+          ) : null}
         </p>
         <p className="mt-1 t-caption text-ink2">
           {t('home.upcoming.horizonCount', { count })}
@@ -441,16 +441,16 @@ function TimelineRailRow({
             isInflow ? 'text-positive-ink' : 'text-alert-ink',
           )}
         >
-          {formatVndCellSigned(row.signedAmount)}{' '}
-          <span className="font-mono t-caption-sm text-ink3">
-            {t('units.million')}
-          </span>
+          {formatVndCellAdaptive(row.signedAmount).text}
+          {formatVndCellAdaptive(row.signedAmount).scaled ? (
+            <span className="font-mono t-caption-sm text-ink3"> {t('units.million')}</span>
+          ) : null}
         </p>
         {/* The running balance — the one column this section exists for. */}
         {row.runningBalance === undefined || !canProject ? null : (
           <p className="num mt-1 t-caption-sm whitespace-nowrap text-ink3">
             {t('home.upcoming.remainingShort', {
-              value: `${formatVndCell(row.runningBalance)} ${t('units.million')}`,
+              value: formatVndScale(row.runningBalance),
             })}
           </p>
         )}
@@ -546,7 +546,7 @@ function CashflowDeltaChart({
                   <p className="num mt-1 t-body-sm font-medium">
                     {point.delta === 0
                       ? t('home.upcoming.chartSameAsToday')
-                      : `${formatVndCellSigned(point.delta)} ${t('units.million')}`}
+                      : adaptiveWithUnit(point.delta, t('units.million'))}
                   </p>
                 </div>
               )
@@ -607,4 +607,9 @@ function UpcomingUnavailable() {
       </div>
     </Panel>
   )
+}
+
+function adaptiveWithUnit(value: number, unit: string) {
+  const { text, scaled } = formatVndCellAdaptive(value)
+  return scaled ? `${text} ${unit}` : text
 }
