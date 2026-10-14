@@ -133,7 +133,13 @@ export function RecordCard({
             {t('events.history.overdraftBadge')}
           </span>
         ) : null}
-        <p className="num min-w-[88px] whitespace-nowrap text-right t-body-sm font-medium">
+        <p
+          className={cn(
+            'num min-w-[88px] whitespace-nowrap text-right t-body-sm font-medium',
+            record.direction === 'outflow' && 'text-alert-ink',
+            record.direction === 'inflow' && 'text-positive-ink',
+          )}
+        >
           {amount}
         </p>
         <DropdownMenu>
