@@ -9,6 +9,7 @@ import {
   CATEGORY_ICONS,
 } from '@/features/events/ui/components/category-icon'
 import type { EventsSummaryResponse } from '@money-space/core/features/events/api/events.repository'
+import { signedEventAmount } from '@money-space/core/features/events/model/events-form'
 import type { MoneyEventItem } from '@money-space/core/features/events/model/events.types'
 import { formatVndCellAdaptive, formatVndScale } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -187,6 +188,7 @@ function RecentEventRow({
   isFirst: boolean
 }) {
   const { t } = useTranslation()
+  const amount = signedEventAmount(event)
   // Member access, not a helper call — see record-card.tsx for why the lookup
   // is written this way.
   const CategoryIcon = (visual?.iconKey && CATEGORY_ICONS[visual.iconKey]) || CATEGORY_ICON_FALLBACK
@@ -224,12 +226,10 @@ function RecentEventRow({
         </p>
       </div>
 
-      {/* `amount` arrives already signed (inflow > 0), so the sign is the
-          data's, not something re-derived from `direction`. */}
       <span
         className={cn(
           'num shrink-0 t-body-sm font-medium',
-          event.amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
+          amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
         )}
       >
         {formatVndCellAdaptive(event.amount).text}

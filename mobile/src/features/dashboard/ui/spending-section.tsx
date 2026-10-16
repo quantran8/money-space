@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
 import type { EventsSummaryResponse } from '@money-space/core/features/events/api/events.repository'
+import { signedEventAmount } from '@money-space/core/features/events/model/events-form'
 import type { MoneyEventItem } from '@money-space/core/features/events/model/events.types'
 import { formatVndCellSigned, formatVndScale } from '@money-space/core/shared/lib/format-money'
 import { cn } from '@money-space/core/shared/lib/utils'
@@ -182,6 +183,7 @@ function RecentEventRow({
   isFirst: boolean
 }) {
   const { t } = useTranslation()
+  const amount = signedEventAmount(event)
 
   return (
     <View
@@ -205,17 +207,15 @@ function RecentEventRow({
         </Text>
       </View>
 
-      {/* `amount` arrives already signed (inflow > 0), so the sign is the
-          data's, not something re-derived from `direction`. */}
       <View className="flex-row items-baseline gap-1">
         <Text
           className={cn(
             't-body-sm font-medium',
-            event.amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
+            amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
           )}
           style={{ fontVariant: ['tabular-nums'] }}
         >
-          {formatVndCellSigned(event.amount)}
+          {formatVndCellSigned(amount)}
         </Text>
         <Text className="font-mono t-caption-sm text-ink3">{t('units.million')}</Text>
       </View>
