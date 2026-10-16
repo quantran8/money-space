@@ -669,6 +669,14 @@ export function formatRecordAmount(record: FinancialRecordItem, formatVndShort: 
   return value
 }
 
+// `amount` may arrive unsigned (bank-synced rows), so the sign comes from `direction`.
+export function signedEventAmount(event: { amount: number; direction: 'inflow' | 'outflow' | 'neutral' }) {
+  const amount = Math.abs(event.amount)
+  if (event.direction === 'inflow') return amount
+  if (event.direction === 'outflow') return -amount
+  return event.amount
+}
+
 export function getRecordAmountTone(record: FinancialRecordItem) {
   // Inflow / neutral records (income, asset sale, revaluation) read green;
   // money out reads orange — matching the timeline row's arrow colors.
