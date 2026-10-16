@@ -189,6 +189,7 @@ function RecentEventRow({
 }) {
   const { t } = useTranslation()
   const amount = signedEventAmount(event)
+  const display = formatVndCellAdaptive(amount)
   // Member access, not a helper call — see record-card.tsx for why the lookup
   // is written this way.
   const CategoryIcon = (visual?.iconKey && CATEGORY_ICONS[visual.iconKey]) || CATEGORY_ICON_FALLBACK
@@ -232,8 +233,8 @@ function RecentEventRow({
           amount > 0 ? 'text-positive-ink' : 'text-alert-ink',
         )}
       >
-        {formatVndCellAdaptive(event.amount).text}
-        {formatVndCellAdaptive(event.amount).scaled ? (
+        {display.text}
+        {display.scaled ? (
           <span className="font-mono t-caption-sm text-ink3"> {t('units.million')}</span>
         ) : null}
       </span>
